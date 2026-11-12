@@ -13,7 +13,7 @@ import { CookieConsent } from "@/components/consent/CookieConsent";
 import { SignUpEvent } from "@/components/analytics/SignUpEvent";
 import { SiteEvents } from "@/components/analytics/SiteEvents";
 import { capiConfig, registrationEventId } from "@/lib/analytics/metaCapi";
-import { consentBootstrapScript, gtmContainerId } from "@/lib/analytics/gtm";
+import { consentBootstrapScript, gtmContainerId, userIdBootstrapScript } from "@/lib/analytics/gtm";
 import { Header } from "@/components/chrome/Header";
 import { getCurrentPlayer } from "@/lib/auth/session";
 import { getLocale, getStrings } from "@/lib/i18n/server";
@@ -166,6 +166,13 @@ export default async function RootLayout({
         {gtmId && (
           <Script id="consent-default" strategy="beforeInteractive">
             {consentBootstrapScript()}
+          </Script>
+        )}
+        {/* The player id before the container, so GA4's first page view
+            carries it (2026-11-12) — see `userIdBootstrapScript`. */}
+        {gtmId && player && (
+          <Script id="analytics-user" strategy="beforeInteractive">
+            {userIdBootstrapScript(player.id)}
           </Script>
         )}
       </head>
