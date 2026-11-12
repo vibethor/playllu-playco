@@ -1,0 +1,3158 @@
+/**
+ * Centralized UI strings. No hardcoded user-visible copy may appear in a
+ * component — every surface reads from here.
+ *
+ * Values are English: CZ/RU translations are explicitly out of Phase 1 scope,
+ * so this is a flat string table rather than an i18n catalogue. The shape is
+ * nested by surface so a future i18n layer can swap the table wholesale.
+ */
+export const strings = {
+  /** The game's 9:16 story image an admin downloads (round 42). */
+  story: {
+    formatLabel: "Format",
+    durationLabel: "Duration",
+    minutes: "{n} min",
+  },
+  meta: {
+    title: "Hraj Fotbal — pickup football in Prague",
+    /**
+     * The text under the link in a search result (2026-11-06, the owner: "an
+     * anytime anywhere type of text that would be reflective and good for
+     * SEO"). 110–160 characters in every language — the length a result shows
+     * whole; `lib/seo/__tests__/seo.test.ts` holds every locale to it. Also the
+     * og/twitter description, so a shared link says the same.
+     */
+    description:
+      "Pickup football in Prague, anytime, anywhere. Pick a game, grab your spot online and just show up — no team, no commitment. New games every week.",
+    /** The small line under the brand share card (`lib/og/brandImage.tsx`). */
+    shareTagline: "Pickup football in Prague",
+    /**
+     * The result's sub-links (2026-11-06, the owner): each page's own title and
+     * line, so Google's sitelinks under the result say what the page is.
+     * "Game Pass" in every language — the owner's name for the pass page in search.
+     */
+    passTitle: "Game Pass",
+    passDescription: "Explore Game Pass and get a better deal",
+    gamesDescription: "Find a game and come play",
+    loginDescription: "Sign in",
+  },
+
+  brand: {
+    wordmarkLead: "HRAJ",
+    wordmarkAccent: "FOTBAL",
+    monogramLead: "H",
+    monogramAccent: "F",
+  },
+
+  nav: {
+    cta: "Claim your spot",
+    games: "Games",
+    // "Sign in" rather than "Log in": it is the verb the rest of the auth
+    // copy already uses ("Sign in", "Sign out"), and the header was the one
+    // place saying something different.
+    logIn: "Sign in",
+    profile: "My profile",
+    /*
+     * The bottom tab bar's four labels (v1.2 §7). Short because they sit under
+     * a 22px icon in a quarter of a phone's width — "My profile" wraps there
+     * and a wrapped tab label is what makes a tab bar look homemade.
+     */
+    homeShort: "Home",
+    pass: "Pass",
+    myGames: "My games",
+    profileShort: "Profile",
+    /** The accessible name of the tab bar itself. */
+    primary: "Main navigation",
+    home: "Hraj Fotbal — home",
+    // Shown only to an is_admin session. Hiding it hides nothing — the gate is
+    // `requireAdmin()` in the admin layout — but the panel had no door before.
+    admin: "Admin",
+  },
+
+  /*
+   * COOKIE CONSENT (round 28, item 1).
+   *
+   * THE COPY SAYS WHAT IS TRUE AND NOT WHAT A TEMPLATE SAYS. This product sets
+   * auth, locale and a payment-return stash — all strictly necessary — and no
+   * analytics of any kind. So the body does not talk about "categories of
+   * cookies" or "our partners", because there are none. It states the position
+   * and the promise: what the site needs to work, and we ask before anything
+   * else.
+   *
+   * "ONLY NECESSARY" IS AN HONEST BUTTON EVEN THOUGH IT CURRENTLY CHANGES
+   * NOTHING. It records a refusal that `consentAllows` will enforce the day
+   * something needs enforcing, which is the point of building the gate before
+   * the thing it gates.
+   */
+  consent: {
+    /*
+     * THE LAWYER'S BANNER (Texty pro web 9.2–9.3, round 40). Shown only while a
+     * GTM container is configured — with only necessary cookies there is
+     * nothing to ask (9.1). The Czech is the lawyer's own; `{policy}` links to
+     * /cookies. Three answers of equal weight, and a settings layer whose
+     * optional categories start OFF.
+     */
+    title: "Cookies",
+    body: "We use cookies. We need the necessary ones for the site to work (signing in, security, payments). With your consent we'll also use analytics and marketing cookies, so we can improve the site and measure our advertising. You can change your consent at any time in Cookie settings in the footer. More in the {policy}.",
+    policyLink: "Cookie Policy",
+    acceptAll: "Accept all",
+    rejectAll: "Reject all",
+    openSettings: "Settings",
+    settingsTitle: "Cookie settings",
+    necessaryTitle: "Necessary",
+    necessaryBody: "Signing in, security and payments. The site does not work without them, so they are always on.",
+    analyticsTitle: "Analytics",
+    analyticsBody: "Google Analytics: how the site is used, so we can make it better.",
+    marketingTitle: "Marketing",
+    marketingBody: "Meta Pixel: measuring and targeting our advertising.",
+    alwaysOn: "Always on",
+    saveChoice: "Save my choice",
+    settings: "Cookie settings",
+  },
+
+  siteFooter: {
+    /*
+     * THE LEGAL LINKS USE `legal.*Title` (2026-10-19) rather than keys of
+     * their own: a footer link and the page it opens are one concept, and two
+     * keys for one name drift apart in translation.
+     */
+    copyright: "© Playllu",
+    // A real address in the footer of every page. A booking product that takes
+    // money and holds personal data needs one reachable line that is not a
+    // WhatsApp group, and GDPR expects a controller contact anyway.
+    contact: "Contact",
+    /*
+     * THE FALLBACK, not the source of truth (round 13, item 18). The extra
+     * addresses and numbers `/contact` shows live in `site_settings` and are
+     * edited in `/admin`; this is what stands in when the owner has set none.
+     * It is the operator's address from the lawyer's brief, and must equal
+     * `OPERATOR_CONTACT.email` in `lib/legal.ts` — a unit test holds the two
+     * together.
+     */
+    contactEmail: "support@hrajfotbal.com",
+    contactTitle: "Get in touch",
+  },
+
+  /**
+   * The styled 404.
+   *
+   * A wrong or stale game link is the single most likely way someone lands
+   * here — the links travel through WhatsApp, get forwarded, and outlive the
+   * game. So the page offers the games list rather than apologising.
+   */
+  notFound: {
+    code: "404",
+    title: "Nothing here",
+    body: "This link points at a page that does not exist — or a game that has already been and gone.",
+    cta: "See what's on →",
+  },
+
+  landing: {
+    /*
+     * THE HERO HEADLINE IS THE SLOGAN, IN TWO LINES (redesign v2, round 3).
+     *
+     * It was the WORDMARK — `headlineLead` + `headlineAccent`, "HRAJ FOTBAL."
+     * set at hero scale — with the slogan under it as an italic sub-line.
+     * `p01` draws the slogan itself as the hero, in two Anton rows, and no
+     * wordmark: the header already carries the mark eighty pixels above, so
+     * the old hero spent its largest type saying the brand name twice and its
+     * second-largest saying the only thing a first-time visitor needs.
+     *
+     * Both keys are removed rather than left unused, along with their
+     * `INTENTIONALLY_UNTRANSLATED` exemptions — a dead string is a render
+     * site nobody knows about.
+     *
+     * `heroSub` SPLITS AT THE FIRST SENTENCE, which is where all three
+     * languages break: the verb phrase, then the two adverbs. The period
+     * after line one is drawn by the component in volt, so it is not in the
+     * string — a trailing "." here would render twice.
+     *
+     * The source is `home.heroTagline` from the v1.3 copy table (§4), not a
+     * fresh draft: the Czech and Russian there are the reviewed pair for this
+     * exact line.
+     */
+    /*
+     * ~~REMOVED IN ROUND 12 (item 2b): the hero's first line is `HRAJ FOTBAL.`
+     * in every language and renders from `brand`, which the overlays are
+     * forbidden to touch.~~
+     *
+     * RESTORED IN ROUND 13 (item 2) — the owner reversed it. The hero is the
+     * SLOGAN again and the slogan translates: a Czech reader arriving on a
+     * Czech site should be told what the site is FOR in Czech, and the brand
+     * name is already the roundel eighty pixels above.
+     *
+     * TWO KEYS, NOT A `<br>`, and that part never changed: line one is the
+     * verb phrase and line two the two adverbs, which is where all three
+     * languages break. A width-driven break would move it off the sentence.
+     */
+    heroLine1: "Play football",
+    heroLine2: "Anytime. Anywhere.",
+    vision:
+      "One match that repeats itself. Find a game, claim your spot, show up.",
+    scrollHint: "↓ SCROLL",
+    steps: [
+      {
+        index: "01",
+        title: "Find a game",
+        body: "Matches near you, every week.",
+      },
+      {
+        index: "02",
+        title: "Claim your spot",
+        body: "Secure your spot by paying a fee. We do the rest.",
+      },
+      {
+        index: "03",
+        title: "Come and play",
+        body: "Show up at the pitch and enjoy the game",
+      },
+    ],
+    nextMatchEyebrow: "//",
+    // --- stats strip (§6, REQ-HOME-002) ------------------------------------
+    // Two numbers under the wordmark. Games-per-week is COMPUTED from published
+    // games in the trailing seven days; active players is admin-editable and
+    // honestly framed — it counts the community including the WhatsApp cohort,
+    // not the number of rows in `players`.
+    // Both numbers are admin-editable claims (§6, v1.2) — the "+" is rendered
+    // by the panel, so these are the captions under the figure and not the
+    // sentence. "7+ / games every week" reads as one line on the card.
+    statsGamesLabel: "Games every week",
+    statsPlayersLabel: "Active players",
+    // Was "NEXT MATCH", one card. Three rows now — see the section comment in
+    // app/page.tsx: one card could only ever answer "is there a game", and the
+    // question a visitor arrives with is "is there a game I can make".
+    nextMatchesLabel: "Upcoming matches",
+    nextMatchesAll: "All games →",
+    potmTitle: "Player of the month",
+    potmEmpty: "Nobody picked yet — could be you.",
+    /*
+     * Hours on the pitch this month, from ATTENDED games — the stat that
+     * turns a pick into a reason. `{hours}` is already rounded to one decimal
+     * by `pitchHours`; the string does no arithmetic.
+     */
+    potmHours: "{hours} h on the pitch this month",
+
+    community: {
+      title: "Join our community",
+      body: "Follow our socials to keep up to date with the latest community news",
+      whatsapp: "WhatsApp",
+      whatsappUrl: "https://chat.whatsapp.com/LjPjGf3rf32CNifizwzsW9?mode=gi_t",
+      /*
+       * ~~"@HRAJFOTBAL"~~ — the PLATFORM name, since round 13 (item 19). With
+       * a third tile the handle no longer fits a third of the row, and it was
+       * the only tile naming an account where its neighbours named an app.
+       * The handle is the destination.
+       */
+      instagram: "Instagram",
+      instagramUrl: "https://instagram.com/hrajfotbal",
+      /*
+       * TELEGRAM (round 13, item 19). A product's name is not a word, so both
+       * keys join WhatsApp's and Instagram's in the intentionally-untranslated
+       * set rather than being written out three times identically.
+       */
+      telegram: "Telegram",
+      telegramUrl: "https://t.me/+yXnyRFfxCGkyYWJi",
+    },
+
+    footer: {
+      wordmarkLead: "HRAJ",
+      wordmarkAccent: "FOTBAL",
+      city: "· PRAGUE",
+    },
+  },
+
+  auth: {
+    loginTitle: "Sign in",
+    /*
+     * "below" WAS TRUE UNTIL ROUND 9, ITEM 8. The code form sat permanently
+     * open under this one; it is behind a link now, so the sentence had to
+     * stop pointing down the page.
+     */
+    loginLede: "Email and password. No password yet? Use the reset link.",
+    signInSubmit: "Sign in",
+    /*
+     * One message for a wrong password and an unknown address, deliberately.
+     * Telling them apart tells an attacker which half they got right, and tells
+     * a real person nothing they can act on differently.
+     */
+    invalidCredentials: "That email and password do not match.",
+    emailNotConfirmed:
+      "Confirm your email first — open the link we sent when you signed up.",
+
+    /*
+     * The Phase 1 code path, relabelled. It is no longer the way in; it is the
+     * way in for someone who has no password yet, and the recovery route for
+     * someone who has forgotten theirs. It is also the rollback if password
+     * sign-in ever fails, which is why it stays exactly as it was underneath.
+     */
+    /* --- reset (round 9, item 8) --- */
+    forgotPasswordLink: "Forgot your password?",
+    resetTitle: "Reset your password",
+    resetLede:
+      "We email you a six-digit code. Enter it here and you can set a new password.",
+    resetBackToLogin: "← Back to sign in",
+    forgotPasswordLead: "Forgotten your password, or never set one?",
+    forgotPasswordCta: "Email me a code",
+
+    setPasswordTitle: "Set a password",
+    setPasswordLede:
+      "You are signed in. Choose a password and next time you can skip the email entirely.",
+    setPasswordSubmit: "Save password",
+    setPasswordSkip: "Not now — I'll keep using the code",
+    setPasswordFailed: "We could not save that password. Please try again.",
+    emailLabel: "Email",
+    emailPlaceholder: "you@example.com",
+    sendLink: "Send link",
+    linkSent: "Check your inbox — the link is on its way.",
+
+    // --- the six-digit code ---------------------------------------------------
+    // The SAME email carries both a link and a code. The code exists because
+    // the link cannot survive every mail client: WhatsApp, Instagram and
+    // several Android mail apps open links in an embedded browser with its own
+    // cookie jar, and the PKCE verifier written when the link was requested is
+    // not in it — so the exchange fails with "code verifier not found" on a
+    // link that looks perfectly fine. Typing six digits into the tab that
+    // asked for them has no such dependency.
+    otpLead: "Or type the 6-digit code from the email:",
+    otpLabel: "6-digit code",
+    otpPlaceholder: "000000",
+    otpSubmit: "Sign in",
+    otpInvalid: "That code is not right, or it has expired. Request a new one.",
+    otpMalformed: "The code is six digits.",
+    linkExpired: "That link has expired. Request a new one.",
+    signOut: "Sign out",
+    emailInvalid: "That does not look like an email address.",
+    linkSendFailed: "We could not send the link. Please try again.",
+    callbackFailed: "That sign-in link is invalid or has already been used.",
+    callbackErrorTitle: "Sign-in link did not work",
+    callbackRetry: "Request a new link",
+    // Shown alongside the friendly copy. A failed exchange has several causes
+    // that look identical to the user but need different fixes, so the
+    // underlying reason is surfaced rather than swallowed.
+    callbackDetailLabel: "Technical detail",
+
+    signupTitle: "Create your account",
+    signupLede: "One account, one nickname, and you are in the lineup.",
+    /** Shown on the finish-your-profile pass, when the account already exists. */
+    signupFinishTitle: "Finish your profile",
+    signupFinishLede: "Your email is confirmed. This is the last step.",
+    nicknameLabel: "Nickname",
+    nicknameHint: "Letters, numbers, spaces, _ and - · up to 20 characters",
+    nicknameInvalid:
+      "Use only letters, numbers, spaces, _ and - (up to 20 characters).",
+    /* Round 35 v2, item 8 — a banned number, said without an argument. */
+    phoneRefused: "That phone number cannot be used. Try another, or contact us.",
+    nicknameTaken: "That nickname is taken. Try another.",
+
+    passwordLabel: "Password",
+    passwordHint: "At least 8 characters",
+    passwordTooShort: "Use at least 8 characters.",
+
+    countryLabel: "Country",
+    countryPlaceholder: "Pick your country",
+    countryInvalid: "Please pick your country from the list.",
+
+    skillLabel: "How do you play?",
+    skillHint: "It shows on your profile. It never stops you booking a game.",
+    skillBeginner: "Beginner",
+    skillIntermediate: "Intermediate",
+    skillAdvanced: "Advanced",
+    skillRequired: "Please pick a level.",
+
+    /*
+     * REQUIRED SINCE ROUND 7, item 7. The label loses "(optional)" — a field
+     * whose label says optional and whose validator says otherwise is the
+     * worst of both, and it is the label people read, not the asterisk.
+     */
+    phoneLabel: "Phone",
+    /** Round 41 — the prefix picker beside the number; read by screen readers. */
+    phoneCountryLabel: "Country code",
+    phoneHint: "Only the organizer sees it, and only for games you have booked.",
+    phoneRequired: "We need a phone number so the organizer can reach you about a game.",
+    phoneInvalid: "A phone number is between 3 and 32 characters.",
+
+    /*
+     * ONE LEGAL BOX AND ONE PREFERENCE (round 40, the lawyer's Texty 2.2–2.3).
+     *
+     * ~~Three boxes: terms, privacy, reminders.~~ The lawyer's wording puts the
+     * terms, the community rules, the "we do not organise the games" notice
+     * and the photo permission in ONE required box (the owner has since taken
+     * the notice and the photo sentence out — the terms keep both, 3.2 and
+     * 13 — 2026-10-27 and 2026-10-28), and makes the privacy
+     * policy a LINK beneath it: processing rests on the contract, not on a
+     * consent, and a box that pretends otherwise is the wrong legal basis. The
+     * marketing consent sits in the same box since 2026-10-28 (owner), optional
+     * and unticked, worded as exactly what it is.
+     *
+     * `{terms}` and `{rules}` are links, and the translation decides where they
+     * sit — see `lib/i18n/template.ts`. The Czech is the lawyer's own.
+     */
+    legalGroupLabel: "Before you start",
+    tosAgreement:
+      "I have read and agree to the {terms} and the {rules}.",
+    tosTermsLink: "Terms and Conditions",
+    tosRulesLink: "Community and Game Rules",
+    tosRequired: "Please accept the terms to continue.",
+    privacyHowLink: "How we handle your data",
+    marketingLabel: "I agree to receive marketing material by email.",
+    /** Round 41 — the language a player's emails are written in. */
+    emailLocaleLabel: "Emails in",
+    emailLocaleHint: "Booking confirmations, receipts and reminders arrive in this language.",
+    createAccount: "Create my account",
+
+    emailTaken:
+      "There is already an account with that email. Sign in instead — or use the code if you have no password yet.",
+    signupFailed: "We could not create the account. Please try again.",
+
+    /** The waiting room between `signUp()` and a verified email. */
+    verifyTitle: "Confirm your email",
+    verifyBody:
+      "We sent a link to {email}. Open it and your account is ready — the link works on any device.",
+    verifyHint: "No email after a minute or two? Check spam, then try again.",
+
+    signUp: "Sign up",
+    // The header carries ONE door as of v1.1.4 (§3.1a), so the create-account
+    // path lives here — which is where someone with no account is already
+    // looking. Removing it from the header without this line would leave
+    // /signup reachable only by typing the URL.
+    noAccountLead: "Not a member yet?",
+    createAccountCta: "Sign up →",
+    haveAccount: "Already have an account?",
+    /*
+     * GOOGLE (round 7, item 1). Rendered only when `NEXT_PUBLIC_GOOGLE_AUTH`
+     * is set — see `components/auth/GoogleAuthButton.tsx` — so these keys
+     * exist before the control does.
+     *
+     * "Google" is the company's name and is not translated in any of the
+     * three; the verb around it is.
+     */
+    googleContinue: "Continue with Google",
+    googleSignUp: "Sign up with Google",
+    googleFailed: "We could not start the Google sign-in. Please try again.",
+    /* The divider between the Google button and the email form (p08, p09). */
+    authOr: "or",
+    noAccount: "New here?",
+  },
+
+  games: {
+    listTitle: "Upcoming games",
+    /*
+     * Empty states.
+     *
+     * An empty list is the first thing a visitor from a shared link may ever
+     * see, so it says what happens next and gives somewhere to go, rather than
+     * reporting an absence. `empty` is kept as the one-line form used where
+     * there is no room for the full block.
+     */
+    empty: "No games on the board right now.",
+    // v1.3 §4. Shorter than what it replaces, and the arrow is gone from the
+    // CTA because the CTA is a button now (§2.9) — an arrow on a button is an
+    // affordance drawn twice.
+    emptyTitle: "No games scheduled",
+    emptyBody: "New games go up every week.",
+    emptyCta: "Join the WhatsApp group",
+    /*
+     * "3 spots left" — ONE PHRASE PER FORM, not a number glued to a noun
+     * (round 22).
+     *
+     * It was `spotLeft` / `spotsLeft` chosen by `left === 1` and rendered as
+     * `${left} ${label}`, which is an English two-form rule applied to four
+     * languages. Czech, Russian and Ukrainian each have a 2–4 form, so three
+     * free spots read "3 volných míst" and "3 місць вільно" — the 5+ form,
+     * wrong in the middle of the range this product sits in most of the time.
+     * The count now picks the form through CLDR (`lib/i18n/plural.ts`).
+     */
+    spotsLeftOne: "{n} spot left",
+    spotsLeftFew: "{n} spots left",
+    spotsLeftMany: "{n} spots left",
+    full: "Full",
+    /*
+     * The canonical card's duration (v1.3 §2.1) — `60 min` beside the
+     * kick-off, at `small`/muted.
+     *
+     * ABBREVIATED IN EVERY LANGUAGE, deliberately. §2.13 lists the duration
+     * among the four things on the card that never truncate, so it has to fit
+     * beside a 28px kick-off and a format pill at 390px in Czech — and "minut"
+     * spelled out does not. The abbreviation is the same one a Czech or
+     * Russian sports app uses, so nothing is lost by it.
+     */
+    durationMin: "{n} min",
+    /** The `past` state on My Games' finished games (v1.3 §2.1 states table). */
+    past: "Finished",
+    joinWaitlist: "Join the waitlist",
+    // Shown instead of a CTA on a full game. It deliberately promises nothing:
+    // the waitlist RPC does not exist until Phase 17, so any "you are on the
+    // list" copy here would be a claim with no row behind it.
+    fullNotice: "This game is full — every spot is taken.",
+    seeOtherGames: "See other games →",
+    onWaitlist: "You are on the waitlist",
+    waitlistJoined: "You are on the waitlist. We will email you when a spot opens.",
+    waitlistAlready: "You are already on the waitlist for this game.",
+    // Round 16 item 11 — the way off a list that previously only had a way on.
+    waitlistLeave: "Leave the waitlist",
+    waitlistLeftDone: "You have left the waitlist.",
+    waitlistHint:
+      "Everyone waiting is told at the same moment a spot opens — first to claim it gets it.",
+    // Position on the list. {position} is substituted by `waitlistPositionLabel`.
+    // It sits next to `waitlistHint`, which is what keeps it honest: under
+    // notify-all FCFS the number says how many joined ahead, not who is served
+    // first. Never render one without the other.
+    waitlistPosition: "You're #{position} in line",
+    waitlistConvertTitle: "Claim the open spot",
+    waitlistConvertHint: "Pick how you want to pay and the spot is yours.",
+    waitlistNotOnList: "You are not on the waitlist for this game.",
+    /*
+     * §3 SCREEN 8's THREE DRAWN STATES.
+     *
+     * The machinery for all three existed; what did not was a drawn state, so
+     * each rendered as a grey sentence in a box — the §2.9 failure ("never a
+     * bare centred sentence") on the one flow where a player is waiting for
+     * something and most needs to know where they stand.
+     */
+    waitlistJoinedTitle: "You're on the list",
+    waitlistSpotOpenTitle: "A spot just opened",
+    waitlistSpotOpenBody:
+      "Everyone waiting was told at the same moment. Claim it and it's yours.",
+    waitlistNotOnListTitle: "You're not on this waitlist",
+    waitlistNotOnListBody:
+      "Someone may have taken the spot already, or you joined a different game.",
+    waitlistSeeGame: "See the game",
+    rosterTitle: "Lineup",
+    rosterEmpty: "Nobody has claimed a spot yet",
+    /*
+     * ADD GUESTS AFTER BOOKING (round 27, item 2).
+     *
+     * THE COPY NEVER PROMISES THE SEAT. "Add" is what the player asks for;
+     * whether it happens is decided under the game's lock after the money
+     * moves, and the two error strings below are the honest endings when it
+     * does not. A panel that said "your guests are added" before the webhook
+     * had spoken would be the pending state round 26 deleted, wearing copy.
+     */
+    addGuests: {
+      title: "Bringing someone?",
+      body: "Add guests to your spot. They join the lineup as yours once the payment lands.",
+      /** The picker: `+1`, `+2`, `+3`, capped by what actually fits. */
+      pick: "+{n}",
+      /** `{amount} for 2 guests` — the whole guest-only price, never a unit. */
+      cost: "{amount} for {n}",
+      /**
+       * The same total in CREDITS (round 34, item 2).
+       *
+       * ONE UNIT PER RAIL. The online button takes crowns, because that is
+       * what Stripe is handed; the credit button spends credits, because that
+       * is what the player holds and the only number they can check against
+       * their own balance. Showing crowns beside a credit button asks them to
+       * divide by 150 to know whether they can afford it.
+       */
+      costCredits: "{credits} for {n}",
+      guestOne: "1 guest",
+      guestMany: "{n} guests",
+      payOnline: "Pay online",
+      /*
+        CREDITS, AS A COUNTABLE PHRASE (round 34, item 2). Same shape as
+        `booking.partySeats*`: the number arrives already agreeing with its own
+        noun, so the sentence around it does not have to. Czech and both
+        east-Slavic languages need three forms for this and English needs two.
+      */
+      creditOne: "{n} credit",
+      creditFew: "{n} credits",
+      creditMany: "{n} credits",
+      notEnoughCredit: "Not enough credits for that many",
+      capacityFull: "Those spots have just gone",
+      failed: "That did not work. Try again.",
+    },
+    /*
+     * CANCELLING GUESTS (round 34, item 4).
+     *
+     * THE COPY NEVER SAYS "CANCEL YOUR BOOKING", because this control cannot.
+     * Its largest option is the guests on the booking, so the player's own seat
+     * is not reachable from here — and the sentence has to make that obvious,
+     * or somebody will press it expecting to be out of the game.
+     *
+     * TWO CONFIRMS, NOT ONE WITH A BRANCH. Inside the window the question is
+     * about guests; outside it the question is about money that will not come
+     * back, and a warning folded into a subordinate clause is a warning nobody
+     * reads.
+     */
+    cancelGuests: {
+      title: "Someone dropping out?",
+      body: "Take guests off your spot. Yours stays — to leave the game entirely, use Cancel.",
+      refund: "{credits} come back to you.",
+      forfeit: "Less than {hours}h to kickoff — removing a guest now returns nothing.",
+      submit: "Remove {n}",
+      confirm: "Remove {n} from your spot?",
+      confirmLate: "Remove {n}? It is past the refund cutoff, so nothing comes back.",
+      windowClosed: "This game has already kicked off.",
+      countInvalid: "You do not have that many guests.",
+    },
+    cancelled: "This game was cancelled.",
+    notFound: "That game does not exist, or is not published yet.",
+    backToGames: "← All games",
+    viewGame: "View game",
+    // Copy link is the PRIMARY share (§5.4): a copied link goes wherever the
+    // sender is already talking, and WhatsApp is one of those places rather
+    // than all of them.
+    copyLink: "Copy link",
+    copyLinkFailed: "Could not copy — long-press the address bar instead.",
+    // The day-picker strip (§5.5). "Today" and "Tomorrow" earn their special
+    // case: they are the two days anyone opening this page is deciding
+    // between, and "Sun" on a Sunday makes a reader do arithmetic.
+    dayFilterAll: "All",
+    dayToday: "Today",
+    dayTomorrow: "Tomorrow",
+    /*
+     * THE CALENDAR CELL'S ABBREVIATION, English only.
+     *
+     * All eight cells must stay visible at 390px (owner ruling) — a calendar
+     * that scrolls hides days, which is the failure the eight-box strip was
+     * reversed for. `Tomorrow` is the one label that cannot fit a cell narrow
+     * enough for eight; Czech `Zítra` and Russian `Завтра` fit, so they keep
+     * their whole word and this key is only overridden where it is needed.
+     *
+     * The PILLS and the day-group HEADINGS keep the full word — they have a
+     * line to themselves, and an abbreviation there would be a cost with no
+     * benefit.
+     */
+    dayTomorrowShort: "Tmrw",
+    // Roster badges. The view projects booking status only — `reserved` means
+    // a spot is held but unpaid, `confirmed` means paid or covered by credit.
+    rosterReserved: "holding",
+    rosterConfirmed: "in",
+    // Landing next-match block, per the design reference.
+    filledLabel: "FILLED",
+    joinNote: "One tap to claim. Pay ahead from your phone.",
+    openMap: "OPEN MAP ↗",
+    // The full-width version on the rebuilt detail page. The short one is a
+    // chip over a photograph where space is the constraint; this one is a
+    // 44px-tall row where the constraint is that someone standing outside the
+    // pitch in the dark can hit it.
+    openMapFull: "Open location in Maps",
+    mapAlt: "Map of the venue",
+    // The panel is a real photograph of the pitch now, not a traced map, so
+    // the alt text names the venue rather than describing a diagram.
+    venuePhotoAlt: "The pitch at {venue}",
+    // Shown on an avatar whose nickname has no letters or digits at all.
+    rosterUnknown: "?",
+    // Surface labels, keyed by the `games_surface_known` values. A closed set
+    // in the database gets a closed set of copy here rather than a raw value
+    // being rendered.
+    surface: {
+      turf: "Turf",
+      grass: "Grass",
+      indoor: "Indoor",
+      sand: "Sand",
+    },
+    // "2 subs per team" — renders beside the format when the organizer set it,
+    // and nothing at all when they did not (§5.3a). It describes how the game
+    // is run; it constrains no booking.
+    subsPerTeamOne: "{n} sub per team",
+    subsPerTeamFew: "{n} subs per team",
+    subsPerTeamMany: "{n} subs per team",
+    // Level badges. Rendered ONLY on a restricted game — an all-levels game
+    // carries no badge anywhere, which is what makes a badge mean something.
+    skillLevel: {
+      beginner: "Beginner",
+      intermediate: "Intermediate",
+      advanced: "Advanced",
+    },
+    // Said plainly beside the badges, because a badge alone reads as a door
+    // policy. Skill is a signal here and never a gate — `create_booking` does
+    // not consult it.
+    skillNotEnforced: "All welcome — this is a guide, not a rule.",
+
+    // --- organizer -----------------------------------------------------------
+    organizerLabel: "Organizer",
+    // Shown under the name when there is no phone to show — a card with a face
+    // and a name and then nothing reads as something that failed to load.
+    organizerRole: "Runs this game",
+    /* Round 18 item 8 — the Ukrainian/Russian games' organizer button. The
+       product's name is not a word, so only the verb differs from the
+       WhatsApp label. */
+    organizerTelegram: "Message on Telegram",
+    organizerWhatsApp: "Message on WhatsApp",
+    /*
+     * The prefilled message body (round 8, item 8). `{game}` is the venue and
+     * kick-off, so an organizer running four fixtures a week does not have to
+     * ask which one.
+     */
+    organizerWhatsAppMessage: "Hi! A question about {game}.",
+    // Shown to a player holding a spot, and to nobody else. The line says so,
+    // so the number does not look like something that leaked.
+
+    // --- your booking (§5.6) -------------------------------------------------
+    yourBookingTitle: "You are in",
+    yourBookingHeld: "Your spot is held — pay to confirm it.",
+    yourBookingConfirmed: "Paid. See you on the pitch.",
+    yourBookingCash: "Paying cash at the pitch.",
+    yourBookingPay: "Pay for this spot",
+    yourBookingManage: "Manage your booking",
+
+    // --- practical info (§5.7) -----------------------------------------------
+    // --- availability / lineup (v1.2 §5.6) ----------------------------------
+    /*
+     * `Join →` ON A LIST CARD — PAINT, NOT A CONTROL (redesign v2, R1).
+     *
+     * The frames draw a button here. It ships as a button-STYLED span with no
+     * href, no handler and no focus stop: ruling E is upheld and the whole card
+     * remains the single anchor. The string exists because the words are still
+     * user-visible and still need three languages.
+     */
+    cardJoinCue: "Join",
+
+    availabilityLabel: "Availability",
+    // The supporting detail under the bar. Was "07/12" in 22px mono, which is
+    // two numbers the reader has to subtract before it means anything.
+    playersOfCapacity: "{booked} / {capacity} players",
+    playersTitle: "Players ({count})",
+    /*
+     * GUESTS (round 11). Two patterns, because two kinds of guest exist and
+     * they know different amounts about themselves.
+     *
+     * `guestOfPlayer` takes the owner's FIRST name and a 1-based index. The
+     * possessive is inside the pattern rather than built from it: English
+     * forms one with an apostrophe, Czech and Russian do not form one this way
+     * at all, and a template that concatenated "'s" would be untranslatable.
+     *
+     * `guestNumbered` is a house guest — a seat an admin is holding for
+     * somebody with no account. It has an index and nothing else.
+     */
+    guestOfPlayer: "{name}'s Guest {n}",
+    guestNumbered: "Guest {n}",
+    /** Screen-reader wording for the silhouette an anonymous guest carries. */
+    guestAvatarLabel: "Guest",
+    /*
+     * How many games this player has actually PLAYED — settled or played
+     * games, never bookings. A counter that rose when you booked would be
+     * measuring intent.
+     *
+     * THREE FORMS, and the third is the one that matters. "0 games" beside
+     * someone standing in their first lineup reads as a verdict on them; "First
+     * game" reads as a welcome, and it is the same fact. The singular exists
+     * because "1 games" is the kind of thing a reader notices and nothing else
+     * on the page recovers from.
+     */
+    gamesPlayedOne: "{n} game",
+    gamesPlayedFew: "{n} games",
+    gamesPlayedMany: "{n} games",
+    gamesPlayedNone: "First game",
+
+    // --- what's included (v1.2 §5.7) ----------------------------------------
+    /*
+     * The game-information card's heading (round 13, item 14). It sits
+     * directly above `includedTitle` and takes the same treatment, which is
+     * the point: three sections down the page, all named the same way.
+     */
+    gameInfoTitle: "Game information",
+    /* The four labels of the game-information list (round 14, item 12). */
+    infoWhen: "When",
+    infoWhere: "Where",
+    infoFormat: "Format",
+    infoLevel: "Level",
+    // Round 16 item 4: duration joins the fixture facts, from the card that
+    // used to hold it at the bottom of the page.
+    infoDuration: "Duration",
+    /*
+     * ~~`durationShort` — the card's compact form.~~ REMOVED with the element
+     * it labelled (round 19, item 4). Deleted rather than left behind: a
+     * string that outlives its render site is invisible to the coverage test
+     * and comes back the next time somebody greps for a word — item 1 of round
+     * 16 cost a round to learn that, and round 18's own rotation lines cost
+     * another.
+     */
+    /* Round 18 item 3 — the detail's Language row. */
+    infoLanguage: "Language",
+    /* Round 18 item 2 — surface left the list card and needs a label here. */
+    infoSurface: "Surface",
+    includedTitle: "What's included",
+    /*
+     * THE SECOND HEADING (Section 4, item 2). The column is one flat `text[]`;
+     * the split between the two groups is the app-side catalog's, recovered
+     * from the grouping this repo already documented in
+     * `lib/venues/amenities.ts` and migration 20260802210000 rather than
+     * invented here.
+     */
+    pitchAmenitiesTitle: "Pitch amenities",
+    /*
+     * The amenity catalog, in the same order `lib/venues/amenities.ts` renders
+     * it. Every key here has a matching value in `venues_amenities_catalog`
+     * (migration 38) and an icon in `components/Icon.tsx` — three places, one
+     * list, and widening any of them means widening all three.
+     */
+    amenities: {
+      bibs: "Bibs provided",
+      gloves: "Goalkeeper gloves",
+      balls: "Match balls",
+      water: "Water",
+      drinks: "Drinks",
+      showers: "Showers",
+      lockers: "Lockers",
+      parking: "Parking",
+      wifi: "WiFi",
+      first_aid: "First aid",
+    },
+
+    practicalTitle: "Game information",
+    /*
+     * GOOD TO KNOW's five lines (Section 4, item 7). Duration and arrival
+     * existed; the rotations are new, and the meeting point is a per-game
+     * field whose line is hidden when empty.
+     */
+    /*
+     * ~~`practicalRotatingKeepers` / `practicalRotatingSubs`.~~ FOLDED INTO
+     * THE FAQ (round 17, item 4) and deleted here.
+     *
+     * They outlived their card. Round 16 item 4 removed "Practical
+     * information" and I flagged these two rather than dropping them
+     * silently — but flagging left them in the table, rendered by nothing,
+     * translated in three languages. That is item 1's defect exactly: a
+     * string that survives the thing it labelled is invisible to every test
+     * and comes back the next time somebody greps for a word.
+     *
+     * They were never facts about a FIXTURE, which is why they did not belong
+     * on a game page: they describe how a kickabout is run and they are the
+     * same on every game. The FAQ is where a reader asks that.
+     */
+    practicalMeetingPoint: "Meeting point",
+    practicalArrival: "Arrive 10 minutes before the game",
+    practicalDuration: "Duration",
+    practicalDurationValue: "{minutes} minutes",
+
+    /*
+     * ~~"Game information".~~ RENAMED (round 18, item 6), and the old value is
+     * why the item exists: this labels the ORGANIZER'S NOTE, and the fact card
+     * two hundred pixels above it is titled `gameInfoTitle` — also "Game
+     * information". A reader met the same heading twice on one page, once over
+     * a list of facts and once over a paragraph of free text.
+     *
+     * That is round 16 item 4's defect arriving through a different door. There
+     * the duplication was two cards of FACTS; here it is one heading used for
+     * two different kinds of thing, which is harder to see because the sections
+     * genuinely are separate.
+     */
+    notesLabel: "Notes from organizer",
+    capacityLabel: "Capacity",
+    startsLabel: "Kick-off",
+    venueLabel: "Where",
+    priceLabel: "Price",
+    alreadyStarted: "This game has already kicked off.",
+    // Distinct from `alreadyStarted`, and the distinction is the point: while
+    // the ball is rolling the page says so, and only once the game has run its
+    // duration does it become past tense.
+    inProgress: "This game is being played right now.",
+    /* The card's pill while a game is on (2026-11-09), in the format pill's shape, orange. */
+    playingNow: "Playing now",
+
+    // --- urgency ladder ------------------------------------------------------
+    // Three rungs, and the copy is what distinguishes them: plenty of room
+    // reads as an invitation, the last few as a nudge, full as a queue with a
+    // way in. `urgencyLabel()` in lib/games/urgency.ts picks the rung — the
+    // thresholds are not decided at a render site.
+    urgencyOpen: "Spots open",
+    urgencyLastFew: "Almost full",
+    urgencyFull: "Full",
+
+    // --- the queue, in public ------------------------------------------------
+    waitlistTitle: "Waiting list",
+    waitlistEmpty: "Nobody is waiting yet — a spot here is still first come.",
+    // Marks the viewer's own avatar in the queue. Rendered as a title/aria
+    // label, never as visible text inside the avatar.
+    waitlistYou: "You",
+    waitlistCount: "waiting",
+    // Card badge for a logged-in player who holds a waitlist row on that game.
+    onWaitlistBadge: "You're waiting",
+
+    // --- your next game ------------------------------------------------------
+    nextGameStrip: "Your next game",
+    nextGameStripCta: "View booking →",
+
+    // --- share ---------------------------------------------------------------
+    shareWhatsApp: "Share on WhatsApp",
+    // The message body. {venue}, {when} and {url} are substituted by
+    // `whatsAppShareUrl()`; nothing here may be pre-encoded, since that helper
+    // encodes the finished string exactly once.
+    /**
+     * The WhatsApp message (round 41) — the approved draft of 2026-10-19:
+     * what, when, where and how many places, in three short lines, the short
+     * link last. `{call}` is one of the three below.
+     */
+    shareMessage: "⚽ Football on {when}\n📍 {venue}\n{call} 👉 {url}",
+    shareCallOpen: "{spots} – grab one",
+    shareCallFull: "Full – join the waitlist",
+    shareCallDefault: "Grab a spot",
+  },
+
+  booking: {
+    claimSpot: "Claim your spot",
+    logInToClaim: "Log in to claim",
+    /*
+     * The claim bar's seven states (v1.3 §2.4). Every one of these is a LABEL
+     * ON A BAR THAT IS ALWAYS PRESENT — the states that carry no button carry
+     * a sentence instead, because an empty bar is the bug ruling G is fixing.
+     */
+    signInToClaim: "Sign in to claim",
+    barPaid: "Paid",
+    // {amount} is a formatted CZK figure — `formatCzk`, never interpolated by
+    // hand, because it is the one number here a player checks against a bank.
+    barAmountDue: "{amount} due",
+    barKickedOffAt: "Kicked off {time}",
+    barCancelled: "Cancelled",
+    barOnWaitlist: "You are #{n} on the waitlist",
+    // When `waitlist_position` comes back null. Saying nothing about the
+    // number beats falling back to `Join waitlist`, which invites a second
+    // join for a place the player already holds.
+    barOnWaitlistNoPosition: "You are on the waitlist",
+    barCancel: "Cancel",
+    /** The bar is a landmark region and needs a name of its own (§2.4). */
+    barLabel: "Your spot on this game",
+    nicknameLabel: "Nickname",
+    nicknameHint: "Letters, numbers, spaces, _ and - · up to 20 characters",
+    /*
+     * THE TWO OPTIONS (round 7, item 10, and ruling R3).
+     *
+     * `payByQr` is retired FROM THE UI and kept as a key: the QR rail is the
+     * substrate the online option books onto and R3 forbids touching it. The
+     * confirmation screen and the top-up flow still render it.
+     */
+    payByQr: "Pay by QR",
+    payByQrHint: "Scan a code in your banking app. Your spot is held until you pay.",
+    /* --- Redeem credit (round 8, item 11) --- */
+    payWithCredit: "Redeem credit",
+    /*
+     * `{seats}` IS THE WHOLE PARTY (round 11). One credit is one game for one
+     * person, so a party of three spends three — and the option is offered
+     * only when the wallet holds all of them.
+     */
+    payWithCreditHint: "Uses {seats} credit(s) you already have. Nothing to pay.",
+    payWithCreditNone: "You have no credits yet.",
+    addCredits: "Add credits →",
+    payOnline: "Online payment",
+    payOnlineHint: "Paid securely with Stripe",
+    payOnlineComingSoon: "Coming soon",
+    /*
+     * ~~`payByCash` — the third payment option.~~ REMOVED (round 23, item 7).
+     * There is no cash choice anywhere in the product any more.
+     *
+     * `payByCashHint` SURVIVES AND IS NOT AN OFFER. It is the sentence shown
+     * on the confirmation of a booking that ALREADY carries
+     * `payment_method = 'cash'` — seven of them exist on production and the
+     * admin roster still settles them. Deleting it would leave those players
+     * on a screen that says nothing about how their game gets paid for.
+     *
+     * It is deliberately phrased as a description of the arrangement rather
+     * than as an instruction to choose it.
+     */
+    payByCashHint: "You are settling this one with the organizer at the pitch.",
+    choosePayment: "How do you want to pay?",
+    /* --- bringing people (round 11, part B) --- */
+    partyTitle: "Bringing anyone?",
+    partyHint: "They play as your guests. One booking, one payment, one cancellation.",
+    /** The "just me" choice. Always available; always the default. */
+    partyJustMe: "Just me",
+    /** `+1`, `+2`, `+3`. The plus is part of the label, as the control reads. */
+    partyPlus: "+{n}",
+    /*
+     * The seats a party takes, as a countable phrase (round 22). Separate from
+     * `games.spotsLeftOne` and friends because that one says "left" and this
+     * one does not — the same noun in two sentences.
+     */
+    partySeatsOne: "{n} spot",
+    partySeatsFew: "{n} spots",
+    partySeatsMany: "{n} spots",
+    /**
+     * Under the group, once a party is chosen.
+     *
+     * `{spots}` arrives as a FINISHED phrase — "3 spots", already agreeing
+     * with its number — so this sentence must not agree with the count itself.
+     * Which is why it is the same string in every language and is exempt from
+     * the completeness walk, exactly like `partyPlus` above it.
+     */
+    partySummary: "{spots} · {total}",
+    /**
+     * Shown when the pitch has less room than the ceiling allows, so the
+     * missing buttons are explained rather than simply absent.
+     */
+    /**
+     * The fourth control's accessible name (round 33, item 3).
+     *
+     * A `<select>` needs one: the pills say what they are, and the dropdown's
+     * closed label is "+4", which announces a number and not a question. It is
+     * the only NEW player-facing string this item adds — every option inside it
+     * is `partyPlus`, which every language already has.
+     */
+    partyMore: "More guests",
+    partyLimited: "Only {n} more can fit on this pitch.",
+    /**
+     * THE ONE THING A STATIC PAYMENT LINK CANNOT DO. A Stripe Payment Link
+     * carries a fixed quantity of one and there is no parameter that presets
+     * it, so the player has to change it on Stripe's own page. Saying so
+     * plainly beats an underpaid booking nobody notices until the pitch is
+     * short of money on the day.
+     */
+    partyOnlineQuantity: "Set quantity to {seats} on the payment page.",
+    /* --- awaiting an online payment (round 12, item 5) --- */
+    awaitingTitle: "Waiting for your payment",
+    awaitingBody:
+      "Your spot is held for {minutes} minutes while the payment goes through. This page updates by itself once it does.",
+    awaitingExpiredTitle: "Payment not received",
+    awaitingExpiredBody:
+      "We did not see a payment in time, so the spot went back to the game. You can try again if there is still room.",
+    awaitingAttentionTitle: "We are checking your payment",
+    awaitingAttentionBody:
+      "Your payment arrived but we could not give you a spot. Someone is looking at it and will be in touch — do not pay again.",
+    awaitingSeatGone:
+      "This game filled up while you were away, so there is nothing to pay for. Nothing was charged.",
+    awaitingRetry: "Try the payment again",
+    // Cancellation reassurance, shown before the player commits. The window is
+    // never written as a literal: `cancellationReassurance()` picks the kickoff
+    // wording under policy v1 (`cutoffHoursBeforeStart: 0`) and interpolates
+    // {hours} into the cutoff wording if a v2 policy introduces a lead time.
+    cancelReassuranceKickoff:
+      "Cancel anytime before kickoff — your credits come back in full.",
+    cancelReassuranceCutoff:
+      "Cancel up to {hours}h before kickoff — your credits come back in full.",
+    confirmBooking: "Confirm booking",
+    /** Texty 4.2 — the commit names what it costs. `{credits}` is "1 Credit". */
+    confirmWithCredits: "Book for {credits}",
+    /** The credit booking's own terms box (round 38); `{terms}` is a link. */
+    termsAgree: "I agree to the {terms}.",
+    /*
+     * THE FULL STOP (round 13, item 10). Shown on the confirmation screen for
+     * a CONFIRMED booking however it got there — credits, a seed account, or
+     * the Stripe webhook — because those are one fact to the reader and differ
+     * only in the sentence underneath.
+     */
+    /*
+     * THE ADD-GUESTS ENDING (round 34, item 3).
+     *
+     * COUNTABLE, because it is a number next to a noun in four languages and
+     * Czech, Russian and Ukrainian each need three forms of it. Same shape as
+     * `partySeats*`: the phrase arrives already agreeing with its own number.
+     * "Confirmed" is the word the panel beside it uses for a booking, so the
+     * two readings of this screen differ by their subject and nothing else.
+     */
+    guestsAddedOne: "+{n} guest confirmed",
+    guestsAddedFew: "+{n} guests confirmed",
+    guestsAddedMany: "+{n} guests confirmed",
+    bookingConfirmed: "Booking confirmed",
+    reserved: "Spot reserved",
+    confirmed: "Payment confirmed",
+    creditApplied: "Credit applied",
+    amountDue: "Amount due",
+    /*
+     * THE INSUFFICIENT-CREDITS STATE (§3 screen 4), and the ruling behind its
+     * wording is worth keeping next to it.
+     *
+     * A CONDITION, NEVER A FIGURE. It says the wallet is short, not by how
+     * much — no "you are 50 CZK short". A shortfall in crowns re-introduces
+     * the unit the credits ruling removed, on the one screen whose job is to
+     * teach that a game is one credit.
+     *
+     * AND IT NEVER BLOCKS THE BOOKING. The spot is already reserved by the
+     * time this renders; `create_booking` applies what credit there is and
+     * falls back rather than failing. So this is an offer beside the QR, not
+     * a gate in front of it — the secondary route is the existing payment,
+     * and it is always present.
+     *
+     * `{percent}` is COMPUTED from the tier table at render time, floored.
+     * Hardcoding "23" would drift the first time a tier price moved, and a
+     * stale discount claim is a promise the pass page does not keep.
+     */
+    notEnoughCreditsTitle: "Not enough credits",
+    notEnoughCreditsBody:
+      "A game costs 1 credit. Get a pass and save up to {percent} %, or pay this one by QR.",
+    getCredits: "Get credits",
+    payByQrThisGame: "Pay by QR for this game",
+    cancelBooking: "Cancel my booking",
+    /*
+     * §3 screen 5's confirm dialog. `window.confirm` used to carry this — a
+     * browser chrome box that cannot be styled, cannot say what the refund is,
+     * and reads on a phone as the page having been hijacked. It also had
+     * nowhere to put a FAILURE, which §3 requires to appear inside the dialog.
+     */
+    cancelTitle: "Cancel your spot?",
+    cancelKeep: "Keep my spot",
+    cancelFailed: "We couldn't cancel that. Your spot is unchanged.",
+    /*
+     * RULING O, CREDIT HALF ONLY. What a player gets back is wallet credit,
+     * never money — `policy.cancellation.refundAs` is "credit" and there is no
+     * cash-refund path anywhere in the system. Saying "refund" here would
+     * promise the half that is quarantined.
+     */
+    /*
+     * THE TWELVE HOURS, SAID IN BOTH SENTENCES (round 40, Obchodní podmínky
+     * 9.1). `{hours}` is `cancellation_refund_cutoff_hours()`, read out.
+     */
+    refundAsCredits: "It's more than {hours} hours to kick-off, so your Credit comes back.",
+    /*
+     * "I CAN'T MAKE IT" (round 40, the owner). Inside the cutoff nothing comes
+     * back, but telling us still frees the spot — so the control says what the
+     * player is actually doing, rather than offering a "cancellation" that
+     * sounds like a refund.
+     */
+    cantMakeIt: "I can't make it",
+    barCantMakeIt: "Can't make it",
+    cantMakeItTitle: "Can't make it?",
+    cantMakeItConfirm: "Free my spot",
+    /*
+     * POLICY v2's OTHER HALF, and the dialog must say it.
+     *
+     * Inside the refund cutoff the spot is still released — cancelling stays
+     * open to kickoff — but nothing is credited. A confirmation dialog that
+     * went on saying "what you paid goes back as wallet credit" while taking
+     * 200 CZK would be the product lying at the exact moment a player is
+     * deciding, which is worse than having no dialog at all.
+     *
+     * IT STILL ENCOURAGES THE CANCELLATION. Freeing the spot is worth more to
+     * everyone else than the player's silence, so the sentence states the cost
+     * and then says the useful thing rather than warning them off.
+     */
+    refundLostLate:
+      "It is less than {hours} hours to kickoff, so this one is not credited back. Cancelling still frees your spot for someone else.",
+    cancelConfirm: "Cancel this booking? Your credits are returned to you.",
+    cancelled: "Booking cancelled",
+    addToCalendar: "Add to calendar",
+    share: "Share",
+    // Full-credit and seed outcomes: confirmed instantly, nothing to pay.
+    coveredByCredit: "Your credit covered this game in full. Nothing to pay.",
+    coveredBySeed: "You are in. Nothing to pay for this one.",
+    backToGame: "← Back to the game",
+    bookingNotFound: "We could not find that booking.",
+  },
+
+  payment: {
+    qrTitle: "Scan to pay",
+    qrHint: "Open your banking app and scan. The payment identifies itself.",
+    account: "Account",
+    variableSymbol: "Variable symbol",
+    amount: "Amount",
+    paidAlready: "I have paid",
+    pendingConfirmation: "Waiting for the organizer to confirm your payment.",
+
+    /*
+     * THE STRIPE RETURN PAGE (round 15, item 1).
+     *
+     * EVERY LINE HERE IS WRITTEN AGAINST ONE RULE: never claim the payment
+     * succeeded before the webhook says so, and never imply it failed. The
+     * browser comes back from Stripe carrying no proof of anything — the
+     * redirect and the webhook are two different journeys and they race. So
+     * the copy describes OUR state ("we are waiting for the confirmation"),
+     * not the payment's, which is the only thing this screen actually knows.
+     */
+    returnTitle: "Confirming your payment",
+    /* Round 25, item 2 — the embedded checkout's own page. */
+    checkoutTitle: "Pay for your spot",
+    checkoutSeats: "{seats} spot(s) at this game",
+    checkoutCredits: "{credits} credits",
+    confirmingTitle: "Confirming your payment…",
+    confirmingBody:
+      "Stripe has your payment. We are waiting for the confirmation to reach us — this usually takes a few seconds.",
+
+    /*
+     * THE SLOW STATE. Not an error, and it must not read as one: the money is
+     * with Stripe either way, and the only thing that has not happened is our
+     * side hearing about it. "You do not need to pay again" is the sentence
+     * that stops the expensive mistake.
+     */
+    slowTitle: "Still processing",
+    slowBookingBody:
+      "Stripe has received your payment and it is being processed. Your booking will confirm shortly — you do not need to pay again.",
+    slowPassBody:
+      "Stripe has received your payment and it is being processed. Your credits will appear shortly — you do not need to pay again.",
+    slowBackToGame: "Back to the game",
+    slowBackToGames: "Back to games",
+
+    /*
+     * NOTHING TO LOOK UP. Reachable by opening this URL directly, or by
+     * returning on a device where the stash is gone AND no recent purchase of
+     * this player's is pending. It states what is true and points onward
+     * rather than guessing.
+     */
+    returnUnknownTitle: "Nothing to confirm here",
+    returnUnknownBody:
+      "We have no payment waiting for this account. If you have just paid and this keeps happening, your games and credits are on your profile.",
+  },
+
+  profile: {
+    /*
+     * Ruling L's six edit fields, plus the position chips' labels.
+     *
+     * The labels are TRANSLATED and the codes are not — `lib/players/positions.ts`
+     * holds the catalog, and `players_positions_catalog` enforces it. A column
+     * of translated words could not be grouped by, and the CHECK would have to
+     * list every translation.
+     */
+    /* Round 16 improvement pass — the block lost its context when item 14
+       moved it off a tab of its own onto the overview. */
+    detailsTitle: "Your details",
+    editDetails: "Edit details",
+    saveProfile: "Save profile",
+    cancelEdit: "Cancel",
+    displayName: "Display name",
+    position: "Preferred position",
+    positionHint: "Pick as many as you play.",
+    skillLevel: "Skill level",
+    nationality: "Nationality",
+    phone: "Phone",
+    phoneHint: "Only the organizer of a game you have booked can see it.",
+    email: "Email",
+    /*
+     * POINTS AT THE DISPLAY BLOCK, not "the account controls below". The
+     * control it used to point at was a text link at the foot of the page,
+     * which the nav pill covered — visible, enabled and unclickable. It now
+     * sits beside the address in the display view, one tap from here.
+     */
+    emailChangeHint: "Close this form to change your email address.",
+    notSet: "Not set",
+    saved: "Profile saved",
+    saveFailed: "We could not save that. Please try again.",
+    /*
+     * EMAIL PREFERENCES (round 38) — where signup's marketing consent is
+     * withdrawn. Same subject as `auth.marketingLabel`, said as a setting
+     * rather than a request.
+     */
+    emailPrefsTitle: "Email preferences",
+    marketingToggle: "News about new games and offers",
+    emailLocaleSaved: "Saved",
+    positions: {
+      gk: "Goalkeeper",
+      def: "Defender",
+      mid: "Midfielder",
+      att: "Attacker",
+    },
+
+    /*
+     * THE REBUILT PROFILE (visibility round, item 3).
+     *
+     * The meta line is COUNTRY, NOT CITY. The reference screen reads
+     * "Bangkok · since Aug 2026" and there is no city anywhere in this schema —
+     * `players` holds `country` as an ISO 3166 code and nothing finer. A city
+     * would be a new column, which this front-end round does not get to add,
+     * and inferring one from a country is a guess printed under someone's face.
+     *
+     * `{date}` is a month and a year in the reader's language, formatted by
+     * `Intl` at the render site rather than assembled from a translated month
+     * list — see `memberSince`'s use in `ProfileIdentity`.
+     */
+    memberSince: "since {date}",
+
+    tabOverview: "Overview",
+    tabGames: "My games",
+    /*
+     * ~~`tabSettings`.~~ REMOVED with the tab (round 16, item 14). Deleting
+     * the key rather than leaving it is item 1's lesson applied the same
+     * night: a string that survives the thing it labelled is invisible to the
+     * coverage test and reappears the next time somebody greps for a word.
+     */
+
+    /*
+     * LOWER CASE, and it is not an oversight. These sit UNDER their numbers as
+     * captions, which is the one place ruling B's sentence case would look
+     * wrong — "Games played" under a 34px numeral reads as a heading for the
+     * thing below it rather than as a label for the thing above.
+     *
+     * THREE FORMS EACH, selected by `Intl.PluralRules` in
+     * `lib/profile/statLabel.ts`. No `{n}`: the number is the element above, so
+     * only the noun agrees. English never reaches the `Few` form — CLDR gives
+     * it `one` and `other` only — and it is written anyway so the three tables
+     * have the same shape and a translator is never guessing which keys exist.
+     */
+    statGamesOne: "game played",
+    statGamesFew: "games played",
+    statGamesMany: "games played",
+    statHoursOne: "hour on pitch",
+    statHoursFew: "hours on pitch",
+    statHoursMany: "hours on pitch",
+    statVenuesOne: "pitch played",
+    statVenuesFew: "pitches played",
+    statVenuesMany: "pitches played",
+    /*
+     * PLAYERS MET (round 23, item 1) — the third tile on both profiles now,
+     * replacing "pitches played" there. `statVenues*` stays because the
+     * Explorer badge is still "play at 3 different pitches" and the badge grid
+     * still counts venues; the number simply no longer has a tile.
+     */
+    statMetOne: "player met",
+    statMetFew: "players met",
+    statMetMany: "players met",
+
+    /*
+     * "ACCOMPLISHMENTS", NOT "BADGES" (round 27, item 5) — the owner's word,
+     * verbatim.
+     *
+     * THE KEY WAS RENAMED WITH THE VALUE, deliberately. A key called
+     * `badgesTitle` rendering "Accomplishments" is the drift that makes a
+     * later session grep for the wrong word and conclude the rename never
+     * happened. The BADGES THEMSELVES keep their key and their name — a
+     * badge is still the object; "Accomplishments" is what the section of
+     * them is called.
+     */
+    accomplishmentsTitle: "Accomplishments",
+    /** `{earned} of {total}` — the counter beside the heading. */
+    badgesCount: "{earned} of {total}",
+
+    /*
+     * THE BADGES. Name and requirement are separate keys because the
+     * requirement is shown on the LOCKED state as the thing to aim at, and a
+     * name with the number folded into it ("Play 5 games") reads as an
+     * instruction rather than as something you own once you have it.
+     *
+     * The hints state the threshold in words. They are the one place in this
+     * feature where a number is written down twice — the other is
+     * `BADGE_THRESHOLDS` — and the pairing is asserted by a unit test, because
+     * a hint that says 5 beside a threshold of 6 is worse than no hint.
+     */
+    badges: {
+      firstGame: "First game",
+      firstGameHint: "Play one game",
+      regular: "Regular",
+      regularHint: "Play 5 games",
+      veteran: "Veteran",
+      veteranHint: "Play 20 games",
+      explorer: "Explorer",
+      explorerHint: "Play at 3 different pitches",
+      ironLegs: "Iron legs",
+      ironLegsHint: "Spend 10 hours on the pitch",
+      teamPlayer: "Team player",
+      teamPlayerHint: "Meet 50 players",
+    },
+  },
+
+  account: {
+    // --- /my-games (v1.2 §7) -------------------------------------------------
+    myGamesTitle: "My games",
+    myGamesLink: "See all my games →",
+    myGamesEmpty:
+      "You have not claimed a spot yet. Pick a game from the board and your fixtures will show up here.",
+    myGamesEmptyCta: "Find a game →",
+    title: "My account",
+    myBookings: "My bookings",
+    noBookings: "No bookings yet.",
+    noBookingsTitle: "Your lineup is empty",
+    noBookingsBody: "Claim a spot in any game and it shows up here, with the QR to pay it.",
+    findAGame: "Find a game →",
+    creditBalance: "Credit balance",
+    creditEmpty: "No credit yet.",
+    showQr: "Show payment QR",
+    creditHint: "Credit is applied automatically to your next booking.",
+    historyTitle: "Your history",
+    gamesPlayedLabel: "Games played",
+    upcomingTitle: "Coming up",
+    // Round 16 item 12 — the queue, between what is booked and what is over.
+    waitlistTitle: "Waitlist",
+    pastTitle: "Already played",
+    pastEmpty: "Nothing played yet — your first game will show up here.",
+
+    topupTitle: "Top up your credits",
+    topupLede: "Add credit now, and it applies to your next booking automatically.",
+    /*
+     * THE WALLET IS CREDITS, AND PASSES ARE THE ONLY ADVERTISED WAY TO GET
+     * THEM. This pointed at `/account/topup`, an arbitrary-amount chooser
+     * that ruling N already removed from the player UI — and "top up credit"
+     * described a cash wallet the product's language no longer has.
+     *
+     * The RPC behind that page stays: it is the reconciliation path for a
+     * mispaid pass, and `/account/topup/[id]` still renders the QR every pass
+     * purchase lands on. What is gone is the entry point advertising it.
+     */
+    topupCta: "Get a game pass",
+    topupAmountLabel: "Amount",
+    topupCustomLabel: "Or another amount (CZK)",
+    topupSubmit: "Get the payment QR",
+    topupOutOfRange: "Choose an amount between 50 and 2000 CZK.",
+    topupPendingTitle: "Waiting for your payment",
+    topupPendingBody:
+      "Scan the code in your banking app. Your credits arrive once the organizer confirms the payment landed.",
+    topupConfirmedTitle: "This top-up has already been added.",
+    topupBackToAccount: "← Back to my account",
+
+    photoTitle: "Profile photo",
+    /* Round 16 item 15 — positioning a photo instead of guessing at its
+       middle. Player-facing, so all three languages. */
+    cropTitle: "Position your photo",
+    cropHint: "Drag to move it, and zoom until the part you want fills the frame.",
+    cropZoom: "Zoom",
+    cropSave: "Use this",
+    coverChange: "Change cover",
+    photoUpload: "Upload a photo",
+    photoReplace: "Replace photo",
+    photoBadType: "Use a JPG, PNG or WebP image.",
+    photoTooBig: "That photo is over {mb} MB. Pick a smaller one.",
+    photoUploadFailed: "The photo didn't upload. Try again.",
+    /*
+     * The UPLOADING state (§3 screen 7, §4). It was `common.loading` — the
+     * generic word this product uses for every wait — on the one control where
+     * the wait is long enough to need saying what is happening: a photo is
+     * cropped in the browser and then pushed to storage.
+     */
+    photoUploading: "Uploading your photo…",
+
+    securityTitle: "Sign-in and security",
+
+    changePasswordTitle: "Change password",
+    currentPasswordLabel: "Current password",
+    newPasswordLabel: "New password",
+    changePasswordSubmit: "Change password",
+    changePasswordDone: "Password changed.",
+    currentPasswordWrong:
+      "That is not your current password. If you have never set one, sign out and use the emailed code instead.",
+
+    changeEmailTitle: "Change email",
+    newEmailLabel: "New email",
+    changeEmailSubmit: "Send confirmations",
+    /*
+     * Both addresses have to confirm — Supabase's `double_confirm_changes`,
+     * kept on deliberately (contract §3.3, ruled 2026-07-28). An email change
+     * is an account takeover in one step if the old mailbox has no say, so the
+     * UI states the two-confirmation requirement BEFORE the button rather than
+     * after it: someone who expects one email and gets two assumes something
+     * broke, and someone who expects two knows the change is not done yet.
+     */
+    changeEmailHint:
+      "We send a confirmation to your current address and to the new one. Your email changes only after you confirm both.",
+    changeEmailSent:
+      "Two confirmations are on their way — one to {current}, one to {next}. Open both.",
+    changeEmailSame: "That is already your email.",
+    changeEmailFailed: "We could not start the email change. Please try again.",
+
+    // The two security controls read as links, in the same voice as the
+    // deletion link they sit above (§3.3). Verbs, not nouns: these are things
+    // you do, and "Password" alone would read as a heading.
+    changePasswordLink: "Change my password",
+    changeEmailLink: "Change my email",
+    deleteAccount: "Delete my account",
+    deleteAccountHint: "Email us and we remove your data.",
+    /* Round 40 — self-service, as Obchodní podmínky 4.7 promises. */
+    deleteAccountConfirm:
+      "Delete your account? Your name, email, phone and photos are removed and you are signed out for good. Future bookings are cancelled and unused Credits lapse. This cannot be undone.",
+    deleteAccountFailed: "We could not delete your account. Please email us instead.",
+    deleteMailto: "privacy@hrajfotbal.com",
+    deleteSubject: "Account deletion request",
+    // Payment/status badges.
+    badgePaid: "Paid",
+    badgeReserved: "Awaiting payment",
+    badgeCash: "Cash on the pitch",
+    badgeSeed: "Free",
+    badgeCancelled: "Cancelled",
+    badgeExpired: "Expired",
+    past: "Past",
+    upcoming: "Upcoming",
+    cancelSuccess: "Booking cancelled. Any credits have been returned.",
+  },
+
+  /**
+   * The legal pages around the lawyer's documents (2026-10-19).
+   *
+   * THE DOCUMENTS THEMSELVES ARE NOT HERE. They are the lawyer's HTML in
+   * `content/legal/`, published in Czech in every locale and never translated
+   * (`lib/content/legalDocuments.ts`). These keys are the furniture around
+   * them and the operator's contact block, which ARE translated: a reader has
+   * to be able to find the binding text, and the operator, in their own
+   * language.
+   */
+  legal: {
+    termsTitle: "Terms and conditions",
+    privacyTitle: "Privacy policy",
+    cookiesTitle: "Cookie policy",
+    /** The accessible name of the footer's row of legal links. */
+    footerNavLabel: "Legal information",
+    /*
+     * Shown above a document to every reader whose language is not Czech.
+     * Never omitted: a person who accepted the terms is entitled to know which
+     * language the thing they accepted is in, and which text binds.
+     */
+    czechOnlyNotice:
+      "This document is in Czech. The Czech text is the legally binding version.",
+    downloadPdf: "Download the terms as PDF",
+    back: "← Back to the games",
+    /*
+     * `/contact`'s labels. The addresses are facts, in `lib/legal.ts`.
+     * ~~Operator, ČOI and the DSA contact point~~ left the site on
+     * 2026-10-27; Obchodní podmínky 1.2 and the disputes article carry them.
+     */
+    emailLabel: "Email",
+    privacyEmailLabel: "Personal data",
+    /** The addresses and numbers the owner adds in `/admin`, when there are any. */
+    otherContactsLabel: "Other ways to reach us",
+    phoneLabel: "Phone",
+  },
+
+  /**
+   * The six questions, from contract §6. Answers are the contract's own words.
+   *
+   * Player-facing, so Czech and Russian are required — the Czech is Oliver's,
+   * the Russian is a draft awaiting a native reader (see `lib/i18n/ru.ts`).
+   */
+  faq: {
+    // "FAQ", not "Questions". The panel beside it is a list of numbers and the
+    // one under it is a person — this heading has to be recognised as a
+    // convention at a glance rather than read as a word.
+    title: "FAQ",
+    /*
+     * THE OWNER'S EXACT FOUR (round 25, item 3), REPLACING THE ROUND-13 SET.
+     *
+     * SUPPLIED VERBATIM AND NOT EDITED. Every previous version of these
+     * answers was written here and then checked against the code; this one
+     * arrived finished, in this order, and the only work was making sure the
+     * code still says what they say. It does:
+     *
+     *   BOOTS AND BIBS — `games.amenities` covers bibs, balls and gloves, and
+     *   the keeper rotation is the same fact round 17 moved into this panel.
+     *   VERIFIED.
+     *
+     *   THE WAITLIST — `notify_waitlist` stamps every entry and emits
+     *   `waitlist_notified` in one transaction, and `notifyWaitlistForGame`
+     *   mails everyone it returns, from both paths that free a spot. "Notified
+     *   by email" is still literally true and still the honest word: the bell
+     *   does not carry it (row 89's consumer is not built). "The first person
+     *   to claim it gets the spot" is `create_booking`'s capacity check, not a
+     *   reservation. VERIFIED.
+     *
+     *   PAYMENT — card, mobile wallet, or credits. Cash left the flow in round
+     *   23 and this text no longer mentions it, which the previous version
+     *   did until round 23 corrected it. VERIFIED.
+     *
+     *   LEVELS — `create_booking` never consults skill (§5.3, REQ-GAME-011),
+     *   so a badge is a signal and not a gate. VERIFIED.
+     *
+     * WHAT LEFT WITH THE REWRITE: the substitute rotation, which round 17 put
+     * in the "do I need to be good" answer. The owner's text drops it and the
+     * keeper rotation survives in the first answer, which is the half that
+     * answers a question somebody actually asks.
+     */
+    items: [
+      {
+        q: "What should I bring?",
+        a: "Just bring your boots or trainers and be ready to play. Bibs, balls and gloves are provided. Goalkeepers rotate, so no one needs to bring their own gloves.",
+      },
+      {
+        q: "What if the game is full?",
+        a: "Join the waitlist. If a spot opens up, everyone on the list will be notified by email, and the first person to claim it gets the spot.",
+      },
+      {
+        q: "How do I pay?",
+        a: "Pay securely by card, Apple Pay or Google Pay when you book, or use credits from your game pass.",
+      },
+      {
+        q: "Do I need to be good?",
+        a: "Not at all. All skill levels are welcome. Games are casual unless a level badge says otherwise.",
+      },
+    ],
+  },
+
+  admin: {
+    topupsTitle: "Wallet top-ups",
+    topupsLede:
+      "Pending top-ups, sorted by variable symbol — the same order as your bank statement. Leave the amount blank to credit what was asked for.",
+    topupsEmpty: "No top-ups waiting.",
+    topupsConfirm: "✓ Received",
+    // One label for all five exports — see components/admin/ExportCsvLink.tsx.
+    exportCsv: "Export CSV",
+    navTopups: "Top-ups",
+    navSite: "Home page",
+
+    // --- site settings (§6) --------------------------------------------------
+    siteTitle: "Home page",
+    siteLede:
+      "What the landing page tells signed-out visitors. Every change is recorded against your account.",
+    /*
+     * WHAT THESE TWO NUMBERS MEAN — kept as a comment because the on-screen
+     * hints were removed (controls only), and the meaning is not recoverable
+     * from the labels.
+     *
+     * `siteGamesPerWeek` renders with a `+` after it, so it is the FLOOR the
+     * organizer is willing to promise, NOT last week's count. It was computed
+     * from the trailing seven days until v1.2, which advertised a quiet
+     * fortnight as if it were the normal rate.
+     *
+     * `siteActivePlayers` is the community INCLUDING the WhatsApp crowd, not
+     * the number of rows in `players`. Also rendered with a `+`.
+     */
+    siteGamesPerWeekLabel: "Games every week",
+    siteGamesPerWeekSubmit: "Save number",
+    siteActivePlayersLabel: "Active players",
+    siteActivePlayersSubmit: "Save number",
+    sitePotmLabel: "Player of the month",
+    sitePotmHint: "Renders their photo, or their initials if they have none.",
+    sitePotmNone: "— nobody —",
+    sitePotmSubmit: "Save pick",
+
+    // --- shell ---------------------------------------------------------------
+    title: "Admin",
+    navDashboard: "Dashboard",
+    navGames: "Games",
+    navPlayers: "Players",
+    /* --- Financials (round 7, item 8, p19). Admin copy is English only. --- */
+    financialsTitle: "Financials",
+    periodThisMonth: "This month",
+    periodLastMonth: "Last month",
+    periodAllTime: "All time",
+    revenueLabel: "Revenue",
+    revenueVsPrevious: "vs the month before",
+    avgPerGameLabel: "Avg per game",
+    revenueByWeek: "Revenue by week",
+    operationsTitle: "Operations",
+    /* --- the dashboard (round 8, item 2, p14) --- */
+    dashboardTitle: "Dashboard overview",
+    dashboardUpcoming: "Upcoming games",
+    dashboardAllGames: "All games →",
+    dashboardEmpty: "Nothing on the board.",
+    tileUpcoming: "Upcoming games",
+    tilePlayers: "Total players",
+    tileNewPlayers: "New players (7d)",
+    /** Round 41 — the newest accounts, with when each was made. */
+    dashboardSignups: "New sign-ups",
+    dashboardSignupsEmpty: "Nobody has signed up yet.",
+    /** On every row of the players list: when the account was made. */
+    playerJoined: "Joined {date}",
+    tileRevenue: "Revenue (month)",
+    quickActions: "Quick actions",
+    quickCreateGame: "+ Create game",
+    /* p14's other two quick actions, given destinations in round 10 item 1. */
+    quickAddVenue: "+ Add venue",
+    /*
+     * THE DASHBOARD ROW'S STATUS, IN p14's WORDS (round 10, item 1).
+     *
+     * The rows were printing the `game_status` enum through a `capitalize`,
+     * so a live game read `Published` and a full one read `Full`. p14 draws
+     * `Confirmed` and `Waitlist`, which are the words for what an organizer
+     * actually needs to know: the game is on, and new signups now queue.
+     * Anything outside the two states the dashboard queries falls back to the
+     * enum, which is a developer reading a row that should not be there.
+     */
+    dashboardStatus: {
+      published: "Confirmed",
+      full: "Waitlist",
+    } as Record<string, string>,
+    quickExportData: "Export data",
+    /* --- admin player detail (round 7, item 9) --- */
+    adminActionsTitle: "Admin actions",
+    /* --- notifications (round 7, item 5). Admin copy is English only. --- */
+    notifyTitle: "Notify players",
+    notifyLede: "Everyone signed in sees this in their bell. Nothing is emailed.",
+    notifyOfferTitle: "Tell the players?",
+    notifyOfferLede: "A draft — edit it, send it, or dismiss it. Nothing goes out until you press send.",
+    notifyTitleLabel: "Headline",
+    notifyBodyLabel: "Message",
+    notifySend: "Send notification",
+    notifyDismiss: "Not now",
+    notifySent: "Sent.",
+    notifyTitleRequired: "A headline is required.",
+    notifyBodyRequired: "A message is required.",
+    /* Drafts offered after an admin action. `{name}` and `{when}` are filled
+       from the row that was just written. */
+    /*
+     * THE PUBLISH CONFIRMATION (round 24, item 5) — the admin sibling of
+     * `booking.bookingConfirmed`.
+     *
+     * ENGLISH ONLY, and that is the standing law rather than an omission: the
+     * admin panel is one person's surface and `lib/i18n/__tests__` actively
+     * forbids translating outside the player-facing sections.
+     */
+    gamePublishedTitle: "GAME PUBLISHED",
+    gamePublishedBody: "It is on the board and bookable now.",
+    gamePublishedViewGame: "View game",
+    gamePublishedBackToAdmin: "Back to games",
+    notifyDraftGameTitle: "New game published",
+    notifyDraftGameBody: "{name} — {when}. Claim your spot.",
+    notifyDraftVenueTitle: "A new pitch has been added",
+    notifyDraftVenueBody: "{name} is now on the board.",
+    grantNoteRequired: "A note is required — say why this credit was granted.",
+    contactTitle: "Contact",
+    contactEmail: "Email",
+    contactPhone: "Phone",
+    contactNone: "Not set",
+    recentTransactions: "Recent transactions",
+    noTransactions: "No movements yet.",
+    navStats: "Financials",
+    backToSite: "← Back to the site",
+
+    // --- games list ----------------------------------------------------------
+    gamesTitle: "Games",
+    gamesEmpty: "No games yet. Create the first one.",
+    newGame: "New game",
+    editGame: "Edit",
+    manageGame: "Manage",
+    publishGame: "Publish",
+    publishedDone: "Published",
+    statusLabel: "Status",
+    bookedLabel: "Booked",
+    waitlistLabel: "Waiting",
+    // Statuses are rendered from this table rather than the raw enum: the
+    // column is a database value, not user-facing copy.
+    status: {
+      draft: "Draft",
+      published: "Published",
+      full: "Full",
+      played: "Played",
+      settled: "Settled",
+      cancelled: "Cancelled",
+    },
+
+    // --- game form -----------------------------------------------------------
+    newGameTitle: "New game",
+    editGameTitle: "Edit game",
+    venueLabel: "Venue",
+    venueNew: "Add a new venue",
+    venueNameLabel: "Venue name",
+    /* --- venue management (round 13, item 24) --- */
+    venuesTitle: "Venues",
+    venuesLede:
+      "Every ground you play at. A venue's photo, map link and amenities are inherited by every game there.",
+    venuesEmpty: "No venues yet.",
+    venueCreate: "Add venue",
+    venueCreated: "Venue added",
+    venueSave: "Save venue",
+    venueSaved: "Venue updated",
+    venueNewHeading: "Add a venue",
+    venuePitchNameHint: "The ground's default pitch. A game can name its own instead.",
+    venuePresetsHeading: "Inherited by every game here",
+    // The two facts you scan a venue list for, on the closed row.
+    venueHasPhoto: "Photo set",
+    venueNoPhoto: "No photo",
+    venueNoPitchName: "No pitch name",
+    /* --- what a game inherits from its venue (round 14, item 2) --- */
+    venueInheritedTitle: "From the venue",
+    venueInheritedLede:
+      "The photo and amenities come from the venue and are shared by every game there. Change them on the venue.",
+    venueNoAmenities: "None recorded",
+    venueEditLink: "Edit this venue →",
+    venueImageLabel: "Image file",
+    venueImageHint:
+      "A file under public/venues/, e.g. prazacka.jpg.",
+    // --- venue photograph (§5.4, migration 34) --------------------------------
+    venueAmenitiesIncluded: "What's included",
+    venueAmenitiesPitch: "Pitch amenities",
+    venueAmenitiesTitle: "What this pitch provides",
+    venueAmenitiesHint:
+      "Ticked items appear on the game page as \"What's included\". This is a property of the VENUE, so every game at this pitch shows the same set — and unticking one is how you stop the page promising it.",
+    venueAmenitiesSubmit: "Save what's provided",
+    venueAmenitiesFailed: "We could not save that. Please try again.",
+    venuePhotoTitle: "Pitch photo",
+    venuePhotoUpload: "Upload a photo",
+    venuePhotoReplace: "Replace the photo",
+    venuePhotoHint:
+      "Landscape, taken at the pitch. It shows on every game here, above the map. Up to 4 MB, jpg/png/webp.",
+    venuePhotoBadType: "That is not a jpg, png or webp.",
+    venuePhotoTooBig: "That file is over 4 MB. Photograph it again at a lower size.",
+    venuePhotoFailed: "The upload did not go through. Try again.",
+    venuePhotoNoVenue: "Save the game first — a photo attaches to a venue, and this one is new.",
+    venueMapQueryLabel: "Map search (optional)",
+    venueMapQueryHint:
+      "Paste a Google Maps share link (maps.app.goo.gl/…) or type a place name. A link is resolved to its exact spot.",
+    /* Round 30, item 4 — a link that will not resolve says so, in words. */
+    venueMapUnreachable:
+      "We could not open that Google Maps link — it may have expired, or Maps did not answer. Try pasting the full link from the browser address bar, or type the place name instead.",
+    venueMapUnparseable:
+      "That link opened, but it carries no location we could read. Open it in Google Maps, copy the address-bar URL, and paste that instead — or just type the place name.",
+    startsAtLabel: "Kick-off",
+    capacityLabel: "Capacity",
+    capacityHint: "Cannot go below the players already booked.",
+    priceLabel: "Price (CZK)",
+    /* Round 35 v5, item 2 — the price is not a choice any more. */
+    priceDerivedHint:
+      "Whole CZK. The duration prefills it — 60 minutes 150, 90 minutes 180 — and changing the duration refills the box. Type over it freely.",
+    priceHint: "Future bookings only.",
+    formatLabel: "Format (optional)",
+    formatHint: "Like 6v6, or 6v6v6 for a three-way.",
+    /*
+     * ~~"Surface (optional)" with a "Not specified" default.~~ REQUIRED since
+     * round 16 item 10: optional meant the surface badge never rendered on the
+     * one upcoming game production had, because nobody had said what it was.
+     */
+    surfaceLabel: "Surface",
+    surfaceNone: "Choose a surface",
+    /* Round 18 item 2. Admin is English by ruling R22, so the option labels
+       are English words for the pairs — the FLAGS are the format the owner
+       asked for and a native <select> cannot hold an SVG, so the pill above
+       the picker carries them and the options carry text an OS can render. */
+    /* Round 19 item 2. Admin is English by ruling R22. */
+    organizerTelegramLabel: "Telegram username (optional)",
+    organizerTelegramHint:
+      "With one, a Ukrainian/Russian game's contact button becomes Telegram instead of WhatsApp. Paste @name or a t.me link — either is fine.",
+    organizerTelegramInvalid:
+      "That is not a Telegram username. Five to thirty-two letters, digits or underscores, starting with a letter.",
+    organizerPlayerLabel: "Who runs this game",
+    organizerPlayerChoose: "Choose an organizer",
+    organizerPlayerHint:
+      "Only players you made organizers are listed — Make organizer is on each player's admin page. Their name and photo show on the game page.",
+    organizerPlayerNoneYet:
+      "No organizers yet — make one on a player's admin page. Until then, type the organizer's name.",
+    organizerPhonePrefilled:
+      "Filled in from the organizer's profile when you choose them — change it if they use another number for games.",
+    venueAddressLabel: "Address",
+    venueAddressHint:
+      "Street and district, as people say it — printed under the venue's name on a game's story image.",
+    venueAddressTooLong: "That is longer than an address — keep it to a street, number and district.",
+    storyDownload: "Story image (9:16)",
+    organizerNotOrganizer:
+      "That player is not an organizer. Make them one on their admin page first.",
+    makeOrganizer: "Make organizer",
+    revokeOrganizer: "Remove organizer",
+    languageLabel: "Language on the pitch",
+    languageEnCs: "English / Czech",
+    languageUkRu: "Ukrainian / Russian",
+    languageHint: "Shows as a flag pair on the game card, and picks which messaging app the organizer contact offers.",
+    surfaceRequired: "Pick the surface — it shows on the game's card.",
+    surfaceOptions: {
+      turf: "Turf",
+      grass: "Grass",
+      indoor: "Indoor",
+      sand: "Sand",
+    },
+    notesLabel: "Notes (optional)",
+    notesHint: "Gate codes, parking, what to bring.",
+
+    // --- organizer, duration, skill (Phase 2 §5) ------------------------------
+    organizerHeading: "Organizer",
+    organizerNameLabel: "Organizer name",
+    organizerNameHint: "Shown publicly.",
+    organizerPhoneLabel: "Organizer phone (optional)",
+    // Says where the number goes, because an organizer deciding whether to give
+    // one needs to know that before they type it, not after.
+    organizerPhoneHint:
+      "Only players holding a spot can see it.",
+    durationLabel: "Duration (minutes)",
+    durationHint: "30 to 180. A new game starts at 90; empty uses 60.",
+    skillHeading: "Skill level",
+    skillHint:
+      "Leave everything unticked for all levels — that shows no badge. Ticking every level means the same thing.",
+    skillNote: "Booking is never refused on skill. This is a signal, not a gate.",
+    skillOptions: {
+      beginner: "Beginner",
+      intermediate: "Intermediate",
+      advanced: "Advanced",
+    },
+    subsLabel: "Substitutes per team (optional)",
+    subsHint: "Display only — limits nothing.",
+    /*
+     * ~~`createGame: "Create as draft"` and a hint saying publishing was a
+     * separate step.~~ CORRECTED (round 16, item 1).
+     *
+     * THE BEHAVIOUR MOVED TWICE AND THE COPY MOVED NEITHER TIME. Round 9
+     * made creation PUBLISH — "a click that has never once been withheld is
+     * not a safety step" — and round 14 removed the draft concept and its
+     * unfinished-games panel. Both rounds worked on the page, the action and
+     * the RPC. Neither touched this line, so the last thing an organizer read
+     * before pressing the button was a description of a workflow that had not
+     * existed for two rounds.
+     *
+     * NOTHING COULD HAVE CAUGHT IT. The i18n coverage test checks that every
+     * player-facing key HAS a translation, and both of these had one — in
+     * three languages, all of them faithfully wrong. A key whose content has
+     * gone stale is indistinguishable from a key that is fine, which is why
+     * item 1 asked for the root cause rather than the rename: the lesson is
+     * that removing a concept means grepping the STRING TABLE for it, not
+     * just the code.
+     */
+    createGame: "Publish game",
+    createGameHint: "The game goes on the public list as soon as you publish it.",
+    saveGame: "Save changes",
+    saved: "Saved",
+    /* --- unfinished games (round 9, item 7) --- */
+    unfinishedTitle: "Unfinished games",
+    unfinishedLede:
+      "Started but never published. Open one to finish it, or cancel it.",
+    unfinishedOpen: "Open →",
+    /*
+     * Round 7 item 6: creating a game publishes it, so a draft is now either
+     * one made before that change or one whose publish call failed. This
+     * string is the second case, shown on the create form.
+     *
+     * ADMIN COPY IS ENGLISH ONLY — the panel is English and `nav.admin` is in
+     * INTENTIONALLY_UNTRANSLATED for that reason.
+     */
+    createdNotPublished:
+      "The game was created but not published. Open it and press Publish →",
+
+    // --- errors --------------------------------------------------------------
+    venueRequired: "Pick a venue, or add a new one.",
+    venueNameRequired: "Give the new venue a name.",
+    venueExists: "A venue with that name already exists — pick it from the list.",
+    venueImageInvalid:
+      "That does not look like a file under public/venues/ (letters, numbers, . _ - and a png/jpg/webp/avif extension).",
+    startsAtRequired: "Set a kick-off time.",
+    capacityInvalid: "Capacity must be a whole number of at least 1.",
+    capacityBelowBooked:
+      "Capacity cannot go below the players already booked. Cancel a booking first.",
+    priceInvalid: "Price must be a whole number of CZK, 1 or more.",
+    formatInvalid: "Format looks like 6v6, or 6v6v6 — two or three numbers with a v between them.",
+    /* --- pitch name (migration 41, round 9). Admin copy is English only. --- */
+    pitchNameLabel: "Pitch name",
+    pitchNameHint:
+      "Empty uses the venue's own. Names you type are remembered.",
+    pitchNameTooLong: "A pitch name is at most 60 characters.",
+    pitchNameSuggestions: "Pitch names already in use",
+    notesTooLong: "Notes are limited to 500 characters.",
+    organizerNameRequired: "Name whoever is running this game.",
+    organizerNameTooLong: "The organizer name is limited to 60 characters.",
+    organizerPhoneInvalid: "A phone number is between 3 and 32 characters, or empty.",
+    durationInvalid: "Duration must be a whole number of minutes between 30 and 180.",
+    subsInvalid: "Substitutes per team must be a whole number between 0 and 20.",
+    invalidTransition: "That is not possible in this game's current state.",
+    siteSettingInvalid: "That is not a whole number of players.",
+
+    // --- player detail (§7, REQ-ADMIN-001) -----------------------------------
+    playerDetailTitle: "Player",
+    playerNoEmail: "No email — shadow player",
+    playerCountry: "Country",
+    playerSkill: "Skill",
+    playerBalance: "Credits",
+    playerGamesPlayed: "Games played",
+    playerNoShows: "No-shows",
+    playerGamesTitle: "History",
+    playerGamesLede:
+      "Every booking, newest first. No-show marking is available on a game that has already kicked off — the same write the game roster performs.",
+    playerGamesEmpty: "No bookings yet.",
+    playerOpen: "Open →",
+    photoRemove: "Remove photo",
+    photoRemoved: "Photo removed",
+    photoRemoveConfirm:
+      "Remove this player's photo? The image is deleted from storage and cannot be recovered.",
+    /* Round 30, item 2 — the banner's twin. Admin, English only. */
+    coverRemove: "Remove banner",
+    coverRemoved: "Banner removed",
+    coverRemoveConfirm:
+      "Remove this player's banner? The image is deleted from storage and cannot be recovered.",
+    /* --- round 33, item 1: the rename ----------------------------------------
+     *
+     * ALWAYS VISIBLE, WHICH IS THE POINT THE OWNER MADE. The two removals
+     * render only when there is something to remove — correct, because a
+     * player with no banner has no banner to take away. A NAME ALWAYS EXISTS,
+     * so a control that appeared conditionally would be a control that was
+     * missing for no reason anybody could see.
+     *
+     * The confirm says what changes and what does not: a rename is visible to
+     * everyone who has ever played with them, and it is not a deletion.
+     */
+    /* --- round 35 v2, item 8: the ban ---------------------------------------
+     *
+     * DESTRUCTIVE AND SAID SO. The confirm names all three things a ban does,
+     * because two of them are invisible from this page: the seats going and the
+     * phone number being refused at signup. A dialog that said only "ban this
+     * player?" would be asking about a third of the act.
+     */
+    banPlayer: "Ban profile",
+    unbanPlayer: "Unban profile",
+    banned: "Banned",
+    banConfirm:
+      "Ban this player? They cannot sign in or act, their phone number is refused at signup, and every future booking is cancelled with the seats released. Past games keep their history and their credits are frozen, not taken.",
+    unbanConfirm:
+      "Unban this player? Access comes back and the phone number is freed. Bookings cancelled by the ban stay cancelled.",
+    banDone: "Profile banned",
+    unbanDone: "Profile unbanned",
+    banCannotAdmin: "An admin cannot be banned. Remove their admin rights first.",
+    /* --- round 40: delete an account, beside the ban ----------------------
+     *
+     * Not a ban: the person is removed (name, email, phone, photos, login) and
+     * the books stay. Irreversible, so the confirm says exactly that. */
+    deletePlayer: "Delete account",
+    deleteConfirm:
+      "Delete this account? Their name, email, phone and photos are removed for good, they can no longer sign in, future bookings are cancelled and unused Credits lapse. Past games and payments stay, anonymised. This cannot be undone.",
+    deleteCannotAdmin: "An admin account cannot be deleted. Remove their admin rights first.",
+    deleted: "Deleted account",
+    nameChange: "Change name",
+    nameChangeOpen: "Change name",
+    nameChangeLabel: "Display name",
+    nameChangeSave: "Save name",
+    nameChangeCancel: "Cancel",
+    nameChanged: "Name changed",
+    nameChangeConfirm:
+      "Change this player's display name? It changes everywhere they appear — every roster, every history, every profile. Nothing else about the account moves.",
+    nameChangeHint: "Letters, numbers, spaces, - and _. Up to 20 characters.",
+    nameTaken: "Another player already uses that name.",
+
+    /* --- round 33, item 2: the permanent number ------------------------------
+     *
+     * ADMIN ONLY AND DELIBERATELY QUIET. It is a key for an export, not a
+     * badge: small, muted, beside the name, and on no player-facing surface at
+     * all.
+     */
+    playerNumber: "No.",
+    playerNumberTitle: "Permanent player number — signup order, never reused",
+
+    siteSettingUnknownKey: "That setting does not exist.",
+
+    /* --- guests (round 11, part A) -------------------------------------------
+     *
+     * ~~The shadow-player flow: "Add a player" created a real `players` row for
+     * someone who booked over WhatsApp, to be claimed or merged later.~~
+     *
+     * REPLACED BY GUESTS. The shadow flow made an identity in order to hold a
+     * seat, and almost none of those identities were ever claimed — so the
+     * players table filled with people who had no account, no email and no way
+     * to get one, each of which had to be merged by hand if they ever did sign
+     * up. A guest is the seat without the identity.
+     *
+     * Existing shadow players are untouched and still render, under their own
+     * names, as guests. The merge tool's copy is gone with the tool.
+     */
+    guestsTitle: "Guests",
+    guestsLede:
+      "Seats for people with no account — someone's friend, a regular who books over WhatsApp. They take up space on the pitch and show as Guest 1, Guest 2 in every lineup.",
+    guestsCount: "Guests on this game",
+    guestsAdd: "Add a guest",
+    guestsRemove: "Remove a guest",
+    guestsSaved: "Guests updated",
+    guestsNone: "No guests on this game.",
+    guestsNoRoom: "The pitch is full — there is no seat for another guest.",
+    guestsInvalid: "That is not a number of guests.",
+    // Beside a name on the admin roster: "+2 guests". The booking is one row
+    // with one attendance mark, because it is one decision.
+    rosterParty: "+{n} guests",
+    /* --- contact details, shown in the footer dialog (round 13, item 18) ---
+     * Named `siteContact*` because `contactTitle` / `contactEmail` /
+     * `contactPhone` are already taken above by the GAME organizer's contact
+     * block, which is a different thing entirely.
+     */
+    siteContactTitle: "Contact info",
+    siteContactLede:
+      "What the footer's Contact dialog shows. Saved straight away — no deploy.",
+    siteContactEmailsLabel: "Email addresses",
+    siteContactEmailsHint: "One per line. At least one; the built-in address is used if you leave it empty.",
+    siteContactPhonesLabel: "Phone numbers",
+    siteContactPhonesHint: "One per line. Leave empty to show no phone number at all.",
+    siteContactSave: "Save contact info",
+    siteContactSaved: "Contact info updated",
+    /* --- payments that arrived with no seat (round 12, item 5c) --- */
+    attentionTitle: "Payments needing attention ({n})",
+    attentionLede:
+      "Money arrived and no spot could be given. Nothing resolves these automatically — refund or seat each one by hand.",
+    attentionSeats: "seats",
+    // Generic, and generic on purpose: every RPC that takes a player id can
+    // raise this, and the merge tool that used to own the message is gone.
+    playerNotFound: "No such player.",
+
+    // --- stats ---------------------------------------------------------------
+    statsTitle: "Stats",
+    statsLede:
+      "Everything below is a query over the event log, bounded by the window you pick. Nothing here writes.",
+
+    // --- the window (§7, REQ-ADMIN-006) --------------------------------------
+    // Prague calendar windows, not rolling spans: "this week" means the week
+    // the games were played in, and a rolling number moves while you read it.
+    statWindowDay: "Today",
+    statWindowWeek: "This week",
+    statWindowMonth: "This month",
+    statWindowRange: "{from} — {to}",
+
+    // --- the metrics that arrived in Phase 19 --------------------------------
+    statFillRate: "Fill rate",
+    statFillRateHint: "Spots taken against capacity, over games in this window.",
+    statRevenue: "Confirmed revenue",
+    // The distinction the metric exists to make.
+    statRevenueHint:
+      "Money that arrived — games, Game Passes and top-ups. A game paid from Credits adds nothing: that money arrived when the Credits were bought.",
+    statNewReturning: "New vs returning",
+    statNewReturningHint:
+      "A booking is new if it is that player's first ever, whenever their first was.",
+    statNew: "new",
+    statReturning: "returning",
+    statCancellations: "Cancellations",
+    statCancellationsHint: "Split by whether credit was issued — that is, whether money had been applied.",
+    statCancellationsWithCredit: "with credit",
+    statOf: "of",
+    // Shown in place of every tile when the window holds nothing. "Today"
+    // legitimately holds nothing most days, and a page of dashes reads as
+    // broken rather than as empty.
+    statsEmptyWindow: "Nothing happened in this window.",
+
+    // --- players, credit grants, merge ---------------------------------------
+    playersTitle: "Players",
+    playersEmpty: "No players yet.",
+    /*
+     * ~~"Wallet", with a CZK figure beside it.~~ The admin players list counts
+     * CREDITS now (round 14, item 9) and renders them through `creditsLabel`,
+     * so this label has no call site left. Kept as a struck-through note
+     * rather than deleted, because "why does the admin see crowns where the
+     * player sees credits" is a question somebody will ask again.
+     */
+    balanceLabel: "Wallet",
+    bookingsLabel: "Bookings",
+    shadowTag: "Shadow",
+    seedTag: "Seed",
+    adminTag: "Admin",
+    noEmail: "no email",
+    /* The player search (admin restyle). Admin copy is English only — one
+       person uses it — so these carry no CS/RU overlay by design. */
+    playerSearchLabel: "Search players",
+    playerSearchPlaceholder: "Name, email or phone…",
+    playerSearchClear: "Clear",
+    playerSearchEmpty: "No player matches \u201c{q}\u201d.",
+    playerSearchCount: "{shown} of {total}",
+    grantCredit: "Grant credit",
+    /*
+     * ROUND 31, ITEM 3 — admin counts CREDITS, not crowns. One credit is one
+     * game, which is the unit the player reads on their own wallet; the
+     * organizer typing 450 while the player read "3 credits" left the
+     * translation living in somebody's head.
+     */
+    grantAmountLabel: "Credits",
+    grantAmountHint: "Whole credits — 1 credit is 1 game. Negative corrects a mistake; a wallet never goes below zero.",
+    grantNoteLabel: "Why (optional)",
+    grantUnmatchedLabel: "This resolves a payment that arrived with a wrong or missing VS",
+    grantSubmit: "Add to wallet",
+    grantDone: "Wallet updated",
+    grantNegativeBlocked: "That would put the wallet below zero.",
+    grantInvalid: "Enter an amount other than zero.",
+
+    // --- admin rights --------------------------------------------------------
+    // Granting happens in-app as of migration 20. The copy states the one rule
+    // that keeps self-elevation impossible, because an admin who does not know
+    // why their own row has no button will assume the panel is broken.
+    makeAdmin: "Make admin",
+    revokeAdmin: "Revoke admin",
+    adminSelfNote: "You cannot change your own admin rights.",
+    /*
+     * ROUND 28, ITEM 6 — the players list's only remaining action.
+     *
+     * "Edit profile" rather than "View" or "Open": the page it leads to is now
+     * where every act on a player happens — banner, photo, name, credits,
+     * admin rights — so the label names the reason to go rather than the
+     * mechanics of going. Admin is English-only (the standing law), so this
+     * key is never translated.
+     */
+    editProfileLink: "Edit profile",
+    /* Round 28, item 5b — taking credit back out. Admin, English only. */
+    removeCredit: "Remove credit",
+    removeCreditAmount: "Credits to remove",
+    removeCreditNote: "Why (required)",
+    removeCreditBalance: "Balance now: {balance}",
+    /* Shown only when a balance does not divide into whole credits. */
+    walletExactCzk: "exactly {czk}",
+    removeCreditConfirm: "Yes, remove it",
+    removeCreditDone: "Removed. Balance is now {balance}.",
+    removeCreditDoneBare: "Removed.",
+    removeCreditCancel: "Cancel",
+    /* Round 28, item 7 — the games list's sort. Admin, English only. */
+    sortLabel: "Sort by",
+    sortKeys: {
+      date: "Date",
+      venue: "Venue",
+      filled: "Filled",
+    },
+    adminConfirmGrant:
+      "Give this player the full admin panel — games, payments, players and rights?",
+    adminConfirmRevoke: "Take away this player's admin rights?",
+    adminChanged: "Admin rights updated",
+    adminCannotChangeOwn: "You cannot change your own admin rights.",
+
+    /*
+     * ~~The merge tool's copy.~~ REMOVED IN ROUND 11 with the tool itself.
+     * `merge_players` survives as an RPC with no UI — it is the only way to
+     * repair a split identity if one is ever discovered, and deleting a
+     * repair because its button went away is how a database gets stuck.
+     */
+
+
+    // --- attendance + settle -------------------------------------------------
+    attendanceLink: "Attendance & settle",
+    attendanceLede: "Mark who turned up, clear anything unpaid, then close the books.",
+    /*
+     * ~~`settleGame: "Settle the game"`~~ REMOVED (round 29) — there is no
+     * button. `settleBlocked` and `settleBlockedHint` SURVIVE and now describe
+     * a sweep that skipped rather than a button that refused.
+     */
+    settled: "Settled",
+    // The hard block: an unpaid hold surviving into `settled` is a debt with
+    // no surface left to raise it.
+    settleBlocked: "The nightly sweep could not close this game — these bookings are still unpaid:",
+    settleBlockedHint:
+      "Take payment (✓ Paid on the game page) or cancel the booking. The sweep closes it on its next run — there is nothing to press.",
+
+    // --- reconciliation ------------------------------------------------------
+/* Round 16 item 17 — releasing a seat from the roster. Admin is English by
+       ruling R22, so these are not translated. */
+    rosterRemove: "Remove",
+    rosterRemoveConfirmTitle: "Remove this player?",
+    rosterRemoveConfirmBody:
+      "Their seat is released and their credit is returned in full — the same rule a cancelled game uses, because they did not choose this.",
+    /** Round 42 — the dialog once the admin chooses whether the Credit returns. */
+    rosterRemoveSeatReleased: "Their seat is released.",
+    rosterRemoveReturnCredit: "Return their Credit",
+    rosterRemoveCreditOff:
+      "No Credit goes back — for a player who pulled out late by message instead of cancelling in the app.",
+    rosterRemoveCreditOn:
+      "Their Credit comes back in full: a spent Credit to the batch it came from, money paid as a Credit valid 60 days.",
+    rosterRemoveConfirm: "Yes — remove them",
+    rosterRemoved: "Removed",
+    rosterRemoveFailed: "We could not remove that booking.",
+    /*
+     * ~~`paymentsTitle`, `paymentsEmpty`, `attendanceTitle`,
+     * `settleNeedsPlayed`.~~ DELETED with the two sections they headed
+     * (round 16, item 16), rather than left behind — the same lesson item 1
+     * cost us tonight: a string that outlives the thing it labelled is
+     * invisible to every test and comes back the next time somebody greps.
+     */
+    rosterTitle: "Roster",
+    rosterEmpty: "Nobody has claimed a spot yet.",
+    vsLabel: "VS",
+    amountDueLabel: "Due",
+    markPaid: "✓ Paid",
+    amountDiffers: "Amount differs",
+    receivedLabel: "Received (CZK)",
+    confirmReceived: "Confirm this amount",
+    paymentConfirmed: "Payment confirmed",
+    // Overpayment: the surplus becomes wallet credit. Money never leaves.
+    creditIssuedNotice: "Credit issued to the player's wallet:",
+    // Underpayment: the RPC refuses and the booking stays reserved.
+    underpaidNotice: "Short by",
+    underpaidHint: "The booking is still held and unpaid — follow up with the player.",
+    // Payment landing after expiry: credited in full, spot NOT reinstated.
+    expiredCreditedNotice:
+      "That booking had already expired. The amount went to the player's wallet as credit — the spot was not given back.",
+    badge: {
+      paid: "Paid",
+      reserved: "Holding",
+      cash: "Cash",
+      seed: "Free",
+      credit: "Credit",
+      cancelled: "Cancelled",
+      expired: "Expired",
+    },
+
+    /* Round 16 item 18 — deleting, as opposed to cancelling. English (R22). */
+    deleteGame: "Delete this game",
+    deleteGameConfirmTitle: "Delete this game?",
+    deleteGameConfirmBody:
+      "It disappears from the board and from the admin list. This cannot be undone.",
+    deleteGameConfirm: "Yes — delete it",
+    deleteGameFailed: "We could not delete that game.",
+    /*
+     * Round 39: refused ONLY for an upcoming game with players still on it —
+     * a past, cancelled or empty game deletes — so the message names that case.
+     */
+    deleteGameBlocked:
+      "Players are still booked on this upcoming game. Cancel it first — that credits everyone and tells them — then delete it.",
+    deleteGamePastConfirmTitle: "Delete this past game?",
+    deleteGamePastConfirmBody:
+      "This game has been played. Deleting it removes it from every player's stats and history — their games played, hours and players met go down, and it leaves their list of games. No wallet changes. This cannot be undone.",
+    deleteVenue: "Delete",
+    deleteVenueConfirmTitle: "Delete this venue?",
+    deleteVenueConfirmBody:
+      "No game has ever been played here, so it is removed outright. This cannot be undone.",
+    deleteVenueConfirm: "Yes — delete it",
+    deleteVenueFailed: "We could not delete that venue.",
+    deleteVenueBlocked:
+      "Games reference this venue, so it cannot be deleted. Archive it instead — it leaves the picker and its games keep it.",
+    /* Round 39 item 2 — archive replaces delete for a venue with games. */
+    archiveVenue: "Archive",
+    archiveVenueHint:
+      "Takes it out of the venue picker. Every game already at it keeps showing it.",
+    archiveVenueFailed: "We could not archive that venue.",
+    restoreVenue: "Restore",
+    restoreVenueFailed: "We could not restore that venue.",
+    venuesArchivedHeading: "Archived ({count})",
+    venuesArchivedLede:
+      "Not offered for new games. Games played here still show the venue, and the games list still sorts by it.",
+    cancelGame: "Cancel this game",
+    cancelGameWarning:
+      "This cancels every booking, returns every player's money as credit, clears the waitlist and emails everyone. It cannot be undone.",
+    /* Round 16 item 19. English by ruling R22 — the admin panel is. */
+    cancelReasonLabel: "Why is it cancelled?",
+    cancelReasonPlaceholder: "Waterlogged pitch — the ground called it off",
+    cancelReasonHint:
+      "Sent to every booked player by email, word for word, and posted as a notification.",
+    cancelGameConfirm: "Yes — cancel the game",
+    cancelGameDone: "Game cancelled",
+    cancelledBookings: "Bookings cancelled",
+    creditsIssued: "Players credited",
+    waitlistCleared: "Waitlist rows cleared",
+    noticesSent: "Notices sent",
+    receiptsSent: "Credit receipts sent",
+    /* Round 42 — pitch costs. */
+    pitchCostOutOfRange: "A pitch cost is a whole number of crowns, from 0 to 100,000.",
+    pitchSeasonInvalid: "The season is summer or winter.",
+    /* Round 42 rebuild — the seat bar every games surface draws. */
+    seatKinds: {
+      single: "Single game",
+      pass: "Game Pass",
+      credit: "Credit",
+      free: "Free",
+      house: "House guest",
+      unpaid: "Unpaid",
+    },
+    breakEven: "Break-even",
+    breakEvenAt: "Break-even at {n} seats",
+    seatBarLabel: "{taken} of {capacity} seats taken",
+
+    /*
+     * ROUND 42, THE ADMIN REBUILD. One block per surface, so the pieces of the
+     * rebuild could be written side by side without touching each other.
+     */
+    /** The games list and a game's page. */
+    gamesHub: {
+      profit: "Profit",
+
+      // --- the list ---------------------------------------------------------
+      nextUp: "Next up: {when} · {venue}",
+      nothingNext: "Nothing on the board — create the next game.",
+      tabsLabel: "Which games",
+      tabs: {
+        upcoming: "Upcoming",
+        played: "Played",
+        cancelled: "Cancelled",
+      },
+      empty: {
+        upcoming: "No game coming up. Create the next one.",
+        played: "No game has kicked off yet.",
+        cancelled: "No game has been cancelled.",
+      },
+      tileGames: "Games",
+      tileSeatsBooked: "Seats booked",
+      tileSeatsFilled: "Seats filled",
+      tileFull: "{n}% full",
+      tileWaiting: "Waiting",
+      tileWaitingDetail: "on the waitlists",
+      tileUnpaid: "Unpaid holds",
+      tileUnpaidDetail: "bookings still to collect",
+      tileCovered: "Pitch covered",
+      tileCoveredDetail: "games paying for their pitch",
+      tileRevenue: "Revenue",
+      tilePitchCosts: "{cost} on pitches",
+      tileInProfit: "{n} of {total} games in profit",
+      tileSeatsPerGame: "Seats per game",
+      tileSeatsPerGameDetail: "on average",
+      breakEvenCovered: "Pitch covered",
+      breakEvenShortOne: "1 more seat to break even",
+      breakEvenShort: "{n} more seats to break even",
+      breakEvenUnreachable: "{n} seats short — cannot break even",
+      unpaidOnRow: "{n} unpaid",
+      noReason: "No reason recorded",
+
+      // --- a game's page ----------------------------------------------------
+      editLink: "Edit",
+      tileSeats: "Seats",
+      seatsOpen: "{n} open",
+      seatsNoneOpen: "No seat open",
+      tilePrice: "Price",
+      durationMinutes: "{n} minutes",
+      tileWaitingOne: "on the waitlist",
+      seatMapTitle: "Seat map",
+      seatMapLabel: "Every seat on the pitch",
+      seatTaken: "Seat {n}: {name}, {kind}",
+      seatGuestOf: "Seat {n}: a guest of {name}, {kind}",
+      seatHouse: "Seat {n}: {kind}",
+      seatOpen: "Seat {n}: open",
+      openSeats: "Open {n}",
+      moneyTitle: "Money",
+      revenue: "Revenue",
+      revenueNone: "No money in yet.",
+      kept: "Kept from cancellations",
+      seatsOne: "1 seat",
+      seatsMany: "{n} seats",
+      owed: "Owed",
+      owedHint: "Unpaid seats — counted once they pay.",
+      pitchCost: "Pitch cost",
+      pitchCostByHand: "Set by hand",
+      pitchCostFromVenue: "From the venue",
+      pitchCostNone: "No pitch cost — the game has no venue.",
+      pitchCostLabel: "Correct this game's pitch cost (CZK)",
+      pitchCostHint: "Whole crowns. Leave it empty to go back to the venue's price for the season.",
+      pitchCostSave: "Save cost",
+      pitchCostSaved: "Pitch cost saved",
+      noPitchCost: "No pitch cost",
+      rosterBookings: "{n} bookings",
+      rosterBookingsOne: "1 booking",
+      toConfirm: "Payments to confirm",
+      closeOutTitle: "After the game",
+      closeOutSweeping: "Played. The nightly sweep settles it.",
+      cancelledTitle: "Why it was cancelled",
+      dangerTitle: "Cancel or delete",
+      dangerLede:
+        "Cancelling credits every booked player and emails them. Deleting removes the game outright.",
+
+      // --- the game form ----------------------------------------------------
+      formWhere: "Where and when",
+      formSeats: "Length, price and seats",
+      formGame: "The game",
+
+      // --- a new game ---------------------------------------------------------
+      newGameLede: "Pick the venue and the kick-off — everything else starts on a sensible default.",
+    },
+
+    /** The players list and a player's page. */
+    playersHub: {
+      /** A player's history row for a game still ahead (2026-11-09). */
+      gameBooked: "Booked",
+      title: "Players",
+      lede: "Everyone who signed up. Shadow accounts — the names you book onto games — and test accounts are counted nowhere.",
+
+      /* The tiles above the list. Each figure carries its counts beneath it. */
+      kpis: {
+        players: "Players",
+        playersDetail: "signed up · shadow accounts not counted ({shadows})",
+        played: "Played",
+        playedDetail: "at least once · {percent}",
+        cameBack: "Came back",
+        cameBackDetail: "{cameBack} of {played} played again",
+        credit: "Has Credit",
+        creditDetail: "{credits} held",
+        optedIn: "Opted in",
+        optedInDetail: "to marketing · {percent}",
+      },
+      percent: "{n}%",
+      noShare: "—",
+
+      segmentsLabel: "Players by segment",
+      segments: {
+        all: "All",
+        played: "Played",
+        "came-back": "Came back",
+        "never-booked": "Never booked",
+        "has-credit": "Has Credit",
+        "unfinished-checkout": "Unfinished checkout",
+        "opted-in": "Opted in",
+        shadow: "Shadow accounts",
+        "not-counted": "Deleted & test",
+      },
+      /* One line under the tabs saying exactly who is in the current one. */
+      segmentHints: {
+        all: "Every player who signed up.",
+        played: "Played at least one game — kicked off, not cancelled, not a no-show.",
+        "came-back": "Played two games or more.",
+        "never-booked": "Signed up and never booked anything.",
+        "has-credit": "Holding at least one whole Credit.",
+        "unfinished-checkout":
+          "Started paying for a game or a Game Pass and never finished, with nothing paid or booked since.",
+        "opted-in": "Agreed to marketing email.",
+        shadow: "Names booked onto games, with no login. Counted nowhere — find one here to book or merge it.",
+        "not-counted": "Deleted accounts and seed fixtures. Counted nowhere.",
+      },
+
+      tableCaption: "{segment}, sorted by {column}, {direction}",
+      columns: {
+        player: "Player",
+        joined: "Joined",
+        played: "Played",
+        lastGame: "Last game",
+        credit: "Credits",
+        bookings: "Bookings",
+      },
+      sortLabel: "Sort",
+      sortAscending: "ascending",
+      sortDescending: "descending",
+      sortBy: "Sort by {column}",
+      noGameYet: "—",
+      segmentEmpty: "Nobody in this segment yet.",
+      searchEmpty: "Nobody here matches “{q}”. The tab counts show where else it matches.",
+      checkoutStarted: "Checkout started {date}",
+
+      tags: {
+        organizer: "Organizer",
+        banned: "Banned",
+        deleted: "Deleted",
+        you: "You",
+      },
+
+      countryTitle: "Country",
+      skillTitle: "Skill level",
+      breakdownNote: "Counted players",
+      breakdownOther: "Other · {count} countries",
+      breakdownUnset: "Not set",
+      breakdownEmpty: "No players yet.",
+
+      /* --- one player's page ------------------------------------------------ */
+      backToList: "All players",
+      playerKpis: {
+        gamesPlayed: "Games played",
+        lastGame: "Last game",
+        cameBack: "Came back · {n} games",
+        oneGame: "One game so far",
+        notPlayed: "Not played yet",
+        credit: "Credits",
+        spent: "Money spent",
+        spentDetail:
+          "Valued as the games' money is: a single game at its price, a Game Pass Credit at the pass price per game, a gift at nothing.",
+        spentEmpty: "Nothing paid yet.",
+      },
+      spendKinds: {
+        single: "Single games",
+        pass: "Game Pass",
+        credit: "Other Credit",
+        kept: "Kept from cancellations",
+      },
+      rightsTitle: "Rights",
+      rightsLede: "An admin can use every page here. An organizer can be picked to run a game, and their photo shows on it.",
+      accountTitle: "Account",
+      accountProfile: "How they appear",
+      accountAccess: "Access",
+      accountAccessLede: "A ban cancels their future bookings and can be undone. Deleting anonymises the account for good.",
+      creditTitle: "Credit",
+      creditLede:
+        "Give Credit with a note — tick unmatched payment when money arrived with no booking behind it. Taking Credit back asks you to confirm.",
+    },
+
+    /** The money page: revenue by how it was paid, profit per game. */
+    money: {
+      title: "Money",
+      /* The header's line: which stretch of time every figure below covers. */
+      periodRange: "{from} — {to}",
+      allTimeLede: "Every game and payment since the start.",
+      periodLabel: "Period",
+      windowLabel: "Window",
+      /* The four tiles. */
+      revenueHint: "Everything paid in this period — games, Game Passes and Credit top-ups.",
+      splitLabel: "Revenue split",
+      splitGames: "Single games",
+      splitPass: "Game Pass",
+      splitTopups: "Credit top-ups",
+      splitHint: "What the money paid for, on the day it arrived.",
+      gamesPlayedLabel: "Games played",
+      playedHint: "Games that kicked off in this period; cancelled ones aside.",
+      avgHint: "Each played game's own revenue — Game Pass seats at what the pass cost — averaged.",
+      /* Revenue by how it was paid — "single" vs "a credit from a game pass". */
+      mixTitle: "Revenue by how it was paid",
+      mixLede: "Games played in this period, each seat at what was paid for it.",
+      mixSingle: "Single game",
+      mixPass: "Game Pass Credits",
+      mixCredit: "Other Credits",
+      mixKept: "Kept from late cancellations",
+      seatsOne: "{n} seat",
+      seatsMany: "{n} seats",
+      cancellationsOne: "{n} cancellation",
+      cancellationsMany: "{n} cancellations",
+      avgPerSeat: "Average per seat",
+      avgSingle: "Single game",
+      avgPass: "Game Pass",
+      passGap: "A Game Pass seat brought {amount} less than a single game.",
+      passGapTotal: "{amount} below the single-game price, across {seats}.",
+      freeSeats: "Free seats (gifts, no money): {n}",
+      mixEmpty: "No games played in this period yet.",
+      /* Profit per game. */
+      profitTitle: "Profit per game",
+      profitLede: "Games played in this period. The white line on each bar is break-even.",
+      colGame: "Game",
+      colSeats: "Seats",
+      colRevenue: "Revenue",
+      colPitch: "Pitch cost",
+      colProfit: "Profit",
+      colBreakEven: "Break-even",
+      totalRevenue: "Revenue",
+      totalPitch: "Pitch cost",
+      totalProfit: "Profit",
+      brokeEven: "Broke even",
+      brokeEvenValue: "{n} of {total}",
+      uncostedOne: "{n} game has no pitch cost and is left out of profit.",
+      uncostedMany: "{n} games have no pitch cost and are left out of profit.",
+      profitEmpty: "No games played in this period yet.",
+      /* Revenue by week, the ledger and operations. */
+      weeksLede: "Bookings paid each week, from the 1st.",
+      ledgerLede: "The latest movements on players' Credits.",
+      ledgerReason: {
+        cancellation_credit: "Refund — cancelled",
+        admin_grant: "Credit granted",
+        redemption: "Credit spent on a game",
+        adjustment: "Adjustment",
+        pass_expiry: "Credit expired unused",
+        topup: "Credits bought",
+      },
+      operationsLede: "Bookings and attendance over the window you pick.",
+      fillRateHint: "Seats taken against capacity — guests and house guests count — over games in this window.",
+      newReturningHint:
+        "A booking is new if it is that player's first ever. Shadow, deleted and test accounts are not counted.",
+    },
+
+    /** The venues page: the pitch cost area and the season switch. */
+    pitch: {
+      costHeading: "Pitch cost",
+      costLede:
+        "What one game here costs you, flat. The season switch at the top picks which of the two new games take.",
+      seasons: {
+        winter: "Winter",
+        summer: "Summer",
+      },
+      /** Beside the one of a venue's two prices that new games take. */
+      inForce: "Now",
+      currency: "CZK",
+      costSave: "Save pitch cost",
+      costSaved: "Saved. A game created here now costs {amount}; games already created keep theirs.",
+      /** The one season switch, at the top of the page. */
+      seasonHeading: "Pitch season",
+      seasonLegend: "Price new games for",
+      seasonHint:
+        "One switch for every venue. It prices the games you create from now on — games already created keep the pitch cost they were made with.",
+      seasonSaved: {
+        winter: "Switched to winter. New games take each venue's winter cost.",
+        summer: "Switched to summer. New games take each venue's summer cost.",
+      },
+      /** The list's heading row: how many venues, and what the figure on each row is. */
+      listHeading: "In use ({count})",
+      listCostColumn: "{season} cost",
+      /** An open venue's sections. */
+      detailsHeading: "Details",
+      openMap: "Open in Maps",
+      photoEmpty: "No photo yet",
+    },
+
+    /** Copy the restyle of the other admin pages needed. */
+    shell: {
+      overview: "Overview",
+
+      /*
+       * THE DASHBOARD. The line under the title answers "does anything need
+       * me" before the page has been read — the one thing on it that needs a
+       * human is a payment with no seat.
+       */
+      dashboardClear: "No payments are waiting on you.",
+      dashboardAttentionOne: "1 payment needs you — it is at the top.",
+      dashboardAttentionMany: "{n} payments need you — they are at the top.",
+      attentionEyebrow: "Needs you",
+      /*
+       * Under each tile, WHAT IT COUNTS. "Total players" meant signed-up
+       * accounts here and every row on the players page, and nothing on
+       * either page said which.
+       */
+      tileUpcomingDetail: "{taken} of {capacity} seats booked",
+      tilePlayersDetail: "Signed-up accounts only",
+      tileNewPlayersDetail: "Since {date}",
+      tileRevenueDetail: "Confirmed in {month}",
+      /* Under a game's seat bar, once pitch costs exist. */
+      breakEvenShort: "{n} more paid seats to break even",
+      breakEvenPast: "Past break-even",
+
+      /* THE HOME-PAGE SETTINGS. */
+      siteNumbersTitle: "On the home page",
+      notifyCount: "{n} / {max}",
+    },
+  },
+
+  errors: {
+    generic: "Something went wrong. Please try again.",
+    // Losing a capacity race is a normal outcome here, not an exception — the
+    // copy says what happened and what is still true, rather than apologising.
+    /*
+     * Only reachable by a client that ignored the control — it offers at most
+     * the policy ceiling. Says the rule rather than the number, because the
+     * number lives in two places and this string would be the third.
+     */
+    partyTooLarge: "That is more guests than one booking can hold.",
+    /*
+     * Only reachable by a client that ignored the button, which says "Coming
+     * soon" when a tier has no link. It never offers the single-game link as a
+     * substitute: tier prices are discounted, and paying one through the
+     * per-game link charges the undiscounted price.
+     */
+    /* Round 16 item 19. Reachable only from the admin panel, but it lives in
+       `errors` with its neighbours rather than in `admin` — the error table is
+       keyed by CODE, and splitting it by audience is how one code ends up with
+       two messages. */
+    reasonRequired: "Write a reason — every booked player is about to read it.",
+    passNotConfigured: "This pass is not on sale yet.",
+    /*
+     * HOTFIX 2026-09-18. Deliberately NOT "try again": the amount is refused by
+     * a rule, so trying again produces the same refusal. It says the price is
+     * the problem and points at the person who can change it, which is the
+     * organizer rather than the reader.
+     */
+    amountOutOfRange: "That amount can't be paid right now. Please tell the organizer.",
+    capacityFull: "That spot was taken while you were deciding.",
+    capacityFullTitle: "Spot already taken",
+    duplicateActiveBooking: "You already have a spot in this game.",
+    duplicateActiveBookingTitle: "Already booked",
+    creditNegativeBlocked: "Not enough credit for that booking.",
+    insufficientPermission: "You are not allowed to do that.",
+    cancelWindowClosed: "It is too late to cancel this booking.",
+    notSignedIn: "Please sign in first.",
+    gameNotWaitlistable: "This game is not taking waitlist joins.",
+    // True only in the waitlist flow: the row survives a lost race.
+    capacityFullWaitlist:
+      "That spot went to someone else. You are still on the waitlist for the next one.",
+    gameNotBookable: "This game is not open for booking.",
+    gameAlreadyStarted: "This game has already kicked off.",
+    tryAgain: "Try again",
+  },
+
+  /**
+   * EVERY EMAIL, IN THE READER'S LANGUAGE (round 41).
+   *
+   * ~~Emails stay English — there is no per-player language in the database,
+   * only a cookie.~~ The language now travels with the ACCOUNT: chosen at
+   * signup (pre-set from the browser), changeable on the account page, and read
+   * at send time — see `lib/email/recipientLocale.ts`. So this section is
+   * player-facing and translated like every other, and the overlays carry it.
+   *
+   * THE SHAPE IS THE APPROVED DRAFT'S (2026-10-19): a subject, the inbox
+   * preheader, a volt eyebrow, one big headline, one sentence, the facts as
+   * rows, one button, the rule that matters next. `{placeholders}` are filled
+   * at send time; `**bold**` marks the one phrase the rule leans on.
+   *
+   * MONEY STAYS CZECH IN EVERY LANGUAGE: `Variabilní symbol` and `QR platba`
+   * are what the player's Czech banking app says, so they are not translated.
+   * CREDITS NEVER WEAR CROWNS — the only CZK on any email is money that really
+   * moved, on a receipt.
+   */
+  emails: {
+    common: {
+      when: "When",
+      where: "Where",
+      players: "Players",
+      paid: "Paid",
+      returned: "Returned",
+      toPay: "To pay",
+      /** Czech in every language — it is matched against a Czech bank statement. */
+      variableSymbol: "Variabilní symbol",
+      openMaps: "Open in Maps",
+      seeLineup: "See the lineup",
+      findGame: "Find a game",
+      findAnother: "Find another game",
+      calendarNote: "Add it to your calendar — the invite is attached.",
+      you: "You",
+      placesOne: "{n} place",
+      placesFew: "{n} places",
+      placesMany: "{n} places",
+      guestsOne: "{n} guest",
+      guestsFew: "{n} guests",
+      guestsMany: "{n} guests",
+      /** `{hours}` is the database's cutoff; `{cantMakeIt}` is the button's own label. */
+      cancelRule:
+        "Can't make it? Cancel at least **{hours} hours before kick-off** and your Credit comes back. After that, tap “{cantMakeIt}” so someone from the waitlist can play.",
+      noWithdrawal:
+        "A booking can't be withdrawn from, because it's a leisure service on a fixed date and time (§ 1837(j) of the Czech Civil Code).",
+      rulesLink: "Community and Game Rules",
+      questions: "Questions or complaints: {email}",
+      termsAttached: "The Terms and Conditions in force today are attached as a PDF.",
+      /** Why a booking-related email arrived — six emails share it. */
+      footerBooked: "You're getting this because you booked a game.",
+    },
+
+    /** Only when money moved — Texty pro web 5.1. */
+    receipt: {
+      title: "Receipt",
+      order: "Order",
+      validUntil: "Valid until",
+      usedForGame: "used for this game",
+      paidBy: "Paid by",
+      card: "Card, via Stripe",
+      bankTransfer: "Bank transfer",
+      termsNote: "Before paying, you confirmed: “{wording}” Ticked {time}.",
+    },
+
+    bookingConfirmed: {
+      subject: "You're in · {when} · {venue}",
+      preheader: "Cancel up to {hours} hours before kick-off and your Credit comes back.",
+      eyebrow: "Booking confirmed",
+      headline: "You're in.",
+      lede: "{when} at {venue}. See you on the pitch.",
+    },
+
+    guestsAdded: {
+      subject: "Guests added · {when} · {venue}",
+      preheader: "{places} at {venue}, {when}.",
+      eyebrow: "Guests added",
+      headline: "They're in.",
+      lede: "Your guests are on the lineup for {when} at {venue}.",
+    },
+
+    /** The pay-later booking (QR / bank transfer) — a payment REQUEST, not a receipt. */
+    spotHeld: {
+      subject: "Pay to keep your spot · {when}",
+      preheader: "{amount}, variabilní symbol {vs}.",
+      eyebrow: "Payment needed",
+      headline: "Your spot is held.",
+      lede: "Pay {amount} to keep it — the QR code is on the game page, or use the details below.",
+      spdLabel: "QR platba (SPD)",
+      cta: "Open the QR code",
+    },
+
+    nudge: {
+      subject: "Pay now or lose your spot · {when}",
+      preheader: "Players are waiting. Pay within {hours} hours.",
+      eyebrow: "Payment needed",
+      headline: "Someone wants your spot.",
+      // {hours} is interpolated from lib/policy.ts, never hardcoded.
+      lede:
+        "The game is full and players are on the waitlist. Pay within {hours} hours or the spot goes to the next one.",
+      cta: "Pay now",
+    },
+
+    expiry: {
+      subject: "Your unpaid spot was released · {when}",
+      preheader: "It wasn't paid in time, so it went to the waitlist.",
+      eyebrow: "Spot released",
+      headline: "Your spot has gone.",
+      lede:
+        "The reservation for {when} at {venue} wasn't paid in time, so the spot went to someone on the waitlist.",
+    },
+
+    reminder: {
+      subject: "Tomorrow · {time} · {venue}",
+      preheader: "Kick-off {when}. Here are the details again.",
+      eyebrow: "See you tomorrow",
+      headline: "Game day is close.",
+      lede: "Kick-off is {when} at {venue}. Here are the details again.",
+    },
+
+    waitlistSpotOpen: {
+      subject: "A spot just opened · {when}",
+      preheader: "First to claim it gets it.",
+      eyebrow: "Waitlist",
+      headline: "A spot just opened.",
+      lede:
+        "A place at {venue} on {when} has come free. Everyone on the waitlist was told at the same time — the first to claim it gets it.",
+      cta: "Claim the spot",
+      footer: "You're getting this because you're on the waitlist for this game.",
+    },
+
+    /** The player cancelled. Three endings, because "nothing was paid" is not "too late". */
+    cancellationCredit: {
+      subject: "Booking cancelled · {when}",
+      preheaderCredit: "Back in your account: {credits}.",
+      preheaderNone: "Your place has been released.",
+      eyebrow: "Booking cancelled",
+      headline: "Booking cancelled.",
+      ledeCredit: "Your place at {venue} on {when} is released. Back in your account: {credits}.",
+      ledeLate:
+        "Your place at {venue} on {when} is released. It was less than {hours} hours before kick-off, so the Credit doesn't come back.",
+      ledeUnpaid:
+        "Your place at {venue} on {when} is released. Nothing had been paid, so there's nothing to return.",
+      footer: "You're getting this because you cancelled a booking.",
+    },
+
+    /** We cancelled. Obchodní podmínky 11.3 — the Credit comes back with extra days. */
+    gameCancelled: {
+      subject: "Game cancelled · {when}",
+      preheaderCredit: "Your Credit is back, valid {extensionDays} days longer.",
+      preheaderNone: "Nothing had been paid.",
+      eyebrow: "Game cancelled",
+      headline: "This game is off.",
+      lede: "The organizer cancelled {when} at {venue}.",
+      creditLine:
+        "Back in your account: {credits}, with its validity extended by {extensionDays} days.",
+      noCreditLine: "Nothing had been paid, so there's nothing to return.",
+      footer: "You're getting this because you had a place in this game.",
+    },
+
+    /** A purchase of Credits — a pass, or a single game whose seat had gone. */
+    creditsPurchased: {
+      subject: "Receipt · {credits}",
+      preheader: "Valid until {date}. Book any game with them.",
+      eyebrow: "Payment received",
+      headline: "Credits added.",
+      lede: "Added to your account: {credits}, valid until {date}.",
+      ledeGameFull:
+        "The game filled up while you were paying, so your payment became Credits instead: {credits}, valid until {date}, for any game you like.",
+      balance: "Balance",
+      footer: "You're getting this because you bought Credits.",
+    },
+
+    /** Obchodní podmínky 5.4 — the warning a week before Credits lapse. */
+    creditsExpiring: {
+      subject: "Your Credits expire on {date}",
+      preheader: "Left: {credits}. Book a game before then.",
+      eyebrow: "Credits expiring",
+      headline: "Use them before they go.",
+      lede:
+        "Your Credits ({credits}) expire on {date}. Book a game before then and they're spent, not lost.",
+      left: "Left",
+      expires: "Expires",
+      footer: "You're getting this because you have Credits on Hraj Fotbal.",
+    },
+
+    /**
+     * The three emails SUPABASE sends (round 41) — sign-in, confirm signup,
+     * change email. Edited in its dashboard, not sent from here: these keys
+     * feed `scripts/email/build-auth-templates.ts`, which writes the HTML the
+     * owner pastes, one template carrying all four languages.
+     */
+    auth: {
+      signInSubject: "Your Hraj Fotbal sign-in",
+      signInEyebrow: "Sign in",
+      signInHeadline: "Here's your link.",
+      signInLede: "Tap the button to sign in.",
+      signInCta: "Sign in",
+      confirmSubject: "Confirm your email",
+      confirmEyebrow: "Almost there",
+      confirmHeadline: "Confirm your email.",
+      confirmLede: "One tap and your Hraj Fotbal account is ready.",
+      confirmCta: "Confirm email",
+      changeSubject: "Confirm your new email address",
+      changeEyebrow: "Your account",
+      changeHeadline: "New email address?",
+      changeLede: "You asked to change your Hraj Fotbal email from {email} to {newEmail}. Both addresses get this message, and both have to confirm.",
+      changeCta: "Confirm the change",
+      code: "Your code",
+      expiry: "The link and the code expire in one hour.",
+      notYou: "Didn't ask for this? Ignore it — nothing happens.",
+      footer: "You're getting this because this address was used on Hraj Fotbal.",
+    },
+  },
+
+  /**
+   * Toast copy (§8, REQ-UX-002).
+   *
+   * Five moments, one component. The set is closed — `lib/ux/toast.ts` carries
+   * the kinds — so a toast is never free text arriving from a query string.
+   */
+  /**
+   * The game pass (§4.2).
+   *
+   * A pass is DISCOUNTED WALLET CREDIT WITH AN EXPIRY — not a ticket and not a
+   * counter of games — and the copy says so, because a player who thinks they
+   * bought five games will feel cheated when a game costs 200.
+   */
+  /**
+   * WHAT A PURCHASE SAYS BEFORE IT IS PAID (round 40) — the lawyer's Texty pro
+   * web 3.2, 3.3 and 4.1, in the player's language (~~7, the safety notice~~ —
+   * removed by the owner on 2026-10-27, as was 4.1's own-risk sentence: "we have
+   * it in the ToS, that's enough"). The Czech overlay is the
+   * lawyer's text verbatim; the policy numbers (`{days}`, `{hours}`,
+   * `{extensionDays}`) are filled from the policy functions so the sentence can
+   * never disagree with what the database does.
+   *
+   * Every purchase is a purchase of Credits (Obchodní podmínky 5.1): a single
+   * game is one Credit spent at once, so the Credit summary and the terms box
+   * (the withdrawal waiver until 2026-10-28) apply to every checkout, and a
+   * game checkout adds the booking summary.
+   */
+  purchase: {
+    creditsOne: "{n} Credit",
+    creditsFew: "{n} Credits",
+    creditsMany: "{n} Credits",
+    /** Texty 3.2 — directly above Stripe's Pay button. */
+    creditSummary:
+      "You're buying: {credits} (1 Credit = 1 place in one game). Total price: {amount}. Credits are valid for {days} days from when they're added, i.e. until {date}; unused Credits then expire. Credits can only be used to book Playllu games, can't be transferred and can't be exchanged for money. We add them to your account as soon as you pay. A purchase of Credits can't be withdrawn from. {terms}",
+    termsLinkLabel: "Terms and Conditions",
+    /** Texty 4.1 — before a booking is confirmed. */
+    reservationSummary:
+      "You're booking a place at the game on {when}, {venue}. Payment: {credits}. Cancelling: you can cancel up to {hours} hours before kick-off and your Credit comes back. If you cancel later or don't turn up, the Credit is lost. If we cancel the game, we return your Credit and extend its validity by {extensionDays} days. A booking can't be withdrawn from, because it's a leisure service provided on a specific date and time (§ 1837(j) of the Czech Civil Code).",
+    reservationTitle: "Your booking",
+    /** Our own box in front of the form, when Stripe cannot draw its own. */
+    lockedHint: "Tick the box above to unlock payment.",
+  },
+
+  pass: {
+    title: "Game pass",
+    lede: "Pre-buy games at a discount. It becomes credits and applies itself to your next booking.",
+    /*
+     * WHAT A CREDIT ACTUALLY BUYS (round 35 v5, item 1), said on the page where
+     * somebody is deciding to spend money rather than on the one where they
+     * have already decided. A 60-minute game is online-only, and a player who
+     * learns that at the payment step learns it too late.
+     */
+    creditUnit: "1 Credit = 1 place in one game, whatever its length.",
+    /*
+     * "Game Pass" IS THE PRODUCT NAME and stays in English in every locale —
+     * see the Czech and Russian overlays, which translate the strapline beneath
+     * it and leave this alone. A name that changes per locale is a name nobody
+     * can be told about in a WhatsApp group where three languages are spoken.
+     *
+     * There is no CTA string any more: the whole panel is the link and the
+     * arrow says so. "See the passes →" beside a title and a strapline was the
+     * third phrase that pushed the panel past a 360px viewport.
+     */
+    panelTitle: "Game Pass",
+    panelBody: "Pre-buy games at a discount",
+    /*
+     * THE 1-GAME TIER IS GONE (ruled 2026-08-02), and with it `tierOneGame` and
+     * `tierNoSaving`. It was listed at par — 150 for 150, never expiring — on
+     * the reasoning that a reference point makes the other discounts legible.
+     * In practice it was an "offer" that offered nothing, sitting first, where
+     * the best offer should be; a reader who stopped at the top of the page
+     * concluded the pass was not a discount at all. The reference price is
+     * still stated once, in "How it works", which is where an explanation
+     * belongs rather than in a card with a Buy button on it.
+     *
+     * The row is deleted from `pass_tiers` too (migration 36), not merely
+     * hidden — a tier the page will not sell but `create_pass_topup` will still
+     * accept is a price list with a second, invisible entry.
+     */
+    /*
+     * THE CREDITS RULING: the unit is a credit, and one credit is one game.
+     * These replace `tierGames`, which counted in games — the same quantity
+     * under a different noun, and the ruling picks the noun the wallet, the
+     * ledger and the tiers can all share.
+     *
+     * THREE FORMS BECAUSE CZECH AND RUSSIAN HAVE THREE. English uses `few`
+     * and `many` identically and loses nothing by it; the alternative is a
+     * two-form table that silently renders "5 kredity" in Czech. Which form
+     * is chosen is `Intl.PluralRules`' decision — see lib/pass/credits.ts.
+     */
+    // `{n}`, not a literal 1: Russian routes 21, 31 and 101 through the
+    // SINGULAR, so a hardcoded "1" here renders a 21-credit wallet as
+    // "1 кредит". English and Czech only ever reach this form at one, so the
+    // placeholder costs them nothing and removes the trap.
+    creditsOne: "{n} credit",
+    creditsFew: "{n} credits",
+    creditsMany: "{n} credits",
+    /*
+     * The equivalence, stated where the credits are counted rather than
+     * buried in the how-it-works copy. It is the sentence that makes every
+     * other number on these two screens legible: without it "5 credits" is a
+     * unit the reader has to convert, and conversion is exactly what counting
+     * in credits was supposed to remove.
+     */
+    creditEqualsGame: "1 credit = 1 game",
+
+    /*
+     * THE CREDITS-ADDED PAGE (round 15, item 2) — the pass half of the
+     * booking-confirmed screen, and deliberately its sibling in tone: a full
+     * stop, not a receipt.
+     *
+     * `{credits}` IS AN ALREADY-PLURALISED PHRASE, not a number. It arrives
+     * from `creditsLabel`, which asks `Intl.PluralRules` — so the sentence
+     * around it must work with "1 kredit", "3 kredity" and "12 kreditů"
+     * substituted whole. A translator who reaches for a form that agrees with
+     * a NUMBER here will get 11 and 21 wrong in Russian; the phrase carries
+     * its own agreement and the sentence must not fight it.
+     */
+    creditsAddedTitle: "Credits added successfully",
+    creditsAddedCount: "You now have {credits}.",
+    creditsAddedBack: "Back to games",
+
+    tierPerGame: "{amount} a game",
+    tierSaving: "Save {amount}",
+    // Stated LOUDLY and before the button, per §4.2: an expiry discovered
+    // after purchase is a complaint; an expiry read before it is a choice.
+    /*
+     * DAYS, NOT MONTHS (owner's call), and "payment clears" rather than
+     * "purchase".
+     *
+     * The clock starts when `confirm_topup` runs — `now() + interval` at
+     * CONFIRMATION, not when the pass was requested. A player who asks for a
+     * pass on Monday and pays on Wednesday keeps the full window; telling them
+     * it runs "after purchase" would understate what they bought by two days,
+     * which is a statement about money and therefore one to get right.
+     *
+     * `{days}` is derived from the tier's `expires_months`, so the 2-month
+     * tiers say 60 rather than all five claiming 30. See PassTierCard.
+     */
+    tierExpiresDays: "Expires {days} days after payment clears",
+    tierNeverExpires: "Never expires",
+    tierBuy: "Buy this pass",
+    /*
+     * The SALE treatment (polish round). `tierBuy` was a full-width volt
+     * button on every card, which made five cards shout the same word and
+     * left nothing on them louder than the control. The purchase is the last
+     * step, not the pitch — so it goes quiet and the per-game price gets the
+     * volume.
+     */
+    tierPurchase: "Purchase",
+    /** On the 12-credit tier only. */
+    tierMostPopular: "Most popular",
+    // The honest framing of what is actually stored.
+    /*
+     * UNUSED, AND FOUND SO IN ROUND 22 while converting the count strings to
+     * CLDR plurals: nothing renders `pass.equivalence`. It is left exactly as
+     * it was — including its English two-form assumption — because a dead key
+     * is a copy decision to take deliberately rather than a plural bug to fix
+     * on a screen nobody sees. Reported rather than removed.
+     */
+    equivalence: "≈ {count} games",
+    howItWorks: "How it works",
+    /*
+     * THE OWNER'S WORDING, VERBATIM (round 13, item 15).
+     *
+     * ~~"You pay by QR like any other top-up..."~~ — QR is retired product-wide
+     * (item 6), so the old body described a rail that no longer exists. It also
+     * explained the soonest-expiring-first allocator, which is true and is not
+     * what somebody reads this box to find out.
+     */
+    howItWorksBody:
+      "You pay by card, Apple Pay or Google Pay. Once the payment is confirmed, the credits will be applied to your account automatically.",
+    batchesTitle: "Your credit",
+    /*
+     * CREDITS, NOT CROWNS (round 14, item 10). These read
+     * "600 CZK left · expires 20 Oct" — the exact shape the credits ruling
+     * removed everywhere else, surviving on the profile overview because the
+     * batch list was written before it. `{credits}` is `creditsLabel`, so the
+     * plural is CLDR's in all three languages.
+     */
+    batchesExpiring: "{credits} remaining · expires {date}",
+    batchesNever: "{credits} · never expires",
+    batchesNone: "No expiring credit.",
+    // Under the sticky claim button on a game page. Someone about to pay full
+    // price for one game is exactly who pre-buying is worth anything to.
+    /*
+     * The one line an unconfigured tier shows on a press (round 14, item 7).
+     * It says WHEN rather than "unavailable", because the button is real and
+     * the only thing missing is a link the owner pastes into Vercel.
+     */
+    paymentsSoon: "Payments launching shortly.",
+    tryThePass: "Or try the Game Pass →",
+  },
+
+  toast: {
+    /*
+     * THE INVENTORY, and what happened to it (§8).
+     *
+     * Contract §8 named five triggers. Three of them no longer have a source:
+     *
+     *   bookingCreated      the result is a server-rendered confirmation
+     *                       SCREEN, and a toast announcing what the page in
+     *                       front of you already says is noise
+     *   bookingCancelled    same — the cancellation result is a screen
+     *   linkCopied          ruling G deleted the control that fired it
+     *
+     * They are still defined and still called, because their call sites live
+     * in the booking and cancellation flows that STAGE 6 rebuilds — retiring
+     * the strings here would break live paths that this phase does not own.
+     * They are removed with the flows, in phases 44 and 45.
+     *
+     * Two survive with a live source: `signedIn` and `topupConfirmed`. Neither
+     * has a screen of its own to state the fact.
+     *
+     * `failed` is new, and it is what makes the error variant usable: an
+     * assertive, non-auto-dismissing toast with nothing to say is a variant
+     * that exists only in a component file.
+     */
+    bookingCreated: "You're in. Your spot is held.",
+    signedIn: "Signed in.",
+    // Names the amount, because "cancelled" alone leaves the question the
+    // player actually has — where did the money go — unanswered.
+    bookingCancelled: "Cancelled — the value comes back as credits.",
+    topupConfirmed: "Top-up confirmed. Your balance is updated.",
+    linkCopied: "Link copied.",
+    /** The error variant. Deliberately blames nothing and offers the retry. */
+    failed: "That didn't go through. Try again.",
+  },
+
+  notifications: {
+    // Round 16 item 13 — emptying the bell, distinct from marking it read.
+    clearAll: "Clear all",
+    /** Round 41 — the × on one notification; read by screen readers. */
+    deleteOne: "Delete this notification",
+    /* Round 7, item 5 — the in-app bell. Player-facing, so all three. */
+    bellLabel: "Notifications",
+    title: "Notifications",
+    empty: "Nothing yet.",
+    /*
+     * COPY THE PRODUCT WROTE, keyed by `notifications.kind` (round 24, item 2).
+     *
+     * These are the notifications with no human author, so they are the only
+     * ones that CAN be translated — an admin broadcast is free text somebody
+     * typed in the language they meant. The bell picks the reader's language
+     * at render time, which is how a per-player message works without a
+     * `players.locale` column.
+     *
+     * FIRM BUT FAIR, AND THAT IS THE WHOLE BRIEF FOR THE WORDING. A no-show
+     * costs somebody else a game: the person on the waitlist who was never
+     * called up. The message says that and says what to do instead. It does
+     * not threaten a consequence the product cannot deliver — there is no ban,
+     * no strike count, no fee — because a warning that bluffs is one a regular
+     * learns to ignore.
+     */
+    kinds: {
+      no_show_warning: {
+        title: "You were marked as a no-show",
+        body:
+          "You had a spot and did not turn up, so nobody on the waitlist got it. " +
+          "Cancel in advance next time — the spot goes straight back to them.",
+      },
+      no_show_cleared: {
+        title: "That no-show was removed",
+        body: "The organizer corrected the roster. Nothing is held against you.",
+      },
+    },
+  },
+
+  common: {
+    back: "Back",
+    close: "Close",
+    // The toast's own dismiss, distinct from a dialog's Close.
+    dismiss: "Dismiss",
+    loading: "Loading…",
+    czk: "CZK",
+  },
+} as const;
+
+export type Strings = typeof strings;

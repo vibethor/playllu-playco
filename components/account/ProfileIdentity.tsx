@@ -1,0 +1,135 @@
+import { PhotoUpload } from "@/components/account/PhotoUpload";
+import { ProfileMeta } from "@/components/account/ProfileMeta";
+import { initials } from "@/lib/roster/initials";
+import { avatarUrl } from "@/lib/storage/avatar";
+import type { Locale } from "@/lib/i18n/locales";
+import type { Strings } from "@/lib/strings";
+
+/**
+ * Cover, face, name, meta — the top of a profile.
+ *
+ * BUILT AGAINST THE REFERENCE the owner supplied, with two adaptations, both
+ * forced by what this schema holds rather than chosen:
+ *
+ *   1. ~~THE COVER IS A GRADIENT, NOT A PHOTOGRAPH. The reference puts a shot
+ *      of a game behind the name. There is no cover-photo column and this is a
+ *      front-end round, so the options were a token gradient, a borrowed venue
+ *      photo, or nothing. A venue photo would be a picture of a pitch this
+ *      player may never have played on, presented as if it were theirs — an
+ *      invented fact under someone's face. The gradient reads as a deliberate
+ *      band; a wrong photograph reads as a lie.~~
+ *
+ *      **REVERSED 2026-08-20 (redesign v2, round 6).** The reasoning was
+ *      sound and its PREMISE changed: it assumed the only photograph available
+ *      was some particular venue's. R6 introduced `pitch-default.jpg` as the
+ *      product's one generic pitch, used identically behind every list card
+ *      and every game header — so it is furniture, like the pitch canvas
+ *      already behind this page, and not a claim about where this player has
+ *      played. The objection stands in full against a VENUE photo here, and
+ *      that is still not built: there is no cover-photo column and none is
+ *      added.
+ *
+ *      p10 and p11 both draw the photographic cover, and the audit lists it as
+ *      a delta from v1.3 rather than as a request.
+ *
+ *   2. THE META LINE IS COUNTRY, NOT CITY. The reference says "Bangkok". The
+ *      schema holds `players.country` as an ISO 3166 code and nothing finer.
+ *      `ProfileMeta` draws it, flag first.
+ *
+ * THE AVATAR OVERLAPS THE COVER'S LOWER EDGE, which is the reference's
+ * composition and is doing real work: it ties the two bands into one object, so
+ * the identity reads as a header rather than as a picture with a caption under
+ * it. `PhotoUpload` still wraps it — the avatar has been the edit affordance
+ * since the photo upload was buried as a caption and nobody found it.
+ */
+export function ProfileIdentity({
+  nickname,
+  photoPath,
+  photoVersion,
+  country,
+  createdAt,
+  locale,
+  t,
+}: {
+  nickname: string;
+  photoPath: string | null;
+  /** Changes when the photo does, so a re-upload is not served from cache. */
+  photoVersion: string | null;
+  /** ISO 3166-1 alpha-2, or null when unset. */
+  country: string | null;
+  createdAt: string;
+  locale: Locale;
+  t: Strings;
+}) {
+  const photoUrl = avatarUrl(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+    photoPath,
+    photoVersion,
+  );
+
+  return (
+    <section data-testid="profile-identity" className="-mt-8">
+      {/*
+        FULL BLEED. The band runs edge to edge while everything under it keeps
+        the page gutter, which is what makes it read as a cover rather than as
+        a wide card. `-mx-gutter` rather than a viewport-width trick: the page
+        is `max-w-shell` centred, so a `100vw` band would break out of the shell
+        on a desktop and sit under the header's own margins.
+
+        THE PHOTOGRAPH, AND THE SAME FADE THE GAME HEADER USES. R6's single
+        default pitch backs the band and the scrim ramps to `ink` at full
+        opacity by the bottom — the page's own ground, so the cover ends
+        without a seam and the avatar overlapping it has flat surface to sit
+        against. It replaces `from-volt/[.10] via-surface-raised to-ink`; see
+        the reversal note in this file's header for why the gradient existed
+        and why it no longer needs to.
+
+        `to-92%` -> `to-90%` (R19, round 8): 92 is off Tailwind's 5% stop scale
+        and generated no stop, so the cover reached `ink` only at its own edge.
+
+        `aria-hidden`, and `alt=""` on the image: this is scenery. Announcing
+        a stock pitch above someone's own name and stats is noise on the one
+        page where a screen-reader user is reading about themselves.
+      */}
+      {/*
+        `relative`, AND IT IS LOAD-BEARING. The cover is an absolutely
+        positioned layer behind this row (see `ProfileCover`), and a positioned
+        element paints above its non-positioned siblings whatever the source
+        order says — which once sliced the nickname in half along the cover's
+        bottom edge. Two positioned siblings fall back to source order, which
+        puts the identity on top where it belongs.
+      */}
+      <div className="relative -mt-10 flex items-end gap-4">
+        <PhotoUpload hasPhoto={Boolean(photoPath)} photoVersion={photoVersion}>
+          <span
+            data-testid="account-avatar"
+            className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-pill border-2 border-volt bg-surface text-2xl font-extrabold text-volt"
+          >
+            {photoUrl ? (
+              /* A public-bucket URL at 80px. `next/image` would proxy it
+                 through the optimizer for no benefit and bill a transform per
+                 avatar. */
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photoUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              initials(nickname, t)
+            )}
+          </span>
+        </PhotoUpload>
+
+        {/* `pb-1` lifts the text off the avatar's baseline: an 80px circle and
+            a 22px line share a bottom edge geometrically and look misaligned
+            optically, because the circle's ink stops before its box does. */}
+        <div className="flex min-w-0 flex-col gap-[2px] pb-1">
+          <h1
+            data-testid="account-nickname"
+            className="m-0 truncate text-[26px] font-bold leading-tight text-white"
+          >
+            {nickname}
+          </h1>
+          <ProfileMeta country={country} createdAt={createdAt} locale={locale} t={t} />
+        </div>
+      </div>
+    </section>
+  );
+}

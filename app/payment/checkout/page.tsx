@@ -1,0 +1,426 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { EmbeddedCheckoutFrame } from "@/components/payment/EmbeddedCheckoutFrame";
+import { CheckoutTermsGate } from "@/components/payment/CheckoutTermsGate";
+import { requireCurrentPlayer } from "@/lib/auth/session";
+import { getLocale, getStrings } from "@/lib/i18n/server";
+import {
+  createEmbeddedSession,
+  embeddedCheckoutEnabled,
+} from "@/lib/payments/embeddedCheckout";
+import { siteUrl } from "@/lib/site";
+import { createServerSupabaseClient } from "@/lib/supabase/clients";
+import { formatCzk, formatGameDateTime } from "@/lib/format";
+import { TERMS_VERSION } from "@/lib/legal";
+import { termsAgreementWording } from "@/lib/legal/consentWording";
+import { fillTemplate } from "@/lib/i18n/template";
+import {
+  creditPurchaseSummary,
+  reservationSummary,
+  type ReservationFacts,
+} from "@/lib/legal/purchaseSummary";
+import { refundCutoffHours } from "@/lib/policy/refundCutoff";
+import { policy } from "@/lib/policy";
+import { partyAmountCzk } from "@/lib/payments/partyAmount";
+
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getStrings();
+  return {
+    title: t.payment.checkoutTitle,
+    robots: { index: false, follow: false },
+  };
+}
+
+/**
+ * `/payment/checkout` — the embedded payment form, on our own page
+ * (round 25, item 2).
+ *
+ * THE AMOUNT IS COMPUTED HERE AND NOWHERE ELSE, which is the whole point of
+ * the item. A Payment Link had one price and no idea how many seats were being
+ * bought, so a party of three was told to set the quantity themselves — and
+ * could type 1. This reads the row that already exists and charges what it
+ * says: `price_czk` minus whatever wallet credit was already applied.
+ *
+ * OWNERSHIP IS CHECKED BEFORE A SESSION IS CREATED. The id is in the URL, so
+ * the first thing this does is confirm the row belongs to the person asking.
+ * Creating a Stripe session for somebody else's booking would be a way to pay
+ * for a stranger's seat, which is not a feature.
+ *
+ * NOTHING HERE SETTLES ANYTHING. The session is created, the form is rendered,
+ * and the database is untouched — `checkout.session.completed` reaching
+ * `/api/stripe/webhook` is still the only thing that turns a booking into a
+ * paid one. The player returning through `return_url` lands on
+ * `/payment/return`, which polls rather than assumes.
+ */
+export default async function CheckoutPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const query = searchParams ? await searchParams : {};
+  const gameId = typeof query.game === "string" ? query.game : null;
+  const passId = typeof query.pass === "string" ? query.pass : null;
+  /*
+   * ADD GUESTS TO AN EXISTING BOOKING (round 27, item 2) — a THIRD kind of
+   * thing this page can sell, and it is deliberately its own parameter rather
+   * than a mode on `game`. The amount is guest-only and the settler must
+   * extend a row rather than create one; conflating the two behind one
+   * parameter is how a page ends up charging a player twice for their own
+   * seat.
+   */
+  const addGuestsBookingId =
+    typeof query.addGuests === "string" ? query.addGuests : null;
+  const rawGuests = Number(query.guests);
+  const guests =
+    Number.isInteger(rawGuests) && rawGuests > 0
+      ? Math.min(rawGuests, policy.booking.maxPartyGuests)
+      : 0;
+
+  if (!gameId && !passId && !addGuestsBookingId) notFound();
+
+  const [t, locale, player] = await Promise.all([
+    getStrings(),
+    getLocale(),
+    requireCurrentPlayer(),
+  ]);
+
+  /*
+   * NOT ENABLED IS NOT AN ERROR PAGE. Somebody could reach this URL from a
+   * stale tab after the keys were removed, and the right answer is the flow
+   * that still works — not a dead end. `/games` for a booking, `/pass` for a
+   * tier.
+   */
+  if (!embeddedCheckoutEnabled()) {
+    redirect(gameId || addGuestsBookingId ? "/games" : "/pass");
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const origin = await siteUrl();
+  const returnUrl = `${origin}/payment/return?session_id={CHECKOUT_SESSION_ID}`;
+
+  let line: { name: string; description?: string; amountCzk: number };
+  let reference: string;
+  let backHref: string;
+  /** How many Credits this payment buys — every card payment buys Credits (round 40). */
+  let credits: number;
+  /** A game checkout also states the booking it makes (Texty 4.1); a pass does not. */
+  let reservation: ReservationFacts | null = null;
+
+  if (addGuestsBookingId) {
+    /*
+     * THE BOOKING IS READ THROUGH THE RPC, NOT THE TABLE. `can_add_guests`
+     * already answers ownership, paid-ness, kick-off and capacity in one
+     * `SECURITY DEFINER` call — reimplementing that ladder here would be a
+     * second definition of "may this happen", able to disagree with the one
+     * the writers use.
+     */
+    const { data: room } = await supabase.rpc("can_add_guests", {
+      p_booking_id: addGuestsBookingId,
+    });
+    const allowed = typeof room === "number" ? room : 0;
+
+    const { data: bookingRow } = await supabase
+      .from("bookings")
+      .select("id, game_id")
+      .eq("id", addGuestsBookingId)
+      .maybeSingle();
+    const booking = bookingRow as { id: string; game_id: string } | null;
+
+    if (!booking) notFound();
+    if (guests < 1 || guests > allowed) redirect(`/game/${booking.game_id}`);
+
+    const { data: gameRow } = await supabase
+      .from("games")
+      .select("id, venue, price_czk, starts_at")
+      .eq("id", booking.game_id)
+      .maybeSingle();
+    const game = gameRow as
+      | { id: string; venue: string; price_czk: number; starts_at: string }
+      | null;
+    if (!game) notFound();
+
+    /*
+     * GUEST-ONLY. The player's own seat is already paid for; `partyAmountCzk`
+     * would add it back and bill them twice.
+     */
+    line = {
+      name: game.venue,
+      description: t.payment.checkoutSeats.replace("{seats}", String(guests)),
+      amountCzk: game.price_czk * guests,
+    };
+    reference = booking.id;
+    backHref = `/game/${game.id}`;
+    credits = guests;
+    reservation = {
+      when: formatGameDateTime(game.starts_at, locale),
+      venue: game.venue,
+      credits: guests,
+      cutoffHours: await refundCutoffHours(),
+    };
+  } else if (gameId) {
+    const { data: gameRow } = await supabase
+      .from("games")
+      .select("id, venue, status, price_czk, capacity, starts_at")
+      .eq("id", gameId)
+      .maybeSingle();
+
+    const game = gameRow as
+      | {
+          id: string;
+          venue: string;
+          status: string;
+          price_czk: number;
+          capacity: number;
+          starts_at: string;
+        }
+      | null;
+
+    if (!game) notFound();
+
+    /*
+     * THE GAME MUST STILL BE TAKING BOOKINGS, checked before a session is
+     * created rather than after money moves. This is not the enforcement —
+     * `settle_checkout_session` decides under the game's lock and credits
+     * anybody it cannot seat — it is the courtesy of not opening a form that
+     * is already doomed.
+     */
+    if (game.status !== "published" && game.status !== "full") {
+      redirect(`/game/${game.id}`);
+    }
+
+    const { data: taken } = await supabase.rpc("game_seats_taken", {
+      p_game_id: game.id,
+    });
+    const seats = 1 + guests;
+    if ((taken ?? 0) + seats > game.capacity) {
+      redirect(`/game/${game.id}`);
+    }
+
+    /*
+     * THE WHOLE PARTY PRICE, COMPUTED HERE. No wallet credit is applied to an
+     * online payment — credit is its own option on the booking form, and
+     * mixing the two would mean the webhook had to reconstruct which half was
+     * which from an amount.
+     */
+    line = {
+      name: game.venue,
+      description: t.payment.checkoutSeats.replace("{seats}", String(seats)),
+      amountCzk: partyAmountCzk(game.price_czk, guests),
+    };
+    reference = game.id;
+    backHref = `/game/${game.id}`;
+    credits = seats;
+    reservation = {
+      when: formatGameDateTime(game.starts_at, locale),
+      venue: game.venue,
+      credits: seats,
+      cutoffHours: await refundCutoffHours(),
+    };
+  } else {
+    const { data } = await supabase
+      .from("credit_topups")
+      .select("id, player_id, status, amount_czk, pass_games")
+      .eq("id", passId!)
+      .maybeSingle();
+
+    const topup = data as
+      | {
+          id: string;
+          player_id: string;
+          status: string;
+          amount_czk: number;
+          pass_games: number | null;
+        }
+      | null;
+
+    if (!topup || topup.player_id !== player.id) notFound();
+    if (topup.status !== "pending") redirect("/pass");
+
+    /*
+     * THE PRICE COMES FROM THE ROW, WHICH CAME FROM THE LIVE TIER TABLE.
+     * `begin_pass_purchase` reads `pass_tiers` and stamps `amount_czk` — so
+     * the number charged here is the tier's price at the moment the buyer
+     * pressed the button, not a figure this page recomputed and could get
+     * wrong.
+     */
+    line = {
+      name: t.pass.panelTitle,
+      description: t.payment.checkoutCredits.replace(
+        "{credits}",
+        String(topup.pass_games ?? 0),
+      ),
+      amountCzk: topup.amount_czk,
+    };
+    reference = topup.id;
+    backHref = "/pass";
+    credits = topup.pass_games ?? 0;
+  }
+
+  const session = await createEmbeddedSession({
+    line,
+    reference,
+    kind: gameId || addGuestsBookingId ? "booking" : "pass",
+    customerEmail: player.email ?? null,
+    returnUrl,
+    // The player on every kind: the webhook records the tick against them.
+    playerId: player.id,
+    ...(gameId ? { gameId, guestCount: guests } : {}),
+    legal: {
+      summary: creditPurchaseSummary(
+        {
+          credits,
+          amountCzk: line.amountCzk,
+          ...(passId ? { packageName: t.pass.panelTitle } : {}),
+          paidAt: new Date(),
+          termsUrl: `${origin}/terms`,
+        },
+        locale,
+        t,
+      ),
+      termsBox: fillTemplate(t.booking.termsAgree, {
+        terms: `[${t.auth.tosTermsLink}](${origin}/terms)`,
+      }),
+      locale,
+      termsVersion: TERMS_VERSION,
+    },
+  });
+
+  // Stripe refused, or the key was pulled between the gate above and here.
+  if (!session) redirect(backHref);
+
+  /*
+   * REGISTERED, SO THE GAME CAN KILL IT. If this game fills while the form is
+   * on screen, `expireOpenCheckouts` expires this session at Stripe and the
+   * card is refused before any money moves — which is the primary defence, and
+   * the reason the register exists at all.
+   *
+   * REGISTERED AFTER THE SESSION EXISTS, never before: a row naming a session
+   * id Stripe never issued would be a row active expiry could not kill.
+   */
+  if (gameId || addGuestsBookingId) {
+    const { error: registerError } = addGuestsBookingId
+      ? await supabase.rpc("open_add_guests_checkout", {
+          p_booking_id: addGuestsBookingId,
+          p_guest_count: guests,
+          p_stripe_session_id: session.sessionId,
+          p_amount_czk: line.amountCzk,
+        })
+      : await supabase.rpc("open_checkout", {
+          p_game_id: gameId!,
+          p_guest_count: guests,
+          p_stripe_session_id: session.sessionId,
+          p_amount_czk: line.amountCzk,
+        });
+
+    /*
+     * A SESSION THAT COULD NOT BE REGISTERED MUST NOT BE PAID (round 27,
+     * item 1). The register is what active expiry reads and what the webhook
+     * settles on; a form rendered without it is a form whose payment lands as
+     * `unknown`. Sending the player back is worse than a dead end only if you
+     * think a checkout that cannot be settled is better.
+     */
+    if (registerError) {
+      console.error("checkout: could not register session", {
+        session: session.sessionId,
+        message: registerError.message,
+      });
+      redirect(backHref);
+    }
+  }
+
+  /*
+   * ~~AND THE STASH IS WRITTEN HERE.~~ IT IS NOT, AND IT NEVER COULD BE
+   * (round 27, item 1 — the outage).
+   *
+   * `rememberPendingPurchase` sets a cookie, and **a Server Component may not
+   * set a cookie** — Next throws `Cookies can only be modified in a Server
+   * Action or Route Handler`. `pendingPurchaseCookie.ts` says so in its own
+   * doc comment, and round 26 moved the call here anyway: under pay-first the
+   * id worth stashing is the STRIPE SESSION id, which only exists at this
+   * point, and this point is a render.
+   *
+   * IT 500'd EVERY SINGLE-GAME CHECKOUT ON PRODUCTION while the PASS rail kept
+   * working perfectly — same keys, same embedded machinery, but the pass
+   * stash is written by `app/pass/actions.ts`, which is a Server Action and
+   * therefore allowed. Two `cs_live_` sessions were created and registered
+   * before the throw, which is exactly how far the path gets.
+   *
+   * THE STASH IS NOT REPLACED, IT IS UNNECESSARY. Stripe substitutes the
+   * session id into `return_url`, so `/payment/return` is handed the exact
+   * identifier by Stripe itself — better than a cookie, which cannot survive
+   * a different browser. The register is the recovery for everything else.
+   */
+
+  return (
+    <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
+      <Link
+        href={backHref}
+        data-testid="checkout-back"
+        className="text-[11px] uppercase tracking-eyebrow text-muted no-underline"
+      >
+        {t.booking.backToGame}
+      </Link>
+
+      <h1 className="mt-4 font-display text-page-title uppercase tracking-wide text-white">
+        {t.payment.checkoutTitle}
+      </h1>
+
+      {/*
+        THE AMOUNT, IN OUR OWN TYPE, ABOVE THE FRAME. Stripe shows it too —
+        inside an iframe whose styling is the dashboard's, not ours. Saying it
+        here first means the number the player checks is set in the product's
+        own voice, and it is the same number the session was created with
+        because both read `line`.
+      */}
+      <p
+        data-testid="checkout-amount"
+        className="mt-2 font-display text-title uppercase leading-none text-volt"
+      >
+        {formatCzk(line.amountCzk)}
+      </p>
+      <p className="mt-1 text-[13px] leading-snug text-muted">{line.description}</p>
+
+      {/*
+        THE BOOKING THIS PAYMENT MAKES (round 40, Texty 4.1), before the form —
+        the Credit summary itself sits inside Stripe's form, directly above Pay.
+      */}
+      {reservation && (
+        <section data-testid="checkout-reservation" className="mt-4">
+          <h2 className="m-0 text-[11px] uppercase tracking-eyebrow text-muted">
+            {t.purchase.reservationTitle}
+          </h2>
+          <p className="mt-2 mb-0 text-[12px] leading-snug text-muted">
+            {reservationSummary(reservation, locale, t)}
+          </p>
+        </section>
+      )}
+
+      {/*
+        THE BOX IS STRIPE'S, directly above Pay, whenever Stripe will draw it
+        (round 38) — ~~worded since round 40 as the lawyer's withdrawal waiver
+        (Texty 3.3)~~ the terms sentence since 2026-10-28, the owner's call.
+        `termsInStripe` is false only when the Dashboard has no Terms of
+        Service URL; then our own box stands in front of the form, which is
+        visible but inert until it is ticked.
+      */}
+      <div className="mt-6">
+        {session.termsInStripe ? (
+          <EmbeddedCheckoutFrame
+            clientSecret={session.clientSecret}
+            publishableKey={process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
+          />
+        ) : (
+          <CheckoutTermsGate label={termsAgreementWording(t)} lockedHint={t.purchase.lockedHint}>
+            <EmbeddedCheckoutFrame
+              clientSecret={session.clientSecret}
+              publishableKey={process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
+            />
+          </CheckoutTermsGate>
+        )}
+      </div>
+    </main>
+  );
+}

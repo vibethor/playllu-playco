@@ -1,0 +1,306 @@
+import { revenueBetween } from "@/lib/admin/money/revenue";
+import { readAllByIds, readAllPages, readByIds } from "@/lib/admin/money/readAll";
+import { COUNTED_PLAYER_FILTER } from "@/lib/admin/playerScope";
+import { createServiceRoleSupabaseClient } from "@/lib/supabase/clients";
+import { statRange, type StatRange, type StatWindow } from "@/lib/stats/window";
+
+/**
+ * The admin metrics, every one of them bounded by a date window.
+ *
+ * REWRITTEN IN PHASE 19, not edited (F7). Not a single query in the previous
+ * version had a date bound — every number was "since the beginning of time",
+ * which is a figure that can only go up and therefore says nothing about
+ * whether anything is working. Adding a window to each of them meant changing
+ * what each one counts and where it counts it from, which is a rewrite however
+ * it is spelled.
+ *
+ * WHAT WENT (REQ-ADMIN-004), and why each removal is a decision:
+ *   - CREDITS OUTSTANDING. A balance-sheet number on an operations page. It is
+ *     still one query away and belongs on the day there is a balance sheet.
+ *   - MAGIC-LINK DROP-OFF. Passwords are the front door now; the link path is
+ *     recovery. A funnel metric for a recovery path measures how often people
+ *     forget things.
+ *   - WAITLIST DEPTH. v2.5 called it "the expansion-trigger sensor"; §7
+ *     supersedes that with the observation that a number nobody looked at is
+ *     not a sensor. NOTHING ABOUT THE DATA CHANGES — `waitlist` is intact and
+ *     the depth is one query away the day it is wanted again. Only the panel
+ *     goes.
+ *
+ * WHAT STAYED AND WHAT ARRIVED (REQ-ADMIN-005): no-show rate, fill rate,
+ * confirmed revenue, new vs returning, cancellations — each matching the SQL
+ * definition in `PHASE2_IMPLEMENTATION.md` §B.4, restated above each function
+ * so the two cannot drift.
+ *
+ * NO NEW TRACKING MACHINERY (REQ-ADMIN-007). Every number is an aggregate over
+ * `events` and the existing tables. That was the whole bet of the Phase 1
+ * event log, and this is the second time it has paid.
+ *
+ * READS ONLY, through the service-role client: `events` has no client grant at
+ * all and `bookings`/`credit_ledger` are own-row for players, so an admin
+ * session reading these directly would see almost nothing.
+ */
+
+export interface FillRateStats {
+  /** Seats taken on games in range — the SQL seat counter's figure. */
+  sold: number;
+  /** Total capacity of those games. */
+  capacity: number;
+}
+
+export interface NewReturningStats {
+  newPlayers: number;
+  returning: number;
+}
+
+export interface CancellationStats {
+  total: number;
+  /** Those that issued credit — i.e. money had already been applied. */
+  withCredit: number;
+}
+
+export interface AdminStats {
+  range: StatRange;
+  fillRate: FillRateStats;
+  confirmedRevenueCzk: number;
+  newReturning: NewReturningStats;
+  cancellations: CancellationStats;
+}
+
+/*
+ * ~~No-show rate~~ — removed 2026-11-09 with attendance itself (the owner:
+ * "let's remove the 'present' and 'no-show' function from the web
+ * completely"). Nobody marks who came, so there is no rate to read.
+ */
+
+/**
+ * Fill rate.
+ *
+ *   sum(seats taken) / sum(capacity)
+ *   over games with starts_at in range
+ *
+ * SEATS, NOT BOOKING ROWS (round 42, the admin rebuild). ~~`count(bookings
+ * where status in ('reserved','confirmed'))`~~ counted a party of three as one
+ * and house guests as nobody — the bug the games list had in round 35 v2, on
+ * the one figure that says whether the pitches are full. The answer comes
+ * from `game_seats_taken_many`, which wraps `game_seats_taken`: the counter
+ * `create_booking` refuses against. "One counter, and it lives in SQL" — this
+ * asks it rather than restating its arithmetic.
+ *
+ * A FAILED COUNT THROWS rather than reading as zero. An empty map here would
+ * render an empty week, which is the missing-GRANT trap: a read that comes
+ * back empty looks like missing data, not like a broken read.
+ */
+async function getFillRate(range: StatRange): Promise<FillRateStats> {
+  const service = createServiceRoleSupabaseClient();
+
+  const { data: games } = await service
+    .from("games")
+    .select("id, capacity")
+    .gte("starts_at", range.from)
+    .lt("starts_at", range.to)
+    .in("status", ["published", "full", "played", "settled"]);
+
+  if (!games || games.length === 0) return { sold: 0, capacity: 0 };
+
+  const { data: seats, error } = await service.rpc("game_seats_taken_many", {
+    p_game_ids: games.map((g) => g.id),
+  });
+  if (error) {
+    throw new Error(`game_seats_taken_many failed: ${error.message}`, { cause: error });
+  }
+
+  return {
+    sold: (seats ?? []).reduce((total, row) => total + row.seats_taken, 0),
+    capacity: games.reduce((total, game) => total + game.capacity, 0),
+  };
+}
+
+/**
+ * Confirmed revenue, in CZK.
+ *
+ *   sum(price_czk - credit_applied_czk) over bookings with a
+ *   payment_confirmed event in range, plus every Game Pass and top-up
+ *   confirmed in range (2026-11-08: "revenue should count all the revenue
+ *   including game pass")
+ *
+ * CREDIT APPLIED IS EXPLICITLY EXCLUDED, and that is the whole point of the
+ * metric. Credit is not money arriving — it is a liability being discharged,
+ * and the money behind it arrived when the top-up was confirmed or was never
+ * money at all when it came from a cancellation. Counting it here would book
+ * the same crown twice.
+ */
+async function getConfirmedRevenue(range: StatRange): Promise<number> {
+  // The money page's own reading: one definition of "money that arrived" —
+  // games, Game Passes and top-ups since 2026-11-08 — so the Revenue tile
+  // and this one cannot drift.
+  return (await revenueBetween(range)).totalCzk;
+}
+
+/**
+ * New vs returning.
+ *
+ *   a booking is NEW if it is that player's first booking_created ever;
+ *   RETURNING otherwise. Computed over booking_created events in range.
+ *
+ * "EVER" IS LOAD-BEARING and is why this reads the whole event history for the
+ * players who booked in range rather than only the window. A player's second
+ * booking is a returning booking even if their first was last year — deciding
+ * it from inside the window would count every player as new on the first day
+ * of every month.
+ */
+async function getNewReturning(range: StatRange): Promise<NewReturningStats> {
+  const service = createServiceRoleSupabaseClient();
+
+  // In time order, every page of them — see `lib/admin/money/readAll.ts`.
+  const inRange = await readAllPages("booking_created events", (from, to) =>
+    service
+      .from("events")
+      .select("id, player_id, created_at")
+      .eq("event_type", "booking_created")
+      .gte("created_at", range.from)
+      .lt("created_at", range.to)
+      .not("player_id", "is", null)
+      .order("created_at")
+      .order("id")
+      .range(from, to),
+  );
+
+  const rows = inRange.filter(
+    (row): row is typeof row & { player_id: string } => row.player_id !== null,
+  );
+  if (rows.length === 0) return { newPlayers: 0, returning: 0 };
+
+  /*
+   * PLAYERS ONLY (round 42, the admin rebuild). The owner: "don't count shadow
+   * accounts". A shadow is a name the admin books a friend onto, with no
+   * login; a deleted account and a seed fixture are not players either. The
+   * filter is `isCountedPlayer`'s, as a query — `COUNTED_PLAYER_FILTER`.
+   */
+  const counted = await readByIds("counted players", [...new Set(rows.map((row) => row.player_id))], (ids) =>
+    service
+      .from("players")
+      .select("id")
+      .in("id", ids)
+      .not(COUNTED_PLAYER_FILTER.notNull, "is", null)
+      .is(COUNTED_PLAYER_FILTER.isNull, null)
+      .eq(COUNTED_PLAYER_FILTER.isFalse, false),
+  );
+  const isCounted = new Set(counted.map((row) => row.id));
+  if (isCounted.size === 0) return { newPlayers: 0, returning: 0 };
+
+  /*
+   * WHO HAD BOOKED BEFORE THE WINDOW OPENED. ~~Every `booking_created` those
+   * players ever wrote, in one request~~ — a regular's history outgrows one
+   * 1000-row response, the rest was dropped without a word, and a booking
+   * whose earlier sibling fell off the end read as a first. Only the earlier
+   * rows are asked for now, every page of them.
+   */
+  const earlier = await readAllByIds("earlier booking_created events", [...isCounted], (ids, from, to) =>
+    service
+      .from("events")
+      .select("id, player_id")
+      .eq("event_type", "booking_created")
+      .in("player_id", ids)
+      .lt("created_at", range.from)
+      .order("id")
+      .range(from, to),
+  );
+  const hasBooked = new Set(earlier.map((row) => row.player_id));
+
+  // A player's first booking in the window is new if they had none before it.
+  let newPlayers = 0;
+  let returning = 0;
+  for (const row of rows) {
+    if (!isCounted.has(row.player_id)) continue;
+    if (hasBooked.has(row.player_id)) {
+      returning += 1;
+      continue;
+    }
+    hasBooked.add(row.player_id);
+    newPlayers += 1;
+  }
+
+  return { newPlayers, returning };
+}
+
+/**
+ * Cancellations.
+ *
+ *   count(booking_cancelled events in range),
+ *   split by whether a credit_issued accompanied it
+ *
+ * The split matters operationally: a cancellation that issued credit is one
+ * where money had already been applied and is now owed back in football. One
+ * that issued none was an unpaid hold quietly released, which costs nothing
+ * and is the system working.
+ */
+async function getCancellations(range: StatRange): Promise<CancellationStats> {
+  const service = createServiceRoleSupabaseClient();
+
+  const { data: cancelled } = await service
+    .from("events")
+    .select("booking_id")
+    .eq("event_type", "booking_cancelled")
+    .gte("created_at", range.from)
+    .lt("created_at", range.to);
+
+  const rows = cancelled ?? [];
+  const bookingIds = rows
+    .map((row) => row.booking_id)
+    .filter((id): id is string => id !== null);
+
+  if (bookingIds.length === 0) return { total: rows.length, withCredit: 0 };
+
+  const { data: credited } = await service
+    .from("events")
+    .select("booking_id")
+    .eq("event_type", "credit_issued")
+    .in("booking_id", bookingIds);
+
+  const creditedIds = new Set((credited ?? []).map((row) => row.booking_id));
+
+  return {
+    total: rows.length,
+    withCredit: bookingIds.filter((id) => creditedIds.has(id)).length,
+  };
+}
+
+/**
+ * Everything the stats page renders, in one round of parallel reads.
+ *
+ * TAKES A WINDOW AND READS THE CLOCK ITSELF, returning the range it used. The
+ * page cannot read the clock — that is impure during render, and the lint rule
+ * saying so is enforcing a real property — and it needs the exact bounds the
+ * numbers were computed against in order to print them. Handing back the range
+ * is what keeps the label and the figures describing the same period.
+ */
+export async function getAdminStats(window: StatWindow): Promise<AdminStats> {
+  const range = statRange(window, Date.now());
+  return getAdminStatsForRange(range);
+}
+
+/** The bounded form, kept separate so the range can be supplied in a test. */
+export async function getAdminStatsForRange(range: StatRange): Promise<AdminStats> {
+  const [fillRate, confirmedRevenueCzk, newReturning, cancellations] =
+    await Promise.all([
+      getFillRate(range),
+      getConfirmedRevenue(range),
+      getNewReturning(range),
+      getCancellations(range),
+    ]);
+
+  return { range, fillRate, confirmedRevenueCzk, newReturning, cancellations };
+}
+
+/**
+ * `n / total` as a whole-percent string, or a dash when there is nothing yet.
+ *
+ * A dash rather than 0%: with no data the honest answer is "no answer", and a
+ * 0% fill rate on a week with no games reads as a problem when it is really an
+ * empty window. That reading matters more since Phase 19, because a window CAN
+ * legitimately be empty — "today" usually is.
+ */
+export function ratio(n: number, total: number): string {
+  if (total <= 0) return "—";
+  return `${Math.round((n / total) * 100)}%`;
+}

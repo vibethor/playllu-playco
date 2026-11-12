@@ -1,0 +1,122 @@
+import { expect, test } from "@playwright/test";
+import path from "node:path";
+import { LOCALE_COOKIE } from "../lib/i18n/locales";
+import { createScratchGame, destroyScratchGame } from "./helpers/scaffold.ts";
+import { apiClientFor, players, signInAs } from "./helpers/session.ts";
+
+/**
+ * THE STAGE 6 STRIPS — payment choice, claim confirmation, the cancel dialog
+ * and the three waitlist states.
+ *
+ * `docs/v13/strips/stage6/`, 390px, EN and CS.
+ *
+ * EACH STATE IS BUILT RATHER THAN SAMPLED, because every one of them is a
+ * moment rather than a page: a full game with somebody waiting, a wallet with
+ * nothing in it, a booking that exists only so it can be cancelled. A strip
+ * taken off the seeded board would catch whichever of these happened to be
+ * true and silently miss the rest.
+ */
+
+
+test.describe("Stage 6 strips", () => {
+  test.use({ viewport: { width: 390, height: 900 } });
+
+  for (const locale of ["en", "cs"] as const) {
+    test(`the booking and waitlist surfaces — ${locale}`, async ({ page, context }) => {
+      await context.addCookies([
+        { name: LOCALE_COOKIE, value: locale, domain: "localhost", path: "/" },
+      ]);
+
+      const settle = async () => {
+        await page.evaluate(() => document.fonts.ready);
+        await page.addStyleTag({
+          content:
+            "nextjs-portal,[data-nextjs-toast],#__next-build-watcher{display:none !important}",
+        });
+      };
+
+      const open = await createScratchGame({ hoursFromNow: 24 * 4, capacity: 12 });
+      const full = await createScratchGame({ hoursFromNow: 24 * 5, capacity: 2 });
+
+      try {
+        await signInAs(context, players.runner);
+
+        // --- 1. payment choice --------------------------------------------
+        await page.goto(`/game/${open.id}/book`, { waitUntil: "networkidle" });
+        await settle();
+        await expect(page.getByTestId("confirm-booking")).toBeVisible();
+        
+        // --- 2. claim confirmation, with the insufficient-credits offer ----
+        /*
+         * The strip above captures the UNCHOSEN state, which is the one round 7
+         * item 10 introduced — so the booking happens after the screenshot.
+         *
+         * THROUGH THE RAIL, NOT THE FORM (round 23, item 7). This player has
+         * no credit on purpose — the offer being photographed is the one shown
+         * to somebody who cannot pay with credit — and with cash gone the
+         * form's only remaining route for them is `online`, which redirects to
+         * a payment page and never renders the confirmation. The booking is
+         * created directly so the SCREEN is still what gets photographed.
+         */
+        const claimant = await apiClientFor(players.runner);
+        const { data: claimed } = await claimant.rpc("create_booking", {
+          p_game_id: open.id,
+          p_payment_method: "qr",
+        });
+        await page.goto(
+          `/game/${open.id}/book/confirmation?booking=${(claimed as unknown as { id: string }).id}`,
+          { waitUntil: "networkidle" },
+        );
+        await settle();
+        await expect(page.getByTestId("confirmation")).toBeVisible();
+        
+        // --- 3. the cancel dialog, open ------------------------------------
+        await page.goto(`/game/${open.id}`, { waitUntil: "networkidle" });
+        await settle();
+        await page.getByTestId("cancel-booking").click();
+        await expect(page.getByTestId("cancel-dialog")).toBeVisible();
+                await page.getByTestId("cancel-dialog-keep").click();
+
+        // --- 4. the waitlist, joined (the claim bar's state) ---------------
+        const organizer = await apiClientFor(players.organizer);
+        for (const player of [players.organizer, players.seedBot] as const) {
+          await organizer.rpc("admin_create_booking", {
+            p_game_id: full.id,
+            p_player_id: player.id,
+            p_payment_method: "cash",
+          });
+        }
+
+        await page.goto(`/game/${full.id}`, { waitUntil: "networkidle" });
+        await settle();
+        await page.getByTestId("join-waitlist").click();
+        await expect(page.getByTestId("claim-bar")).toHaveAttribute(
+          "data-state",
+          "waitlisted",
+        );
+        await settle();
+        
+        // --- 5. the spot-opened state --------------------------------------
+        await page.goto(`/game/${full.id}/waitlist/convert`, { waitUntil: "networkidle" });
+        await settle();
+        await expect(page.getByTestId("waitlist-status")).toHaveAttribute(
+          "data-tone",
+          "open",
+        );
+        
+        // --- 6. not on the list --------------------------------------------
+        await context.clearCookies();
+        await signInAs(context, players.creditRich);
+        await page.goto(`/game/${full.id}/waitlist/convert`, { waitUntil: "networkidle" });
+        await settle();
+        await expect(page.getByTestId("waitlist-status")).toHaveAttribute(
+          "data-tone",
+          "absent",
+        );
+              } finally {
+        await destroyScratchGame(open.id);
+        await destroyScratchGame(full.id);
+      }
+    });
+  }
+});

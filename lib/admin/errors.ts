@@ -1,0 +1,104 @@
+import { strings } from "@/lib/strings";
+
+/**
+ * Maps a Postgres error message onto admin-facing copy.
+ *
+ * The RPCs raise bare codes (`CAPACITY_BELOW_ACTIVE_BOOKINGS`,
+ * `INVALID_TRANSITION`, …) and PostgREST surfaces them with framing text
+ * around them, so this matches on containment rather than equality — the same
+ * approach `lib/booking/errors.ts` takes for the player-facing codes.
+ *
+ * Anything unrecognised falls back to the generic message rather than being
+ * echoed: a raw driver error in an admin panel is both unhelpful and a small
+ * disclosure of the schema.
+ */
+const CODES: Array<[string, string]> = [
+  ["CAPACITY_BELOW_ACTIVE_BOOKINGS", strings.admin.capacityBelowBooked],
+  ["INVALID_CAPACITY", strings.admin.capacityInvalid],
+  ["INVALID_PRICE", strings.admin.priceInvalid],
+  ["INVALID_STARTS_AT", strings.admin.startsAtRequired],
+  ["INVALID_TRANSITION", strings.admin.invalidTransition],
+  ["VENUE_EXISTS", strings.admin.venueExists],
+  ["VENUE_NOT_FOUND", strings.admin.venueRequired],
+  ["GAME_NOT_FOUND", strings.games.notFound],
+  ["INSUFFICIENT_PERMISSION", strings.errors.insufficientPermission],
+  // Site settings (§6, migration 30). The key errors are developer-facing —
+  // the form only ever sends the two known keys — but an unmapped code falls
+  // back to the generic message, which would say nothing useful about a value
+  // an admin just typed.
+  ["SETTING_VALUE_INVALID", strings.admin.siteSettingInvalid],
+  ["SETTING_KEY_UNKNOWN", strings.admin.siteSettingUnknownKey],
+  ["SETTING_KEY_REQUIRED", strings.admin.siteSettingUnknownKey],
+  ["CREDIT_NEGATIVE_BLOCKED", strings.admin.grantNegativeBlocked],
+  ["INVALID_CREDIT_DELTA", strings.admin.grantInvalid],
+  ["INVALID_CREDIT_REASON", strings.admin.grantInvalid],
+  ["CANNOT_CHANGE_OWN_ADMIN", strings.admin.adminCannotChangeOwn],
+  /*
+   * Round 16 item 18. These two say WHAT TO DO NEXT rather than what went
+   * wrong: a refusal an admin cannot act on is the same as a broken button,
+   * and both of these have an obvious next step — cancel the game, reassign
+   * the games.
+   */
+  ["GAME_HAS_BOOKINGS", strings.admin.deleteGameBlocked],
+  ["VENUE_HAS_GAMES", strings.admin.deleteVenueBlocked],
+  ["REASON_REQUIRED", strings.errors.reasonRequired],
+  /*
+   * ~~MERGE_SELF / NOT_A_SHADOW / MERGE_CONFLICT.~~ REMOVED IN ROUND 11 with
+   * the merge tool. `merge_players` still exists as an RPC and still raises
+   * them; nothing in the product calls it, so a message for an admin who
+   * cannot reach the surface was copy pretending to be a code path.
+   */
+  ["PLAYER_NOT_FOUND", strings.admin.playerNotFound],
+  // Round 42 — the organizer dropdown offers only organizers; a stale form
+  // or a hand-made call can still name somebody else.
+  ["PLAYER_NOT_ORGANIZER", strings.admin.organizerNotOrganizer],
+  ["ADDRESS_TOO_LONG", strings.admin.venueAddressTooLong],
+  // Round 42 — pitch costs and the season switch.
+  ["PITCH_COST_OUT_OF_RANGE", strings.admin.pitchCostOutOfRange],
+  ["INVALID_PITCH_SEASON", strings.admin.pitchSeasonInvalid],
+  ["INVALID_GUEST_COUNT", strings.admin.guestsInvalid],
+  /*
+   * Round 33, item 1. `admin_set_display_name` raises these rather than letting
+   * the CHECK and the unique index surface — an admin reading
+   * "players_nickname_format" learns nothing they can act on, and both of these
+   * have an obvious next move.
+   */
+  ["NICKNAME_INVALID", strings.admin.nameChangeHint],
+  ["NICKNAME_TAKEN", strings.admin.nameTaken],
+  // Round 35 v2, item 8.
+  ["CANNOT_BAN_ADMIN", strings.admin.banCannotAdmin],
+  ["CANNOT_DELETE_ADMIN", strings.admin.deleteCannotAdmin],
+  // CHECK-constraint violations reach here as the constraint name.
+  ["venues_image_path_format", strings.admin.venueImageInvalid],
+  ["games_format_format", strings.admin.formatInvalid],
+  ["games_notes_length", strings.admin.notesTooLong],
+];
+
+/**
+ * Pulls the shortfall out of `PAYMENT_UNDERPAID`'s detail ("received X of Y").
+ *
+ * Read from the raise rather than recomputed in the action, so the number the
+ * admin sees is the one `confirm_booking` actually compared — the amount due
+ * is `price_czk - credit_applied_czk`, and re-deriving it from a page that may
+ * be seconds stale is how the message ends up disagreeing with the refusal.
+ *
+ * Null for anything that is not an underpayment, so an unrelated failure is
+ * never dressed up as a friendly shortfall.
+ */
+export function parseUnderpayment(raw: string | null | undefined): number | null {
+  if (!raw || !raw.includes("PAYMENT_UNDERPAID")) return null;
+  const match = raw.match(/received\s+(\d+)\s+of\s+(\d+)/);
+  if (!match) return null;
+  const received = Number(match[1]);
+  const due = Number(match[2]);
+  if (!Number.isFinite(received) || !Number.isFinite(due)) return null;
+  return Math.max(0, due - received);
+}
+
+export function toAdminErrorMessage(raw: string | null | undefined): string {
+  if (!raw) return strings.errors.generic;
+  for (const [code, message] of CODES) {
+    if (raw.includes(code)) return message;
+  }
+  return strings.errors.generic;
+}

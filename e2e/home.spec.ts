@@ -1,0 +1,585 @@
+import { expect, test } from "@playwright/test";
+import { players, serviceClient, signInAs } from "./helpers/session.ts";
+import { LOCALE_COOKIE } from "../lib/i18n/locales";
+
+/**
+ * G2 home-page specs (§6).
+ *
+ * `site_settings` is a SINGLETON, which makes it the one thing in this suite
+ * that cannot be built and torn down per spec — there is one row and every
+ * spec touching it shares it. So each spec here reads the value first and puts
+ * it back afterwards, rather than assuming a starting state. A suite whose
+ * result depends on the order it ran in is the flake that cannot be
+ * reproduced.
+ */
+
+async function readSetting(key: string): Promise<unknown> {
+  const admin = serviceClient();
+  const { data } = await admin
+    .from("site_settings")
+    .select("settings")
+    .eq("id", "singleton")
+    .maybeSingle();
+  return (data?.settings as Record<string, unknown> | undefined)?.[key] ?? null;
+}
+
+async function writeSetting(key: string, value: unknown): Promise<void> {
+  const admin = serviceClient();
+  const { error } = await admin.rpc("set_site_setting", { p_key: key, p_value: value });
+  if (error) throw new Error(`set_site_setting(${key}): ${error.message}`);
+}
+
+/*
+ * TEST-224 — the home page reads its settings ANONYMOUSLY.
+ *
+ * The assertion that matters is the signed-out one. Supabase grants nothing by
+ * default here, so a missing grant would return empty rather than erroring —
+ * and an empty stats strip looks like a content problem, not a permissions
+ * one. This is the most repeated lesson in the project, and this is the table
+ * where it would be least visible.
+ */
+test("a signed-out visitor sees both numbers and the four panels", async ({ page }) => {
+  const previousPlayers = await readSetting("active_players");
+  const previousGames = await readSetting("games_per_week");
+
+  try {
+    await writeSetting("active_players", 250);
+    await writeSetting("games_per_week", 9);
+
+    // No session at all — a fresh context, straight to the landing page.
+    await page.goto("/");
+
+    /*
+     * ONE PLACE PER NUMBER, AND ONE ONLY. The old stats strip carried the
+     * active-player count as well as the community heading, and the same
+     * figure in two places invites the reader to check whether they agree —
+     * a job the page should not hand out. v1.2 §6 gives the numbers their own
+     * panel and takes the count back out of the heading.
+     */
+    await expect(page.getByTestId("stats-strip")).toHaveCount(0);
+    await expect(page.getByTestId("community-heading")).not.toContainText("250");
+    await expect(page.getByTestId("stat-players-value")).toContainText("250");
+    await expect(page.getByTestId("stat-games-value")).toContainText("9");
+
+    // Both render with the "+", because both are floors rather than counts.
+    await expect(page.getByTestId("stat-games-value")).toContainText("+");
+
+    // REQ-HOME-005 as amended — four panels.
+    await expect(page.getByTestId("community-panel")).toBeVisible();
+    // The standalone stats box is gone (Section 2, item 8) — its two numbers
+    // live in the community panel now.
+    await expect(page.getByTestId("stats-panel")).toHaveCount(0);
+    await expect(page.getByTestId("community-stats")).toBeVisible();
+    await expect(page.getByTestId("faq-panel")).toBeVisible();
+    await expect(page.getByTestId("potm-panel")).toBeVisible();
+
+    /*
+       THE OFFICIAL MARKS, and asserted as LOADED rather than as present.
+       They were inline SVGs; they are now the supplied artwork from
+       `public/brand/` at 44px, side by side. A missing file renders as an
+       empty box of exactly the right size, which is invisible in a dark panel
+       and photographs as design — so `naturalWidth` is the assertion, not
+       `toBeVisible`.
+    */
+    for (const id of ["community-whatsapp", "community-instagram"]) {
+      const mark = page.getByTestId(id).locator("img");
+      await expect(mark).toBeVisible();
+      expect(
+        await mark.evaluate((el) => (el as HTMLImageElement).naturalWidth),
+        `${id} mark did not load`,
+      ).toBeGreaterThan(0);
+    }
+
+    // REQ-HOME-001 — how-it-works, with the equipment line beneath it.
+    await expect(page.getByTestId("how-it-works")).toBeVisible();
+    // The equipment line is gone (Section 2, item 5) — a documented reversal
+    // of ruling J's amendment, by the owner's order.
+    await expect(page.getByTestId("equipment-line")).toHaveCount(0);
+  } finally {
+    await writeSetting("active_players", previousPlayers ?? 0);
+    await writeSetting("games_per_week", previousGames ?? 7);
+  }
+});
+
+/*
+ * v1.2 §6 — the home page shows the next THREE games, in the list's own row.
+ *
+ * The single "NEXT MATCH" card could only answer "is there a game". The
+ * question a visitor arrives with is "is there a game I can make", which one
+ * card answers "no" to as often as not.
+ */
+test("the home page shows the next three games as list rows", async ({ page }) => {
+  await page.goto("/");
+
+  const rows = page.getByTestId("next-matches").getByTestId("game-row");
+  await expect(rows.first()).toBeVisible();
+  expect(await rows.count()).toBeLessThanOrEqual(3);
+
+  /*
+   * THE SAME COMPONENT AS THE LIST, which is what keeps the two surfaces from
+   * drifting — and the assertion tracks what that component carries.
+   *
+   * NO PRICE (layout law, 2026-08-10): the price and its credit equivalence
+   * live on the game detail's claim bar now, where a reader is deciding about
+   * one game rather than scanning eight. Both list surfaces are identical, so
+   * this asserts the absence here as well as on `/games`.
+   */
+  await expect(rows.first().getByTestId("spots-left")).toHaveAttribute("data-tone", /.+/);
+  await expect(rows.first().getByTestId("card-price")).toHaveCount(0);
+  // The dotted line carries the spots figure and the faces; the raw count
+  // caption is gone (layout law, final form).
+  await expect(rows.first().getByTestId("row-spots")).toBeVisible();
+  await expect(rows.first().getByTestId("card-players-count")).toHaveCount(0);
+
+  // A section showing three of something says that three is not all of it.
+  await page.getByTestId("next-matches-all").click();
+  await page.waitForURL("**/games");
+});
+
+/*
+ * ~~REQ-HOME-007 — the six FAQ entries, as specified.~~ FOUR since round 13
+ * item 11, which is the owner's own list.
+ *
+ * "When should I show up?" and "What if I can't make it?" left it: the second
+ * is on the booking screen already, directly above the button it concerns,
+ * which is where a cancellation policy is actually read.
+ *
+ * THE COUNT IS STILL ASSERTED. An FAQ is exactly the surface that grows by one
+ * question at a time until nobody reads any of it, and a number here is what
+ * makes adding a fifth a decision rather than a commit.
+ */
+test("the FAQ carries the owner's four entries and they open", async ({ page }) => {
+  await page.goto("/");
+
+  const entries = page.getByTestId("faq-panel").locator("details");
+  await expect(entries).toHaveCount(4);
+
+  // Closed to begin with, and openable without JavaScript state.
+  const first = entries.first();
+  await expect(first.locator("p")).toBeHidden();
+  await first.locator("summary").click();
+  await expect(first.locator("p")).toBeVisible();
+});
+
+/*
+ * Games-per-week is an ADMIN CLAIM now, not a computed count (migration 37).
+ *
+ * The distinction is the whole point and is asserted directly: the page shows
+ * what the setting says even when it disagrees with how many games are actually
+ * on the board. A trailing-seven-day count would have advertised a quiet
+ * fortnight in August as the normal rate.
+ */
+test("games-per-week is what the admin set, not what the board holds", async ({ page }) => {
+  const previous = await readSetting("games_per_week");
+
+  try {
+    await writeSetting("games_per_week", 42);
+    await page.goto("/");
+    await expect(page.getByTestId("stat-games-value")).toContainText("42");
+
+    // The old strip is still gone. A removal nobody checks is a removal that
+    // comes back.
+    await expect(page.getByTestId("stats-strip")).toHaveCount(0);
+  } finally {
+    await writeSetting("games_per_week", previous ?? 7);
+  }
+});
+
+/*
+ * TEST-225 — an admin changes the number, the home page reflects it, and an
+ * event records who did it.
+ */
+test("an admin changes the active-player number and the change is recorded", async ({
+  page,
+  context,
+}) => {
+  const previous = await readSetting("active_players");
+  const admin = serviceClient();
+
+  const { count: eventsBefore } = await admin
+    .from("events")
+    .select("id", { count: "exact", head: true })
+    .eq("event_type", "site_setting_changed");
+
+  try {
+    await signInAs(context, players.organizer);
+    await page.goto("/admin/site");
+
+    await page.getByTestId("active-players-input").fill("312");
+    await page.getByTestId("active-players-submit").click();
+
+    /*
+     * WAIT ON THE DATABASE, NOT ON THE SUCCESS MARKER.
+     *
+     * `active-players-saved` is rendered from a `useActionState` result, and
+     * the action calls `revalidatePath("/admin/site")` — so the re-render can
+     * unmount the marker before Playwright ever observes it. This spec passed
+     * in isolation and failed inside the full suite for exactly that reason,
+     * which is the flake CLAUDE.md names: client-state success markers do not
+     * survive `revalidatePath`, so assert on what the server renders next or on
+     * the row itself.
+     *
+     * It also stops the navigation below from racing the action: `click()`
+     * returns as soon as the form is submitted, and navigating immediately
+     * afterwards aborts an in-flight server action.
+     */
+    await expect.poll(() => readSetting("active_players"), { timeout: 10_000 }).toBe(312);
+
+    // The home page reflects it — in the one place it now appears.
+    await page.goto("/");
+    await expect(page.getByTestId("stat-players-value")).toContainText("312");
+
+    // And the event records the change. A public claim about the size of the
+    // community with no audit trail is a number nobody can account for.
+    const { count: eventsAfter, data } = await admin
+      .from("events")
+      .select("player_id, metadata", { count: "exact" })
+      .eq("event_type", "site_setting_changed")
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    expect(eventsAfter).toBeGreaterThan(eventsBefore ?? 0);
+    expect(data?.[0]?.player_id).toBe(players.organizer.id);
+    expect((data?.[0]?.metadata as { value?: unknown })?.value).toBe(312);
+  } finally {
+    await writeSetting("active_players", previous ?? 0);
+  }
+});
+
+/*
+ * REQ-HOME-006 — Player of the Month falls back to initials.
+ *
+ * The fallback is not a degraded state: the pick recognises how someone plays,
+ * not whether they uploaded a picture.
+ */
+test("player of the month renders, with initials when there is no photo", async ({
+  page,
+}) => {
+  const previous = await readSetting("player_of_month");
+
+  try {
+    await writeSetting("player_of_month", players.runner.id);
+
+    await page.goto("/");
+    await expect(page.getByTestId("potm-nickname")).toHaveText(players.runner.nickname);
+    // No photo on this seeded player, so initials — and no broken image.
+    await expect(page.getByTestId("potm-photo")).toHaveCount(0);
+    await expect(page.getByTestId("potm-avatar")).toContainText(/[A-Z]/);
+
+    // Cleared, the panel invites rather than showing an empty frame.
+    await writeSetting("player_of_month", null);
+    await page.goto("/");
+    await expect(page.getByTestId("potm-nickname")).toHaveCount(0);
+    await expect(page.getByTestId("potm-panel")).toContainText("Nobody picked yet");
+  } finally {
+    await writeSetting("player_of_month", previous ?? null);
+  }
+});
+
+/*
+ * THE HERO HEADLINE BREAKS ONLY AT SENTENCE BOUNDARIES (redesign v2, round 3,
+ * p01).
+ *
+ * WHAT THIS REPLACES, and why the subject changed rather than the assertion
+ * being deleted: the previous spec was "the wordmark renders on one row" —
+ * Section 2 item 1, about a hero that set "HRAJ FOTBAL." at display scale with
+ * a hard `<br>` in it. Round 3 takes the wordmark out of the hero entirely
+ * (the header already carries it), so there is no wordmark here to be one row.
+ * The requirement it protected survives and is what is asserted here: the
+ * headline never wraps in a place nobody chose.
+ *
+ * IT IS NOT A ROW COUNT, AND THAT IS THE FINDING. English and Czech set two
+ * rows, which is the frame. RUSSIAN SETS THREE, and cannot do otherwise:
+ * **Anton ships no Cyrillic subset** (`app/layout.tsx` loads `latin` and
+ * `latin-ext`, which is all Google publishes for it), so every display heading
+ * in Russian falls back to the body face. "КОГДА УГОДНО. ГДЕ УГОДНО." measures
+ * 536px in that fallback against 358px of available width at 390 — fitting it
+ * on one row needs a 29px hero, and the frame's is 44. This is a
+ * product-wide property of the type system, not something this round
+ * introduced; the hero is simply where it first has consequences.
+ *
+ * SO THE RULE IS THE BREAK, NOT THE COUNT. Three rows reading "ИГРАЙ В
+ * ФУТБОЛ." / "КОГДА УГОДНО." / "ГДЕ УГОДНО." is the copy's own punctuation and
+ * is correct. Three rows reading "…КОГДА УГОДНО. ГДЕ" / "УГОДНО." is the
+ * defect, and it is one font-metric change away at any time.
+ *
+ * MEASURED AS "EVERY SENTENCE FITS ON A ROW", which is equivalent and is
+ * deterministic. A greedy line-breaker can only split inside a sentence if
+ * that sentence does not fit on a row of its own — so if each one fits, no row
+ * can end mid-sentence, whatever the row count turns out to be.
+ */
+test("the hero headline breaks only at sentence boundaries, in every language", async ({
+  browser,
+}) => {
+  for (const locale of ["en", "cs", "ru"] as const) {
+    for (const width of [390, 1280]) {
+      const context = await browser.newContext({ viewport: { width, height: 900 } });
+      await context.addCookies([
+        { name: LOCALE_COOKIE, value: locale, domain: "localhost", path: "/" },
+      ]);
+      const page = await context.newPage();
+      await page.goto("/");
+      /*
+       * WAIT FOR THE REAL HEADLINE, NOT FOR `load` (round 37, item 3).
+       *
+       * `/` gained a `loading.tsx` so the home tab has something to prefetch
+       * and something to paint. That makes `goto` resolve while the SKELETON is
+       * on screen, and this measurement then found either no `hero-headline` or
+       * one mid-swap — reported as `"Play football." wraps in 0px`, which reads
+       * like a layout bug and is a timing one.
+       *
+       * The same trap CLAUDE.md records from `cutover.spec.ts`, approached from
+       * the other side: there a spec asserted on the FALLBACK's content, here it
+       * measured before the fallback had gone. Both are fixed by naming
+       * something only the real page renders and waiting for it.
+       */
+      await page.getByTestId("hero-headline").waitFor({ state: "visible" });
+      await page.evaluate(() => document.fonts.ready);
+
+      const measured = await page.evaluate(() => {
+        const h1 = document.querySelector('[data-testid="hero-headline"]') as HTMLElement;
+        const style = getComputedStyle(h1);
+
+        // A nowrap probe wearing the headline's own resolved font, so the
+        // measurement survives a face swap, a clamp change and the Cyrillic
+        // fallback alike.
+        const probe = document.createElement("span");
+        probe.style.cssText =
+          `position:absolute;visibility:hidden;white-space:nowrap;` +
+          `font:${style.font};letter-spacing:${style.letterSpacing};` +
+          `text-transform:${style.textTransform}`;
+        document.body.appendChild(probe);
+
+        // Sentences, not words: the volt period is its own element, so the
+        // text content is re-split on "." rather than trusting the markup.
+        const sentences = (h1.textContent ?? "")
+          .split(/(?<=\.)\s*/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+
+        const widths = sentences.map((s) => {
+          probe.textContent = s;
+          return Math.ceil(probe.getBoundingClientRect().width);
+        });
+        probe.remove();
+
+        return { available: h1.getBoundingClientRect().width, sentences, widths };
+      });
+
+      for (const [i, sentence] of measured.sentences.entries()) {
+        expect(
+          measured.widths[i],
+          `${locale} at ${width}px: "${sentence}" wraps mid-sentence ` +
+            `(${measured.widths[i]}px in ${measured.available}px)`,
+        ).toBeLessThanOrEqual(Math.ceil(measured.available));
+      }
+      await context.close();
+    }
+  }
+});
+
+/*
+ * AND THE HERO DOES NOT REPEAT THE HEADER'S WORDMARK.
+ *
+ * Separate from the row count because it is a separate mistake: restoring the
+ * brand line above the slogan would still leave the slogan at two rows.
+ */
+/*
+ * THE HERO IS THE SLOGAN, AND IT TRANSLATES.
+ *
+ * ~~Round 3: the hero does not repeat the wordmark.~~
+ * ~~Round 12: inverted — the header lost its wordmark, so the hero carried
+ * `HRAJ FOTBAL.` untranslated in every language.~~
+ * Round 13: THE OWNER REVERSED IT. Both halves are asserted, because both
+ * have been wrong at some point: the slogan is in the reader's language, and
+ * the brand name is not the largest type on the page.
+ */
+test("the hero is the slogan, in each language", async ({ page, context }) => {
+  const expected = {
+    en: "play football",
+    cs: "hraj fotbal",
+    ru: "играй в футбол",
+  } as const;
+
+  for (const locale of ["en", "cs", "ru"] as const) {
+    await context.clearCookies();
+    await context.addCookies([
+      { name: LOCALE_COOKIE, value: locale, domain: "localhost", path: "/" },
+    ]);
+    await page.goto("/");
+
+    // `toLowerCase()` on all three: the hero is `uppercase`, so `innerText`
+    // returns the rendered capitals, Cyrillic included.
+    const headline = (await page.getByTestId("hero-headline").innerText()).toLowerCase();
+    expect(headline, `hero in ${locale}`).toContain(expected[locale]);
+  }
+});
+
+/*
+ * THE RUSSIAN HERO SETS IN THE BODY FACE, AND THAT IS ACCEPTED.
+ *
+ * Anton ships no Cyrillic subset. Round 12 dodged it by making line one Latin
+ * in every language; round 13 reversed that, so the fallback is back — under
+ * the sentence-boundary rule, which is the guarantee that actually protects
+ * the reading and is asserted separately below in this file.
+ *
+ * ASSERTED RATHER THAN LEFT IMPLICIT so that nobody "fixes" the Russian hero
+ * by reaching for a display face that cannot set it.
+ */
+test("the Russian hero falls back to the body face, by design", async ({ page, context }) => {
+  await context.addCookies([
+    { name: LOCALE_COOKIE, value: "ru", domain: "localhost", path: "/" },
+  ]);
+  await page.goto("/");
+  await page.evaluate(() => document.fonts.ready);
+
+  const family = await page
+    .getByTestId("hero-headline")
+    .evaluate((el) => getComputedStyle(el).fontFamily);
+  // The face is REQUESTED — the stack still names Anton — and Cyrillic simply
+  // has nothing to match, so the browser walks past it. Asserting the stack
+  // would assert nothing; asserting the rendered text does not fit on one row
+  // is what the sentence-boundary spec already does.
+  expect(family).toContain("Anton");
+});
+
+/* And the grey sub-line under it is gone. */
+test("the hero carries no vision sub-line", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByTestId("hero-vision")).toHaveCount(0);
+});
+
+/*
+ * STAGE 5 — ruling J's home order, as amended 2026-08-10.
+ *
+ * The amendment keeps Player of the Month (with its hours-on-pitch stat) and
+ * the equipment line; everything else in the ruling is built as written. Both
+ * survivors are asserted here BY NAME, because the thing most likely to go
+ * wrong is a later session reading the original ruling and deleting them again.
+ */
+test.describe("the home page under ruling J", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("orders its sections as the amended ruling specifies", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(() => document.fonts.ready);
+
+    const order = await page.evaluate(() =>
+      [...document.querySelectorAll("[data-testid]")]
+        .map((n) => (n as HTMLElement).dataset.testid!)
+        .filter((t) =>
+          [
+            "how-it-works",
+            "next-matches",
+            "next-matches-all",
+            "community-panel",
+            "potm-panel",
+            "faq-panel",
+          ].includes(t),
+        ),
+    );
+
+    /*
+     * THE GAMES COME FIRST SINCE ROUND 23 ITEM 4. ~~how-it-works, then the
+     * games.~~ Reversed on the owner's instruction: somebody arriving from a
+     * shared link wants to know whether there is a game on Thursday, and the
+     * answer was three scrolls down behind an explanation of a product they
+     * had already decided to look at. Ruling J's ORDER of everything below —
+     * community, Player of the Month, FAQ — is untouched.
+     */
+    expect(order).toEqual([
+      "next-matches",
+      "next-matches-all",
+      "how-it-works",
+      "community-panel",
+      "potm-panel",
+      "faq-panel",
+    ]);
+
+    /*
+     * PLAYER OF THE MONTH SURVIVES; THE EQUIPMENT LINE NO LONGER DOES.
+     * Ruling J deleted both, the 2026-08-10 amendment restored both, and
+     * Section 2 item 5 reverses the equipment half again. Asserted in both
+     * directions so neither drifts back.
+     */
+    await expect(page.getByTestId("potm-panel")).toBeVisible();
+    await expect(page.getByTestId("equipment-line")).toHaveCount(0);
+  });
+
+  test("clears the GAMES above the fold", async ({ page }) => {
+    /*
+     * THE ASSERTION INVERTS RATHER THAN DISAPPEARING (round 23, item 4).
+     *
+     * ~~The three steps clear the fold.~~ Ruling J asked for a shortened hero
+     * "in order that the steps be visible without scrolling", and the steps
+     * were what sat there. Item 4 moved the games into that position, so the
+     * PROPERTY the shortening was protecting — that the first screen ends on
+     * something worth reading rather than on a scroll hint — now applies to
+     * the games.
+     *
+     * It is the stronger version of the same claim: the steps explained the
+     * product, the games ARE the product.
+     */
+    await page.goto("/");
+    // The real games row, not the skeleton's placeholder — see the headline
+    // test above for why `goto` is no longer enough on this route.
+    await page.getByTestId("next-matches").waitFor({ state: "visible" });
+    await page.evaluate(() => document.fonts.ready);
+
+    const games = (await page.getByTestId("next-matches").boundingBox())!;
+    const viewport = page.viewportSize()!;
+    expect(
+      games.y,
+      "the games do not begin above the fold",
+    ).toBeLessThan(viewport.height);
+
+    // And the hero no longer forces a full screen of its own.
+    const heroFillsScreen = await page.evaluate(
+      () =>
+        (document.querySelector("section") as HTMLElement).getBoundingClientRect()
+          .height >= window.innerHeight,
+    );
+    expect(heroFillsScreen).toBe(false);
+  });
+});
+
+
+/**
+ * ROUND 17 ITEM 4 — the rotations, rehomed.
+ *
+ * They were two bare lines on the game detail's "Practical information" card,
+ * which round 16 item 4 removed. I flagged them rather than dropping them
+ * silently, and flagging left them in the string table rendered by nothing —
+ * which is item 1's defect in miniature.
+ *
+ * THE ASSERTION IS ON THE ANSWERS, not on a key. What matters is that a reader
+ * asking "what do I bring" and a reader asking "will I actually play" both
+ * meet the fact, so it is read out of the rendered FAQ text — and out of
+ * `textContent`, because the panel is a stack of collapsed `<details>` and
+ * `innerText` returns only what is open.
+ */
+test("the FAQ carries the goalkeeper rotation", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const faq = await page.getByTestId("faq-panel").evaluate((el) => el.textContent ?? "");
+
+  expect(faq.toLowerCase(), "the keeper rotation is not in the FAQ").toContain(
+    "goalkeepers rotate",
+  );
+
+  /*
+   * ~~AND THE SUBSTITUTE ROTATION.~~ The owner's round-25 texts drop it. Round
+   * 17 put both halves here because the "practical information" card was
+   * removed without rehoming its content; the keeper half answers a question
+   * somebody asks ("do I need gloves") and survives in the owner's own words,
+   * the sub half answered nothing anybody asked. The assertion shrinks to what
+   * is still claimed rather than pinning copy the owner replaced.
+   */
+
+  /*
+   * AND IT IS NOT BACK ON THE GAME PAGE. The card was removed for saying the
+   * same things twice; putting the rotations in both places would rebuild half
+   * of it.
+   */
+  await expect(page.getByTestId("practical-info")).toHaveCount(0);
+});

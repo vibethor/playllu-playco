@@ -1,0 +1,1029 @@
+import type { StringsOverlay } from "@/lib/i18n/resolve";
+
+/**
+ * Russian.
+ *
+ * Player-facing copy only, same scope as the Czech overlay — the admin panel,
+ * the email templates and the privacy page stay English. See
+ * `lib/i18n/locales.ts`.
+ *
+ * THE PAYMENT VOCABULARY STAYS CZECH, and that is the most important decision
+ * in this file. A Russian-speaking player in Prague pays from a Czech bank
+ * account: the screen they are about to open says "variabilní symbol" and
+ * offers a "QR platba", and the amount is in CZK. Translating those terms into
+ * Russian would produce a screen that reads beautifully and does not match the
+ * one it is instructing them to use — and a payment sent with the wrong
+ * reference arrives unmatched, which is the one failure here that costs manual
+ * reconciliation to undo. So the Czech term is kept and explained in Russian
+ * rather than replaced.
+ *
+ * Register: "ты", matching the familiar tone of the English and Czech.
+ */
+export const ru: StringsOverlay = {
+  story: {
+    formatLabel: "Формат",
+    durationLabel: "Длительность",
+    minutes: "{n} мин",
+  },
+  meta: {
+    title: "Hraj Fotbal — футбол без обязательств в Праге",
+    description:
+      "Футбол в Праге — когда угодно и где угодно. Выбери игру, займи место онлайн и просто приходи: без команды и обязательств. Новые игры каждую неделю.",
+    shareTagline: "Футбол без обязательств в Праге",
+    passTitle: "Game Pass",
+    passDescription: "Открой Game Pass и получи более выгодное предложение",
+    gamesDescription: "Найди игру и приходи поиграть",
+    loginDescription: "Войди в аккаунт",
+  },
+
+  nav: {
+    cta: "Занять место",
+    games: "Матчи",
+    logIn: "Войти",
+    homeShort: "Главная",
+    pass: "Абонемент",
+    myGames: "Мои матчи",
+    profileShort: "Профиль",
+    primary: "Главная навигация",
+    profile: "Мой профиль",
+    home: "Hraj Fotbal — на главную",
+  },
+
+  // DRAFT — flagged for the standing native-review batch.
+  consent: {
+    title: "Файлы cookie",
+    body: "Мы используем cookies. Необходимые cookies нужны, чтобы сайт работал (вход, безопасность, платежи). С твоего согласия мы используем и аналитические и маркетинговые cookies, чтобы улучшать сайт и измерять рекламу. Согласие можно в любой момент изменить в Настройках cookies внизу страницы. Подробнее — в {policy}.",
+    policyLink: "Политике использования cookies",
+    acceptAll: "Принять все",
+    rejectAll: "Отклонить все",
+    openSettings: "Настройки",
+    settingsTitle: "Настройки cookies",
+    necessaryTitle: "Необходимые",
+    necessaryBody: "Вход, безопасность и платежи. Без них сайт не работает, поэтому они включены всегда.",
+    analyticsTitle: "Аналитические",
+    analyticsBody: "Google Analytics: как используется сайт, чтобы мы могли его улучшать.",
+    marketingTitle: "Маркетинговые",
+    marketingBody: "Meta Pixel: измерение и таргетинг нашей рекламы.",
+    alwaysOn: "Всегда включены",
+    saveChoice: "Сохранить выбор",
+    settings: "Настройки cookies",
+  },
+
+  siteFooter: {
+    contact: "Контакт",
+    contactTitle: "Свяжись с нами",
+  },
+
+  // DRAFT — flagged for the standing native-review batch.
+  legal: {
+    termsTitle: "Общие условия",
+    privacyTitle: "Политика конфиденциальности",
+    cookiesTitle: "Политика использования cookies",
+    footerNavLabel: "Правовая информация",
+    czechOnlyNotice: "Этот документ на чешском языке. Юридически обязательной является чешская версия.",
+    downloadPdf: "Скачать условия в PDF",
+    back: "← Назад к матчам",
+    emailLabel: "Эл. почта",
+    privacyEmailLabel: "Персональные данные",
+    otherContactsLabel: "Другие контакты",
+    phoneLabel: "Телефон",
+  },
+
+  notFound: {
+    title: "Здесь ничего нет",
+    body: "Эта ссылка ведёт на страницу, которой не существует — или на матч, который уже давно сыгран.",
+    cta: "Посмотреть, что играем →",
+  },
+
+  landing: {
+    // DRAFT — flagged for the standing native-review batch.
+    // Split at the first sentence; the period after line one is drawn in volt
+    // by the component, so it is not in the string.
+    heroLine1: "Играй в футбол",
+    heroLine2: "Когда угодно. Где угодно.",
+    vision: "Один матч, который повторяется. Найди игру, займи место, приходи.",
+    scrollHint: "↓ ЛИСТАЙ",
+    steps: [
+      { index: "01", title: "Найди матч", body: "Игры рядом с тобой, каждую неделю." },
+      {
+        index: "02",
+        title: "Займи место",
+        body: "Забронируй место, оплатив взнос. Остальное — на нас.",
+      },
+      {
+        index: "03",
+        title: "Приходи и играй",
+        body: "Приходи на поле и наслаждайся игрой",
+      },
+    ],
+    statsGamesLabel: "Матчей каждую неделю",
+    statsPlayersLabel: "Активных игроков",
+    nextMatchesLabel: "Предстоящие матчи",
+    nextMatchesAll: "Все матчи →",
+    potmTitle: "Игрок месяца",
+    potmEmpty: "Пока никого — может, это будешь ты.",
+    potmHours: "{hours} ч на поле в этом месяце",
+    // DRAFT — flagged for the standing native-review batch. Translates the lawyer's Czech (brief item 1.4).
+    community: {
+      title: "Присоединяйся к нам",
+      body: "Подписывайся на наши соцсети, чтобы быть в курсе новостей сообщества",
+    },
+    footer: {
+      city: "· ПРАГА",
+    },
+  },
+
+  auth: {
+    loginTitle: "Вход",
+    // DRAFT — flagged for the standing native-review batch.
+    loginLede: "Почта и пароль. Пароля ещё нет? Воспользуйся ссылкой для сброса.",
+    signInSubmit: "Войти",
+    invalidCredentials: "Почта и пароль не совпадают.",
+    emailNotConfirmed:
+      "Сначала подтверди почту — открой ссылку, которую мы прислали при регистрации.",
+
+    // DRAFT — flagged for the standing native-review batch.
+    forgotPasswordLink: "Забыли пароль?",
+    resetTitle: "Сброс пароля",
+    resetLede: "Пришлём на почту шестизначный код. Введи его здесь и задай новый пароль.",
+    resetBackToLogin: "← Назад ко входу",
+    forgotPasswordLead: "Забыл пароль или ещё не задавал его?",
+    forgotPasswordCta: "Прислать код",
+
+    setPasswordTitle: "Задай пароль",
+    setPasswordLede: "Ты вошёл. Выбери пароль — и в следующий раз почта не понадобится.",
+    setPasswordSubmit: "Сохранить пароль",
+    setPasswordSkip: "Не сейчас — останусь на коде",
+    setPasswordFailed: "Не удалось сохранить пароль. Попробуй ещё раз.",
+    emailLabel: "Почта",
+    sendLink: "Отправить ссылку",
+    linkSent: "Загляни в почту — ссылка уже летит.",
+    otpLead: "Или введи 6-значный код из письма:",
+    otpLabel: "6-значный код",
+    otpSubmit: "Войти",
+    otpInvalid: "Код неверный или истёк. Запроси новый.",
+    otpMalformed: "В коде шесть цифр.",
+    linkExpired: "Срок действия ссылки истёк. Запроси новую.",
+    signOut: "Выйти",
+    emailInvalid: "Это не похоже на адрес электронной почты.",
+    linkSendFailed: "Не получилось отправить ссылку. Попробуй ещё раз.",
+    callbackFailed: "Эта ссылка для входа недействительна или уже использована.",
+    callbackErrorTitle: "Войти не получилось",
+    callbackRetry: "Запросить новую ссылку",
+    callbackDetailLabel: "Технические детали",
+
+    signupTitle: "Создай аккаунт",
+    signupLede: "Один аккаунт, один ник — и ты в составе.",
+    signupFinishTitle: "Заверши профиль",
+    signupFinishLede: "Почта подтверждена. Остался последний шаг.",
+
+    passwordLabel: "Пароль",
+    passwordHint: "Минимум 8 символов",
+    passwordTooShort: "Нужно минимум 8 символов.",
+
+    countryLabel: "Страна",
+    countryPlaceholder: "Выбери страну",
+    countryInvalid: "Выбери, пожалуйста, страну из списка.",
+
+    skillLabel: "Как ты играешь?",
+    skillHint: "Показывается в профиле. Бронировать игру это никогда не мешает.",
+    skillBeginner: "Начинающий",
+    skillIntermediate: "Средний уровень",
+    skillAdvanced: "Опытный",
+    skillRequired: "Выбери, пожалуйста, уровень.",
+
+    // DRAFT — flagged for the standing native-review batch.
+    phoneLabel: "Телефон",
+    phoneCountryLabel: "Код страны",
+    phoneRequired: "Нужен телефон, чтобы организатор мог связаться с тобой по игре.",
+    phoneInvalid: "Номер телефона — от 3 до 32 символов.",
+    phoneHint: "Его видит только организатор и только по играм, которые ты забронировал.",
+
+    legalGroupLabel: "Перед началом",
+    tosAgreement: "Я ознакомился(-ась) с {terms} и {rules} и согласен(-на) с ними.",
+    tosTermsLink: "Условиями",
+    tosRulesLink: "Правилами сообщества и игры",
+    privacyHowLink: "Как мы обрабатываем твои данные",
+    tosRequired: "Чтобы продолжить, прими условия.",
+
+    emailTaken:
+      "Аккаунт с такой почтой уже есть. Войди — или воспользуйся кодом, если пароля ещё нет.",
+    signupFailed: "Не получилось создать аккаунт. Попробуй ещё раз.",
+
+    verifyTitle: "Подтверди почту",
+    verifyBody:
+      "Мы отправили ссылку на {email}. Открой её — и аккаунт готов; ссылка работает на любом устройстве.",
+    verifyHint: "Письма нет пару минут? Проверь спам и попробуй снова.",
+
+    signUp: "Регистрация",
+    noAccountLead: "Ещё не с нами?",
+    createAccountCta: "Регистрация →",
+    haveAccount: "Уже есть аккаунт?",
+    // DRAFT — flagged for the standing native-review batch.
+    googleContinue: "Продолжить через Google",
+    googleSignUp: "Регистрация через Google",
+    googleFailed: "Не удалось начать вход через Google. Попробуй ещё раз.",
+    authOr: "или",
+    noAccount: "Впервые здесь?",
+    nicknameLabel: "Ник",
+    nicknameHint: "Буквы, цифры, пробелы, _ и - · до 20 символов",
+    nicknameInvalid: "Только буквы, цифры, пробелы, _ и - (до 20 символов).",
+    phoneRefused: "Этот номер телефона использовать нельзя. Попробуй другой или напиши нам.",
+    nicknameTaken: "Такой ник уже занят. Попробуй другой.",
+    marketingLabel: "Я согласен(-на) получать маркетинговые материалы по e-mail.",
+    emailLocaleLabel: "Язык писем",
+    emailLocaleHint: "На этом языке будут приходить подтверждения брони, чеки и напоминания.",
+    createAccount: "Создать аккаунт",
+  },
+
+  games: {
+    listTitle: "Ближайшие матчи",
+    empty: "Пока нет ни одного матча.",
+    emptyTitle: "Игр пока нет",
+    emptyBody: "Новые игры появляются каждую неделю.",
+    emptyCta: "Вступай в группу WhatsApp",
+    spotsLeftOne: "{n} место свободно",
+    spotsLeftFew: "{n} места свободно",
+    spotsLeftMany: "{n} мест свободно",
+    full: "Мест нет",
+    durationMin: "{n} мин",
+    past: "Завершено",
+    joinWaitlist: "Встать в очередь",
+    fullNotice: "Матч заполнен — все места заняты.",
+    seeOtherGames: "Другие матчи →",
+    onWaitlist: "Ты в очереди",
+    waitlistJoined: "Ты в очереди. Напишем, как только освободится место.",
+    waitlistAlready: "Ты уже в очереди на этот матч.",
+    // Round 16 item 11 — DRAFT.
+    waitlistLeave: "Уйти из листа ожидания",
+    waitlistLeftDone: "Ты вышел из листа ожидания.",
+    waitlistHint:
+      "Как только место освободится, об этом узнают все в очереди одновременно — место достанется тому, кто займёт его первым.",
+    waitlistPosition: "Ты #{position} в очереди",
+    waitlistConvertTitle: "Занять освободившееся место",
+    waitlistConvertHint: "Выбери, как платишь, и место твоё.",
+    waitlistNotOnList: "Тебя нет в очереди на этот матч.",
+    waitlistJoinedTitle: "Ты в очереди",
+    waitlistSpotOpenTitle: "Место освободилось",
+    waitlistSpotOpenBody:
+      "Все в очереди узнали одновременно. Займи его — и оно твоё.",
+    waitlistNotOnListTitle: "Тебя нет в этой очереди",
+    waitlistNotOnListBody:
+      "Возможно, место уже заняли, или ты записался на другой матч.",
+    waitlistSeeGame: "Открыть матч",
+    rosterTitle: "Состав",
+    rosterEmpty: "Пока никто не занял место",
+    // DRAFT — flagged for the standing native-review batch.
+    addGuests: {
+      title: "Берёшь кого-то с собой?",
+      body: "Добавь гостей к своему месту. Они появятся в составе, как только придёт оплата.",
+      cost: "{amount} за {n}",
+      costCredits: "{credits} за {n}",
+      guestOne: "1 гость",
+      guestMany: "{n} гостей",
+      payOnline: "Оплатить онлайн",
+      creditOne: "{n} кредит",
+      creditFew: "{n} кредита",
+      creditMany: "{n} кредитов",
+      notEnoughCredit: "Не хватает кредитов на столько гостей",
+      capacityFull: "Эти места только что заняли",
+      failed: "Не получилось. Попробуй ещё раз.",
+    },
+    cancelGuests: {
+      title: "Кто-то не придёт?",
+      body: "Убери гостей со своего места. Твоё остаётся — чтобы уйти из матча совсем, нажми Отменить.",
+      refund: "{credits} вернутся тебе.",
+      forfeit: "До начала меньше {hours} ч — за снятого гостя уже ничего не вернётся.",
+      submit: "Убрать {n}",
+      confirm: "Убрать {n} со своего места?",
+      confirmLate: "Убрать {n}? Срок возврата прошёл, поэтому ничего не вернётся.",
+      windowClosed: "Этот матч уже начался.",
+      countInvalid: "У тебя нет столько гостей.",
+    },
+    cancelled: "Этот матч отменён.",
+    notFound: "Такого матча нет или он ещё не опубликован.",
+    backToGames: "← Все матчи",
+    viewGame: "Открыть матч",
+    copyLink: "Копировать ссылку",
+    copyLinkFailed: "Не удалось скопировать — зажми адресную строку.",
+    dayFilterAll: "Все",
+    dayToday: "Сегодня",
+    dayTomorrow: "Завтра",
+    dayTomorrowShort: "Завтра",
+    rosterReserved: "держит место",
+    rosterConfirmed: "в составе",
+    filledLabel: "ЗАНЯТО",
+    joinNote: "Одно касание — и место твоё. Заплати заранее с телефона.",
+    openMap: "ОТКРЫТЬ КАРТУ ↗",
+    mapAlt: "Карта площадки",
+    venuePhotoAlt: "Поле {venue}",
+    surface: {
+      turf: "Искусственный газон",
+      grass: "Трава",
+      indoor: "Зал",
+      sand: "Песок",
+    },
+    subsPerTeamOne: "{n} запасной на команду",
+    subsPerTeamFew: "{n} запасных на команду",
+    subsPerTeamMany: "{n} запасных на команду",
+    skillLevel: {
+      beginner: "Новичок",
+      intermediate: "Средний",
+      advanced: "Опытный",
+    },
+    skillNotEnforced: "Рады всем — это ориентир, а не правило.",
+
+    organizerLabel: "Организатор",
+
+    yourBookingTitle: "Ты в составе",
+    yourBookingHeld: "Место забронировано — подтверди его оплатой.",
+    yourBookingConfirmed: "Оплачено. Увидимся на поле.",
+    yourBookingCash: "Платишь наличными на поле.",
+    yourBookingPay: "Оплатить место",
+    yourBookingManage: "Управлять бронью",
+
+    openMapFull: "Открыть место на карте",
+    organizerRole: "Организует этот матч",
+    // DRAFT — flagged for the standing native-review batch.
+    // Round 18 item 8 — DRAFT.
+    organizerTelegram: "Написать в Telegram",
+    organizerWhatsApp: "Написать в WhatsApp",
+    organizerWhatsAppMessage: "Привет! Вопрос по игре {game}.",
+    // DRAFT — flagged for the standing native-review batch.
+    cardJoinCue: "Играю",
+    availabilityLabel: "Свободные места",
+    playersOfCapacity: "{booked} / {capacity} игроков",
+    playersTitle: "Игроки ({count})",
+    /*
+     * Russian forms a possessive by declining the name, which cannot be done
+     * safely to a free-text nickname. The dash keeps the relationship without
+     * asserting a grammatical case the nickname may not have.
+     */
+    guestOfPlayer: "{name} — гость {n}",
+    guestNumbered: "Гость {n}",
+    guestAvatarLabel: "Гость",
+    gamesPlayedOne: "{n} матч",
+    gamesPlayedFew: "{n} матча",
+    gamesPlayedMany: "{n} матчей",
+    gamesPlayedNone: "Первый матч",
+    gameInfoTitle: "Информация об игре",
+    infoWhen: "Когда",
+    infoWhere: "Где",
+    infoFormat: "Формат",
+    infoLevel: "Уровень",
+    infoDuration: "Длительность",
+    // Round 18 item 3 — DRAFT.
+    infoLanguage: "Язык",
+    infoSurface: "Покрытие",
+    includedTitle: "Что входит",
+    pitchAmenitiesTitle: "Инфраструктура площадки",
+    amenities: {
+      bibs: "Манишки",
+      gloves: "Вратарские перчатки",
+      balls: "Мячи",
+      water: "Вода",
+      drinks: "Напитки",
+      showers: "Душевые",
+      lockers: "Шкафчики",
+      parking: "Парковка",
+      wifi: "Wi-Fi",
+      first_aid: "Аптечка",
+    },
+    practicalTitle: "Информация об игре",
+    practicalMeetingPoint: "Место встречи",
+    practicalArrival: "Приходи за 10 минут до начала.",
+    practicalDuration: "Длительность",
+    practicalDurationValue: "{minutes} минут",
+
+    // Round 18 item 6 — DRAFT.
+    notesLabel: "Заметки от организатора",
+    capacityLabel: "Вместимость",
+    startsLabel: "Начало",
+    venueLabel: "Где",
+    priceLabel: "Цена",
+    alreadyStarted: "Этот матч уже начался.",
+    inProgress: "Этот матч идёт прямо сейчас.",
+    playingNow: "Идёт игра",
+
+    urgencyOpen: "Есть места",
+    urgencyLastFew: "Почти заполнен",
+    urgencyFull: "Мест нет",
+
+    waitlistTitle: "Очередь",
+    waitlistEmpty: "Пока никто не ждёт — место всё ещё достаётся первому.",
+    waitlistYou: "Ты",
+    waitlistCount: "в очереди",
+    onWaitlistBadge: "Ты в очереди",
+
+    nextGameStrip: "Твой следующий матч",
+    nextGameStripCta: "Открыть бронь →",
+
+    shareWhatsApp: "Поделиться в WhatsApp",
+    shareMessage: "⚽ Футбол · {when}\n📍 {venue}\n{call} 👉 {url}",
+    shareCallOpen: "{spots} — займи место",
+    shareCallFull: "Мест нет — встань в лист ожидания",
+    shareCallDefault: "Займи место",
+  },
+
+  booking: {
+    claimSpot: "Занять место",
+    logInToClaim: "Войди, чтобы занять место",
+    signInToClaim: "Войди, чтобы забронировать",
+    barPaid: "Оплачено",
+    barAmountDue: "К оплате {amount}",
+    barKickedOffAt: "Начало в {time}",
+    barCancelled: "Отменено",
+    barOnWaitlist: "Ты {n}-й в листе ожидания",
+    barOnWaitlistNoPosition: "Ты в листе ожидания",
+    barCancel: "Отменить",
+    barLabel: "Твоё место на этом матче",
+    nicknameLabel: "Ник",
+    nicknameHint: "Буквы, цифры, пробелы, _ и - · до 20 символов",
+    // "QR platba" — the Czech banking app's own name for it, kept and glossed.
+    payByQr: "Оплатить по QR (QR platba)",
+    payByQrHint:
+      "Отсканируй QR в банковском приложении. Место держим за тобой, пока не придёт платёж.",
+    // DRAFT — flagged for the standing native-review batch.
+    // DRAFT — flagged for the standing native-review batch.
+    payWithCredit: "Списать кредит",
+    payWithCreditHint: "Спишется {seats} кредит(ов), которые у тебя уже есть. Платить ничего не нужно.",
+    payWithCreditNone: "У тебя пока нет кредитов.",
+    addCredits: "Пополнить кредиты →",
+    payOnline: "Онлайн-оплата",
+    payOnlineHint: "Безопасно через Stripe",
+    payOnlineComingSoon: "Скоро",
+    payByCashHint: "Эту бронь ты закрываешь с организатором на поле.",
+    choosePayment: "Как будешь платить?",
+    partyTitle: "Берёшь кого-то с собой?",
+    partyHint: "Они играют как твои гости. Одна бронь, одна оплата, одна отмена.",
+    partyJustMe: "Только я",
+    partySeatsOne: "{n} место",
+    partySeatsFew: "{n} места",
+    partySeatsMany: "{n} мест",
+    /* Round 33, item 3 — the fourth control's accessible name. */
+    partyMore: "Больше гостей",
+    partyLimited: "На это поле поместится ещё только {n}.",
+    partyOnlineQuantity: "На странице оплаты укажи количество {seats}.",
+    awaitingTitle: "Ждём твою оплату",
+    awaitingBody:
+      "Место держим {minutes} минут, пока проходит платёж. Страница обновится сама.",
+    awaitingExpiredTitle: "Платёж не пришёл",
+    awaitingExpiredBody:
+      "Мы не увидели оплату вовремя, и место вернулось в игру. Если ещё есть места, попробуй снова.",
+    awaitingAttentionTitle: "Проверяем твой платёж",
+    awaitingAttentionBody:
+      "Платёж пришёл, но место выдать не получилось. Мы уже разбираемся и свяжемся с тобой — не плати ещё раз.",
+    awaitingSeatGone:
+      "Пока тебя не было, игра заполнилась, так что платить не за что. Ничего не списано.",
+    awaitingRetry: "Повторить оплату",
+    cancelReassuranceKickoff:
+      "Отменить можно в любой момент до начала — кредиты вернутся полностью.",
+    cancelReassuranceCutoff:
+      "Отменить можно за {hours} ч до начала — кредиты вернутся полностью.",
+    confirmBooking: "Подтвердить бронь",
+    confirmWithCredits: "Забронировать за {credits}",
+    termsAgree: "Я согласен(-на) с {terms}.",
+    guestsAddedOne: "+{n} гость подтверждён",
+    guestsAddedFew: "+{n} гостя подтверждены",
+    guestsAddedMany: "+{n} гостей подтверждено",
+    bookingConfirmed: "Бронь подтверждена",
+    reserved: "Место забронировано",
+    confirmed: "Платёж подтверждён",
+    creditApplied: "Кредит применён",
+    amountDue: "К оплате",
+    // DRAFTS — flagged for native review with the slogan pair.
+    notEnoughCreditsTitle: "Кредитов не хватает",
+    notEnoughCreditsBody:
+      "Игра стоит 1 кредит. Возьми абонемент и сэкономь до {percent} %, или оплати эту игру по QR.",
+    getCredits: "Получить кредиты",
+    payByQrThisGame: "Оплатить эту игру по QR",
+    cancelBooking: "Отменить бронь",
+    cancelTitle: "Отменить бронь?",
+    cancelKeep: "Оставить место",
+    cancelFailed: "Отменить не вышло. Бронь осталась.",
+    refundAsCredits: "До начала больше {hours} часов, поэтому кредит вернётся.",
+    cantMakeIt: "Не смогу прийти",
+    barCantMakeIt: "Не смогу",
+    cantMakeItTitle: "Не сможешь прийти?",
+    cantMakeItConfirm: "Освободить место",
+    // DRAFT — flagged for the standing native-review batch.
+    refundLostLate:
+      "До начала меньше {hours} часов, поэтому кредит за эту игру не вернётся. Но отмена освободит твоё место для другого игрока.",
+    cancelConfirm: "Отменить эту бронь? Кредиты вернутся тебе.",
+    cancelled: "Бронь отменена",
+    addToCalendar: "Добавить в календарь",
+    share: "Поделиться",
+    coveredByCredit: "Кредит покрыл этот матч полностью. Платить нечего.",
+    coveredBySeed: "Ты в составе. За этот матч платить не нужно.",
+    backToGame: "← Назад к матчу",
+    bookingNotFound: "Такую бронь мы не нашли.",
+  },
+
+  payment: {
+    qrTitle: "Отсканируй и заплати",
+    qrHint:
+      "Открой банковское приложение и отсканируй код. Платёж сам подставит нужный символ.",
+    account: "Счёт",
+    // The Czech term first, because that is the field in the banking app.
+    variableSymbol: "Variabilní symbol (VS) — переменный символ",
+    amount: "Сумма",
+    paidAlready: "Я заплатил",
+    pendingConfirmation: "Ждём, пока организатор подтвердит платёж.",
+
+    // Round 15, item 1 — DRAFT, for the native-review batch.
+    returnTitle: "Подтверждаем платёж",
+    checkoutTitle: "Оплати своё место",
+    checkoutSeats: "{seats} мест(а) на этом матче",
+    checkoutCredits: "{credits} кредитов",
+    confirmingTitle: "Подтверждаем твой платёж…",
+    confirmingBody:
+      "Stripe получил платёж. Ждём, пока подтверждение дойдёт до нас — обычно это несколько секунд.",
+    slowTitle: "Ещё обрабатываем",
+    slowBookingBody:
+      "Stripe принял платёж и обрабатывает его. Бронь подтвердится совсем скоро — платить второй раз не нужно.",
+    slowPassBody:
+      "Stripe принял платёж и обрабатывает его. Кредиты появятся совсем скоро — платить второй раз не нужно.",
+    slowBackToGame: "Назад к игре",
+    slowBackToGames: "Назад к играм",
+    returnUnknownTitle: "Подтверждать нечего",
+    returnUnknownBody:
+      "По этому аккаунту нет ожидающих платежей. Если ты только что заплатил и это повторяется, твои игры и кредиты — в профиле.",
+  },
+
+  profile: {
+    // Round 16 improvement pass — DRAFT.
+    detailsTitle: "Твои данные",
+    editDetails: "Изменить данные",
+    saveProfile: "Сохранить профиль",
+    cancelEdit: "Отмена",
+    displayName: "Отображаемое имя",
+    position: "Предпочитаемая позиция",
+    positionHint: "Отметь все, на которых играешь.",
+    skillLevel: "Уровень",
+    nationality: "Гражданство",
+    phone: "Телефон",
+    phoneHint: "Его видит только организатор матча, который ты забронировал.",
+    email: "E-mail",
+    emailChangeHint: "Закрой форму — адрес меняется рядом с ним выше.",
+    notSet: "Не указано",
+    saved: "Профиль сохранён",
+    saveFailed: "Сохранить не удалось. Попробуй ещё раз.",
+    emailPrefsTitle: "Настройки писем",
+    marketingToggle: "Новости о новых матчах и предложениях",
+    emailLocaleSaved: "Сохранено",
+    positions: {
+      gk: "Вратарь",
+      def: "Защитник",
+      mid: "Полузащитник",
+      att: "Нападающий",
+    },
+
+    // DRAFT — flagged for the standing native-review batch.
+    memberSince: "с {date}",
+
+    tabOverview: "Обзор",
+    tabGames: "Мои игры",
+
+    statGamesOne: "сыгранная игра",
+    statGamesFew: "сыгранные игры",
+    statGamesMany: "сыгранных игр",
+    statHoursOne: "час на поле",
+    statHoursFew: "часа на поле",
+    statHoursMany: "часов на поле",
+    statVenuesOne: "площадка",
+    statVenuesFew: "площадки",
+    statVenuesMany: "площадок",
+    statMetOne: "встреченный игрок",
+    statMetFew: "встреченных игрока",
+    statMetMany: "встреченных игроков",
+
+    // DRAFT — flagged for the standing native-review batch.
+    accomplishmentsTitle: "Достижения",
+    badgesCount: "{earned} из {total}",
+
+    badges: {
+      firstGame: "Первая игра",
+      firstGameHint: "Сыграй одну игру",
+      regular: "Постоянный",
+      regularHint: "Сыграй 5 игр",
+      veteran: "Ветеран",
+      veteranHint: "Сыграй 20 игр",
+      explorer: "Исследователь",
+      explorerHint: "Сыграй на 3 разных площадках",
+      ironLegs: "Железные ноги",
+      ironLegsHint: "Проведи на поле 10 часов",
+      teamPlayer: "Командный игрок",
+      teamPlayerHint: "Познакомься с 50 игроками",
+    },
+  },
+
+  account: {
+    myGamesTitle: "Мои матчи",
+    myGamesLink: "Все мои матчи →",
+    myGamesEmpty:
+      "Ты ещё не занял место. Выбери матч на доске — и он появится здесь.",
+    myGamesEmptyCta: "Найти матч →",
+    title: "Мой аккаунт",
+    myBookings: "Мои брони",
+    noBookings: "Броней пока нет.",
+    noBookingsTitle: "В твоём составе пусто",
+    noBookingsBody: "Займи место в любом матче — бронь появится здесь вместе с QR.",
+    findAGame: "Найти матч →",
+    creditBalance: "Кредит",
+    creditEmpty: "Кредита пока нет.",
+    showQr: "Показать QR для оплаты",
+    creditHint: "Кредит автоматически применится к следующей брони.",
+    historyTitle: "Твоя история",
+    gamesPlayedLabel: "Сыграно игр",
+    upcomingTitle: "Ближайшие",
+    // Round 16 item 12 — DRAFT.
+    waitlistTitle: "Лист ожидания",
+    pastTitle: "Уже сыграно",
+    pastEmpty: "Пока ничего не сыграно — первая игра появится здесь.",
+
+    topupTitle: "Пополни кредиты",
+    topupLede: "Добавь кредит сейчас — он автоматически применится к следующей брони.",
+    topupCta: "Получить абонемент",
+    topupAmountLabel: "Сумма",
+    topupCustomLabel: "Или другая сумма (CZK)",
+    topupSubmit: "Показать QR для оплаты",
+    topupOutOfRange: "Выбери сумму от 50 до 2000 CZK.",
+    topupPendingTitle: "Ждём твой платёж",
+    topupPendingBody:
+      "Отсканируй код в банковском приложении. Кредиты придут, как только организатор подтвердит, что платёж пришёл.",
+    topupConfirmedTitle: "Это пополнение уже зачислено.",
+    topupBackToAccount: "← Назад в мой профиль",
+
+    photoTitle: "Фото профиля",
+    // Round 16 item 15 — DRAFT.
+    cropTitle: "Размести фото",
+    cropHint: "Перетащи его и приблизь так, чтобы в рамку попало то, что нужно.",
+    cropZoom: "Масштаб",
+    cropSave: "Использовать",
+    coverChange: "Сменить обложку",
+    photoUpload: "Загрузить фото",
+    photoReplace: "Заменить фото",
+    photoBadType: "Подойдёт JPG, PNG или WebP.",
+    photoTooBig: "Фото больше {mb} МБ. Выбери поменьше.",
+    photoUploadFailed: "Фото не загрузилось. Попробуй ещё раз.",
+    photoUploading: "Загружаем фото…",
+
+    securityTitle: "Вход и безопасность",
+
+    changePasswordTitle: "Сменить пароль",
+    currentPasswordLabel: "Текущий пароль",
+    newPasswordLabel: "Новый пароль",
+    changePasswordSubmit: "Сменить пароль",
+    changePasswordDone: "Пароль изменён.",
+    currentPasswordWrong:
+      "Это не твой текущий пароль. Если ты его не задавал, выйди и войди по коду из письма.",
+
+    changeEmailTitle: "Сменить почту",
+    newEmailLabel: "Новая почта",
+    changeEmailSubmit: "Отправить подтверждения",
+    changeEmailHint:
+      "Подтверждение придёт на текущий адрес и на новый. Почта сменится только после того, как подтвердишь оба.",
+    changeEmailSent:
+      "Отправили два подтверждения — на {current} и на {next}. Открой оба.",
+    changeEmailSame: "Это уже твой адрес.",
+    changeEmailFailed: "Не удалось начать смену почты. Попробуй ещё раз.",
+
+    changePasswordLink: "Сменить пароль",
+    changeEmailLink: "Сменить e-mail",
+    deleteAccount: "Удалить аккаунт",
+    deleteAccountHint: "Напиши нам — и мы удалим твои данные.",
+    deleteAccountConfirm: "Удалить аккаунт? Твоё имя, e-mail, телефон и фото будут удалены, и ты выйдешь навсегда. Будущие брони отменятся, неиспользованные кредиты сгорят. Это нельзя отменить.",
+    deleteAccountFailed: "Не удалось удалить аккаунт. Напиши нам, пожалуйста, на e-mail.",
+    deleteSubject: "Запрос на удаление аккаунта",
+    badgePaid: "Оплачено",
+    badgeReserved: "Ждёт оплаты",
+    badgeCash: "Наличными на поле",
+    badgeSeed: "Бесплатно",
+    badgeCancelled: "Отменено",
+    badgeExpired: "Истекло",
+    past: "Прошедшие",
+    upcoming: "Ближайшие",
+    cancelSuccess: "Бронь отменена. Кредиты вернулись.",
+  },
+
+  errors: {
+    generic: "Что-то пошло не так. Попробуй ещё раз.",
+    partyTooLarge: "Столько гостей на одну бронь не поместится.",
+    // Round 16 item 19 — DRAFT.
+    reasonRequired: "Напиши причину — её прочитают все записавшиеся игроки.",
+    passNotConfigured: "Этот абонемент пока не продаётся.",
+    amountOutOfRange: "Эту сумму сейчас нельзя оплатить. Сообщите организатору.",
+    capacityFull: "Пока ты думал, место занял кто-то другой.",
+    capacityFullTitle: "Место уже занято",
+    duplicateActiveBooking: "У тебя уже есть место в этом матче.",
+    duplicateActiveBookingTitle: "Бронь уже есть",
+    creditNegativeBlocked: "Кредита на эту бронь не хватает.",
+    insufficientPermission: "У тебя нет прав на это действие.",
+    cancelWindowClosed: "Отменять эту бронь уже поздно.",
+    notSignedIn: "Сначала войди.",
+    gameNotWaitlistable: "На этот матч очередь не открыта.",
+    capacityFullWaitlist: "Место досталось другому. В очереди на следующее ты остаёшься.",
+    gameNotBookable: "Этот матч закрыт для брони.",
+    gameAlreadyStarted: "Этот матч уже начался.",
+    tryAgain: "Попробовать снова",
+  },
+
+  purchase: {
+    creditsOne: "{n} кредит",
+    creditsFew: "{n} кредита",
+    creditsMany: "{n} кредитов",
+    creditSummary: "Ты покупаешь: {credits} (1 кредит = 1 место на одном матче). Итого: {amount}. Кредиты действуют {days} дней с момента зачисления, то есть до {date}; неиспользованные кредиты затем сгорают. Кредиты можно использовать только для бронирования матчей Playllu, их нельзя передать другому и нельзя обменять на деньги. Мы зачислим их сразу после оплаты. От покупки кредитов отказаться нельзя. {terms}",
+    termsLinkLabel: "Условия (Obchodní podmínky)",
+    reservationSummary: "Ты бронируешь место на матче {when}, {venue}. Оплата: {credits}. Отмена: бронь можно отменить не позднее чем за {hours} часов до начала, и кредит вернётся. При более поздней отмене или неявке кредит сгорает. Если матч отменим мы, мы вернём кредит и продлим его срок на {extensionDays} дней. От брони отказаться нельзя, так как это услуга по организации досуга в определённую дату и время (§ 1837 п. j) Гражданского кодекса ЧР).",
+    reservationTitle: "Твоя бронь",
+    lockedHint: "Отметь поле выше, чтобы открыть оплату.",
+  },
+
+  pass: {
+    title: "Игровой абонемент",
+    creditUnit: "1 кредит = 1 место на одном матче любой длительности.",
+    lede: "Купи матчи заранее со скидкой. Деньги станут кредитами и сами применятся к следующей брони.",
+    // The product name stays English in every locale — see lib/strings.ts.
+    panelTitle: "Game Pass",
+    panelBody: "Купи матчи заранее со скидкой",
+    creditsOne: "{n} кредит",
+    creditsFew: "{n} кредита",
+    creditsMany: "{n} кредитов",
+    creditEqualsGame: "1 кредит = 1 игра",
+
+    // Round 15, item 2 — DRAFT. `{credits}` — это готовая фраза вместе с
+    // формой существительного ("1 кредит" / "3 кредита" / "12 кредитов"),
+    // поэтому предложение вокруг неё не должно согласовываться с числом.
+    creditsAddedTitle: "Кредиты добавлены",
+    creditsAddedCount: "Теперь у тебя {credits}.",
+    creditsAddedBack: "Назад к играм",
+    tierPerGame: "{amount} за матч",
+    tierSaving: "Экономия {amount}",
+    tierExpiresDays: "Действует {days} дней с момента зачисления",
+    tierNeverExpires: "Без срока",
+    tierBuy: "Купить абонемент",
+    tierPurchase: "Купить",
+    tierMostPopular: "Самый популярный",
+
+    equivalence: "≈ {count} матчей",
+    howItWorks: "Как это работает",
+    howItWorksBody:
+      "Платишь картой, через Apple Pay или Google Pay. Как только платёж подтверждён, кредиты автоматически зачисляются на счёт.",
+    batchesTitle: "Твой кредит",
+    batchesExpiring: "Осталось {credits} · сгорает {date}",
+    batchesNever: "{credits} · без срока",
+    paymentsSoon: "Оплата скоро заработает.",
+    tryThePass: "Или попробуй Game Pass →",
+    batchesNone: "Кредита со сроком нет.",
+  },
+
+  toast: {
+    bookingCreated: "Ты в составе. Место забронировано.",
+    signedIn: "Вход выполнен.",
+    bookingCancelled: "Отменено — сумма вернулась кредитами.",
+    topupConfirmed: "Пополнение подтверждено. Баланс обновлён.",
+    linkCopied: "Ссылка скопирована.",
+    failed: "Не прошло. Попробуй ещё раз.",
+  },
+
+  notifications: {
+    // Round 16 item 13 — DRAFT.
+    clearAll: "Очистить всё",
+    deleteOne: "Удалить это уведомление",
+    // DRAFT — flagged for the standing native-review batch.
+    bellLabel: "Уведомления",
+    title: "Уведомления",
+    empty: "Пока ничего.",
+    kinds: {
+      no_show_warning: {
+        title: "Тебя отметили как неявку",
+        body:
+          "У тебя было место, но ты не пришёл — и никто из листа ожидания его не получил. " +
+          "В следующий раз отмени заранее: место сразу вернётся им.",
+      },
+      no_show_cleared: {
+        title: "Отметку о неявке сняли",
+        body: "Организатор поправил состав. Ничего за тобой не числится.",
+      },
+    },
+  },
+
+  common: {
+    back: "Назад",
+    close: "Закрыть",
+    dismiss: "Скрыть уведомление",
+    loading: "Загрузка…",
+    // `czk` is NOT translated — see the header note on money.
+  },
+
+  /**
+   * FAQ — DRAFT, AWAITING A NATIVE READER.
+   *
+   * Translated from the English finals of 2026-08-01, not from the Czech, so
+   * this is a translation of the source rather than a translation of a
+   * translation. No Russian speaker has reviewed it.
+   *
+   * It ships anyway, and that is the right call for THIS content: these six
+   * answers are product copy, and a clumsy sentence is a smaller harm than a
+   * Russian-speaking player reading an English FAQ on a page that is otherwise
+   * in their language. The judgement does NOT extend to the terms of service —
+   * see `lib/content/legalDocuments.ts`, where Russian is deliberately absent
+   * because an unreviewed contract is legally operative in a way an unreviewed
+   * FAQ is not.
+   *
+   * Flagged for review in the phase report. When a native pass happens, this
+   * comment goes with it.
+   */
+  faq: {
+    title: "Вопросы",
+    items: [
+      {
+        q: "Что взять с собой?",
+        a: "Возьми бутсы или кроссовки и настрой себя на игру. Манишки, мячи и перчатки — на нас. Вратари меняются, так что свои перчатки никому не нужны.",
+      },
+      {
+        q: "Что если игра заполнена?",
+        a: "Встань в лист ожидания. Как только место освободится, письмо получат все в списке, и место достанется тому, кто заберёт его первым.",
+      },
+      {
+        q: "Как оплатить?",
+        a: "Оплати картой, через Apple Pay или Google Pay при бронировании, либо используй кредиты с абонемента.",
+      },
+      {
+        q: "Нужно ли хорошо играть?",
+        a: "Совсем не нужно. Мы рады любому уровню. Игры дружеские, если значок уровня не говорит об ином.",
+      },
+    ],
+  },
+
+  /**
+   * Письма (round 41) — на «ты», как весь русский сайт. `Variabilní symbol` и
+   * `QR platba` — слова банка, на любом языке; кредиты никогда не в кронах.
+   */
+  emails: {
+    common: {
+      when: "Когда",
+      where: "Где",
+      players: "Игроки",
+      paid: "Оплачено",
+      returned: "Возвращено",
+      toPay: "К оплате",
+      variableSymbol: "Variabilní symbol",
+      openMaps: "Открыть в Картах",
+      seeLineup: "Посмотреть состав",
+      findGame: "Найти матч",
+      findAnother: "Найти другой матч",
+      calendarNote: "Добавь в календарь — приглашение во вложении.",
+      you: "Ты",
+      placesOne: "{n} место",
+      placesFew: "{n} места",
+      placesMany: "{n} мест",
+      guestsOne: "{n} гость",
+      guestsFew: "{n} гостя",
+      guestsMany: "{n} гостей",
+      cancelRule:
+        "Не сможешь прийти? Отмени бронь не позднее чем **за {hours} часов до начала** — и кредит вернётся. Позже нажми «{cantMakeIt}», чтобы сыграл кто-то из листа ожидания.",
+      noWithdrawal:
+        "От бронирования нельзя отказаться: это услуга досуга в определённый день и время (§ 1837 п. j) Гражданского кодекса Чехии).",
+      rulesLink: "Правила сообщества и игры",
+      questions: "Вопросы и жалобы: {email}",
+      termsAttached: "Условия, действующие на день заказа, — во вложении (PDF).",
+      footerBooked: "Ты получил(-а) это письмо, потому что забронировал(-а) матч.",
+    },
+    receipt: {
+      title: "Чек",
+      order: "Заказ",
+      validUntil: "Действуют до",
+      usedForGame: "использован на этот матч",
+      paidBy: "Оплата",
+      card: "картой через Stripe",
+      bankTransfer: "банковским переводом",
+      termsNote: "Перед оплатой ты подтвердил(-а): «{wording}» Отмечено {time}.",
+    },
+    bookingConfirmed: {
+      subject: "Ты в составе · {when} · {venue}",
+      preheader: "Отмени не позднее чем за {hours} часов до начала — и кредит вернётся.",
+      eyebrow: "Бронь подтверждена",
+      headline: "Ты в составе.",
+      lede: "{when}, {venue}. Увидимся на поле.",
+    },
+    guestsAdded: {
+      subject: "Гости добавлены · {when} · {venue}",
+      preheader: "{places} · {venue}, {when}.",
+      eyebrow: "Гости добавлены",
+      headline: "Они в составе.",
+      lede: "{when}, {venue}: твои гости в составе.",
+    },
+    spotHeld: {
+      subject: "Оплати, чтобы сохранить место · {when}",
+      preheader: "{amount}, variabilní symbol {vs}.",
+      eyebrow: "Ждём оплату",
+      headline: "Место за тобой.",
+      lede: "Оплати {amount}, чтобы оно осталось за тобой: QR-код — на странице матча, или используй реквизиты ниже.",
+      spdLabel: "QR platba (SPD)",
+      cta: "Открыть QR-код",
+    },
+    nudge: {
+      subject: "Оплати сейчас, иначе место уйдёт · {when}",
+      preheader: "Другие игроки ждут. Оплати в течение {hours} часов.",
+      eyebrow: "Ждём оплату",
+      headline: "Твоё место ждут.",
+      lede:
+        "Матч заполнен, а в листе ожидания есть игроки. Оплати в течение {hours} часов, иначе место перейдёт следующему.",
+      cta: "Оплатить",
+    },
+    expiry: {
+      subject: "Неоплаченное место освобождено · {when}",
+      preheader: "Оплата не поступила вовремя, и место ушло в лист ожидания.",
+      eyebrow: "Место освобождено",
+      headline: "Место ушло.",
+      lede:
+        "{when}, {venue}: бронь не была оплачена вовремя, поэтому место досталось игроку из листа ожидания.",
+    },
+    reminder: {
+      subject: "Завтра · {time} · {venue}",
+      preheader: "Начало: {when}. Вот все детали ещё раз.",
+      eyebrow: "До завтра",
+      headline: "Матч уже скоро.",
+      lede: "Начало: {when}, {venue}. Вот все детали ещё раз.",
+    },
+    waitlistSpotOpen: {
+      subject: "Освободилось место · {when}",
+      preheader: "Кто первый займёт, тот играет.",
+      eyebrow: "Лист ожидания",
+      headline: "Освободилось место.",
+      lede:
+        "{when}, {venue}: освободилось место. Все из листа ожидания узнали об этом одновременно — кто первый займёт, тот играет.",
+      cta: "Занять место",
+      footer: "Ты получил(-а) это письмо, потому что стоишь в листе ожидания этого матча.",
+    },
+    cancellationCredit: {
+      subject: "Бронь отменена · {when}",
+      preheaderCredit: "Возвращено на счёт: {credits}.",
+      preheaderNone: "Твоё место освобождено.",
+      eyebrow: "Бронь отменена",
+      headline: "Бронь отменена.",
+      ledeCredit: "{when}, {venue}: твоё место освобождено. Возвращено на счёт: {credits}.",
+      ledeLate:
+        "{when}, {venue}: твоё место освобождено. До начала оставалось меньше {hours} часов, поэтому кредит не возвращается.",
+      ledeUnpaid:
+        "{when}, {venue}: твоё место освобождено. Ничего не было оплачено, так что возвращать нечего.",
+      footer: "Ты получил(-а) это письмо, потому что отменил(-а) бронь.",
+    },
+    gameCancelled: {
+      subject: "Матч отменён · {when}",
+      preheaderCredit: "Кредит возвращён, срок действия продлён на {extensionDays} дней.",
+      preheaderNone: "Ничего не было оплачено.",
+      eyebrow: "Матч отменён",
+      headline: "Матч не состоится.",
+      lede: "{when}, {venue}: организатор отменил матч.",
+      creditLine: "Возвращено на счёт: {credits}, срок действия продлён на {extensionDays} дней.",
+      noCreditLine: "Ничего не было оплачено, так что возвращать нечего.",
+      footer: "Ты получил(-а) это письмо, потому что у тебя было место на этом матче.",
+    },
+    creditsPurchased: {
+      subject: "Чек · {credits}",
+      preheader: "Действуют до {date}. Используй на любой матч.",
+      eyebrow: "Оплата получена",
+      headline: "Кредиты зачислены.",
+      lede: "Зачислено на счёт: {credits}, действуют до {date}.",
+      ledeGameFull:
+        "Матч заполнился, пока ты оплачивал(-а), поэтому оплата превратилась в кредиты: {credits}, действуют до {date}, на любой другой матч.",
+      balance: "Баланс",
+      footer: "Ты получил(-а) это письмо, потому что купил(-а) кредиты.",
+    },
+    creditsExpiring: {
+      subject: "Твои кредиты сгорят {date}",
+      preheader: "Осталось: {credits}. Забронируй матч до этой даты.",
+      eyebrow: "Кредиты скоро сгорят",
+      headline: "Используй их, пока не сгорели.",
+      lede:
+        "Твои кредиты ({credits}) сгорят {date}. Забронируй матч до этой даты — и они не пропадут.",
+      left: "Осталось",
+      expires: "Действуют до",
+      footer: "Ты получил(-а) это письмо, потому что у тебя есть кредиты на Hraj Fotbal.",
+    },
+
+    auth: {
+      signInSubject: "Вход в Hraj Fotbal",
+      signInEyebrow: "Вход",
+      signInHeadline: "Вот твоя ссылка.",
+      signInLede: "Нажми на кнопку, чтобы войти.",
+      signInCta: "Войти",
+      confirmSubject: "Подтверди свой e-mail",
+      confirmEyebrow: "Почти готово",
+      confirmHeadline: "Подтверди свой e-mail.",
+      confirmLede: "Одно нажатие — и твой аккаунт Hraj Fotbal готов.",
+      confirmCta: "Подтвердить e-mail",
+      changeSubject: "Подтверди новый адрес e-mail",
+      changeEyebrow: "Твой аккаунт",
+      changeHeadline: "Новый адрес e-mail?",
+      changeLede: "Ты попросил(-а) сменить e-mail аккаунта Hraj Fotbal с {email} на {newEmail}. Это письмо получают оба адреса, и подтвердить нужно с обоих.",
+      changeCta: "Подтвердить смену",
+      code: "Твой код",
+      expiry: "Ссылка и код действуют один час.",
+      notYou: "Не просил(-а)? Просто проигнорируй — ничего не произойдёт.",
+      footer: "Ты получил(-а) это письмо, потому что этот адрес использовали на Hraj Fotbal.",
+    },
+  },
+};

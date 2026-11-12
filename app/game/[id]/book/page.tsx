@@ -1,0 +1,182 @@
+import type { Metadata } from "next";
+import { appCapabilities } from "@/lib/db/capabilities";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { BookingError } from "@/components/BookingError";
+import { PaymentMethodChoice } from "@/components/PaymentMethodChoice";
+import { getOwnCreditBalance } from "@/lib/booking/queries";
+import { embeddedCheckoutEnabled } from "@/lib/payments/embeddedCheckout";
+import { getSessionUser } from "@/lib/auth/session";
+import { cancellationReassurance } from "@/lib/booking/reassurance";
+import { readResumeIntent } from "@/lib/booking/resume";
+import { formatCzk, formatGameDateTime } from "@/lib/format";
+import { getGameById } from "@/lib/games/queries";
+import { refundCutoffHours } from "@/lib/policy/refundCutoff";
+import { getLocale, getStrings } from "@/lib/i18n/server";
+import { runCreateBooking } from "./actions";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getStrings();
+  return { title: t.booking.claimSpot };
+}
+
+export const dynamic = "force-dynamic";
+
+interface BookPageProps {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+/**
+ * Booking page.
+ *
+ * WHERE THE SESSION GATE SITS, AND WHY IT SITS THERE:
+ *
+ * The gate is on the WRITE, not on the page render. An anonymous visitor may
+ * see the QR-vs-cash choice; submitting it sends them to authenticate and the
+ * booking is attempted only on the way back, inside `createBookingAction`.
+ *
+ * That placement is what lets both governing rules hold at once. Hard-gating
+ * the page would satisfy "no pre-auth soft hold" — but it also means a player
+ * arriving from a Book tap never states a payment preference, so the post-auth
+ * resume would have to invent one on their behalf to reach the confirmation.
+ * Gating the write keeps the spot uncommitted until an authenticated
+ * `create_booking` runs (REQ-SEC-021) while still carrying the player's own
+ * choice through the magic-link round trip (REQ-AUTH-004).
+ *
+ * Nothing on this page reserves anything. The choice is a form value in a URL
+ * until the RPC runs.
+ */
+export default async function BookPage({ params, searchParams }: BookPageProps) {
+  const t = await getStrings();
+  const { id } = await params;
+  const query = await searchParams;
+
+  const result = await getGameById(id);
+  if (!result) {
+    return (
+      <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
+        <p className="text-[12px] tracking-[1px] text-faint">
+          {t.games.notFound}
+        </p>
+        <Link
+          href="/games"
+          className="mt-6 inline-block text-[11px] uppercase tracking-eyebrow text-volt no-underline"
+        >
+          {t.games.backToGames}
+        </Link>
+      </main>
+    );
+  }
+
+  const { game, spotsLeft, hasStarted, isCancelled } = result;
+
+  // The RPC enforces all of this too; the UI only mirrors it. A full game is
+  // included: `create_booking` would refuse with CAPACITY_FULL, and until the
+  // Phase 17 waitlist exists there is nothing else this page could offer, so
+  // sending the player back to the game is more honest than a form that cannot
+  // succeed.
+  if (isCancelled || hasStarted || spotsLeft === 0) {
+    redirect(`/game/${game.id}`);
+  }
+
+  // --- post-auth resume ------------------------------------------------------
+  // Runs only when the player already stated a method before authenticating.
+  // Without one there is nothing to resume automatically, and inventing a
+  // payment choice would be worse than showing the two options again.
+  const intent = readResumeIntent(query);
+  const user = await getSessionUser();
+
+  if (intent?.method && user) {
+    const outcome = await runCreateBooking(game.id, intent.method);
+    if (typeof outcome === "string") {
+      redirect(`/game/${game.id}/book/confirmation?booking=${outcome}`);
+    }
+    return (
+      <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
+        <BookingError code={outcome.code ?? "UNKNOWN"} gameId={game.id} />
+      </main>
+    );
+  }
+
+  return (
+    <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
+      <Link
+        href={`/game/${game.id}`}
+        className="text-[11px] uppercase tracking-eyebrow text-muted no-underline"
+      >
+        {t.booking.backToGame}
+      </Link>
+
+      <h1 className="mt-4 font-display text-section-title uppercase tracking-wide text-white">
+        {game.venue}
+      </h1>
+
+      <div className="mt-3 flex flex-wrap items-baseline gap-x-5 gap-y-2">
+        <span className="text-[13px] tracking-[1px] text-volt">
+          {formatGameDateTime(game.starts_at)}
+        </span>
+        <span className="text-[13px] text-muted">
+          {formatCzk(game.price_czk)}
+        </span>
+      </div>
+
+      <div className="mt-8">
+        {/*
+          THE BALANCE AND THE PRICE (round 8, item 11). The chooser needs both
+          to decide whether "Redeem credit" is selectable and whether it is the
+          default. Read on the SERVER from the ledger, which is the authority —
+          a client-held balance is a second source of truth able to disagree
+          with the RPC that spends it.
+        */}
+        <PaymentMethodChoice
+          gameId={game.id}
+          priceCzk={game.price_czk}
+          creditCzk={await getOwnCreditBalance()}
+          /*
+            SEATS, INCLUDING THE ONE THIS PLAYER IS ABOUT TO TAKE.
+            `spotsLeft` is `capacity - bookedCount`, and since round 11
+            `bookedCount` counts the roster view's rows — one per seat — so a
+            party of three on this game already shows as three. The party
+            control offers `spotsLeft - 1` guests.
+          */
+          spotsLeft={spotsLeft}
+          /*
+            WHICH ONLINE RAIL IS LIVE (round 27, item 1) — it decides whether
+            the "set the quantity" instruction is shown, and that sentence is
+            true of exactly one of the two rails.
+          */
+          embeddedCheckout={embeddedCheckoutEnabled()}
+          /*
+            WHETHER THE DATABASE WILL ACTUALLY TAKE A PARTY OF THIRTEEN
+            (round 33, item 3). The owner applies migrations by hand, so the
+            deploy lands first — and a dropdown offering `+7` against a
+            `create_booking_internal` still capped at three is a control with a
+            dead path behind it. Until the flag is true the picker is exactly
+            what it was: three pills.
+          */
+          partyUpToThirteen={(await appCapabilities()).partyUpToThirteen}
+          reservation={{
+            when: formatGameDateTime(game.starts_at, await getLocale()),
+            venue: game.venue,
+            cutoffHours: await refundCutoffHours(),
+          }}
+        />
+      </div>
+
+
+      {/*
+        Reassurance before the commit, not after it: the question a player asks
+        at the payment choice is what happens if they cannot make it. The window
+        is `cancellation_refund_cutoff_hours()` — the constant
+        `cancel_booking` enforces, read out rather than mirrored (round 16, item 6).
+      */}
+      <p
+        data-testid="cancellation-reassurance"
+        className="mt-4 text-center text-[12px] leading-snug text-muted"
+      >
+        {cancellationReassurance(await refundCutoffHours(), t)}
+      </p>
+    </main>
+  );
+}

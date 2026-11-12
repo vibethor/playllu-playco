@@ -1,0 +1,183 @@
+"use client";
+
+import { useActionState, useState } from "react";
+import { removeCreditAction, type GrantCreditState } from "@/app/admin/players/actions";
+import { formatCzk } from "@/lib/format";
+import { adminWallet } from "@/lib/admin/credits";
+import { strings } from "@/lib/strings";
+import { chipDanger, chipDangerSolid, chipQuiet, fieldInput, fieldLabel } from "@/components/admin/players/controlStyles";
+
+const INITIAL: GrantCreditState = { status: "idle" };
+
+/**
+ * Take credit back out of a wallet (round 28, item 5b).
+ *
+ * COLLAPSED, LIKE ITS SIBLING, AND FOR A STRONGER REASON. `GrantCreditForm`
+ * hides behind a button so the page is readable; this one hides behind a
+ * button so the most consequential control in the panel is never one stray tap
+ * from a balance. The two sit side by side and look alike deliberately — they
+ * are the same act in two directions — but this one asks for confirmation and
+ * that one does not.
+ *
+ * THE AMOUNT IS TYPED POSITIVE AND NEGATED BY THE ACTION. A form that asks for
+ * "-50" invites "-‑50" and invites somebody to type "50" and add money while
+ * reading a heading that says remove. The label says how much to take; the
+ * server decides the sign.
+ *
+ * THE NOTE IS REQUIRED, in the form and again in the action. This is the one
+ * movement in the ledger nobody can reconstruct later from a booking or a
+ * top-up, so "why" has to be written down while the person who knows is still
+ * looking at the screen.
+ *
+ * NO FLOOR IS COMPUTED HERE. The balance is shown for context, not consulted
+ * for permission — `grant_credit` refuses under the player's advisory lock,
+ * which is the only place two concurrent removals can be made to agree.
+ */
+export function RemoveCreditForm({
+  playerId,
+  balanceCzk,
+}: {
+  playerId: string;
+  /** Shown so the admin can see what they are taking from. Not a gate. */
+  balanceCzk: number;
+}) {
+  const [state, formAction] = useActionState(removeCreditAction, INITIAL);
+  const wallet = adminWallet(balanceCzk);
+  const [open, setOpen] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        data-testid="remove-credit-open"
+        className={chipDanger}
+      >
+        {strings.admin.removeCredit}
+      </button>
+    );
+  }
+
+  return (
+    <form action={formAction} className="w-full space-y-3 rounded-card border border-danger/40 p-4">
+      <input type="hidden" name="playerId" value={playerId} />
+
+      <p className="m-0 text-[10px] uppercase tracking-eyebrow text-muted">
+        {/*
+          THE BALANCE IS SHOWN IN CREDITS (round 31, item 3) — the same unit
+          the field below takes and the player reads. The exact crowns follow
+          only when the balance does not divide cleanly, which on production
+          today is three wallets out of four.
+        */}
+        {strings.admin.removeCreditBalance.replace(
+          "{balance}",
+          `${wallet.credits} credits`,
+        )}
+        {wallet.remainderCzk !== null && (
+          <span className="ml-2 normal-case tracking-normal text-faint">
+            {strings.admin.walletExactCzk.replace("{czk}", formatCzk(wallet.remainderCzk))}
+          </span>
+        )}
+      </p>
+
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="flex flex-col gap-1">
+          <span className={fieldLabel}>
+            {strings.admin.removeCreditAmount}
+          </span>
+          <input
+            type="number"
+            name="amount"
+            min={1}
+            step={1}
+            required
+            data-testid="remove-amount"
+            className={`w-32 ${fieldInput}`}
+          />
+        </label>
+
+        <label className="flex min-w-[180px] flex-1 flex-col gap-1">
+          <span className={fieldLabel}>
+            {strings.admin.removeCreditNote}
+          </span>
+          <input
+            type="text"
+            name="note"
+            required
+            minLength={3}
+            data-testid="remove-note"
+            className={`w-full ${fieldInput}`}
+          />
+        </label>
+      </div>
+
+      {state.status === "error" && (
+        <p data-testid="remove-credit-error" className="m-0 text-[12px] text-danger">
+          {state.message}
+        </p>
+      )}
+      {state.status === "granted" && (
+        <p data-testid="remove-credit-done" className="m-0 text-[12px] text-volt">
+          {typeof state.balanceCzk === "number"
+            ? strings.admin.removeCreditDone.replace(
+                "{balance}",
+                `${adminWallet(state.balanceCzk).credits} credits`,
+              )
+            : strings.admin.removeCreditDoneBare}
+        </p>
+      )}
+
+      {/*
+        CONFIRM, BECAUSE THIS ONE IS DESTRUCTIVE. Not a portalled dialog — the
+        form is already open and inline, and a modal over an inline form is two
+        layers of "are you sure" for one act. The submit button simply refuses
+        to be a submit button until it has been armed, which is the same
+        property with one fewer stacking context to get wrong.
+      */}
+      <div className="flex flex-wrap gap-2">
+        {/*
+          THE TWO BUTTONS ARE KEYED APART, AND THAT IS THE FIX FOR A DOUBLE
+          REMOVAL (round 41). Unkeyed, React reused ONE <button> for both and
+          flipped its `type` from "button" to "submit" inside the arm click —
+          so the browser's default action for that same click submitted the
+          form. Arming removed the Credits; confirming removed them AGAIN.
+          Found by `e2e/actions-admin.spec.ts`, which reads the ledger back and
+          saw two −180 rows for one removal of one Credit. Distinct keys make
+          the confirm button a NEW element the arm click never touches.
+        */}
+        {confirming ? (
+          <button
+            key="submit"
+            type="submit"
+            data-testid="remove-credit-submit"
+            className={chipDangerSolid}
+          >
+            {strings.admin.removeCreditConfirm}
+          </button>
+        ) : (
+          <button
+            key="arm"
+            type="button"
+            onClick={() => setConfirming(true)}
+            data-testid="remove-credit-arm"
+            className={chipDanger}
+          >
+            {strings.admin.removeCredit}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => {
+            setConfirming(false);
+            setOpen(false);
+          }}
+          data-testid="remove-credit-cancel"
+          className={chipQuiet}
+        >
+          {strings.admin.removeCreditCancel}
+        </button>
+      </div>
+    </form>
+  );
+}

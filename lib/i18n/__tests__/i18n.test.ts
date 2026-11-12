@@ -1,0 +1,391 @@
+import { describe, expect, it } from "vitest";
+import { cs } from "@/lib/i18n/cs";
+import { ru } from "@/lib/i18n/ru";
+import { uk } from "@/lib/i18n/uk";
+import { resolveStrings } from "@/lib/i18n/resolve";
+import {
+  DEFAULT_LOCALE,
+  LOCALES,
+  isLocale,
+  localeFromAcceptLanguage,
+} from "@/lib/i18n/locales";
+import { strings } from "@/lib/strings";
+
+/**
+ * The sections that MUST be fully translated.
+ *
+ * This list is the contract. `admin` is absent on purpose — see
+ * lib/i18n/locales.ts — and `brand` is a name, not copy. (`privacy` was here
+ * too until 2026-10-19, when its DRAFT placeholder gave way to the lawyer's
+ * Czech document and the section was deleted.)
+ */
+const PLAYER_FACING = [
+  "meta",
+  "nav",
+  "siteFooter",
+  /*
+   * The legal pages' furniture and the operator's contact block (2026-10-19).
+   * The documents are Czech for everyone; what surrounds them is not, because
+   * the notice saying which text binds is useless in a language the reader
+   * cannot read.
+   */
+  "legal",
+  "notFound",
+  "landing",
+  "auth",
+  "games",
+  "booking",
+  /*
+   * What a purchase says before it is paid (round 40) — the lawyer's summary,
+   * waiver and booking summary. The Czech is the lawyer's own.
+   */
+  "purchase",
+  /*
+   * Every email (round 41). ~~English only — no per-player language in the
+   * database~~: the language now lives on the account (chosen at signup,
+   * changeable, recorded at sign-in), so the emails are as player-facing as
+   * any page and walked like one.
+   */
+  "emails",
+  "payment",
+  "account",
+  /*
+   * Ruling L's profile block (Stage 3). It shipped translated in all three
+   * languages and was never added here, so the completeness walk skipped it
+   * entirely — six fields and four position labels that could have gone
+   * untranslated without a single test complaining. Caught by the
+   * "translates nothing outside the player-facing sections" half of this
+   * suite, which is the direction that fires when a section is genuinely
+   * translated and simply unlisted.
+   */
+  "profile",
+  /*
+   * The cookie sheet (round 28, item 1). Listed the moment it was translated,
+   * which is the lesson the `profile` note above records: a section that ships
+   * in four languages and is not named here is walked by neither half of this
+   * suite — nothing checks it is complete, and nothing notices when it is not.
+   */
+  "consent",
+  "errors",
+  "common",
+  // Contract §6, delivered 2026-08-01. Czech is Oliver's; Russian is a flagged
+  // draft. Both are real translations, which is what this list demands.
+  "faq",
+  // Contract §8, Phase 16. Five toasts, and every one of them is read by a
+  // player at the moment something happened to their booking or their money —
+  // which is the worst possible moment to be shown a language they do not
+  // read.
+  "toast",
+  // Contract §4.2, Phase 20a. This is MONEY the player is deciding to spend,
+  // and the expiry is the part they must read before the button. A pass page
+  // in a language they cannot read is a complaint waiting to happen.
+  "pass",
+  // Round 7, item 5. The bell is in the header on every page of the product
+  // for a signed-in player, so it is as player-facing as the nav labels beside
+  // it. The MESSAGES inside it are admin free text and are not translated —
+  // that is a copy decision the owner makes per message, not a table.
+  "notifications",
+  // The game's 9:16 story image (round 42): made by an admin, posted for
+  // players, so its labels are in the language they are posted in.
+  "story",
+] as const;
+
+/**
+ * Keys that stay English (or Czech) in every language, with the reason.
+ *
+ * Anything listed here is exempt from the completeness check below. The list
+ * is deliberately short and every entry is a decision, not an omission.
+ */
+const INTENTIONALLY_UNTRANSLATED = new Set([
+  /*
+   * `{n} min` — the story image's length (round 42). Czech abbreviates
+   * minutes as "min" too; Russian and Ukrainian do not, and are translated.
+   */
+  "story.minutes",
+  // "Game Pass" — the owner's name for the pass page in search, in every language.
+  "meta.passTitle",
+  /*
+   * `+1`, `+2`, `+3` — the add-guest picker (round 27, item 2). The only
+   * letter in it is the `{n}` placeholder's own name, which is why the
+   * punctuation-only escape hatch below does not catch it: a numeral with a
+   * plus sign in front reads identically in all four languages, and shipping
+   * three copies of "+{n}" would put a string into the native-review batch
+   * that has nothing in it to review.
+   */
+  "games.addGuests.pick",
+  // Money. `formatCzk()` renders CZK in every language, and the amount has to
+  // match what the Czech banking app shows.
+  "common.czk",
+  /*
+   * The bank's own words in every email (round 41): the player is about to
+   * type them into a Czech banking app, so a translated label is a payment
+   * that arrives unmatched — CLAUDE.md's money rule.
+   */
+  "emails.common.variableSymbol",
+  "emails.spotHeld.spdLabel",
+  "emails.spotHeld.preheader",
+  // Brand and design furniture, identical in all three languages.
+  "siteFooter.copyright",
+  "siteFooter.contactEmail",
+  "notFound.code",
+  // `landing.headlineLead` / `headlineAccent` were here — the hero's wordmark,
+  // identical in all three languages. Round 3 of the redesign put the slogan in
+  // the hero instead (p01 draws no wordmark there), so both keys are gone and
+  // their exemptions with them: an exemption for a key that no longer exists
+  // reads as a decision about live copy.
+  "landing.nextMatchEyebrow",
+  "landing.community.whatsappUrl",
+  // "WhatsApp" is the product's name, not a word — it was "WhatsApp group" and
+  // the label lost its translatable half when the tile gained a 44px mark
+  // above it. Same reason `instagram` below has always been here.
+  "landing.community.whatsapp",
+  "landing.community.instagram",
+  "landing.community.instagramUrl",
+  // Same reasoning, round 13: a product's name is not a word.
+  "landing.community.telegram",
+  "landing.community.telegramUrl",
+  "landing.footer.wordmarkLead",
+  "landing.footer.wordmarkAccent",
+  "games.rosterUnknown",
+  // `+1`, `+2`, `+3` — the party control's buttons. A quantity with a plus in
+  // front of it is the same mark in Czech and Russian. It lands here rather
+  // than being skipped by the punctuation rule above because the `n` inside
+  // its `{n}` placeholder counts as a letter to that regex, which is the
+  // regex being conservative rather than wrong.
+  "booking.partyPlus",
+  /*
+   * `{spots} · {total}` — round 22. Both halves arrive as finished phrases:
+   * `{spots}` is already pluralised by `lib/i18n/plural.ts` and `{total}` is
+   * money, which is Czech everywhere. What is left is a middot, and it lands
+   * here rather than being skipped by the punctuation rule for the same reason
+   * `partyPlus` does — the letters inside the placeholder names count as
+   * letters to that regex.
+   */
+  "booking.partySummary",
+  // The admin panel is English; this is the label of its door.
+  "nav.admin",
+  "nav.cta",
+  // Mailto plumbing, not prose.
+  "account.deleteMailto",
+  // "you@example.com" is an example address, not a sentence — it reads the
+  // same in all three languages and localising the domain would be noise.
+  "auth.emailPlaceholder",
+  // "Game Pass" is the product's NAME. The strapline under it is translated in
+  // both overlays; the name is not, so that a player can be told about it in a
+  // WhatsApp group where three languages are spoken and everyone recognises
+  // the same two words on the panel.
+  "pass.panelTitle",
+  /*
+   * "60 min" — the game card's duration (v1.3 §2.1).
+   *
+   * `min` is the standard abbreviation for `minuta` in Czech as well as for
+   * `minute` in English, so the CS overlay repeats the English string because
+   * the Czech word for it IS that string. Russian differs (`мин`) and is
+   * translated, which is why only the Czech pair reaches this list.
+   *
+   * Abbreviated in all three deliberately: §2.13 lists the duration among the
+   * four things on the card that never truncate, so it must fit beside a 28px
+   * kick-off and a format pill at 390px, and "minut" spelled out does not.
+   */
+  "games.durationMin",
+]);
+
+function flatten(value: unknown, prefix = ""): Map<string, string> {
+  const out = new Map<string, string>();
+
+  if (typeof value === "string") {
+    out.set(prefix, value);
+    return out;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item, i) => {
+      for (const [k, v] of flatten(item, `${prefix}[${i}]`)) out.set(k, v);
+    });
+    return out;
+  }
+  if (typeof value === "object" && value !== null) {
+    for (const [key, child] of Object.entries(value)) {
+      const path = prefix ? `${prefix}.${key}` : key;
+      for (const [k, v] of flatten(child, path)) out.set(k, v);
+    }
+  }
+
+  return out;
+}
+
+describe("locale detection", () => {
+  it("accepts exactly the four supported codes", () => {
+    expect(LOCALES).toEqual(["en", "cs", "ru", "uk"]);
+    expect(isLocale("cs")).toBe(true);
+    expect(isLocale("uk")).toBe(true);
+    // `ua` is the country code, not the language code, and it is the mistake
+    // anyone reaching for Ukrainian makes first — including the flag emoji
+    // beside it in the switcher, which IS 🇺🇦.
+    expect(isLocale("ua")).toBe(false);
+    expect(isLocale("sk")).toBe(false);
+    expect(isLocale(undefined)).toBe(false);
+  });
+
+  it("reads a browser's own priority order and takes the first supported match", () => {
+    expect(localeFromAcceptLanguage("cs-CZ,cs;q=0.9,en;q=0.8")).toBe("cs");
+    expect(localeFromAcceptLanguage("ru-RU,ru;q=0.9")).toBe("ru");
+    expect(localeFromAcceptLanguage("en-GB,en;q=0.9")).toBe("en");
+    // A Ukrainian phone in Prague, which is the arrival this round is for.
+    expect(localeFromAcceptLanguage("uk-UA,uk;q=0.9,en;q=0.7")).toBe("uk");
+  });
+
+  it("skips unsupported languages rather than giving up at the first one", () => {
+    expect(localeFromAcceptLanguage("de-DE,de;q=0.9,cs;q=0.7")).toBe("cs");
+  });
+
+  it("returns null when nothing matches, so the caller picks the default", () => {
+    expect(localeFromAcceptLanguage("de-DE,fr;q=0.8")).toBeNull();
+    expect(localeFromAcceptLanguage(null)).toBeNull();
+    expect(localeFromAcceptLanguage("")).toBeNull();
+  });
+});
+
+describe("resolveStrings", () => {
+  it("returns the English table untouched for en", () => {
+    expect(resolveStrings("en")).toBe(strings);
+  });
+
+  it("overlays the translation without dropping untranslated sections", () => {
+    const t = resolveStrings("cs");
+    expect(t.games.listTitle).toBe("Nadcházející zápasy");
+    // Admin is deliberately not translated — it must still be there, in English.
+    expect(t.admin.gamesTitle).toBe(strings.admin.gamesTitle);
+    // Emails are translated since round 41 — and still fall back to English.
+    expect(t.emails.spotHeld.subject).not.toBe(strings.emails.spotHeld.subject);
+  });
+
+  it("keeps money in CZK in every language", () => {
+    for (const locale of LOCALES) {
+      expect(resolveStrings(locale).common.czk).toBe("CZK");
+    }
+  });
+
+  it("keeps the Czech payment vocabulary in every language", () => {
+    // The player is about to open a Czech banking app. A translated reference
+    // field is a payment that arrives unmatched.
+    expect(resolveStrings("cs").payment.variableSymbol).toContain("VS");
+    expect(resolveStrings("ru").payment.variableSymbol).toContain("VS");
+    expect(resolveStrings("uk").payment.variableSymbol).toContain("VS");
+    for (const locale of LOCALES) {
+      expect(resolveStrings(locale).booking.payByQr).toContain("QR");
+    }
+    expect(resolveStrings("en").payment.variableSymbol).toMatch(/Variable symbol|VS/);
+  });
+
+  it("returns the same object on repeat calls, so the merge is not per-render", () => {
+    expect(resolveStrings("ru")).toBe(resolveStrings("ru"));
+  });
+
+  it("preserves interpolation placeholders the callers substitute into", () => {
+    for (const locale of LOCALES) {
+      const t = resolveStrings(locale);
+      expect(t.games.waitlistPosition).toContain("{position}");
+      expect(t.games.shareMessage).toContain("{venue}");
+      expect(t.games.shareMessage).toContain("{when}");
+      expect(t.games.shareMessage).toContain("{url}");
+      expect(t.booking.cancelReassuranceCutoff).toContain("{hours}");
+    }
+  });
+
+  it("replaces ordered copy blocks wholesale rather than by index", () => {
+    // A half-translated list would change language halfway down.
+    const steps = resolveStrings("ru").landing.steps;
+    expect(steps).toHaveLength(strings.landing.steps.length);
+    for (const step of steps) {
+      expect(step.title).not.toBe("");
+      expect(step.index).toMatch(/^\d\d$/);
+    }
+  });
+});
+
+/*
+ * EVERY OVERLAY, NOT A LIST THAT HAS TO BE REMEMBERED (round 22).
+ *
+ * Ukrainian was added as a fourth language and this table is where a new one
+ * either gets checked or silently does not. It stays a literal rather than
+ * being derived from `LOCALES` because `en` has no overlay to check and
+ * `resolveStrings("en")` returns the table itself — a derived list would have
+ * to special-case that, and the special case is the thing that rots.
+ */
+describe.each([
+  ["cs", cs],
+  ["ru", ru],
+  ["uk", uk],
+] as const)("%s translation completeness", (locale, overlay) => {
+  const english = flatten(strings);
+  const translated = flatten(resolveStrings(locale));
+
+  it("covers every player-facing key", () => {
+    const missing: string[] = [];
+
+    for (const section of PLAYER_FACING) {
+      for (const [key, englishValue] of english) {
+        if (!key.startsWith(`${section}.`) && key !== section) continue;
+        if (INTENTIONALLY_UNTRANSLATED.has(key)) continue;
+        // Placeholders, arrows and punctuation-only values are the same in
+        // every language; "→" is not an untranslated string.
+        if (!/\p{L}/u.test(englishValue)) continue;
+        if (translated.get(key) === englishValue) missing.push(key);
+      }
+    }
+
+    expect(missing).toEqual([]);
+  });
+
+  it("translates nothing outside the player-facing sections", () => {
+    // A translated admin or email key would ship copy nobody reviewed into a
+    // surface that is supposed to be English — and email has no per-player
+    // language to pick from in the first place.
+    const stray = Object.keys(overlay).filter(
+      (key) => !(PLAYER_FACING as readonly string[]).includes(key),
+    );
+    expect(stray).toEqual([]);
+  });
+});
+
+/**
+ * THE DEFAULT IS CZECH, AND IT IS THE LAST WORD RATHER THAN THE FIRST.
+ *
+ * The owner iteration made Czech the default for an anonymous visitor with no
+ * stored choice — the games are in Prague, and English led only because it is
+ * the language the string table is written in.
+ *
+ * What must stay true is the PRECEDENCE, which is where a "default" quietly
+ * becomes a forcing: an explicit choice outranks it, and a browser preference
+ * outranks it. This asserts the resolution ladder that
+ * `lib/i18n/server.ts` walks, at the level the pure functions can be tested.
+ */
+describe("the default locale", () => {
+  it("is Czech", () => {
+    expect(DEFAULT_LOCALE).toBe("cs");
+  });
+
+  it("does not displace a browser preference", () => {
+    // Step 2 of the ladder. A Russian speaker's browser still gets Russian.
+    expect(localeFromAcceptLanguage("ru-RU,ru;q=0.9,en;q=0.8")).toBe("ru");
+    expect(localeFromAcceptLanguage("en-GB,en;q=0.9")).toBe("en");
+  });
+
+  it("applies only when nothing else has an opinion", () => {
+    // Step 3. An unsupported language, or no header at all, lands here.
+    expect(localeFromAcceptLanguage("de-DE,de;q=0.9") ?? DEFAULT_LOCALE).toBe("cs");
+    expect(localeFromAcceptLanguage(null) ?? DEFAULT_LOCALE).toBe("cs");
+  });
+
+  it("leaves ENGLISH as the fallback for missing copy, which is a different job", () => {
+    /*
+     * `resolveStrings` merges the overlays onto the English table, so an
+     * untranslated key renders English rather than a blank. Changing the
+     * default locale must not touch that — the two are easily confused
+     * because both are called "the fallback".
+     */
+    const cs = resolveStrings("cs");
+    expect(cs.games.durationMin).toBe(strings.games.durationMin);
+    expect(cs.games.listTitle).not.toBe(strings.games.listTitle);
+  });
+});

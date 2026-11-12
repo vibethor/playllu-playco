@@ -1,0 +1,164 @@
+import { strings, type Strings } from "@/lib/strings";
+
+/**
+ * RPC error code → friendly copy.
+ *
+ * The booking RPCs raise bare exception messages (`raise exception
+ * 'CAPACITY_FULL'`), which PostgREST surfaces as `error.message`. Matching on
+ * the code rather than the whole message keeps this stable against PostgREST
+ * wrapping the text differently.
+ *
+ * Losing a capacity race is a NORMAL outcome in this product — two people
+ * tapping the last spot is expected behaviour, not a fault. So every known
+ * rejection has copy, and anything unmapped falls back to generic rather than
+ * leaking a Postgres string to a player.
+ */
+export type BookingErrorCode =
+  | "CAPACITY_FULL"
+  | "DUPLICATE_ACTIVE_BOOKING"
+  | "CREDIT_NEGATIVE_BLOCKED"
+  | "GAME_NOT_BOOKABLE"
+  | "GAME_ALREADY_STARTED"
+  | "GAME_NOT_WAITLISTABLE"
+  | "GAME_NOT_FOUND"
+  | "PLAYER_NOT_FOUND"
+  | "INSUFFICIENT_PERMISSION"
+  | "CANCEL_WINDOW_CLOSED"
+  | "BOOKING_NOT_FOUND"
+  | "INVALID_TRANSITION"
+  /* Round 11: the party is bigger than one booking may hold. */
+  | "PARTY_TOO_LARGE"
+  /* Round 13: this tier has no Stripe link, so it cannot be sold yet. */
+  | "PASS_NOT_CONFIGURED"
+  /* Round 16 item 19: cancelling a game needs a written reason. Admin-only,
+     which is why its message is English by ruling R22 like the rest of the
+     panel — it can never reach a player. */
+  | "REASON_REQUIRED"
+  /*
+   * HOTFIX 2026-09-18: a top-up the database refuses to write.
+   *
+   * IT WAS ALREADY BEING RAISED and nothing recognised it, which is the half of
+   * the pass-tier outage that made it hard to see. `create_pass_topup` raised
+   * `AMOUNT_OUT_OF_RANGE` for the 15- and 20-game passes; the code was not in
+   * `KNOWN_CODES`, so it fell to `UNKNOWN` and the player read "Something went
+   * wrong. Please try again." — a message that describes a transient fault and
+   * invites the one action guaranteed not to help.
+   *
+   * ADDING IT HERE IS NOT THE FIX — the migration is. This is so the NEXT tier
+   * priced out of range says what is wrong instead of blaming the network.
+   */
+  | "AMOUNT_OUT_OF_RANGE"
+  /* Round 13 / the same hotfix: the tier row itself is gone. */
+  | "PASS_TIER_NOT_FOUND"
+  /*
+   * Round 38: a credit booking submitted without the terms box ticked.
+   * Raised by the server actions, not an RPC (`lib/legal/terms.ts`). A refusal
+   * by rule, so its copy says what to do rather than "try again".
+   */
+  | "TERMS_REQUIRED"
+  | "UNKNOWN";
+
+const KNOWN_CODES: BookingErrorCode[] = [
+  "CAPACITY_FULL",
+  "DUPLICATE_ACTIVE_BOOKING",
+  "CREDIT_NEGATIVE_BLOCKED",
+  "GAME_NOT_BOOKABLE",
+  "GAME_ALREADY_STARTED",
+  "GAME_NOT_WAITLISTABLE",
+  "GAME_NOT_FOUND",
+  "PLAYER_NOT_FOUND",
+  "INSUFFICIENT_PERMISSION",
+  "CANCEL_WINDOW_CLOSED",
+  "BOOKING_NOT_FOUND",
+  "INVALID_TRANSITION",
+  "PARTY_TOO_LARGE",
+  "PASS_NOT_CONFIGURED",
+  "REASON_REQUIRED",
+  "AMOUNT_OUT_OF_RANGE",
+  "PASS_TIER_NOT_FOUND",
+  "TERMS_REQUIRED",
+];
+
+/** Extracts a known code from a PostgREST error message. */
+export function toBookingErrorCode(message: string | null | undefined): BookingErrorCode {
+  if (!message) return "UNKNOWN";
+  return KNOWN_CODES.find((code) => message.includes(code)) ?? "UNKNOWN";
+}
+
+export interface FriendlyBookingError {
+  code: BookingErrorCode;
+  title: string;
+  message: string;
+}
+
+export function describeBookingError(
+  code: BookingErrorCode,
+  t: Strings = strings,
+): FriendlyBookingError {
+  switch (code) {
+    case "CAPACITY_FULL":
+      return {
+        code,
+        title: t.errors.capacityFullTitle,
+        message: t.errors.capacityFull,
+      };
+    case "DUPLICATE_ACTIVE_BOOKING":
+      return {
+        code,
+        title: t.errors.duplicateActiveBookingTitle,
+        message: t.errors.duplicateActiveBooking,
+      };
+    case "CREDIT_NEGATIVE_BLOCKED":
+      return { code, title: t.errors.tryAgain, message: t.errors.creditNegativeBlocked };
+    case "GAME_NOT_BOOKABLE":
+      return { code, title: t.errors.tryAgain, message: t.errors.gameNotBookable };
+    case "GAME_ALREADY_STARTED":
+      return { code, title: t.errors.tryAgain, message: t.errors.gameAlreadyStarted };
+    case "GAME_NOT_WAITLISTABLE":
+      return { code, title: t.errors.tryAgain, message: t.errors.gameNotWaitlistable };
+    case "CANCEL_WINDOW_CLOSED":
+      return { code, title: t.errors.tryAgain, message: t.errors.cancelWindowClosed };
+    case "PASS_NOT_CONFIGURED":
+      return { code, title: t.errors.tryAgain, message: t.errors.passNotConfigured };
+    case "PASS_TIER_NOT_FOUND":
+      return { code, title: t.errors.tryAgain, message: t.errors.passNotConfigured };
+    case "AMOUNT_OUT_OF_RANGE":
+      return { code, title: t.errors.tryAgain, message: t.errors.amountOutOfRange };
+    case "REASON_REQUIRED":
+      return { code, title: t.errors.tryAgain, message: t.errors.reasonRequired };
+    case "TERMS_REQUIRED":
+      return { code, title: t.auth.legalGroupLabel, message: t.auth.tosRequired };
+    case "PARTY_TOO_LARGE":
+      return { code, title: t.errors.tryAgain, message: t.errors.partyTooLarge };
+    case "INSUFFICIENT_PERMISSION":
+      return {
+        code,
+        title: t.errors.tryAgain,
+        message: t.errors.insufficientPermission,
+      };
+    default:
+      return { code, title: t.errors.tryAgain, message: t.errors.generic };
+  }
+}
+
+/**
+ * Waitlist-flow variant.
+ *
+ * Only CAPACITY_FULL differs, and it differs in a way that matters: losing a
+ * conversion race leaves the player STILL on the waitlist, which is a true and
+ * reassuring thing to say. The booking-flow copy deliberately does not claim
+ * that, because a player who never joined a waitlist is not on one.
+ */
+export function describeWaitlistError(
+  code: BookingErrorCode,
+  t: Strings = strings,
+): FriendlyBookingError {
+  if (code === "CAPACITY_FULL") {
+    return {
+      code,
+      title: t.errors.capacityFullTitle,
+      message: t.errors.capacityFullWaitlist,
+    };
+  }
+  return describeBookingError(code);
+}

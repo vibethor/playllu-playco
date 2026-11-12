@@ -1,0 +1,64 @@
+{
+  "comment": "The ONLY edits made to the lawyer's documents in content/legal/original/. Each rule must match exactly `count` times or loading the document throws. Rulings by the owner, 2026-10-19: the effective date is the publication day, and there is no phone number yet. Rules with \"when\": \"analytics\" apply only while a GTM container is configured.",
+  "rules": [
+    {
+      "document": "obchodni-podminky",
+      "find": "<span class=\"ph\">[●]</span> 2026",
+      "replace": "19. 10. 2026",
+      "count": 2,
+      "why": "Effective date: the header line and clause 19.5."
+    },
+    {
+      "document": "obchodni-podminky",
+      "find": ", telefon <span class=\"ph\">[●]</span>",
+      "replace": "",
+      "count": 1,
+      "why": "Clause 1.2: no phone number yet."
+    },
+    {
+      "document": "zasady-zpracovani-osobnich-udaju",
+      "find": "<span class=\"ph\">[●]</span> 2026",
+      "replace": "19. 10. 2026",
+      "count": 1,
+      "why": "Effective date in the header line."
+    },
+    {
+      "document": "zasady-pouzivani-cookies",
+      "find": "<span class=\"ph\">[●]</span> 2026",
+      "replace": "19. 10. 2026",
+      "count": 1,
+      "why": "Effective date in the header line."
+    },
+    {
+      "document": "zasady-pouzivani-cookies",
+      "when": "analytics",
+      "find": "<td>30 minut</td>\n<td>ne</td>\n</tr>\n</tbody>",
+      "replace": "<td>30 minut</td>\n<td>ne</td>\n</tr>\n<tr>\n<td>Analytické</td>\n<td>_ga, _ga_* – Google Ireland Limited</td>\n<td>analytika, měření návštěvnosti</td>\n<td>2 roky</td>\n<td>ano</td>\n</tr>\n<tr>\n<td>Marketingové</td>\n<td>_fbp, fr – Meta Platforms Ireland Limited</td>\n<td>měření a cílení reklamy</td>\n<td>90 dní</td>\n<td>ano</td>\n</tr>\n</tbody>",
+      "count": 1,
+      "why": "Round 40, owner-approved: Texty pro web 9.2 says the table must list analytics and marketing cookies before they are used. Applied only while NEXT_PUBLIC_GTM_ID is set."
+    },
+    {
+      "document": "zasady-pouzivani-cookies",
+      "when": "analytics",
+      "find": "Platforma v současnosti používá pouze nezbytné Cookies. Analytické, preferenční ani marketingové Cookies nepoužíváme. Pokud je začneme používat, doplníme je do tabulky v Článku 3 (Jaké Cookies používáme) a před jejich použitím si vyžádáme váš souhlas prostřednictvím lišty, kde bude možné všechny volitelné Cookies přijmout, všechny odmítnout nebo vybrat jednotlivé kategorie. Udělený souhlas bude možné kdykoli stejně snadno odvolat přes odkaz „Nastavení cookies“ v patičce každé stránky.",
+      "replace": "Vedle nezbytných Cookies používáme s vaším souhlasem analytické a marketingové Cookies uvedené v Článku 3 (Jaké Cookies používáme). Preferenční Cookies nepoužíváme. Souhlas udělujete prostřednictvím lišty, kde lze všechny volitelné Cookies přijmout, všechny odmítnout nebo vybrat jednotlivé kategorie. Udělený souhlas můžete kdykoli stejně snadno odvolat přes odkaz „Nastavení cookies“ v patičce každé stránky.",
+      "count": 1,
+      "why": "Round 40, owner-approved 2026-10-26: article 2.2 described a site without optional cookies; while NEXT_PUBLIC_GTM_ID is set it states, in the lawyer's own words moved to the present, that analytics and marketing cookies are used with consent given through the banner."
+    },
+    {
+      "document": "obchodni-podminky",
+      "find": "info@playllu.com",
+      "replace": "support@hrajfotbal.com",
+      "count": 14,
+      "why": "Owner, 2026-10-26: the operator's contact and complaints address is support@hrajfotbal.com (Seznam Email Profi); playllu.com receives no mail. Seven places, each written as a mailto link and as its text: clauses 1.2 (twice), 12.5, 14.2, 14.4, 15.2 and Příloha 1 5.1."
+    },
+    {
+      "document": "zasady-pouzivani-cookies",
+      "when": "analytics",
+      "find": "účinné od 19. 10. 2026, verze 2.0",
+      "replace": "účinné od 26. 10. 2026, verze 2.1",
+      "count": 1,
+      "why": "Analytics went live on 2026-10-26 (GTM-KKDRBLJJ), which changed the table and article 2.2 — so the policy carries that day's date and a new version. Applies after the effective-date rule above. lib/legal.ts COOKIES_VERSION_WITH_ANALYTICS must match."
+    }
+  ]
+}

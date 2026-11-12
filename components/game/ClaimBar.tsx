@@ -1,0 +1,302 @@
+import Link from "next/link";
+import { CancelBookingForm } from "@/components/CancelBookingForm";
+import { WaitlistButton } from "@/components/WaitlistButton";
+import { formatCzk, formatTime } from "@/lib/format";
+import { claimBarState, type ClaimBarFacts } from "@/lib/games/claimBar";
+import { LeaveWaitlistControl } from "@/components/game/LeaveWaitlistControl";
+import { appCapabilities } from "@/lib/db/capabilities";
+import { refundCutoffHours } from "@/lib/policy/refundCutoff";
+import { creditsLabel } from "@/lib/pass/credits";
+import { PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/queries";
+import { getLocale, getStrings } from "@/lib/i18n/server";
+
+/**
+ * The claim bar (v1.3 §2.4, ruling G).
+ *
+ * PRESENT ON EVERY GAME DETAIL, IN EVERY STATE — which is the change. The bar
+ * it replaces rendered only under `canAct && !holdsSpot && !isFull`, so five of
+ * the seven states were the absence of the control: a holder, a waiting player,
+ * a full game, a started game and a cancelled game each got a page whose bottom
+ * edge was simply empty, and the reader had to scroll the body to find out
+ * where they stood. The brief's bug 1 ("the bar is transparent") was the
+ * visible half of a bar that was also frequently missing.
+ *
+ * NEVER TRANSPARENT. `bg-surface` at full opacity, not `bg-ink/95` with a
+ * backdrop blur — a translucent bar over a dark photo is unreadable exactly
+ * when it matters, and a blur is a rendering cost on the one element that must
+ * never stutter while the page scrolls under it.
+ *
+ * WHICH STATE IS DECIDED IN `lib/games/claimBar.ts`, not here, because the
+ * thing that goes wrong is precedence and precedence is invisible in JSX. This
+ * component renders a decided state and makes no decisions of its own beyond
+ * formatting.
+ *
+ * THE HEIGHT IS RESERVED BY THE SKELETON (§2.10). `ClaimBarSkeleton` below is
+ * the same shell at the same height, so the page beneath does not jump when the
+ * data lands.
+ *
+ * WAITLIST: NO `LEAVE` CONTROL, AND THAT IS A KNOWN GAP. There is no
+ * `leave_waitlist` RPC — `join_waitlist`, `waitlist_position` and
+ * `notify_waitlist` are the only three — and every transition here is a
+ * `SECURITY DEFINER` RPC, so it cannot be faked from the client. Leaving is
+ * quarantined. The right-hand space is deliberately laid out to hold a control
+ * so that adding one later is not a re-layout.
+ */
+
+/**
+ * The shell, shared by the bar and its skeleton so the two cannot drift apart.
+ *
+ * `bottom: var(--tabbar-h)` puts it ABOVE the nav pill rather than behind it —
+ * that custom property is the pill's whole footprint including the iPhone home
+ * indicator, and it resolves to 0 at `md` where the pill is not rendered. Two
+ * hard-coded 64s here and in `globals.css` is how a button ends up half-covered
+ * on one route.
+ *
+ * `rounded-t-card` — the top corners only. It is the bottom edge of the
+ * viewport; rounding the bottom corners would float it over a strip of page
+ * that has nothing to do with it.
+ */
+const SHELL =
+  "fixed inset-x-0 z-30 rounded-t-card bg-surface shadow-lift";
+
+/** Height floor, so the seven states are one bar rather than seven heights. */
+const INNER = "mx-auto flex w-full max-w-shell items-center gap-4 px-gutter py-3";
+
+export async function ClaimBar({
+  gameId,
+  bookingId,
+  priceCzk,
+  startsAt,
+  refundable = true,
+  facts,
+}: {
+  gameId: string;
+  /** The viewer's own booking, when they hold one — needed by cancel. */
+  bookingId: string | null;
+  priceCzk: number;
+  startsAt: string;
+  /**
+   * Whether cancelling now would still be credited (policy v2).
+   *
+   * A PROP, not computed here. Reading the clock during render is impure and
+   * `react-hooks/purity` rejects it — the decision is made in
+   * `lib/booking/queries.ts` alongside `canCancel`, off the same `now`, which
+   * also guarantees the two answers come from one instant rather than two.
+   * Defaults true so a caller with no booking shows the ordinary reassurance.
+   */
+  refundable?: boolean;
+  facts: ClaimBarFacts;
+}) {
+  /*
+   * THE ENFORCED NUMBER, NOT THE MIRRORED ONE (round 16, item 6). See
+   * `lib/policy/refundCutoff.ts`: reading `lib/policy.ts` here is how a screen
+   * comes to promise a refund the database refuses.
+   */
+  const cutoffHours = await refundCutoffHours();
+  const capabilities = await appCapabilities();
+
+  const t = await getStrings();
+
+  const locale = await getLocale();
+  const state = claimBarState(facts);
+
+  /*
+   * The left-hand side is the PRICE in five of the seven states, and the
+   * player's own money in the other two. It never truncates (§2.13).
+   */
+  /*
+   * `150 CZK / 1 credit` — the price, loud, with the credit equivalence a step
+   * smaller beside it (layout law, 2026-08-10).
+   *
+   * THIS SENTENCE MOVED HERE FROM THE LIST CARD, and the move is the law's
+   * point rather than a relocation of convenience. On a card it was read while
+   * scanning eight games, where the figure is identical on every one and
+   * teaches nothing; here it is the last thing read before a commitment, which
+   * is the one moment the unit is worth explaining.
+   *
+   * THE SUFFIX RENDERS ONLY AT 150. A game at any other price shows the figure
+   * bare — 200 CZK is not "1.3 credits", and inventing that is exactly the
+   * pro-rating the credits ruling says to stop and ask about. A strict
+   * equality against the reference constant, never a range.
+   */
+  const price = (
+    /*
+      ANTON, AT DISPLAY SCALE (redesign v2, round 4). R5's other named case:
+      "hero money figures". p03 draws the price as the loudest thing on the
+      bar — a 16px cap, so a 22px em in this face — against the `body-lg` bold
+      it was, which put the price at the same weight as the button's label.
+
+      The `/ 1 credit` suffix stays at `small` and stays conditional: see the
+      note above it.
+    */
+    <span
+      data-testid="claim-bar-price"
+      className="shrink-0 font-display text-[22px] leading-none text-bone"
+    >
+      {formatCzk(priceCzk)}
+      {priceCzk === PASS_REFERENCE_PRICE_CZK && (
+        <span data-testid="claim-bar-price-credit" className="ml-1 text-small font-normal text-muted">
+          {`/ ${creditsLabel(1, locale, t)}`}
+        </span>
+      )}
+    </span>
+  );
+
+  /** A sentence where a button would be — the three no-button states. */
+  const note = (testId: string, text: string, tone: string) => (
+    <span data-testid={testId} className={`ml-auto text-right text-small ${tone}`}>
+      {text}
+    </span>
+  );
+
+  let left = price;
+  let right: React.ReactNode;
+
+  switch (state.kind) {
+    case "cancelled":
+      right = note("claim-bar-cancelled", t.booking.barCancelled, "text-faint");
+      break;
+
+    case "started":
+      right = note(
+        "claim-bar-started",
+        t.booking.barKickedOffAt.replace("{time}", formatTime(startsAt)),
+        "text-faint",
+      );
+      break;
+
+    case "holding-paid":
+      // The player's own state replaces the price: what this game costs stopped
+      // being the question the moment they paid it.
+      left = (
+        <span data-testid="claim-bar-paid" className="shrink-0 text-body-lg font-bold text-volt">
+          {t.booking.barPaid}
+        </span>
+      );
+      right = state.canCancel ? (
+        <CancelBookingForm
+          bookingId={bookingId ?? ""}
+          variant="bar"
+          toastTo={`/game/${gameId}`}
+          refundable={refundable}
+          refundCutoffHours={cutoffHours}
+        />
+      ) : undefined;
+      break;
+
+    case "holding-unpaid":
+      left = (
+        <span data-testid="claim-bar-due" className="shrink-0 text-body-lg font-bold text-warn">
+          {t.booking.barAmountDue.replace("{amount}", formatCzk(state.amountDueCzk))}
+        </span>
+      );
+      right = state.canCancel ? (
+        <CancelBookingForm
+          bookingId={bookingId ?? ""}
+          variant="bar"
+          toastTo={`/game/${gameId}`}
+          refundable={refundable}
+          refundCutoffHours={cutoffHours}
+        />
+      ) : undefined;
+      break;
+
+    case "waitlisted":
+      /*
+       * THE POSITION, AND A WAY OFF THE LIST (round 16, item 11).
+       *
+       * This state used to be a note and nothing else — the one place a
+       * waitlisted player sees where they stand, with no control on it. The
+       * leave link is gated on the round-16 migration: without it the bar is
+       * exactly what it was, rather than offering a button that 404s.
+       */
+      left = (
+        <span data-testid="claim-bar-waitlisted" className="text-small text-muted">
+          {state.position === null
+            ? t.booking.barOnWaitlistNoPosition
+            : t.booking.barOnWaitlist.replace("{n}", String(state.position))}
+        </span>
+      );
+      right = capabilities.leaveWaitlist ? (
+        <div className="ml-auto shrink-0">
+          <LeaveWaitlistControl gameId={gameId} />
+        </div>
+      ) : undefined;
+      break;
+
+    case "full":
+      /*
+       * SECONDARY, not primary (§2.5): joining a queue is not the same
+       * commitment as taking a spot, and drawing it in volt would say it was.
+       *
+       * A FORM, not a link — unlike the claim, which navigates to `/book`,
+       * joining is a single `join_waitlist` call with nothing to choose on the
+       * way. There is no `/game/[id]/waitlist` page and there should not be
+       * one: a route whose only content is a button is a tap spent on
+       * navigation.
+       */
+      right = (
+        <div className="ml-auto shrink-0">
+          <WaitlistButton gameId={gameId} alreadyOnList={false} position={null} variant="bar" />
+        </div>
+      );
+      break;
+
+    case "open-signed-in":
+    case "open-signed-out":
+      right = (
+        <Link
+          href={`/game/${gameId}/book`}
+          data-testid="book-cta"
+          /* `rounded-pill` — p03 draws the bar's action as a full capsule,
+             the same shape the home hero's CTA took in round 3. */
+          className="pressable ml-auto flex min-h-[52px] shrink-0 items-center justify-center rounded-pill bg-volt px-5 text-body-lg font-bold text-ink no-underline hover:bg-volt-dim"
+        >
+          {state.kind === "open-signed-in"
+            ? t.booking.claimSpot
+            : t.booking.signInToClaim}
+        </Link>
+      );
+      break;
+  }
+
+  return (
+    <footer
+      data-testid="claim-bar"
+      data-state={state.kind}
+      aria-label={t.booking.barLabel}
+      className={SHELL}
+      style={{ bottom: "var(--tabbar-h)" }}
+    >
+      <div className={INNER}>
+        {left}
+        {right}
+      </div>
+    </footer>
+  );
+}
+
+/**
+ * The bar's footprint while the detail loads (§2.10).
+ *
+ * Rendered in its own state rather than omitted, so its height is reserved and
+ * the content beneath does not jump when the data lands. §2.10 calls this out
+ * specifically for the game detail: it is the surface a shared WhatsApp link
+ * opens, and it was the one screen §3 asked for a skeleton on that no frame
+ * drew.
+ */
+export function ClaimBarSkeleton() {
+  return (
+    <div
+      aria-hidden="true"
+      data-testid="claim-bar-skeleton"
+      className={SHELL}
+      style={{ bottom: "var(--tabbar-h)" }}
+    >
+      <div className={`${INNER} animate-pulse`}>
+        <div className="h-[22px] w-[72px] rounded-pill bg-surface-avatar" />
+        <div className="ml-auto h-[52px] w-[148px] rounded-pill bg-surface-avatar" />
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,517 @@
+"use server";
+
+import { STABLE_TAGS } from "@/lib/db/stableRead";
+import { revalidatePath, updateTag } from "next/cache";
+import { withToast } from "@/lib/ux/toast";
+import { redirect } from "next/navigation";
+import { notifyWaitlistForGame } from "@/lib/cron/waitlistRelease";
+import { bookingEmailContext } from "@/lib/cron/context";
+import { dispatchEmail } from "@/lib/email/dispatch";
+import { withComposedPhone } from "@/lib/auth/phone";
+import { isLocale } from "@/lib/i18n/locales";
+import type { CancelResult } from "@/lib/types/database";
+import { refundCutoffHours } from "@/lib/policy/refundCutoff";
+import { createServerSupabaseClient, createServiceRoleSupabaseClient } from "@/lib/supabase/clients";
+import { getSessionUser } from "@/lib/auth/session";
+import { toBookingErrorCode, type BookingErrorCode } from "@/lib/booking/errors";
+import { getLocale, getStrings } from "@/lib/i18n/server";
+import { recordOwnConsent } from "@/lib/legal/recordConsent";
+import { finishAccountDeletion, parseDeletionResult } from "@/lib/players/accountDeletion";
+import { siteOrigin } from "@/lib/auth/origin";
+import { PASSWORD_MIN_LENGTH, SKILL_LEVELS, type SkillLevel } from "@/lib/auth/signupProfile";
+import { NICKNAME_PATTERN } from "@/lib/auth/nickname";
+import { normaliseCountry } from "@/lib/auth/countries";
+import { normalisePositions } from "@/lib/players/positions";
+import { getCurrentPlayer } from "@/lib/auth/session";
+
+/**
+ * Sign out.
+ *
+ * `signOut()` on the server client clears the session cookies through the
+ * cookie adapter, so the browser is genuinely logged out rather than merely
+ * navigated away — a client-side redirect would leave the session intact and
+ * the next visit would silently be authenticated again.
+ *
+ * Scope is local: it ends this browser's session, not every session the player
+ * holds. Signing a player out of their other devices is a security action they
+ * did not ask for here.
+ */
+export async function signOutAction(): Promise<void> {
+  const supabase = await createServerSupabaseClient();
+  await supabase.auth.signOut({ scope: "local" });
+  redirect("/");
+}
+
+export interface CancelActionState {
+  status: "idle" | "cancelled" | "error";
+  code?: BookingErrorCode;
+}
+
+/**
+ * Self-cancel.
+ *
+ * The write goes through `cancel_booking`, which owns the whole decision:
+ * ownership, the cancellation window, and how much credit to issue for money
+ * actually applied. Nothing about that is re-implemented here.
+ *
+ * The UI disables the cancel affordance after kickoff for a decent experience,
+ * but that is a MIRROR of the rule, not the rule. A UI that merely hides the
+ * button while the RPC would still accept the call is a security defect rather
+ * than a cosmetic one — so this action always calls the RPC and always renders
+ * whatever it decides, including a `CANCEL_WINDOW_CLOSED` refusal for a
+ * request that reached here anyway.
+ */
+export async function cancelBookingAction(
+  _prevState: CancelActionState,
+  formData: FormData,
+): Promise<CancelActionState> {
+  const bookingId = String(formData.get("bookingId") ?? "");
+  if (!bookingId) return { status: "error", code: "BOOKING_NOT_FOUND" };
+
+  const user = await getSessionUser();
+  if (!user) return { status: "error", code: "INSUFFICIENT_PERMISSION" };
+
+  const supabase = await createServerSupabaseClient();
+
+  // Read the game before cancelling: afterwards the booking still carries the
+  // id, but reading it first keeps the release step independent of whatever
+  // the RPC returns.
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("game_id")
+    .eq("id", bookingId)
+    .maybeSingle();
+
+  const { data: cancelResult, error } = await supabase.rpc("cancel_booking", {
+    p_booking_id: bookingId,
+  });
+
+  if (error) {
+    return { status: "error", code: toBookingErrorCode(error.message) };
+  }
+
+  // Credit receipt. The amount comes from the RPC's own return value rather
+  // than being recomputed here — the function decides how much a cancellation
+  // is worth, and a second opinion in TypeScript is a second answer waiting to
+  // disagree.
+  const result = cancelResult as unknown as Partial<CancelResult> | null;
+  const credited = Number(result?.credit_issued_czk ?? 0);
+  await dispatchCancellationEmail(bookingId, credited, Number(result?.cancel_lead_hours ?? 0));
+
+  // A cancellation releases a spot, and `cancel_booking` emits `spot_released`
+  // to say so. Notifying here rather than waiting for the next cron tick is
+  // what makes the loop hands-free: cancel -> credit -> release -> notify ->
+  // convert, with no human and no 15-minute wait in the middle.
+  //
+  // Failure to mail must never fail the cancellation — the money movement is
+  // already committed, and the waitlist is re-notified on the next release.
+  if (booking?.game_id) {
+    try {
+      await notifyWaitlistForGame(booking.game_id);
+    } catch (notifyError) {
+      console.error("waitlist notify after cancellation failed", notifyError);
+    }
+  }
+
+  // The issued credit must show up in the balance immediately — the ledger is
+  // the authority and the page recomputes it server-side on the next render.
+  // BOTH ROUTES. The balance lives on `/account` and the fixture list moved to
+  // `/my-games` (v1.2 §7); the cancel form is rendered on the second and the
+  // credit it issues shows on the first, so revalidating one of them leaves the
+  // other stale — which reads as "the money did not come back".
+  revalidatePath("/account");
+  revalidatePath("/my-games");
+  if (booking?.game_id) revalidatePath(`/game/${booking.game_id}`);
+
+  /*
+   * THE TOAST TRAVELS BY REDIRECT, not by the returned state (§8, REQ-UX-002).
+   *
+   * CLAUDE.md records the reason directly: a marker rendered from a
+   * `useActionState` result can be unmounted by the re-render `revalidatePath`
+   * triggers, before anyone — or any assertion — observes it. A redirect
+   * carrying `?toast=` is rendered by the SERVER on the next request, so it
+   * survives.
+   *
+   * `toastTo` is optional and the returned state is unchanged without it, so
+   * the two call sites opt in and nothing that predates them has to move.
+   */
+  const toastTo = String(formData.get("toastTo") ?? "");
+  if (toastTo.startsWith("/")) {
+    redirect(withToast(toastTo, "bookingCancelled"));
+  }
+
+  return { status: "cancelled" };
+}
+
+/**
+ * Cancellation + credit receipt.
+ *
+ * Sent after the transition has committed, and never able to fail it: the
+ * money has already moved into the wallet, and a mail problem must not make a
+ * successful cancellation look like a failed one to the player.
+ */
+async function dispatchCancellationEmail(
+  bookingId: string,
+  creditCzk: number,
+  leadHours: number,
+): Promise<void> {
+  try {
+    const service = createServiceRoleSupabaseClient();
+
+    const { data: booking } = await service
+      .from("bookings")
+      .select("id, game_id, player_id, price_czk, credit_applied_czk, guest_count")
+      .eq("id", bookingId)
+      .maybeSingle();
+    if (!booking) return;
+
+    const [{ data: game }, { data: player }] = await Promise.all([
+      service.from("games").select("id, venue, starts_at").eq("id", booking.game_id).maybeSingle(),
+      service.from("players").select("email, nickname").eq("id", booking.player_id).maybeSingle(),
+    ]);
+    if (!game || !player) return;
+
+    const context = await bookingEmailContext(booking, game, player);
+    /*
+     * WHY NOTHING CAME BACK, when nothing did (round 41). A Credit had been
+     * spent and the cancellation fell inside the cutoff: the rule kept it.
+     * Otherwise nothing had been paid. The old email said "nothing had been
+     * paid" to both — wrong for every "I can't make it" since round 40.
+     */
+    const cutoff = await refundCutoffHours();
+    const outcome =
+      creditCzk > 0
+        ? "credited"
+        : booking.credit_applied_czk > 0 && leadHours < cutoff
+          ? "late"
+          : "unpaid";
+    await dispatchEmail({
+      event: "booking_cancelled",
+      to: player.email,
+      context: { ...context, creditCzk, cancelOutcome: outcome },
+    });
+  } catch (error) {
+    console.error("cancellation email dispatch failed", error);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Sign-in and security
+ * ------------------------------------------------------------------------ */
+
+export interface SecurityActionState {
+  status: "idle" | "done" | "error";
+  message?: string;
+}
+
+/**
+ * Change password, with the current one required.
+ *
+ * WHY RE-AUTHENTICATE AT ALL. `updateUser({ password })` needs only a session,
+ * so without this check an unattended phone is a permanent account takeover:
+ * whoever picks it up sets a new password, and the owner is locked out of their
+ * own bookings and wallet. Asking for the current password costs one field and
+ * closes that.
+ *
+ * There is no "verify this password" endpoint, so the check is a sign-in with
+ * the address already on the session. It issues a fresh session for the same
+ * user, which is harmless — and it is the only way to be sure the person typing
+ * is the person who set the password rather than the person holding the phone.
+ *
+ * A player who never set a password cannot pass this and should not: the
+ * message points them at the emailed code, which is the path that identifies
+ * them by their inbox instead.
+ */
+export async function changePasswordAction(
+  _prevState: SecurityActionState,
+  formData: FormData,
+): Promise<SecurityActionState> {
+  const t = await getStrings();
+  const current = String(formData.get("currentPassword") ?? "");
+  const next = String(formData.get("newPassword") ?? "");
+
+  if (next.length < PASSWORD_MIN_LENGTH) {
+    return { status: "error", message: t.auth.passwordTooShort };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data: userData } = await supabase.auth.getUser();
+  const email = userData.user?.email;
+  if (!email) redirect("/login");
+
+  const { error: reauthError } = await supabase.auth.signInWithPassword({
+    email,
+    password: current,
+  });
+  if (reauthError) {
+    return { status: "error", message: t.account.currentPasswordWrong };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: next });
+  if (error) {
+    console.error("updateUser(password) failed", error.message);
+    return { status: "error", message: t.auth.setPasswordFailed };
+  }
+
+  return { status: "done", message: t.account.changePasswordDone };
+}
+
+/**
+ * Start an email change. It completes in two inboxes, not here.
+ *
+ * `double_confirm_changes` is on (contract §3.3, ruled 2026-07-28), so Supabase
+ * mails BOTH the current address and the new one and swaps the address only
+ * when both are confirmed. Nothing observable happens on this page — which is
+ * exactly why the copy says two emails are coming before the button is pressed.
+ *
+ * The old mailbox having a veto is the point: without it, a session left open
+ * anywhere becomes a permanent account transfer, and the person who owned the
+ * account would learn about it from a bounce.
+ */
+export async function changeEmailAction(
+  _prevState: SecurityActionState,
+  formData: FormData,
+): Promise<SecurityActionState> {
+  const t = await getStrings();
+  const nextEmail = String(formData.get("newEmail") ?? "").trim().toLowerCase();
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
+    return { status: "error", message: t.auth.emailInvalid };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data: userData } = await supabase.auth.getUser();
+  const current = userData.user?.email;
+  if (!current) redirect("/login");
+
+  if (current.toLowerCase() === nextEmail) {
+    return { status: "error", message: t.account.changeEmailSame };
+  }
+
+  // Both confirmation links come back through the shared callback, so the
+  // session that results goes through the same post-auth path as every other
+  // way in rather than a bespoke one.
+  const { error } = await supabase.auth.updateUser(
+    { email: nextEmail },
+    { emailRedirectTo: new URL("/auth/callback", await siteOrigin()).toString() },
+  );
+
+  if (error) {
+    console.error("updateUser(email) failed", error.message);
+    return { status: "error", message: t.account.changeEmailFailed };
+  }
+
+  return {
+    status: "done",
+    message: t.account.changeEmailSent
+      .replace("{current}", current)
+      .replace("{next}", nextEmail),
+  };
+}
+
+/**
+ * The profile edit form (ruling L, §3 screen 7).
+ *
+ * A DIRECT COLUMN UPDATE, NOT AN RPC, and that is a deliberate exception to
+ * CLAUDE.md's rule that every state transition is a `SECURITY DEFINER`
+ * function. That rule exists because those transitions carry authorization
+ * decisions and money — a booking, a cancellation, a top-up. This carries
+ * neither. What confines it is the pair that already existed for `nickname`
+ * and `phone` since migration 1 and was widened for the other three on
+ * 2026-08-10:
+ *
+ *   - `players_update_own` RLS, which limits the write to the caller's row
+ *   - the per-column UPDATE grant, which limits WHICH columns a write may name
+ *
+ * Both are required and neither substitutes for the other. A caller who names
+ * `is_admin` is refused by the grant; a caller who names someone else's row is
+ * refused by the policy. Nothing here is the enforcement point, which is why a
+ * crafted request cannot widen it.
+ *
+ * VALUES ARE NORMALISED RATHER THAN TRUSTED. Both position CHECKs would refuse
+ * a bad array, but a constraint violation surfaces as a Postgres error naming a
+ * constraint, which no form can translate into something a player can act on —
+ * so the form never sends one.
+ */
+export interface ProfileActionState {
+  status: "idle" | "saved" | "error";
+  message?: string;
+  field?: "nickname" | "phone" | "country" | "skill" | "positions";
+}
+
+export async function updateProfileAction(
+  _prev: ProfileActionState,
+  formData: FormData,
+): Promise<ProfileActionState> {
+  const t = await getStrings();
+  const player = await getCurrentPlayer();
+  if (!player) return { status: "error", message: t.errors.generic };
+
+  const nickname = String(formData.get("nickname") ?? "").trim();
+  if (!NICKNAME_PATTERN.test(nickname)) {
+    return { status: "error", field: "nickname", message: t.auth.nicknameInvalid };
+  }
+
+  // Empty clears it. A phone is optional and always has been, so "" and null
+  // must mean the same thing rather than storing a zero-length string that
+  // every later `is not null` check would treat as a number.
+  // Round 41: a prefix and a number arrive; one international number is kept.
+  const rawPhone = String(withComposedPhone(formData).get("phone") ?? "").trim();
+  const phone = rawPhone === "" ? null : rawPhone;
+
+  const country = normaliseCountry(String(formData.get("country") ?? ""));
+  if (formData.get("country") && !country) {
+    return { status: "error", field: "country", message: t.auth.countryInvalid };
+  }
+
+  const rawSkill = String(formData.get("skill") ?? "");
+  const skill = (SKILL_LEVELS as readonly string[]).includes(rawSkill)
+    ? (rawSkill as SkillLevel)
+    : null;
+  if (rawSkill && !skill) {
+    return { status: "error", field: "skill", message: t.auth.skillRequired };
+  }
+
+  const positions = normalisePositions(formData.getAll("positions").map(String));
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("players")
+    .update({ nickname, phone, country, skill_level: skill, positions })
+    .eq("id", player.id);
+
+  if (error) {
+    // The one failure a player can act on: the nickname's unique index.
+    if (error.code === "23505") {
+      return { status: "error", field: "nickname", message: t.auth.nicknameTaken };
+    }
+    return { status: "error", message: t.profile.saveFailed };
+  }
+
+  revalidatePath("/account");
+  return { status: "saved" };
+}
+
+/**
+ * The marketing opt-in, after signup (round 38).
+ *
+ * The signup box asks for marketing consent; this is what makes withdrawing
+ * it as easy as giving it (privacy policy 3.4). `marketing_opt_in` has carried an own-row UPDATE grant since
+ * migration 1, so it takes the same path as the profile fields above — the
+ * grant and `players_update_own` are the enforcement, not this action.
+ *
+ * THE FORM SENDS THE VALUE IT WANTS, not "toggle". A double submit, or a page
+ * left open in two tabs, then converges on what the player last saw and chose
+ * rather than flipping twice.
+ */
+export interface MarketingActionState {
+  status: "idle" | "saved" | "error";
+  message?: string;
+}
+
+export async function setMarketingOptInAction(
+  _prev: MarketingActionState,
+  formData: FormData,
+): Promise<MarketingActionState> {
+  const t = await getStrings();
+  const player = await getCurrentPlayer();
+  if (!player) return { status: "error", message: t.errors.generic };
+
+  const optIn = formData.get("optIn") === "true";
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("players")
+    .update({ marketing_opt_in: optIn })
+    .eq("id", player.id);
+
+  if (error) {
+    console.error("marketing opt-in update failed", error.message);
+    return { status: "error", message: t.profile.saveFailed };
+  }
+
+  // Texty 2.4: switching it off is recorded as carefully as switching it on.
+  await recordOwnConsent(supabase, {
+    kind: optIn ? "marketing_opt_in" : "marketing_opt_out",
+    wording: t.profile.marketingToggle,
+    locale: await getLocale(),
+    context: { surface: "account" },
+  });
+
+  revalidatePath("/account");
+  return { status: "saved" };
+}
+
+/**
+ * A player deletes their own account (round 40, Obchodní podmínky 4.7 — "in
+ * the account's settings"). Same RPC as the admin path; it checks the caller is
+ * the player. Signed out FIRST, while the session is still valid, then the
+ * login itself is removed.
+ */
+export interface DeleteAccountState {
+  status: "idle" | "error";
+  message?: string;
+}
+
+export async function deleteOwnAccountAction(
+  _prev: DeleteAccountState,
+): Promise<DeleteAccountState> {
+  const t = await getStrings();
+  const player = await getCurrentPlayer();
+  if (!player) redirect("/login");
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase.rpc("delete_player_account", { p_player_id: player.id });
+  if (error) {
+    console.error("delete own account failed", error.message);
+    return { status: "error", message: t.account.deleteAccountFailed };
+  }
+
+  await supabase.auth.signOut();
+  const result = parseDeletionResult(data);
+  if (result) await finishAccountDeletion(player.id, result);
+
+  redirect("/");
+}
+
+export interface EmailLocaleActionState {
+  status: "idle" | "saved" | "error";
+  message?: string;
+}
+
+/**
+ * The language a player's emails are written in (round 41) — kept on the
+ * account, in the auth user's metadata, where `lib/email/recipientLocale.ts`
+ * reads it at send time. Written by the player's own session, so nobody can
+ * set another account's.
+ */
+export async function setEmailLocaleAction(
+  _prev: EmailLocaleActionState,
+  formData: FormData,
+): Promise<EmailLocaleActionState> {
+  const t = await getStrings();
+  const chosen = formData.get("email_locale");
+  if (!isLocale(chosen)) return { status: "error", message: t.profile.saveFailed };
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.auth.updateUser({ data: { email_locale: chosen } });
+  if (error) {
+    console.error("email language update failed", error.message);
+    return { status: "error", message: t.profile.saveFailed };
+  }
+
+  revalidatePath("/account");
+  return { status: "saved" };
+}
+
+/**
+ * A profile photo or cover was just replaced (round 41). The upload goes
+ * straight from the browser to Storage; this expires the cached listing every
+ * avatar's URL version comes from (`profilePhotoVersion`), so the refresh that
+ * follows — and everyone else's next page — shows the new picture at a new URL.
+ */
+export async function profilePhotoChangedAction(): Promise<void> {
+  if (!(await getSessionUser())) return;
+  updateTag(STABLE_TAGS.profilePhotos);
+  revalidatePath("/", "layout");
+}

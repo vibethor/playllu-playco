@@ -1,0 +1,78 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files — real credentials never get committed.
+.env*
+# ...except the documented contracts, which carry placeholders only.
+# `.env.example` is the production side; `.env.local.example` is the
+# non-production side that is copied to `.env.test.local`. Both are templates
+# and neither is a file any runner reads.
+!.env.example
+!.env.local.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Playwright output — run artifacts, never committed.
+test-results/
+playwright-report/
+
+# Screenshot strips — review artefacts for the UX loop, not baselines.
+screenshots/
+
+# Letco injection artifacts (auto-added)
+.claude/.letco-backup/
+.claude/.letco-injection-manifest.json
+.claude/.letco-inject-group-*.json
+.letco-session.lock
+
+# Machine-local agent config — carries session ids and socket paths under a
+# specific home directory. Never committed; the rules and skills beside it are.
+.claude/settings.local.json
+.mcp.json
+
+# ---------------------------------------------------------------------------
+# STRIPS AND SCREENSHOTS ARE NEVER COMMITTED (round 27, the owner's standing
+# rule). Nothing generates them any more; these lines exist so that a spec or
+# a script that starts to cannot quietly put them back under version control.
+# ---------------------------------------------------------------------------
+docs/**/strips/
+screenshots/
+test-results/
+playwright-report/
+
+# Parallel builders' git worktrees (round 42)
+.claude/worktrees/
