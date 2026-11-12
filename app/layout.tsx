@@ -11,6 +11,8 @@ import { GoogleTagManager } from "@next/third-parties/google";
 import { Footer } from "@/components/chrome/Footer";
 import { CookieConsent } from "@/components/consent/CookieConsent";
 import { SignUpEvent } from "@/components/analytics/SignUpEvent";
+import { SiteEvents } from "@/components/analytics/SiteEvents";
+import { capiConfig, registrationEventId } from "@/lib/analytics/metaCapi";
 import { consentBootstrapScript, gtmContainerId } from "@/lib/analytics/gtm";
 import { Header } from "@/components/chrome/Header";
 import { getCurrentPlayer } from "@/lib/auth/session";
@@ -224,7 +226,9 @@ export default async function RootLayout({
               {gtmId && <CookieConsent />}
               {gtmId && (
                 <Suspense fallback={null}>
-                  <SignUpEvent />
+                  <SignUpEvent eventId={player ? registrationEventId(player.id) : null} capi={capiConfig() !== null} />
+                  {/* user_id (the internal player id, never the email), login, cancellations, shares. */}
+                  <SiteEvents userId={player?.id ?? null} />
                 </Suspense>
               )}
             </div>
