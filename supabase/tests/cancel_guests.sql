@@ -77,7 +77,7 @@ insert into public.players (id, nickname, email, auth_user_id) values
 -- ONE GAME WELL INSIDE THE WINDOW AND ONE WELL OUTSIDE IT. The cutoff is eight
 -- hours, so seven hours is late and thirty is not; nothing here depends on the
 -- test running at a particular time of day.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('96660000-0000-0000-0000-0000000000c1', 'Guest Cancel Early', now() + interval '30 hours', 12, 150, 'published'),
   ('96660000-0000-0000-0000-0000000000c2', 'Guest Cancel Late',  now() + interval '7 hours',  12, 150, 'published'),
   ('96660000-0000-0000-0000-0000000000c3', 'Guest Cancel Full',  now() + interval '30 hours',  4, 150, 'published');
@@ -96,7 +96,7 @@ returns public.bookings language sql security definer as $$
 $$;
 
 create function pg_temp.balance(p uuid) returns integer language sql security definer as $$
-  select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger where player_id = p
+  select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger where player_id = p
 $$;
 
 -- =============================================================================
@@ -122,8 +122,8 @@ select pg_temp.act_as('60000000-0000-0000-0000-0000000000c1');
 select pg_temp.ok(
   (public.cancel_guests(
      pg_temp.booking_of('96660000-0000-0000-0000-0000000000c1',
-                        '6ccc0000-0000-0000-0000-0000000000c1'), 2)).credit_issued_czk = 300,
-  'removing two guests from a 600 CZK party of four returns exactly 2 x 150');
+                        '6ccc0000-0000-0000-0000-0000000000c1'), 2)).credit_issued_thb = 300,
+  'removing two guests from a 600 THB party of four returns exactly 2 x 150');
 reset role;
 
 select pg_temp.ok(
@@ -133,11 +133,11 @@ select pg_temp.ok(
 
 select pg_temp.ok(
   (pg_temp.booking_row(pg_temp.booking_of('96660000-0000-0000-0000-0000000000c1',
-     '6ccc0000-0000-0000-0000-0000000000c1'))).price_czk = 300,
+     '6ccc0000-0000-0000-0000-0000000000c1'))).price_thb = 300,
   'and its price is what the two remaining seats are worth — refund plus '
   'remainder is exactly the original',
   (pg_temp.booking_row(pg_temp.booking_of('96660000-0000-0000-0000-0000000000c1',
-     '6ccc0000-0000-0000-0000-0000000000c1'))).price_czk::text);
+     '6ccc0000-0000-0000-0000-0000000000c1'))).price_thb::text);
 
 select pg_temp.ok(
   pg_temp.balance('6ccc0000-0000-0000-0000-0000000000c1') = 300,
@@ -163,7 +163,7 @@ select pg_temp.ok(
       and game_id = '96660000-0000-0000-0000-0000000000c1'
       and (metadata ->> 'removed')::int = 2
       and (metadata ->> 'remaining')::int = 1
-      and (metadata ->> 'forfeited_czk')::int = 0) = 1,
+      and (metadata ->> 'forfeited_thb')::int = 0) = 1,
   'and is logged with what went and what is left');
 
 -- =============================================================================
@@ -225,7 +225,7 @@ select pg_temp.act_as('60000000-0000-0000-0000-0000000000c2');
 select pg_temp.ok(
   (public.cancel_guests(
      pg_temp.booking_of('96660000-0000-0000-0000-0000000000c2',
-                        '6ccc0000-0000-0000-0000-0000000000c2'), 1)).credit_issued_czk = 0,
+                        '6ccc0000-0000-0000-0000-0000000000c2'), 1)).credit_issued_thb = 0,
   'seven hours out, a removed guest refunds nothing');
 reset role;
 
@@ -236,18 +236,18 @@ select pg_temp.ok(
 
 select pg_temp.ok(
   (pg_temp.booking_row(pg_temp.booking_of('96660000-0000-0000-0000-0000000000c2',
-     '6ccc0000-0000-0000-0000-0000000000c2'))).price_czk = 450,
+     '6ccc0000-0000-0000-0000-0000000000c2'))).price_thb = 450,
   'THE PRICE IS UNTOUCHED — the record of what was paid is the only thing that '
   'can answer a question about this booking later',
   (pg_temp.booking_row(pg_temp.booking_of('96660000-0000-0000-0000-0000000000c2',
-     '6ccc0000-0000-0000-0000-0000000000c2'))).price_czk::text);
+     '6ccc0000-0000-0000-0000-0000000000c2'))).price_thb::text);
 
 select pg_temp.ok(
   (select count(*) from public.events
     where event_type = 'booking_guests_removed'
       and game_id = '96660000-0000-0000-0000-0000000000c2'
-      and (metadata ->> 'forfeited_czk')::int = 150
-      and (metadata ->> 'credit_issued_czk')::int = 0) = 1,
+      and (metadata ->> 'forfeited_thb')::int = 150
+      and (metadata ->> 'credit_issued_thb')::int = 0) = 1,
   'and the event records the forfeit, which is the whole audit trail for a '
   'late removal');
 

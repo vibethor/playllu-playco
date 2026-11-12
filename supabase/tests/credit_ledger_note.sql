@@ -5,7 +5,7 @@
 --
 -- MOVED OUT OF THE MIGRATION (2026-09-12). Its drill called `grant_credit`
 -- three times for real — +500, -200, +10 — which on a committing apply moves
--- 310 CZK into a live wallet and writes real ledger rows. Money in a migration
+-- 310 THB into a live wallet and writes real ledger rows. Money in a migration
 -- is the thing this repo least wants; the migration now asserts SHAPE only.
 -- =============================================================================
 begin;
@@ -73,7 +73,7 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin) values
    'a0000000-0000-0000-0000-0000000c1e02', false);
 
 create function pg_temp.balance() returns integer language sql security definer as $$
-  select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger
+  select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger
    where player_id = 'aaaa0000-0000-0000-0000-0000000c1e02';
 $$;
 
@@ -87,7 +87,7 @@ returns text language sql security definer as $$
    */
   select l.note from public.credit_ledger l
    where l.player_id = 'aaaa0000-0000-0000-0000-0000000c1e02'
-     and l.delta_czk = p_delta and l.reason = p_reason
+     and l.delta_thb = p_delta and l.reason = p_reason
    limit 1;
 $$;
 
@@ -169,7 +169,7 @@ select pg_temp.ok(
 -- What is asserted HERE is the half SQL owns: the ledger stores the converted
 -- CROWNS and nothing about the ruling leaked into the database. `credit_ledger`
 -- predates the credits ruling, it is append-only, and every refund rule and
--- every booking's `credit_applied_czk` is denominated in crowns — so this is
+-- every booking's `credit_applied_thb` is denominated in crowns — so this is
 -- the assertion that it STAYED that way while the forms changed above it.
 -- =============================================================================
 
@@ -180,8 +180,8 @@ reset role;
 select pg_temp.ok(
   (select count(*) from public.credit_ledger
     where player_id = 'aaaa0000-0000-0000-0000-0000000c1e02'
-      and delta_czk = 300 and reason = 'admin_grant') = 1,
-  'two credits land as +300 CZK in the ledger');
+      and delta_thb = 300 and reason = 'admin_grant') = 1,
+  'two credits land as +300 THB in the ledger');
 
 select pg_temp.act_as('a0000000-0000-0000-0000-0000000c1e01');
 select public.grant_credit('aaaa0000-0000-0000-0000-0000000c1e02', -150, 'adjustment', false, 'one credit back');
@@ -190,13 +190,13 @@ reset role;
 select pg_temp.ok(
   (select count(*) from public.credit_ledger
     where player_id = 'aaaa0000-0000-0000-0000-0000000c1e02'
-      and delta_czk = -150 and reason = 'adjustment') = 1,
-  'removing one credit lands as -150 CZK');
+      and delta_thb = -150 and reason = 'adjustment') = 1,
+  'removing one credit lands as -150 THB');
 
 select pg_temp.ok(
   (select data_type from information_schema.columns
     where table_schema = 'public' and table_name = 'credit_ledger'
-      and column_name = 'delta_czk') = 'integer',
+      and column_name = 'delta_thb') = 'integer',
   'the ledger is still denominated in whole crowns — the ruling did not reach it');
 
 -- =============================================================================

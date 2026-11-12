@@ -147,7 +147,7 @@ test.describe("Ukrainian at 390px", () => {
     await signInAs(context, players.runner);
     const game = await createScratchGame({
         capacity: 12,
-        priceCzk: 150,
+        priceThb: 150,
         // The densest possible fact grid: every optional row present, so the
         // Ukrainian labels are all on screen at once.
         durationMinutes: 90,
@@ -204,7 +204,7 @@ test.describe("Ukrainian at 390px", () => {
     await signInAs(context, players.runner);
     const game = await createScratchGame({
         capacity: 12,
-        priceCzk: 150,
+        priceThb: 150,
         // The densest possible fact grid: every optional row present, so the
         // Ukrainian labels are all on screen at once.
         durationMinutes: 90,
@@ -312,7 +312,7 @@ test.describe("Ukrainian at 390px", () => {
     await signInAs(context, players.runner);
     const game = await createScratchGame({
         capacity: 12,
-        priceCzk: 150,
+        priceThb: 150,
         // The densest possible fact grid: every optional row present, so the
         // Ukrainian labels are all on screen at once.
         durationMinutes: 90,

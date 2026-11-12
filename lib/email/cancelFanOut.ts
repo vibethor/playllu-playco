@@ -47,13 +47,13 @@ export async function collectCancelledRecipients(
   return affected.map((row) => {
     const player = byId.get(row.player_id as string);
     const credit = Number(
-      (row.metadata as { credit_issued_czk?: number } | null)?.credit_issued_czk ?? 0,
+      (row.metadata as { credit_issued_thb?: number } | null)?.credit_issued_thb ?? 0,
     );
     return {
       bookingId: row.booking_id as string,
       email: player?.email ?? null,
       nickname: player?.nickname ?? "",
-      creditCzk: credit,
+      creditThb: credit,
     };
   });
 }

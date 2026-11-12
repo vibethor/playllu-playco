@@ -63,10 +63,10 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin) values
   ('bbbb0000-0000-0000-0000-00000000b111', 'AttOne',   'player-a@test.invalid', 'b0000000-0000-0000-0000-00000000b111', false),
   ('cccc0000-0000-0000-0000-00000000c111', 'AttTwo',   'player-b@test.invalid', 'c0000000-0000-0000-0000-00000000c111', false);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('88880000-0000-0000-0000-00000000e111', 'Attendance Pitch', now() - interval '2 hours', 10, 200, 'played');
 
-insert into public.bookings (id, game_id, player_id, payment_method, status, price_czk) values
+insert into public.bookings (id, game_id, player_id, payment_method, status, price_thb) values
   ('77770000-0000-0000-0000-00000000e111', '88880000-0000-0000-0000-00000000e111',
    'bbbb0000-0000-0000-0000-00000000b111', 'cash', 'confirmed', 200),
   ('77770000-0000-0000-0000-00000000e222', '88880000-0000-0000-0000-00000000e111',
@@ -248,7 +248,7 @@ select pg_temp.ok(
 -- under-capacity games still get played, straight from published
 -- =============================================================================
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('88880000-0000-0000-0000-00000000e222', 'Half Empty', now() - interval '1 hour', 20, 200, 'published');
 
 select pg_temp.act_as('a0000000-0000-0000-0000-00000000ad11');

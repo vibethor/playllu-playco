@@ -79,7 +79,7 @@ const CODES: Array<[string, string]> = [
  *
  * Read from the raise rather than recomputed in the action, so the number the
  * admin sees is the one `confirm_booking` actually compared — the amount due
- * is `price_czk - credit_applied_czk`, and re-deriving it from a page that may
+ * is `price_thb - credit_applied_thb`, and re-deriving it from a page that may
  * be seconds stale is how the message ends up disagreeing with the refusal.
  *
  * Null for anything that is not an underpayment, so an unrelated failure is

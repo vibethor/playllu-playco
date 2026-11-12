@@ -32,10 +32,10 @@ async function horizontalOverflow(page: Page): Promise<number> {
 async function costOf(gameId: string): Promise<{ cost: number; byHand: boolean } | null> {
   const { data } = await serviceClient()
     .from("game_pitch_costs")
-    .select("cost_czk, set_by_hand")
+    .select("cost_thb, set_by_hand")
     .eq("game_id", gameId)
     .maybeSingle();
-  return data ? { cost: data.cost_czk as number, byHand: data.set_by_hand as boolean } : null;
+  return data ? { cost: data.cost_thb as number, byHand: data.set_by_hand as boolean } : null;
 }
 
 async function seasonNow(): Promise<"summer" | "winter"> {
@@ -46,10 +46,10 @@ async function seasonNow(): Promise<"summer" | "winter"> {
 async function venueCosts(venueId: string): Promise<{ summer: number; winter: number }> {
   const { data } = await serviceClient()
     .from("venue_pitch_costs")
-    .select("summer_czk, winter_czk")
+    .select("summer_thb, winter_thb")
     .eq("venue_id", venueId)
     .single();
-  return { summer: data!.summer_czk as number, winter: data!.winter_czk as number };
+  return { summer: data!.summer_thb as number, winter: data!.winter_thb as number };
 }
 
 async function venueOf(gameId: string): Promise<string> {
@@ -144,8 +144,8 @@ test("a venue's summer and winter prices save from its card", async ({ page }) =
   } finally {
     await (await apiClientFor(players.organizer)).rpc("set_venue_pitch_costs", {
       p_venue_id: venueId,
-      p_summer_czk: original.summer,
-      p_winter_czk: original.winter,
+      p_summer_thb: original.summer,
+      p_winter_thb: original.winter,
     });
     await destroyScratchGame(game.id);
   }

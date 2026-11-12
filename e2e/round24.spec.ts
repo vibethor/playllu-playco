@@ -60,7 +60,7 @@ async function playedGameWithBookings(
      * THE FIXTURE'S PRECONDITION, ASSERTED (round 29). Every test built on this
      * helper depends on the booking being an UNPAID hold — that is what keeps
      * the game at `played` now that the sweep settles anything clean. The
-     * ~~The wallet is set to 150 against a 200 CZK game, so credit covers part
+     * ~~The wallet is set to 150 against a 200 THB game, so credit covers part
      * and the row stays `reserved`.~~ THE WALLET IS NOW EMPTIED, because round
      * 35 made a credit buy a whole SEAT: 150 against a one-seat booking pays
      * for it outright and the row comes back `confirmed`. An empty wallet is

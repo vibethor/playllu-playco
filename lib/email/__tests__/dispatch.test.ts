@@ -35,10 +35,10 @@ const ctx: DispatchContext = {
   startsAt: "2026-07-25T16:00:00.000Z",
   gameUrl: "https://hrajfotbal.com/game/abc",
   accountUrl: "https://hrajfotbal.com/account",
-  amountDueCzk: 150,
+  amountDueThb: 150,
   variableSymbol: 2600000042,
   spdString: "SPD*1.0*",
-  creditCzk: 150,
+  creditThb: 150,
 };
 
 describe("dispatch map", () => {

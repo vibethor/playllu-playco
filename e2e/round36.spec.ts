@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { LOCALE_COOKIE } from "../lib/i18n/locales";
-import { priceForDurationCzk } from "../lib/games/price";
+import { priceForDurationThb } from "../lib/games/price";
 import { policy } from "../lib/policy";
 import { players, serviceClient, signInAs } from "./helpers/session";
 import {
@@ -59,7 +59,7 @@ test("the duration PREFILLS the price, and the organizer types over it", async (
   // Arrange
   await asAdmin(context);
   await page.goto("/admin/games/new", { waitUntil: "networkidle" });
-  const price = page.getByTestId("price-czk");
+  const price = page.getByTestId("price-thb");
   const duration = page.getByTestId("duration-minutes");
 
   // Assert — a NEW game starts at the standard ninety minutes (round 40).
@@ -97,7 +97,7 @@ test("CHANGING THE DURATION OVERWRITES A CUSTOMISED PRICE, on purpose", async ({
   // Arrange
   await asAdmin(context);
   await page.goto("/admin/games/new", { waitUntil: "networkidle" });
-  const price = page.getByTestId("price-czk");
+  const price = page.getByTestId("price-thb");
 
   await page.getByTestId("duration-minutes").fill("90");
   await price.fill(String(OFF_MAPPING_HIGH));
@@ -130,14 +130,14 @@ test("a price of zero never leaves the form", async ({ page, context }) => {
   await page.goto("/admin/games/new", { waitUntil: "networkidle" });
   await fillRequiredCreateFields(page, 24 * 9);
   await page.getByTestId("duration-minutes").fill("90");
-  await page.getByTestId("price-czk").fill("0");
+  await page.getByTestId("price-thb").fill("0");
 
   // Act
   await page.getByTestId("game-form-submit").click();
 
   // Assert — the field is reported invalid, and nothing was created.
   const invalid = await page
-    .getByTestId("price-czk")
+    .getByTestId("price-thb")
     .evaluate((el) => (el as HTMLInputElement).validity.rangeUnderflow);
   expect(invalid, "a price of 0 passed the field's own constraint").toBe(true);
   await expect(page).toHaveURL(/\/admin\/games\/new/);
@@ -156,7 +156,7 @@ test("the typed price is what the database stores and what the game page shows",
   await page.goto("/admin/games/new", { waitUntil: "networkidle" });
   await fillRequiredCreateFields(page, 24 * 7);
   await page.getByTestId("duration-minutes").fill("90");
-  await page.getByTestId("price-czk").fill(String(OFF_MAPPING_HIGH));
+  await page.getByTestId("price-thb").fill(String(OFF_MAPPING_HIGH));
 
   // Act
   await page.getByTestId("game-form-submit").click();
@@ -167,15 +167,15 @@ test("the typed price is what the database stores and what the game page shows",
     // Assert — the row.
     const { data: row } = await serviceClient()
       .from("games")
-      .select("price_czk, duration_minutes")
+      .select("price_thb, duration_minutes")
       .eq("id", gameId)
       .single();
-    expect(row!.price_czk, "the row did not keep the typed price").toBe(OFF_MAPPING_HIGH);
+    expect(row!.price_thb, "the row did not keep the typed price").toBe(OFF_MAPPING_HIGH);
     expect(row!.duration_minutes).toBe(policy.game.standardMinutes);
     expect(
-      row!.price_czk,
+      row!.price_thb,
       "the fixture is priced ON the mapping, so it proves nothing",
-    ).not.toBe(priceForDurationCzk(policy.game.standardMinutes));
+    ).not.toBe(priceForDurationThb(policy.game.standardMinutes));
 
     // ...and the page, which is where a player meets the number.
     await page.goto(`/game/${gameId}`, { waitUntil: "networkidle" });
@@ -204,7 +204,7 @@ test("EDITING a price stores the new one — the length does not overrule it", a
    */
   const game = await createScratchGame({
     durationMinutes: 90,
-    priceCzk: 200,
+    priceThb: 200,
     surface: "turf",
     hoursFromNow: 24 * 8,
   });
@@ -213,12 +213,12 @@ test("EDITING a price stores the new one — the length does not overrule it", a
     // The edit form lives ON the detail page; `/edit` redirects to it.
     await page.goto(`/admin/games/${game.id}`, { waitUntil: "networkidle" });
     await expect(
-      page.getByTestId("price-czk"),
+      page.getByTestId("price-thb"),
       "the edit form does not load the stored price",
     ).toHaveValue("200");
 
     // Act
-    await page.getByTestId("price-czk").fill(String(OFF_MAPPING_LOW));
+    await page.getByTestId("price-thb").fill(String(OFF_MAPPING_LOW));
     await page.getByTestId("game-form-submit").click();
 
     // Assert — on the database, because a success marker can be revalidated away.
@@ -226,10 +226,10 @@ test("EDITING a price stores the new one — the length does not overrule it", a
       .poll(async () => {
         const { data } = await serviceClient()
           .from("games")
-          .select("price_czk")
+          .select("price_thb")
           .eq("id", game.id)
           .single();
-        return data?.price_czk;
+        return data?.price_thb;
       }, { message: "the edited price never reached the row" })
       .toBe(OFF_MAPPING_LOW);
   } finally {
@@ -247,14 +247,14 @@ test("a 90-minute game priced BELOW the credit nominal still takes exactly one c
 }) => {
   /*
    * 150 is the SIXTY-minute prefill, so this game looks cheap and is not. If
-   * anything downstream had started reading `price_czk` to decide eligibility
+   * anything downstream had started reading `price_thb` to decide eligibility
    * or to size the spend, it would either refuse this game or take 150 — and
    * the wallet assertion below names which.
    */
   // Arrange
   const game = await createScratchGame({
     durationMinutes: policy.game.standardMinutes,
-    priceCzk: 150,
+    priceThb: 150,
     hoursFromNow: 24 * 4,
   });
   try {
@@ -278,7 +278,7 @@ test("a 90-minute game priced BELOW the credit nominal still takes exactly one c
     // Assert — ONE SEAT'S WORTH, not the game's price.
     expect(
       await walletBalance(players.creditRich.id),
-      "a 150 CZK game charged something other than one flat credit",
+      "a 150 THB game charged something other than one flat credit",
     ).toBe(180);
   } finally {
     await destroyScratchGame(game.id);

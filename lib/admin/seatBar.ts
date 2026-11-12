@@ -28,7 +28,7 @@ export interface SeatBarInput {
    * the full price, but pass seats are worth less — so whether the game has
    * actually covered its pitch is a question about money, and this answers it.
    */
-  profitCzk?: number | null;
+  profitThb?: number | null;
 }
 
 export interface SeatBar {
@@ -49,7 +49,7 @@ export function seatBar(game: SeatBarInput): SeatBar {
   const paidSeats = game.singleSeats + game.passSeats + game.creditSeats;
   const pastBreakEven =
     game.breakEvenSeats !== null &&
-    (game.profitCzk !== undefined && game.profitCzk !== null ? game.profitCzk >= 0 : paidSeats >= game.breakEvenSeats);
+    (game.profitThb !== undefined && game.profitThb !== null ? game.profitThb >= 0 : paidSeats >= game.breakEvenSeats);
 
   if (game.capacity <= 0) {
     return { segments: [], breakEvenPercent: null, pastBreakEven };

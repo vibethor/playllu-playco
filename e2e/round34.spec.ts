@@ -4,12 +4,12 @@ import { policy } from "../lib/policy";
 /*
  * ROUND 36 — THE FIXTURES NOW STATE THEIR PRICE.
  *
- * These specs assert `booking.price_czk` as a multiple of the credit nominal,
+ * These specs assert `booking.price_thb` as a multiple of the credit nominal,
  * which held for free while the length derived the price. The organizer types
  * it again (round 36, item 2), so the games below say 180 rather than leaving
  * the scaffold's own default to happen to agree with the arithmetic.
  */
-import { PASS_REFERENCE_PRICE_CZK } from "../lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "../lib/pass/creditPrice";
 import { LOCALE_COOKIE } from "../lib/i18n/locales";
 import { apiClientFor, players, serviceClient, signInAs } from "./helpers/session";
 import { createScratchGame, destroyScratchGame, setWalletTo, walletBalance } from "./helpers/scaffold";
@@ -43,7 +43,7 @@ async function bookWithGuests(gameId: string, guests: number, who: keyof typeof 
     p_guest_count: guests,
   });
   if (error) throw new Error(`create_booking: ${error.message}`);
-  const made = data as { id: string; price_czk: number; status: string };
+  const made = data as { id: string; price_thb: number; status: string };
 
   /*
    * PAID. A player whose credit covered the party is ALREADY confirmed —
@@ -60,7 +60,7 @@ async function bookWithGuests(gameId: string, guests: number, who: keyof typeof 
     const confirmed = await admin.rpc("confirm_booking", {
       p_booking_id: made.id,
       p_confirmed_by: players.organizer.id,
-      p_received_amount_czk: made.price_czk,
+      p_received_amount_thb: made.price_thb,
     });
     if (confirmed.error) throw new Error(`confirm_booking: ${confirmed.error.message}`);
   }
@@ -137,7 +137,7 @@ test("the dropdown's cue is a downward triangle, not a dot", async ({ page, cont
     await admin.rpc("confirm_booking", {
       p_booking_id: (made.data as { id: string }).id,
       p_confirmed_by: players.organizer.id,
-      p_received_amount_czk: (made.data as { price_czk: number }).price_czk,
+      p_received_amount_thb: (made.data as { price_thb: number }).price_thb,
     });
 
     await page.goto(`/game/${game.id}`, { waitUntil: "networkidle" });
@@ -152,7 +152,7 @@ test("the dropdown's cue is a downward triangle, not a dot", async ({ page, cont
 // =============================================================================
 
 test("the CREDIT rail lands on the confirmation, naming the guests", async ({ page, context }) => {
-  const game = await createScratchGame({ capacity: 20, durationMinutes: policy.game.standardMinutes, priceCzk: PASS_REFERENCE_PRICE_CZK, hoursFromNow: 24 * 20 });
+  const game = await createScratchGame({ capacity: 20, durationMinutes: policy.game.standardMinutes, priceThb: PASS_REFERENCE_PRICE_THB, hoursFromNow: 24 * 20 });
   try {
     const bookingId = await bookWithGuests(game.id, 0, "creditRich");
     await setWalletTo(players.creditRich.id, 900);
@@ -185,7 +185,7 @@ test("the ONLINE rail lands on the same confirmation, through the webhook's own 
    * webhook runs — the only thing not covered is Stripe's own redirect, which
    * is a URL Stripe builds and this suite cannot make it build.
    */
-  const game = await createScratchGame({ capacity: 20, durationMinutes: policy.game.standardMinutes, priceCzk: PASS_REFERENCE_PRICE_CZK, hoursFromNow: 24 * 19 });
+  const game = await createScratchGame({ capacity: 20, durationMinutes: policy.game.standardMinutes, priceThb: PASS_REFERENCE_PRICE_THB, hoursFromNow: 24 * 19 });
   const sessionId = `cs_test_r34_${Date.now()}`;
   const admin = serviceClient();
   try {
@@ -196,13 +196,13 @@ test("the ONLINE rail lands on the same confirmation, through the webhook's own 
       p_booking_id: bookingId,
       p_guest_count: 3,
       p_stripe_session_id: sessionId,
-      p_amount_czk: 450,
+      p_amount_thb: 450,
     });
     expect(opened.error, `open_add_guests_checkout: ${opened.error?.message}`).toBeNull();
 
     const settled = await admin.rpc("settle_checkout_session", {
       p_stripe_session_id: sessionId,
-      p_amount_czk: 450,
+      p_amount_thb: 450,
     });
     expect(settled.error, `settle_checkout_session: ${settled.error?.message}`).toBeNull();
     expect(settled.data).toBe("booked");
@@ -227,7 +227,7 @@ test("removing guests frees the seats, returns credits, and never touches the pl
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 12, durationMinutes: policy.game.standardMinutes, priceCzk: PASS_REFERENCE_PRICE_CZK, hoursFromNow: 24 * 18 });
+  const game = await createScratchGame({ capacity: 12, durationMinutes: policy.game.standardMinutes, priceThb: PASS_REFERENCE_PRICE_THB, hoursFromNow: 24 * 18 });
   const admin = serviceClient();
   try {
     const bookingId = await bookWithGuests(game.id, 3, "runner");
@@ -250,18 +250,18 @@ test("removing guests frees the seats, returns credits, and never touches the pl
     // The database is the assertion, not a toast.
     const { data: row } = await admin
       .from("bookings")
-      .select("guest_count, status, price_czk")
+      .select("guest_count, status, price_thb")
       .eq("id", bookingId)
       .single();
-    const booking = row as { guest_count: number; status: string; price_czk: number };
+    const booking = row as { guest_count: number; status: string; price_thb: number };
 
     expect(booking.guest_count, "the guests did not come off").toBe(1);
     expect(booking.status, "THE PLAYER'S OWN SPOT WAS CANCELLED").toBe("confirmed");
     expect(
-      booking.price_czk,
+      booking.price_thb,
       "the remaining price is not what two seats are worth",
-    ).toBe(2 * PASS_REFERENCE_PRICE_CZK);
-    expect(await walletBalance(players.runner.id)).toBe(2 * PASS_REFERENCE_PRICE_CZK);
+    ).toBe(2 * PASS_REFERENCE_PRICE_THB);
+    expect(await walletBalance(players.runner.id)).toBe(2 * PASS_REFERENCE_PRICE_THB);
 
     // ...and the page the player is looking at agrees. Capacity 12, a booking
     // holding two seats, so ten are free.
@@ -275,7 +275,7 @@ test("removing guests frees the seats, returns credits, and never touches the pl
 });
 
 test("removing the LAST guest leaves the player in the game", async ({ page, context }) => {
-  const game = await createScratchGame({ capacity: 12, durationMinutes: policy.game.standardMinutes, priceCzk: PASS_REFERENCE_PRICE_CZK, hoursFromNow: 24 * 17 });
+  const game = await createScratchGame({ capacity: 12, durationMinutes: policy.game.standardMinutes, priceThb: PASS_REFERENCE_PRICE_THB, hoursFromNow: 24 * 17 });
   const admin = serviceClient();
   try {
     const bookingId = await bookWithGuests(game.id, 1, "runner");
@@ -310,7 +310,7 @@ test("past the cutoff the panel warns instead of promising, and refunds nothing"
   context,
 }) => {
   // Seven hours out: inside the cancel window, outside the refund window.
-  const game = await createScratchGame({ capacity: 12, durationMinutes: policy.game.standardMinutes, priceCzk: PASS_REFERENCE_PRICE_CZK, hoursFromNow: 7 });
+  const game = await createScratchGame({ capacity: 12, durationMinutes: policy.game.standardMinutes, priceThb: PASS_REFERENCE_PRICE_THB, hoursFromNow: 7 });
   const admin = serviceClient();
   try {
     const bookingId = await bookWithGuests(game.id, 2, "runner");
@@ -328,16 +328,16 @@ test("past the cutoff the panel warns instead of promising, and refunds nothing"
 
     const { data: row } = await admin
       .from("bookings")
-      .select("guest_count, price_czk")
+      .select("guest_count, price_thb")
       .eq("id", bookingId)
       .single();
-    const booking = row as { guest_count: number; price_czk: number };
+    const booking = row as { guest_count: number; price_thb: number };
 
     expect(booking.guest_count, "the seat was not freed").toBe(1);
     expect(
-      booking.price_czk,
+      booking.price_thb,
       "a late removal reduced the price — the record of what was paid is gone",
-    ).toBe(3 * PASS_REFERENCE_PRICE_CZK);
+    ).toBe(3 * PASS_REFERENCE_PRICE_THB);
     expect(await walletBalance(players.runner.id)).toBe(0);
   } finally {
     await destroyScratchGame(game.id);

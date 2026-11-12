@@ -5,14 +5,14 @@
 -- "Something went wrong. Please try again." The tile renders, the price is
 -- right, the button does nothing useful.
 --
--- THE CAUSE IS A CEILING, NOT THE ROWS. `credit_topups.amount_czk` is capped at
--- 2000 CZK, and round 35 v2 raised the pass prices past it:
+-- THE CAUSE IS A CEILING, NOT THE ROWS. `credit_topups.amount_thb` is capped at
+-- 2000 THB, and round 35 v2 raised the pass prices past it:
 --
---     5 games   840 CZK   under the cap, sells
---     8 games  1296 CZK   under the cap, sells
---    12 games  1879 CZK   under the cap, sells
---    15 games  2241 CZK   OVER THE CAP, refused
---    20 games  2772 CZK   OVER THE CAP, refused
+--     5 games   840 THB   under the cap, sells
+--     8 games  1296 THB   under the cap, sells
+--    12 games  1879 THB   under the cap, sells
+--    15 games  2241 THB   OVER THE CAP, refused
+--    20 games  2772 THB   OVER THE CAP, refused
 --
 -- The split is exactly 2000. Nothing about the failing rows is malformed:
 -- `pass_tiers_credited_rule` holds for all five (credited = games x 180), every
@@ -22,7 +22,7 @@
 --
 -- WHY THE CEILING EXISTS, AND WHY IT NEVER APPLIED HERE. 50-2000 bounds a
 -- HAND-ENTERED amount: `create_topup` takes a number the player types, and a
--- typo of 20000 should not become a 20,000 CZK obligation. A TIER PRICE IS NOT
+-- typo of 20000 should not become a 20,000 THB obligation. A TIER PRICE IS NOT
 -- HAND-ENTERED. It comes from `pass_tiers`, a table only an admin writes, which
 -- already constrains it to be positive and not to exceed what it credits. The
 -- cap was copied onto a path whose input it was never guarding.
@@ -36,8 +36,8 @@
 --
 -- THREE COPIES OF ONE NUMBER, which is how it got out of step: the CHECK
 -- constraint, `create_topup`, and `create_pass_topup`. This migration leaves
--- ONE — `public.manual_topup_max_czk()` — and has the other two call it, on the
--- `credit_seat_price_czk()` precedent from round 35 and for the same stated
+-- ONE — `public.manual_topup_max_thb()` — and has the other two call it, on the
+-- `credit_seat_price_thb()` precedent from round 35 and for the same stated
 -- reason: a constant invites a copy; a function of something else has to be
 -- called.
 -- =============================================================================
@@ -46,27 +46,27 @@
 -- 1. THE BOUNDS, ONCE.
 --
 -- IMMUTABLE so a CHECK constraint may call it, which is the whole point — and
--- with the same cost round 35 recorded for `credit_seat_price_czk()`: Postgres
+-- with the same cost round 35 recorded for `credit_seat_price_thb()`: Postgres
 -- does NOT re-validate existing rows when the function's answer changes, so a
 -- future change to these bounds must consider the rows already stored.
 -- -----------------------------------------------------------------------------
-create or replace function public.manual_topup_min_czk()
+create or replace function public.manual_topup_min_thb()
 returns integer language sql immutable set search_path = '' as $$ select 50 $$;
 
-create or replace function public.manual_topup_max_czk()
+create or replace function public.manual_topup_max_thb()
 returns integer language sql immutable set search_path = '' as $$ select 2000 $$;
 
-revoke execute on function public.manual_topup_min_czk() from public;
-revoke execute on function public.manual_topup_max_czk() from public;
-grant execute on function public.manual_topup_min_czk() to anon, authenticated, service_role;
-grant execute on function public.manual_topup_max_czk() to anon, authenticated, service_role;
+revoke execute on function public.manual_topup_min_thb() from public;
+revoke execute on function public.manual_topup_max_thb() from public;
+grant execute on function public.manual_topup_min_thb() to anon, authenticated, service_role;
+grant execute on function public.manual_topup_max_thb() to anon, authenticated, service_role;
 
 -- -----------------------------------------------------------------------------
 -- 2. THE CONSTRAINT NOW SAYS WHICH ROWS IT IS ABOUT.
 --
 -- A row with `pass_games` set was priced by `pass_tiers`; a row without it was
 -- priced by a person typing into a box. Only the second needs a ceiling, and
--- the floor stays on both — a 0 CZK top-up is meaningless whatever produced it.
+-- the floor stays on both — a 0 THB top-up is meaningless whatever produced it.
 --
 -- DROP AND RE-ADD, restating in full: Postgres cannot alter a CHECK in place.
 -- The new predicate is STRICTLY WIDER than the old one (every row the old
@@ -77,8 +77,8 @@ grant execute on function public.manual_topup_max_czk() to anon, authenticated, 
 alter table public.credit_topups drop constraint if exists credit_topups_amount_range;
 
 alter table public.credit_topups add constraint credit_topups_amount_range check (
-  amount_czk >= public.manual_topup_min_czk()
-  and (pass_games is not null or amount_czk <= public.manual_topup_max_czk())
+  amount_thb >= public.manual_topup_min_thb()
+  and (pass_games is not null or amount_thb <= public.manual_topup_max_thb())
 );
 
 -- -----------------------------------------------------------------------------
@@ -102,20 +102,20 @@ begin
   -- THE DETAIL STRING IS A COPY TOO, and it is the copy a PLAYER sees — left
   -- alone it would go on saying "between 50 and 2000" for a year after the
   -- bound moved. Both the test and the message now read the same function.
-  v_old := '  if p_amount_czk is null or p_amount_czk < 50 or p_amount_czk > 2000 then'
+  v_old := '  if p_amount_thb is null or p_amount_thb < 50 or p_amount_thb > 2000 then'
     || chr(10) || '    raise exception ''AMOUNT_OUT_OF_RANGE'''
-    || chr(10) || '      using detail = ''top-ups are between 50 and 2000 CZK'';';
-  v_new := '  if p_amount_czk is null'
-    || chr(10) || '     or p_amount_czk < public.manual_topup_min_czk()'
-    || chr(10) || '     or p_amount_czk > public.manual_topup_max_czk() then'
+    || chr(10) || '      using detail = ''top-ups are between 50 and 2000 THB'';';
+  v_new := '  if p_amount_thb is null'
+    || chr(10) || '     or p_amount_thb < public.manual_topup_min_thb()'
+    || chr(10) || '     or p_amount_thb > public.manual_topup_max_thb() then'
     || chr(10) || '    raise exception ''AMOUNT_OUT_OF_RANGE'''
-    || chr(10) || '      using detail = format(''top-ups are between %s and %s CZK'','
-    || chr(10) || '                            public.manual_topup_min_czk(),'
-    || chr(10) || '                            public.manual_topup_max_czk());';
+    || chr(10) || '      using detail = format(''top-ups are between %s and %s THB'','
+    || chr(10) || '                            public.manual_topup_min_thb(),'
+    || chr(10) || '                            public.manual_topup_max_thb());';
 
   if v_def is null then
     raise exception 'pass ceiling: create_topup is missing';
-  elsif position('manual_topup_max_czk' in v_def) > 0 then
+  elsif position('manual_topup_max_thb' in v_def) > 0 then
     raise notice 'pass ceiling: create_topup already reads the shared bounds';
   elsif position(v_old in v_def) = 0 then
     raise exception 'pass ceiling: create_topup does not carry the literal bounds';
@@ -124,7 +124,7 @@ begin
   end if;
 
   -- 3b. The PASS path drops the ceiling entirely. The floor stays: a tier
-  --     priced under 50 CZK is a data error worth refusing by name rather than
+  --     priced under 50 THB is a data error worth refusing by name rather than
   --     writing a row nobody can pay.
   select pg_get_functiondef(p.oid) into v_def
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -133,9 +133,9 @@ begin
   v_old := '  -- The same 50–2000 bounds the ordinary path enforces. A tier priced outside'
     || chr(10) || '  -- them would be a tier nobody could pay for, and the check belongs where the'
     || chr(10) || '  -- row is written rather than only in the table''s constraints.'
-    || chr(10) || '  if v_tier.price_czk < 50 or v_tier.price_czk > 2000 then'
+    || chr(10) || '  if v_tier.price_thb < 50 or v_tier.price_thb > 2000 then'
     || chr(10) || '    raise exception ''AMOUNT_OUT_OF_RANGE'''
-    || chr(10) || '      using detail = ''top-ups are between 50 and 2000 CZK'';';
+    || chr(10) || '      using detail = ''top-ups are between 50 and 2000 THB'';';
   v_new := '  -- ~~The same 50–2000 bounds the ordinary path enforces.~~ THE CEILING WAS'
     || chr(10) || '  -- NEVER THIS PATH''S TO ENFORCE. Those bounds guard an amount a PERSON'
     || chr(10) || '  -- TYPES; a tier price comes from `pass_tiers`, which only an admin writes'
@@ -146,14 +146,14 @@ begin
     || chr(10) || '  --'
     || chr(10) || '  -- THE FLOOR STAYS. A tier priced under the minimum is a data error, and'
     || chr(10) || '  -- refusing it by name beats writing a row nobody can pay.'
-    || chr(10) || '  if v_tier.price_czk < public.manual_topup_min_czk() then'
+    || chr(10) || '  if v_tier.price_thb < public.manual_topup_min_thb() then'
     || chr(10) || '    raise exception ''AMOUNT_OUT_OF_RANGE'''
-    || chr(10) || '      using detail = format(''a tier must cost at least %s CZK'','
-    || chr(10) || '                            public.manual_topup_min_czk());';
+    || chr(10) || '      using detail = format(''a tier must cost at least %s THB'','
+    || chr(10) || '                            public.manual_topup_min_thb());';
 
   if v_def is null then
     raise exception 'pass ceiling: create_pass_topup is missing';
-  elsif position('manual_topup_min_czk' in v_def) > 0 then
+  elsif position('manual_topup_min_thb' in v_def) > 0 then
     raise notice 'pass ceiling: create_pass_topup already drops the ceiling';
   elsif position(v_old in v_def) = 0 then
     raise exception 'pass ceiling: create_pass_topup does not carry the expected bounds check';
@@ -173,7 +173,7 @@ do $$
 declare
   v_unpayable int;
 begin
-  if to_regprocedure('public.manual_topup_max_czk()') is null then
+  if to_regprocedure('public.manual_topup_max_thb()') is null then
     raise exception 'pass ceiling: the shared bound is missing';
   end if;
 
@@ -185,7 +185,7 @@ begin
 
   if (select prosrc from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'create_topup')
-     not like '%manual_topup_max_czk%' then
+     not like '%manual_topup_max_thb%' then
     raise exception 'pass ceiling: create_topup does not read the shared bound';
   end if;
 
@@ -197,7 +197,7 @@ begin
    */
   select count(*) into v_unpayable
     from public.pass_tiers
-   where not (price_czk >= public.manual_topup_min_czk());
+   where not (price_thb >= public.manual_topup_min_thb());
   if v_unpayable > 0 then
     raise exception 'pass ceiling: % tier(s) are priced below the floor', v_unpayable;
   end if;

@@ -19,8 +19,8 @@ export type RowEconomics = Pick<
   | "houseGuests"
   | "unpaidSeats"
   | "breakEvenSeats"
-  | "priceCzk"
-  | "profitCzk"
+  | "priceThb"
+  | "profitThb"
 >;
 
 export interface RowSeats {
@@ -43,7 +43,7 @@ export function rowSeatBarInput(row: RowSeats): SeatBarInput {
       breakEvenSeats: null,
     };
   }
-  const { singleSeats, passSeats, creditSeats, freeSeats, houseGuests, unpaidSeats, breakEvenSeats, profitCzk } =
+  const { singleSeats, passSeats, creditSeats, freeSeats, houseGuests, unpaidSeats, breakEvenSeats, profitThb } =
     row.economics;
   return {
     capacity: row.capacity,
@@ -54,7 +54,7 @@ export function rowSeatBarInput(row: RowSeats): SeatBarInput {
     houseGuests,
     unpaidSeats,
     breakEvenSeats,
-    profitCzk,
+    profitThb,
   };
 }
 
@@ -68,10 +68,10 @@ export type BreakEvenNote = { kind: "past" } | { kind: "short"; seats: number };
  */
 export function breakEvenNote(row: RowSeats): BreakEvenNote | null {
   const economics = row.economics;
-  if (!economics || economics.breakEvenSeats === null || economics.profitCzk === null) return null;
-  if (economics.priceCzk <= 0) return null;
+  if (!economics || economics.breakEvenSeats === null || economics.profitThb === null) return null;
+  if (economics.priceThb <= 0) return null;
 
-  const down = -Math.round(economics.profitCzk);
+  const down = -Math.round(economics.profitThb);
   if (down <= 0) return { kind: "past" };
-  return { kind: "short", seats: Math.ceil(down / economics.priceCzk) };
+  return { kind: "short", seats: Math.ceil(down / economics.priceThb) };
 }

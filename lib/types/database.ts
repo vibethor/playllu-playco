@@ -180,9 +180,9 @@ export interface BookingResult {
   status: BookingStatus;
   payment_method: PaymentMethod;
   payment_code: number | null;
-  price_czk: number;
-  credit_applied_czk: number;
-  amount_due_czk: number;
+  price_thb: number;
+  credit_applied_thb: number;
+  amount_due_thb: number;
 }
 
 /** Return contract of cancel_booking (SQL composite public.cancel_result). */
@@ -190,7 +190,7 @@ export interface CancelResult {
   id: string;
   status: BookingStatus;
   /** Credit issued for money actually applied. 0 for an unpaid reservation. */
-  credit_issued_czk: number;
+  credit_issued_thb: number;
   cancel_lead_hours: number;
 }
 
@@ -206,7 +206,7 @@ export interface CancelResult {
 export interface ConfirmResult {
   id: string;
   status: BookingStatus;
-  credit_issued_czk: number;
+  credit_issued_thb: number;
 }
 
 export type TopupStatus = "pending" | "confirmed" | "cancelled";
@@ -216,11 +216,11 @@ export interface TopupRow {
   id: string;
   player_id: string;
   /** What the player asked for; after confirmation, a record of intent. */
-  amount_czk: number;
+  amount_thb: number;
   payment_code: number;
   status: TopupStatus;
   /** What actually arrived. Null until confirmed. */
-  received_amount_czk: number | null;
+  received_amount_thb: number | null;
   confirmed_by: string | null;
   confirmed_at: string | null;
   created_at: string;
@@ -231,9 +231,9 @@ export interface TopupResult {
   id: string;
   status: TopupStatus;
   /** Always the amount RECEIVED — a top-up has no price to be short of. */
-  credited_czk: number;
+  credited_thb: number;
   /** The wallet total afterwards, so the receipt needs no second query. */
-  balance_czk: number;
+  balance_thb: number;
 }
 
 /** Round 42 — which of a venue's two pitch prices new games take. */
@@ -244,7 +244,7 @@ export type PitchSeason = "summer" | "winter";
  * game paid on its own (card, QR, cash) at the game's price; "pass" and
  * "credit" are Credits valued at what was PAID for them; "free" is a gift or a
  * seed booking. A cancelled booking holds no seats and its kept money is
- * `kept_czk`; an unpaid one is `owed_czk`.
+ * `kept_thb`; an unpaid one is `owed_thb`.
  */
 export interface BookingSeatValue {
   booking_id: string;
@@ -257,17 +257,17 @@ export interface BookingSeatValue {
   credit_seats: number;
   free_seats: number;
   unpaid_seats: number;
-  single_czk: number;
-  pass_czk: number;
-  credit_czk: number;
-  kept_czk: number;
-  owed_czk: number;
+  single_thb: number;
+  pass_thb: number;
+  credit_thb: number;
+  kept_thb: number;
+  owed_thb: number;
 }
 
 /** Round 42 — one game's economics, from `game_economics`. */
 export interface GameEconomicsRow {
   game_id: string;
-  price_czk: number;
+  price_thb: number;
   capacity: number;
   seats_taken: number;
   house_guests: number;
@@ -276,15 +276,15 @@ export interface GameEconomicsRow {
   pass_seats: number;
   credit_seats: number;
   free_seats: number;
-  single_czk: number;
-  pass_czk: number;
-  credit_czk: number;
-  kept_czk: number;
-  owed_czk: number;
-  revenue_czk: number;
+  single_thb: number;
+  pass_thb: number;
+  credit_thb: number;
+  kept_thb: number;
+  owed_thb: number;
+  revenue_thb: number;
   /** Null for a game with no venue — no cost, so no profit and no break-even. */
-  pitch_cost_czk: number | null;
-  profit_czk: number | null;
+  pitch_cost_thb: number | null;
+  profit_thb: number | null;
   break_even_seats: number | null;
 }
 
@@ -428,11 +428,11 @@ export interface Database {
           id: string;
           player_id: string;
           /** What the player asked for; after confirmation, a record of intent. */
-          amount_czk: number;
+          amount_thb: number;
           payment_code: number;
           status: TopupStatus;
           /** What actually arrived. Null until confirmed. */
-          received_amount_czk: number | null;
+          received_amount_thb: number | null;
           confirmed_by: string | null;
           confirmed_at: string | null;
           city: string;
@@ -473,7 +473,7 @@ export interface Database {
           venue_id: string | null;
           starts_at: string;
           capacity: number;
-          price_czk: number;
+          price_thb: number;
           status: GameStatus;
           /**
            * House guests (round 11): anonymous seats an admin holds on this
@@ -531,7 +531,7 @@ export interface Database {
           venue_id?: string | null;
           starts_at: string;
           capacity: number;
-          price_czk: number;
+          price_thb: number;
           status?: GameStatus;
           format?: string | null;
           surface?: GameSurface | null;
@@ -653,9 +653,9 @@ export interface Database {
       pass_tiers: {
         Row: {
           games: number;
-          price_czk: number;
-          /** Always `games * credit_seat_price_czk()`, CHECKed. */
-          credited_czk: number;
+          price_thb: number;
+          /** Always `games * credit_seat_price_thb()`, CHECKed. */
+          credited_thb: number;
           /** Null = never expires. Only the 1-game tier. */
           expires_months: number | null;
         };
@@ -690,7 +690,7 @@ export interface Database {
        * through the service role. Every venue has a row (a trigger adds one).
        */
       venue_pitch_costs: {
-        Row: { venue_id: string; summer_czk: number; winter_czk: number; updated_at: string };
+        Row: { venue_id: string; summer_thb: number; winter_thb: number; updated_at: string };
         /** Written only by `set_venue_pitch_costs`. */
         Insert: never;
         Update: never;
@@ -710,7 +710,7 @@ export interface Database {
        * has no row. Not public.
        */
       game_pitch_costs: {
-        Row: { game_id: string; cost_czk: number; set_by_hand: boolean; updated_at: string };
+        Row: { game_id: string; cost_thb: number; set_by_hand: boolean; updated_at: string };
         /** Written by a trigger on `games` and by `set_game_pitch_cost`. */
         Insert: never;
         Update: never;
@@ -745,13 +745,13 @@ export interface Database {
           status: BookingStatus;
           payment_method: PaymentMethod;
           payment_code: number | null;
-          price_czk: number;
-          credit_applied_czk: number;
+          price_thb: number;
+          credit_applied_thb: number;
           is_seed: boolean;
           booked_by_admin: boolean;
           /**
            * Party guests riding on this booking (round 11). Total seats are
-           * `1 + guest_count`; `price_czk` is the WHOLE party's, which is what
+           * `1 + guest_count`; `price_thb` is the WHOLE party's, which is what
            * lets the variable symbol, the credit application, the confirmation
            * email and `cancel_booking` all work untouched.
            */
@@ -785,14 +785,14 @@ export interface Database {
         Row: {
           id: string;
           player_id: string;
-          delta_czk: number;
+          delta_thb: number;
           reason: CreditReason;
           booking_id: string | null;
           created_at: string;
           /**
            * Phase 20a, migration 32. Set on a positive BATCH row (a pass
            * purchase); null everywhere else, which is what "does not expire"
-           * means. BALANCE IS STILL SUM(delta_czk) — no reader filters on this.
+           * means. BALANCE IS STILL SUM(delta_thb) — no reader filters on this.
            */
           expires_at: string | null;
           /** The batch a redemption, refund or expiry row belongs to. */
@@ -838,7 +838,7 @@ export interface Database {
           game_id: string;
           player_id: string;
           guest_count: number;
-          amount_czk: number;
+          amount_thb: number;
           status: "open" | "booked" | "credited" | "expired";
           booking_id: string | null;
           attention_at: string | null;
@@ -1031,13 +1031,13 @@ export interface Database {
       };
       /** Round 42 — a venue's summer and winter pitch cost. Admin only. */
       set_venue_pitch_costs: {
-        Args: { p_venue_id: string; p_summer_czk: number; p_winter_czk: number };
+        Args: { p_venue_id: string; p_summer_thb: number; p_winter_thb: number };
         Returns: Json;
       };
       /** Round 42 — the season every venue is priced for, from now on. Admin only. */
       set_pitch_season: { Args: { p_season: PitchSeason }; Returns: PitchSeason };
       /** Round 42 — correct one game's pitch cost; null puts it back on its venue. Admin only. */
-      set_game_pitch_cost: { Args: { p_game_id: string; p_cost_czk: number | null }; Returns: number | null };
+      set_game_pitch_cost: { Args: { p_game_id: string; p_cost_thb: number | null }; Returns: number | null };
       pitch_season: { Args: Record<string, never>; Returns: PitchSeason };
       /**
        * Round 42 — what every booking on these games earned, by how it was
@@ -1129,14 +1129,14 @@ export interface Database {
 
       /**
        * Admin-or-service-role. The single automation seam: the admin UI omits
-       * p_received_amount_czk (confirm at the expected amount), while a future
+       * p_received_amount_thb (confirm at the expected amount), while a future
        * bank poller passes the bank-reported figure. Same entry point.
        */
       confirm_booking: {
         Args: {
           p_booking_id: string;
           p_confirmed_by?: string | null;
-          p_received_amount_czk?: number | null;
+          p_received_amount_thb?: number | null;
         };
         Returns: ConfirmResult;
       };
@@ -1183,7 +1183,7 @@ export interface Database {
           p_venue_id: string;
           p_starts_at: string;
           p_capacity: number;
-          p_price_czk: number;
+          p_price_thb: number;
           p_format?: string | null;
           p_surface?: GameSurface | null;
           p_notes?: string | null;
@@ -1200,7 +1200,7 @@ export interface Database {
           p_game_id: string;
           p_venue_id: string;
           p_starts_at: string;
-          p_price_czk: number;
+          p_price_thb: number;
           p_format?: string | null;
           p_surface?: GameSurface | null;
           p_notes?: string | null;
@@ -1263,7 +1263,7 @@ export interface Database {
       grant_credit: {
         Args: {
           p_player_id: string;
-          p_delta_czk: number;
+          p_delta_thb: number;
           p_reason?: CreditReason;
           p_unmatched_payment?: boolean;
           p_note?: string | null;
@@ -1307,11 +1307,11 @@ export interface Database {
        * through that path's existing ledger function.
        */
       confirm_online_purchase: {
-        Args: { p_reference: string; p_session_id: string; p_amount_czk: number };
+        Args: { p_reference: string; p_session_id: string; p_amount_thb: number };
         Returns: "confirmed" | "already" | "attention" | "unknown";
       };
       confirm_online_payment: {
-        Args: { p_booking_id: string; p_session_id: string; p_amount_czk: number };
+        Args: { p_booking_id: string; p_session_id: string; p_amount_thb: number };
         Returns: "confirmed" | "already" | "attention" | "unknown";
       };
       /**
@@ -1408,7 +1408,7 @@ export interface Database {
           p_game_id: string;
           p_guest_count: number;
           p_stripe_session_id: string;
-          p_amount_czk: number;
+          p_amount_thb: number;
         };
         Returns: string;
       };
@@ -1437,7 +1437,7 @@ export interface Database {
           p_booking_id: string;
           p_guest_count: number;
           p_stripe_session_id: string;
-          p_amount_czk: number;
+          p_amount_thb: number;
         };
         Returns: string;
       };
@@ -1448,7 +1448,7 @@ export interface Database {
        * `unknown` for a session this product did not open.
        */
       settle_checkout_session: {
-        Args: { p_stripe_session_id: string; p_amount_czk: number };
+        Args: { p_stripe_session_id: string; p_amount_thb: number };
         Returns: string;
       };
       /** Open checkouts for a game that can no longer honour them. */
@@ -1529,8 +1529,8 @@ export interface Database {
         Returns: {
           booking_id: string;
           guests_remaining: number;
-          credit_issued_czk: number;
-          forfeited_czk: number;
+          credit_issued_thb: number;
+          forfeited_thb: number;
           cancel_lead_hours: number;
         };
       };
@@ -1627,7 +1627,7 @@ export interface Database {
        */
       /** Owner-only. Draws a 27-series VS and inserts a pending top-up. */
       create_topup: {
-        Args: { p_amount_czk: number };
+        Args: { p_amount_thb: number };
         Returns: TopupRow;
       };
       /**
@@ -1639,7 +1639,7 @@ export interface Database {
         Args: {
           p_topup_id: string;
           p_confirmed_by?: string | null;
-          p_received_amount_czk?: number | null;
+          p_received_amount_thb?: number | null;
         };
         Returns: TopupResult;
       };
@@ -1717,7 +1717,7 @@ export interface Database {
           p_venue_id: string;
           p_starts_at: string;
           p_capacity: number;
-          p_price_czk: number;
+          p_price_thb: number;
           p_organizer_name: string;
           p_format?: string | null;
           p_surface?: GameSurface | null;
@@ -1736,7 +1736,7 @@ export interface Database {
           p_game_id: string;
           p_venue_id: string;
           p_starts_at: string;
-          p_price_czk: number;
+          p_price_thb: number;
           p_organizer_name: string;
           p_format?: string | null;
           p_surface?: GameSurface | null;
@@ -1796,7 +1796,7 @@ export interface Database {
 
       /**
        * Service-role only. Writes a compensating negative row per expired
-       * batch remainder, so balance stays SUM(delta_czk). Returns how many
+       * batch remainder, so balance stays SUM(delta_thb). Returns how many
        * batches it closed; idempotent, so a second run returns 0.
        */
       expire_credit_batches: {
@@ -1814,7 +1814,7 @@ export interface Database {
         Returns: {
           batch_id: string;
           player_id: string;
-          remaining_czk: number;
+          remaining_thb: number;
           expires_at: string;
         }[];
       };
@@ -1824,8 +1824,8 @@ export interface Database {
         Args: Record<string, never>;
         Returns: {
           batch_id: string;
-          original_czk: number;
-          remaining_czk: number;
+          original_thb: number;
+          remaining_thb: number;
           expires_at: string;
           created_at: string;
         }[];

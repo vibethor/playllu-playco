@@ -99,17 +99,17 @@ test("a credit amount never renders as crowns on a player surface", async ({
   /*
    * ROUND 35'S EXTENSION, CRAWLED. The table walk in
    * `lib/i18n/__tests__/vocabulary.test.ts` sees every key; this sees what a
-   * component actually composed — a number formatted by `formatCzk` next to a
+   * component actually composed — a number formatted by `formatThb` next to a
    * credit label is invisible to the table, because neither half of it is a
    * string in the table.
    *
    * THE SURFACES ARE THE ONES THAT SPEAK CREDITS, and the assertion is per
    * LINE: a rendered line that mentions credit must not also carry a crowns
-   * figure. A card price on its own line — "180 CZK", "4 spots · 720 CZK" — is
+   * figure. A card price on its own line — "180 THB", "4 spots · 720 THB" — is
    * the product working and is not caught, which is the distinction the ruling
    * draws.
    */
-  const game = await createScratchGame({ capacity: 12, priceCzk: 180, hoursFromNow: 24 * 10 });
+  const game = await createScratchGame({ capacity: 12, priceThb: 180, hoursFromNow: 24 * 10 });
   try {
     await signInAs(context, players.creditRich);
     await context.addCookies([
@@ -117,10 +117,10 @@ test("a credit amount never renders as crowns on a player surface", async ({
     ]);
 
     const CREDIT = /credit/i;
-    const CROWNS = /\d[\d\s\u00a0]*(CZK|Kč)/i;
+    const CROWNS = /\d[\d\s\u00a0]*(THB|Kč)/i;
     /*
      * AN EQUIVALENCE IS NOT A CONVERSION, and this is the distinction the rule
-     * turns on. The claim bar renders "180 CZK / 1 credit": a card price in
+     * turns on. The claim bar renders "180 THB / 1 credit": a card price in
      * crowns beside the credit price in credits, each in its own unit, which is
      * the product TELLING the player the rate rather than making them apply it.
      * `games.spec.ts` asserts that line deliberately.

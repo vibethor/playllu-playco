@@ -120,13 +120,13 @@ begin
   -- INSIDE the window the calculation is migration 33's, unchanged.
   -- OUTSIDE it, `v_credit` is zero and every downstream branch already handles
   -- that: the refund block is `if v_credit > 0`, no `credit_issued` event is
-  -- emitted, and `booking_cancelled` records `credit_issued_czk: 0`. Nothing
+  -- emitted, and `booking_cancelled` records `credit_issued_thb: 0`. Nothing
   -- needed a second code path.
   if v_lead_hours >= v_cutoff_hours then
     if v_booking.status = 'confirmed' then
-      v_credit := v_booking.price_czk;
+      v_credit := v_booking.price_thb;
     else
-      v_credit := v_booking.credit_applied_czk;
+      v_credit := v_booking.credit_applied_thb;
     end if;
   else
     v_credit := 0;
@@ -142,17 +142,17 @@ begin
     -- from, carrying that batch's original expiry. A spend that crossed two
     -- batches refunds to both, in the amounts it took from each.
     for v_redemption in
-      select cl.batch_id, -cl.delta_czk as amount_czk, b.expires_at
+      select cl.batch_id, -cl.delta_thb as amount_thb, b.expires_at
         from public.credit_ledger cl
         join public.credit_ledger b on b.id = cl.batch_id
        where cl.booking_id = p_booking_id
          and cl.reason = 'redemption'
          and cl.batch_id is not null
     loop
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, batch_id)
-      values (v_booking.player_id, v_redemption.amount_czk, 'cancellation_credit',
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, batch_id)
+      values (v_booking.player_id, v_redemption.amount_thb, 'cancellation_credit',
               p_booking_id, v_redemption.batch_id);
-      v_refunded := v_refunded + v_redemption.amount_czk;
+      v_refunded := v_refunded + v_redemption.amount_thb;
     end loop;
 
     -- Whatever is left is credit that came from the ordinary pool, plus the
@@ -160,22 +160,22 @@ begin
     -- unexpiring, which is Phase 1 behaviour unchanged.
     v_unexpiring := v_credit - v_refunded;
     if v_unexpiring > 0 then
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
       values (v_booking.player_id, v_unexpiring, 'cancellation_credit', p_booking_id);
     end if;
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_issued', v_booking.player_id, v_booking.game_id, p_booking_id,
             jsonb_build_object(
-              'amount_czk', v_credit,
+              'amount_thb', v_credit,
               'reason', 'cancellation_credit',
-              'returned_to_batches_czk', v_refunded),
+              'returned_to_batches_thb', v_refunded),
             v_game.city, v_game.brand);
   end if;
 
   /*
-   * `forfeited_czk` IS NEW ON THIS EVENT, and it is the whole audit trail for
-   * a late cancellation. `credit_issued_czk: 0` alone cannot distinguish "an
+   * `forfeited_thb` IS NEW ON THIS EVENT, and it is the whole audit trail for
+   * a late cancellation. `credit_issued_thb: 0` alone cannot distinguish "an
    * unpaid reservation, which never credited anything" from "a paid spot
    * cancelled two hours before kickoff" — and those are the two cases anyone
    * reading this log later will need to tell apart, most likely while
@@ -190,12 +190,12 @@ begin
   values ('booking_cancelled', v_booking.player_id, v_booking.game_id, p_booking_id,
           jsonb_build_object(
             'cancel_lead_hours', v_lead_hours,
-            'credit_issued_czk', v_credit,
-            'forfeited_czk',
+            'credit_issued_thb', v_credit,
+            'forfeited_thb',
               case
                 when v_lead_hours >= v_cutoff_hours then 0
-                when v_booking.status = 'confirmed' then v_booking.price_czk
-                else v_booking.credit_applied_czk
+                when v_booking.status = 'confirmed' then v_booking.price_thb
+                else v_booking.credit_applied_thb
               end,
             'cutoff_hours', v_cutoff_hours,
             'previous_status', v_booking.status),
@@ -219,7 +219,7 @@ grant execute on function public.cancel_booking(uuid) to authenticated, service_
 comment on function public.cancel_booking(uuid) is
   'Cancels a booking the caller owns. REFUND is gated at 8 hours before '
   'starts_at (policy v3). At or beyond the cutoff the value returns as credit; '
-  'inside it the spot is released and nothing is credited, with forfeited_czk '
+  'inside it the spot is released and nothing is credited, with forfeited_thb '
   'recorded on the booking_cancelled event.';
 
 -- -----------------------------------------------------------------------------

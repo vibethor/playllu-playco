@@ -99,7 +99,7 @@ async function makeGame(venue, { capacity = 1, hours = 72, status = 'published' 
       venue: `${venue} ${STAMP}`,
       starts_at: new Date(Date.now() + hours * 3600_000).toISOString(),
       capacity,
-      price_czk: 200,
+      price_thb: 200,
       status,
     })
     .select('id, venue, starts_at')
@@ -242,11 +242,11 @@ try {
     p_booking_id: winnerBooking.id,
   });
   check(!cancelErr, 'the confirmed booking cancels', cancelErr?.message ?? '');
-  check(cancelResult?.credit_issued_czk === 200, 'credit issued equals the price paid', `${cancelResult?.credit_issued_czk} CZK`);
+  check(cancelResult?.credit_issued_thb === 200, 'credit issued equals the price paid', `${cancelResult?.credit_issued_thb} THB`);
 
   const { data: ledger } = await admin
-    .from('credit_ledger').select('delta_czk, reason').eq('player_id', winnerId);
-  const balance = ledger.reduce((sum, r) => sum + r.delta_czk, 0);
+    .from('credit_ledger').select('delta_thb, reason').eq('player_id', winnerId);
+  const balance = ledger.reduce((sum, r) => sum + r.delta_thb, 0);
   check(balance === 200, 'the ledger shows the credit', `balance ${balance}`);
 
   const { data: releaseEvents } = await admin

@@ -306,7 +306,7 @@ async function seed(): Promise<void> {
           venue_id: venueIds.get(g.venue) ?? null,
           starts_at: startsAt(g.startsInHours),
           capacity: g.capacity,
-          price_czk: g.priceCzk,
+          price_thb: g.priceThb,
           // Optional detail, and OPTIONAL IS PART OF THE FIXTURE: hostileVenue
           // leaves all three null so the "organizer said nothing" case stays on
           // the board. Every other game carries a format and a surface, which
@@ -374,7 +374,7 @@ async function seed(): Promise<void> {
         await admin.rpc("confirm_booking", {
           p_booking_id: booking.id,
           p_confirmed_by: players.organizer.id,
-          p_received_amount_czk: received,
+          p_received_amount_thb: received,
         })
       ).error,
     );
@@ -416,11 +416,11 @@ async function seed(): Promise<void> {
   if (
     seedBooking.payment_method !== "seed_free" ||
     seedBooking.status !== "confirmed" ||
-    seedBooking.price_czk !== 0
+    seedBooking.price_thb !== 0
   ) {
     throw new Error(
       `expected seed_free/confirmed/0, got ${seedBooking.payment_method}/` +
-        `${seedBooking.status}/${seedBooking.price_czk}`,
+        `${seedBooking.status}/${seedBooking.price_thb}`,
     );
   }
 
@@ -574,7 +574,7 @@ async function verify(): Promise<void> {
 
   const { data: bookingRows } = await admin
     .from("bookings")
-    .select("id,status,payment_method,price_czk")
+    .select("id,status,payment_method,price_thb")
     .in("player_id", allPlayerIds);
   const bookingStatuses = new Set((bookingRows ?? []).map((b: { status: string }) => b.status));
   for (const wanted of ["reserved", "confirmed", "cancelled", "expired"]) {
@@ -582,18 +582,18 @@ async function verify(): Promise<void> {
   }
 
   const seedFree = (bookingRows ?? []).filter(
-    (b: { payment_method: string; price_czk: number }) =>
-      b.payment_method === "seed_free" && b.price_czk === 0,
+    (b: { payment_method: string; price_thb: number }) =>
+      b.payment_method === "seed_free" && b.price_thb === 0,
   );
   if (seedFree.length === 0) problems.push("no seed_free booking at price 0");
 
   const { data: ledger } = await admin
     .from("credit_ledger")
-    .select("player_id,delta_czk")
+    .select("player_id,delta_thb")
     .in("player_id", allPlayerIds);
   const balances = new Map<string, number>();
-  for (const row of (ledger ?? []) as { player_id: string; delta_czk: number }[]) {
-    balances.set(row.player_id, (balances.get(row.player_id) ?? 0) + row.delta_czk);
+  for (const row of (ledger ?? []) as { player_id: string; delta_thb: number }[]) {
+    balances.set(row.player_id, (balances.get(row.player_id) ?? 0) + row.delta_thb);
   }
   if (![...balances.values()].some((v) => v > 0)) problems.push("no player has a positive balance");
   for (const [playerId, balance] of balances) {
@@ -605,10 +605,10 @@ async function verify(): Promise<void> {
   // booking, so it is easy to leave every wallet at zero while still believing
   // the credit fixtures are present — which is exactly what happened first time.
   const richBalance = balances.get(players.creditRich.id) ?? 0;
-  if (richBalance < games.published.priceCzk) {
+  if (richBalance < games.published.priceThb) {
     problems.push(
       `CreditRich must end with a balance above a game price ` +
-        `(${games.published.priceCzk}), has ${richBalance}`,
+        `(${games.published.priceThb}), has ${richBalance}`,
     );
   }
 

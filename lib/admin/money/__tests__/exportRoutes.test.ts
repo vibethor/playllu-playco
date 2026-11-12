@@ -39,8 +39,8 @@ function manyBookings(count: number) {
       id: `b${id}`,
       player_id: `p${id}`,
       game_id: "g1",
-      price_czk: 180,
-      credit_applied_czk: 0,
+      price_thb: 180,
+      credit_applied_thb: 0,
       payment_method: "cash",
       status: "confirmed",
       created_at: new Date(Date.UTC(2026, 9, 1) + i * 60_000).toISOString(),
@@ -75,8 +75,8 @@ describe("/admin/stats/transactions", () => {
       tables.credit_topups!.push({
         id: `topup-${id}`,
         player_id: id,
-        amount_czk: 750,
-        received_amount_czk: 750,
+        amount_thb: 750,
+        received_amount_thb: 750,
         pass_games: 5,
         status: "confirmed",
         created_at: new Date(Date.UTC(2026, 10, 1) + i * 60_000).toISOString(),
@@ -97,7 +97,7 @@ describe("/admin/stats/transactions", () => {
     const csv = new TextDecoder("utf-8", { ignoreBOM: true }).decode(bytes);
 
     // Assert
-    expect(csv.split("\r\n")[0]).toBe("﻿date,player,reference,amount_czk,method,status");
+    expect(csv.split("\r\n")[0]).toBe("﻿date,player,reference,amount_thb,method,status");
   });
 });
 

@@ -20,7 +20,7 @@ export function aPlayer(overrides: Partial<DirectoryPlayer> = {}): DirectoryPlay
     country: null,
     skillLevel: null,
     marketingOptIn: false,
-    balanceCzk: 0,
+    balanceThb: 0,
     bookingCount: 0,
     gamesPlayed: 0,
     lastGameAt: null,

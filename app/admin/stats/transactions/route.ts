@@ -38,7 +38,7 @@ interface TransactionRow {
   at: string;
   player: string;
   reference: string;
-  amountCzk: number;
+  amountThb: number;
   method: string;
   status: string;
 }
@@ -47,7 +47,7 @@ const COLUMNS: CsvColumn<TransactionRow>[] = [
   { header: "date", value: (r) => r.at },
   { header: "player", value: (r) => r.player },
   { header: "reference", value: (r) => r.reference },
-  { header: "amount_czk", value: (r) => r.amountCzk },
+  { header: "amount_thb", value: (r) => r.amountThb },
   { header: "method", value: (r) => r.method },
   { header: "status", value: (r) => r.status },
 ];
@@ -76,7 +76,7 @@ export async function GET(): Promise<Response> {
     readAllPages("bookings", (from, to) =>
       service
         .from("bookings")
-        .select("id,player_id,game_id,price_czk,credit_applied_czk,payment_method,status,created_at")
+        .select("id,player_id,game_id,price_thb,credit_applied_thb,payment_method,status,created_at")
         .order("created_at", { ascending: false })
         .order("id")
         .range(from, to),
@@ -84,7 +84,7 @@ export async function GET(): Promise<Response> {
     readAllPages("credit_topups", (from, to) =>
       service
         .from("credit_topups")
-        .select("id,player_id,amount_czk,received_amount_czk,pass_games,status,created_at")
+        .select("id,player_id,amount_thb,received_amount_thb,pass_games,status,created_at")
         .order("created_at", { ascending: false })
         .order("id")
         .range(from, to),
@@ -121,7 +121,7 @@ export async function GET(): Promise<Response> {
          * in the period the top-up landed and is already a row of its own
          * below. Exporting the full price would double-count every pass.
          */
-        amountCzk: Math.max(0, b.price_czk - b.credit_applied_czk),
+        amountThb: Math.max(0, b.price_thb - b.credit_applied_thb),
         method: methodLabel(b.payment_method),
         status: b.status,
       };
@@ -131,7 +131,7 @@ export async function GET(): Promise<Response> {
       player: nameById.get(t.player_id) ?? "",
       reference: t.pass_games ? `Pass ${t.pass_games} games` : "Top-up",
       // What the bank actually credited when it has, otherwise what was asked.
-      amountCzk: t.received_amount_czk ?? t.amount_czk,
+      amountThb: t.received_amount_thb ?? t.amount_thb,
       method: "online",
       status: t.status,
     })),

@@ -166,7 +166,7 @@ test("the reworked header, the venue fallback, the share pair and a toast", asyn
     await signInAs(context, players.runner);
     // Funded so the booking completes on this origin: cash left the flow in
     // round 23 item 7 and `online` redirects to a payment page.
-    await setWalletTo(players.runner.id, game.priceCzk);
+    await setWalletTo(players.runner.id, game.priceThb);
     await page.goto(`/game/${game.id}/book`, { waitUntil: "networkidle" });
     await page.getByTestId("pay-credit-input").check();
     await page.getByTestId("terms-accept").check();
@@ -324,7 +324,7 @@ test("the pass tiers, the panel above the list, and the wallet in batches", asyn
     await admin.rpc("confirm_topup", {
       p_topup_id: topup.id,
       p_confirmed_by: players.organizer.id,
-      p_received_amount_czk: 1296,
+      p_received_amount_thb: 1296,
     });
 
     await signInAs(context, players.creditPartial);

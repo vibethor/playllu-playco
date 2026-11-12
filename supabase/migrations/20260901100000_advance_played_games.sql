@@ -245,12 +245,12 @@ begin
     insert into public.venues (name) values ('played sweep probe') returning id into v_venue;
 
     -- Well past kickoff + duration + buffer.
-    insert into public.games (venue, venue_id, starts_at, capacity, price_czk, status, duration_minutes)
+    insert into public.games (venue, venue_id, starts_at, capacity, price_thb, status, duration_minutes)
          values ('played sweep probe', v_venue, now() - interval '2 days', 12, 150, 'published', 60)
       returning id into v_old;
 
     -- Kicked off, but still inside duration + buffer. Must NOT advance.
-    insert into public.games (venue, venue_id, starts_at, capacity, price_czk, status, duration_minutes)
+    insert into public.games (venue, venue_id, starts_at, capacity, price_thb, status, duration_minutes)
          values ('played sweep probe', v_venue, now() - interval '30 minutes', 12, 150, 'published', 60)
       returning id into v_recent;
 

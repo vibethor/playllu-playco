@@ -4,7 +4,7 @@ import { requireCurrentPlayer } from "@/lib/auth/session";
 import { getOwnCreditBalance } from "@/lib/booking/queries";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 import { creditsLabel } from "@/lib/pass/credits";
-import { PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/queries";
+import { PASS_REFERENCE_PRICE_THB } from "@/lib/pass/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
  * been easy to render "you bought 5 credits" off the top-up row, and it would
  * have been the wrong number the first time somebody bought a pass while
  * holding a balance. "You now have N" is the number they will see on the next
- * screen, and it comes from the same place that screen reads — `SUM(delta_czk)`
+ * screen, and it comes from the same place that screen reads — `SUM(delta_thb)`
  * over their own rows, which is the authority.
  *
  * `?topup=` IS NOT READ, AND THAT IS ON PURPOSE. The return page passes it so
@@ -37,13 +37,13 @@ export async function generateMetadata(): Promise<Metadata> {
  * that job.
  *
  * NO CROWNS. The credits ruling puts the wallet in games, and this is the
- * screen that teaches it; a CZK figure here re-introduces the unit at exactly
+ * screen that teaches it; a THB figure here re-introduces the unit at exactly
  * the moment the player is forming their idea of what they just bought.
  */
 export default async function CreditsAddedPage() {
   await requireCurrentPlayer("/pass/credits-added");
 
-  const [t, locale, balanceCzk] = await Promise.all([
+  const [t, locale, balanceThb] = await Promise.all([
     getStrings(),
     getLocale(),
     getOwnCreditBalance(),
@@ -52,7 +52,7 @@ export default async function CreditsAddedPage() {
   // Floored, like every other credit count in the product: telling somebody
   // they have five when they can pay for four is a promise the booking path
   // refuses at the moment they are counting on it.
-  const credits = Math.floor(Math.max(0, balanceCzk) / PASS_REFERENCE_PRICE_CZK);
+  const credits = Math.floor(Math.max(0, balanceThb) / PASS_REFERENCE_PRICE_THB);
 
   return (
     <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">

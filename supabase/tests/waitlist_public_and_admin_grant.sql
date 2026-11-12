@@ -69,7 +69,7 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin) values
   ('bbbb0000-0000-0000-0000-0000000fa003'::uuid, 'WlPlayer',  'wl-player@test.invalid', 'a0000000-0000-0000-0000-0000000fa003'::uuid, false),
   ('bbbb0000-0000-0000-0000-0000000fa004'::uuid, 'WlShadow',  null, null, false);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('cccc0000-0000-0000-0000-0000000fa001'::uuid, 'WL Published', now() + interval '8 days', 12, 200, 'published'),
   ('cccc0000-0000-0000-0000-0000000fa002'::uuid, 'WL Draft',     now() + interval '9 days', 12, 200, 'draft'),
   ('cccc0000-0000-0000-0000-0000000fa003'::uuid, 'WL Cancelled', now() + interval '9 days', 12, 200, 'cancelled');
@@ -164,7 +164,7 @@ reset role;
 -- a converted row leaves the queue
 -- =============================================================================
 
-insert into public.bookings (id, game_id, player_id, payment_method, status, price_czk) values
+insert into public.bookings (id, game_id, player_id, payment_method, status, price_thb) values
   ('eeee0000-0000-0000-0000-0000000fa001'::uuid, 'cccc0000-0000-0000-0000-0000000fa001'::uuid,
    'bbbb0000-0000-0000-0000-0000000fa003'::uuid, 'cash', 'confirmed', 200);
 

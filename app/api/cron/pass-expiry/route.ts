@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { rejectUnauthorizedCron } from "@/lib/cron/guard";
-import { creditsFromCzk } from "@/lib/admin/credits";
+import { creditsFromThb } from "@/lib/admin/credits";
 import { sendCreditsExpiringEmail } from "@/lib/email/dispatch";
 import { policy } from "@/lib/policy";
 import { createServiceRoleSupabaseClient } from "@/lib/supabase/clients";
@@ -31,7 +31,7 @@ export const dynamic = "force-dynamic";
  *
  * THE SPENDABLE WINDOW IS ACCEPTED, not a bug to fix here. Between an expiry
  * instant and this sweep, expired credit is still spendable, because balance
- * is SUM(delta_czk) and the compensating row has not been written yet. That
+ * is SUM(delta_thb) and the compensating row has not been written yet. That
  * was ruled on 2026-08-01: it is bounded by the cron interval and errs in the
  * player's favour. Shortening the interval narrows it; filtering expired rows
  * out of a balance query would re-open the rejected alternative.
@@ -65,7 +65,7 @@ export async function GET(request: Request) {
     try {
       // In the player's own language, and in Credits — never crowns.
       await sendCreditsExpiringEmail(player.email, {
-        credits: creditsFromCzk(batch.remaining_czk),
+        credits: creditsFromThb(batch.remaining_thb),
         expiresAt: batch.expires_at,
       });
       warned += 1;

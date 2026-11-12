@@ -75,7 +75,7 @@ returns uuid language sql security definer as $$
 $$;
 
 create function pg_temp.balance(p uuid) returns integer language sql security definer as $$
-  select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger where player_id = p
+  select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger where player_id = p
 $$;
 
 -- Every refund row this player received, newest last.
@@ -107,7 +107,7 @@ select ('4ccc0000-0000-0000-0000-0000000000' || lpad(n::text, 2, '0'))::uuid,
 -- TWELVE HOURS IS THE CUTOFF, so thirty is in time and eleven is late — and
 -- eleven was IN time under the old eight-hour rule, which is what makes the
 -- late assertion below fail before this round and pass after it.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('94000000-0000-0000-0000-0000000000a1', 'R40 Card In Time',  now() + interval '30 hours', 12, 180, 'published', 90),
   ('94000000-0000-0000-0000-0000000000a2', 'R40 Card Late',     now() + interval '11 hours', 12, 180, 'published', 90),
   ('94000000-0000-0000-0000-0000000000a3', 'R40 Sixty Minutes', now() + interval '30 hours', 12, 180, 'published', 60),
@@ -124,7 +124,7 @@ returns text language plpgsql as $$
 declare r text;
 begin
   insert into public.checkout_sessions
-         (stripe_session_id, game_id, player_id, guest_count, amount_czk, status)
+         (stripe_session_id, game_id, player_id, guest_count, amount_thb, status)
   values (p_session, p_game, p_player, p_guests, p_amount, 'open');
   perform pg_temp.act_as_service();
   r := public.settle_checkout_session(p_session, p_amount);
@@ -163,7 +163,7 @@ select pg_temp.ok(
 select pg_temp.act_as('40000000-0000-0000-0000-000000000001');
 select pg_temp.ok(
   (public.cancel_booking(pg_temp.booking_of('94000000-0000-0000-0000-0000000000a1',
-     '4ccc0000-0000-0000-0000-000000000001'))).credit_issued_czk = 180,
+     '4ccc0000-0000-0000-0000-000000000001'))).credit_issued_thb = 180,
   'cancelling thirty hours ahead returns the whole 180 as credit');
 reset role;
 
@@ -187,7 +187,7 @@ select pg_temp.ok(
 select pg_temp.act_as('40000000-0000-0000-0000-000000000002');
 select pg_temp.ok(
   (public.cancel_booking(pg_temp.booking_of('94000000-0000-0000-0000-0000000000a2',
-     '4ccc0000-0000-0000-0000-000000000002'))).credit_issued_czk = 0,
+     '4ccc0000-0000-0000-0000-000000000002'))).credit_issued_thb = 0,
   'eleven hours ahead is LATE: the spot is released and nothing comes back');
 reset role;
 
@@ -205,7 +205,7 @@ select pg_temp.ok(
 -- A CREDIT PAYS FOR A GAME OF ANY LENGTH
 -- =============================================================================
 
-insert into public.credit_ledger (player_id, delta_czk, reason, expires_at)
+insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
 values ('4ccc0000-0000-0000-0000-000000000003', 180, 'topup', now() + interval '60 days');
 
 select pg_temp.act_as('40000000-0000-0000-0000-000000000003');
@@ -213,7 +213,7 @@ select public.create_booking('94000000-0000-0000-0000-0000000000a3', 'cash', nul
 reset role;
 
 select pg_temp.ok(
-  (select payment_method = 'credit' and credit_applied_czk = 180 and status = 'confirmed'
+  (select payment_method = 'credit' and credit_applied_thb = 180 and status = 'confirmed'
      from public.bookings
     where id = pg_temp.booking_of('94000000-0000-0000-0000-0000000000a3',
                                   '4ccc0000-0000-0000-0000-000000000003')),
@@ -229,7 +229,7 @@ begin
   perform pg_temp.act_as('40000000-0000-0000-0000-000000000004');
   v_topup := public.begin_pass_purchase(5);
   perform pg_temp.act_as_service();
-  perform public.confirm_topup(v_topup.id, null, v_topup.amount_czk);
+  perform public.confirm_topup(v_topup.id, null, v_topup.amount_thb);
 end $$;
 reset role;
 
@@ -250,7 +250,7 @@ select pg_temp.pay_by_card('cs_test_r40_we_cancel', '94000000-0000-0000-0000-000
                            '4ccc0000-0000-0000-0000-000000000005', 0, 180);
 
 -- (b) paid from a pass that runs out in three days
-insert into public.credit_ledger (player_id, delta_czk, reason, expires_at)
+insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
 values ('4ccc0000-0000-0000-0000-000000000006', 180, 'topup', now() + interval '3 days');
 select pg_temp.act_as('40000000-0000-0000-0000-000000000006');
 select public.create_booking('94000000-0000-0000-0000-0000000000a4', 'cash', null, null, 0);
@@ -258,13 +258,13 @@ reset role;
 
 -- (c) paid from a pass that has ALREADY run out. Built by hand: no RPC can
 -- spend an expired batch, but a booking made before the expiry can outlive it.
-insert into public.credit_ledger (id, player_id, delta_czk, reason, expires_at)
+insert into public.credit_ledger (id, player_id, delta_thb, reason, expires_at)
 values ('4b000000-0000-0000-0000-0000000000c7', '4ccc0000-0000-0000-0000-000000000007',
         180, 'topup', now() - interval '1 day');
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk, credit_applied_czk)
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb, credit_applied_thb)
 values ('4bb00000-0000-0000-0000-0000000000c7', '94000000-0000-0000-0000-0000000000a4',
         '4ccc0000-0000-0000-0000-000000000007', 'confirmed', 'credit', 180, 180);
-insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, batch_id)
+insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, batch_id)
 values ('4ccc0000-0000-0000-0000-000000000007', -180, 'redemption',
         '4bb00000-0000-0000-0000-0000000000c7', '4b000000-0000-0000-0000-0000000000c7');
 
@@ -329,8 +329,8 @@ select pg_temp.pay_by_card('cs_test_r40_guests_card', '94000000-0000-0000-0000-0
 select pg_temp.act_as('40000000-0000-0000-0000-000000000009');
 select pg_temp.ok(
   (public.cancel_guests(pg_temp.booking_of('94000000-0000-0000-0000-0000000000a6',
-     '4ccc0000-0000-0000-0000-000000000009'), 1)).credit_issued_czk = 180,
-  'removing one guest of a 540 CZK card party returns 180');
+     '4ccc0000-0000-0000-0000-000000000009'), 1)).credit_issued_thb = 180,
+  'removing one guest of a 540 THB card party returns 180');
 reset role;
 
 select pg_temp.ok(
@@ -349,7 +349,7 @@ select pg_temp.ok(
 -- came back as five.
 -- =============================================================================
 
-insert into public.credit_ledger (player_id, delta_czk, reason, expires_at)
+insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
 values ('4ccc0000-0000-0000-0000-000000000010', 540, 'topup', now() + interval '60 days');
 
 select pg_temp.act_as('40000000-0000-0000-0000-000000000010');

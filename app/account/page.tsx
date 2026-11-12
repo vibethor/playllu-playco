@@ -113,7 +113,7 @@ export default async function AccountPage({
    * The wallet reads are the two that are genuinely tab-specific, and they are
    * cheap enough not to be worth branching a `Promise.all` around.
    */
-  const [balanceCzk, batches, bookings, waitlisted, capabilities] = await Promise.all([
+  const [balanceThb, batches, bookings, waitlisted, capabilities] = await Promise.all([
     getOwnCreditBalance(),
     // The wallet broken into batches (§4.2). A single number cannot say that
     // 750 of a 900 balance runs out on the 3rd, which is the one thing a pass
@@ -234,7 +234,7 @@ export default async function AccountPage({
             around it was sized for a block twice this tall.
           */}
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <CreditBalance balanceCzk={balanceCzk} batches={batches} />
+            <CreditBalance balanceThb={balanceThb} batches={batches} />
             <Link
               href="/pass"
               data-testid="topup-cta"

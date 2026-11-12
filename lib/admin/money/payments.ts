@@ -12,7 +12,7 @@ import { createServiceRoleSupabaseClient } from "@/lib/supabase/clients";
  * there is no `bookings.paid_at` (the first draft of the financials page
  * assumed one and the generated types refused it).
  *
- * `credit_applied_czk` IS SUBTRACTED: a booking paid from Credits moved no new
+ * `credit_applied_thb` IS SUBTRACTED: a booking paid from Credits moved no new
  * money in this period. A booking with two payment events counts once.
  *
  * EVERY ROW, PAGED — see `readAll.ts`. All time is the case that bites: the
@@ -22,7 +22,7 @@ export interface Payment {
   bookingId: string;
   /** When the payment was confirmed. */
   at: string;
-  czk: number;
+  thb: number;
 }
 
 export interface PaymentBounds {
@@ -54,16 +54,16 @@ export async function paymentsBetween(bounds: PaymentBounds): Promise<Payment[]>
   if (paidAt.size === 0) return [];
 
   const bookings = await readByIds("paid bookings", [...paidAt.keys()], (ids) =>
-    service.from("bookings").select("id,price_czk,credit_applied_czk").in("id", ids),
+    service.from("bookings").select("id,price_thb,credit_applied_thb").in("id", ids),
   );
 
   return bookings.flatMap((booking) => {
     const at = paidAt.get(booking.id);
     if (!at) return [];
-    return [{ bookingId: booking.id, at, czk: Math.max(0, booking.price_czk - booking.credit_applied_czk) }];
+    return [{ bookingId: booking.id, at, thb: Math.max(0, booking.price_thb - booking.credit_applied_thb) }];
   });
 }
 
-export function totalCzk(payments: readonly Payment[]): number {
-  return payments.reduce((sum, payment) => sum + payment.czk, 0);
+export function totalThb(payments: readonly Payment[]): number {
+  return payments.reduce((sum, payment) => sum + payment.thb, 0);
 }

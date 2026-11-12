@@ -165,7 +165,7 @@ test("the counter and the price are Anton; the list figure is not", async ({
   await context.addCookies([
     { name: LOCALE_COOKIE, value: "en", domain: "localhost", path: "/" },
   ]);
-  const game = await createScratchGame({ capacity: 12, priceCzk: 150, hoursFromNow: 48 });
+  const game = await createScratchGame({ capacity: 12, priceThb: 150, hoursFromNow: 48 });
 
   try {
     await page.goto(`/game/${game.id}`, { waitUntil: "networkidle" });

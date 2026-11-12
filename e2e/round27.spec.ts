@@ -30,7 +30,7 @@ async function openCheckout(
   who: (typeof players)[keyof typeof players],
   gameId: string,
   sessionId: string,
-  amountCzk: number,
+  amountThb: number,
   guests = 0,
 ) {
   const client = await apiClientFor(who);
@@ -38,16 +38,16 @@ async function openCheckout(
     p_game_id: gameId,
     p_guest_count: guests,
     p_stripe_session_id: sessionId,
-    p_amount_czk: amountCzk,
+    p_amount_thb: amountThb,
   });
   expect(error, `open_checkout: ${error?.message}`).toBeNull();
 }
 
 /** The webhook's call, exactly. */
-async function settle(stripeSessionId: string, amountCzk: number) {
+async function settle(stripeSessionId: string, amountThb: number) {
   const { data, error } = await serviceClient().rpc("settle_checkout_session", {
     p_stripe_session_id: stripeSessionId,
-    p_amount_czk: amountCzk,
+    p_amount_thb: amountThb,
   });
   expect(error, `settle_checkout_session: ${error?.message}`).toBeNull();
   return data as string;
@@ -55,7 +55,7 @@ async function settle(stripeSessionId: string, amountCzk: number) {
 
 test("paying online never spends the wallet, however full it is", async () => {
   // Arrange — a player who could have paid with credit, and chose not to.
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
   const buyer = players.creditRich;
   await setWalletTo(buyer.id, 1_000);
   const before = await walletBalance(buyer.id);
@@ -77,14 +77,14 @@ test("paying online never spends the wallet, however full it is", async () => {
 
     const { data } = await serviceClient()
       .from("bookings")
-      .select("credit_applied_czk, price_czk, guest_count")
+      .select("credit_applied_thb, price_thb, guest_count")
       .eq("game_id", game.id)
       .eq("player_id", buyer.id)
       .maybeSingle();
 
     const booking = data as {
-      credit_applied_czk: number;
-      price_czk: number;
+      credit_applied_thb: number;
+      price_thb: number;
       guest_count: number;
     } | null;
 
@@ -94,7 +94,7 @@ test("paying online never spends the wallet, however full it is", async () => {
      * no wallet contribution at all — not a partial one, not a rounded one.
      * The wallet moves on an explicit Redeem-credit booking and nowhere else.
      */
-    expect(booking?.credit_applied_czk).toBe(0);
+    expect(booking?.credit_applied_thb).toBe(0);
   } finally {
     await destroyScratchGame(game.id);
     await setWalletTo(buyer.id, 0);
@@ -103,36 +103,36 @@ test("paying online never spends the wallet, however full it is", async () => {
 
 test("a party pays for every seat online, and still spends no credit", async () => {
   // Arrange
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
   const buyer = players.creditRich;
   await setWalletTo(buyer.id, 1_000);
 
   try {
     const sessionId = `cs_${RUN}_online_party_two`;
     // The amount the checkout page computes for +2: 150 × (1 + 2).
-    const amountCzk = 450;
+    const amountThb = 450;
 
     // Act
-    await openCheckout(buyer, game.id, sessionId, amountCzk, 2);
-    const outcome = await settle(sessionId, amountCzk);
+    await openCheckout(buyer, game.id, sessionId, amountThb, 2);
+    const outcome = await settle(sessionId, amountThb);
 
     // Assert
     expect(outcome).toBe("booked");
 
     const { data } = await serviceClient()
       .from("bookings")
-      .select("credit_applied_czk, guest_count")
+      .select("credit_applied_thb, guest_count")
       .eq("game_id", game.id)
       .eq("player_id", buyer.id)
       .maybeSingle();
 
     const booking = data as {
-      credit_applied_czk: number;
+      credit_applied_thb: number;
       guest_count: number;
     } | null;
 
     expect(booking?.guest_count, "the guests did not survive the payment").toBe(2);
-    expect(booking?.credit_applied_czk).toBe(0);
+    expect(booking?.credit_applied_thb).toBe(0);
     expect(await walletBalance(buyer.id)).toBe(1_000);
   } finally {
     await destroyScratchGame(game.id);

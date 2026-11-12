@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { PaymentAttentionRow } from "@/lib/admin/queries";
-import { formatCzk, formatGameDateTime } from "@/lib/format";
+import { formatThb, formatGameDateTime } from "@/lib/format";
 import { strings } from "@/lib/strings";
 
 /**
@@ -58,7 +58,7 @@ export function PaymentAttention({ rows }: { rows: PaymentAttentionRow[] }) {
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <span className="text-body font-bold tabular-nums text-warn">
-                  {formatCzk(row.amountOwedCzk)}
+                  {formatThb(row.amountOwedThb)}
                 </span>
                 <span aria-hidden className="text-muted">
                   →

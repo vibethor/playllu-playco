@@ -136,16 +136,16 @@ describe("the dashboard's revenue this month", () => {
       { event_type: "payment_confirmed", booking_id: "b-december", created_at: "2026-11-30T23:30:00.000Z" },
     ];
     state.tables.bookings = [
-      { id: "b-first-of-month", price_czk: 200, credit_applied_czk: 0 },
-      { id: "b-october", price_czk: 300, credit_applied_czk: 0 },
-      { id: "b-december", price_czk: 400, credit_applied_czk: 0 },
+      { id: "b-first-of-month", price_thb: 200, credit_applied_thb: 0 },
+      { id: "b-october", price_thb: 300, credit_applied_thb: 0 },
+      { id: "b-december", price_thb: 400, credit_applied_thb: 0 },
     ];
 
     // Act
     const dashboard = await getAdminDashboard({ now: NOW });
 
     // Assert
-    expect(dashboard.revenueMonthCzk).toBe(200);
+    expect(dashboard.revenueMonthThb).toBe(200);
     expect(dashboard.window.monthFrom).toBe("2026-10-31T23:00:00.000Z");
   });
 
@@ -154,13 +154,13 @@ describe("the dashboard's revenue this month", () => {
     state.tables.events = [
       { event_type: "payment_confirmed", booking_id: "b-party", created_at: "2026-11-03T18:00:00.000Z" },
     ];
-    state.tables.bookings = [{ id: "b-party", price_czk: 500, credit_applied_czk: 200 }];
+    state.tables.bookings = [{ id: "b-party", price_thb: 500, credit_applied_thb: 200 }];
 
     // Act
     const dashboard = await getAdminDashboard({ now: NOW });
 
     // Assert
-    expect(dashboard.revenueMonthCzk).toBe(300);
+    expect(dashboard.revenueMonthThb).toBe(300);
   });
 
   it("counts a Game Pass bought this month, as the money page does", async () => {
@@ -169,17 +169,17 @@ describe("the dashboard's revenue this month", () => {
     state.tables.events = [
       { event_type: "payment_confirmed", booking_id: "b-card", created_at: "2026-11-03T18:00:00.000Z" },
     ];
-    state.tables.bookings = [{ id: "b-card", price_czk: 180, credit_applied_czk: 0 }];
+    state.tables.bookings = [{ id: "b-card", price_thb: 180, credit_applied_thb: 0 }];
     state.tables.credit_topups = [
-      { id: "t-pass", status: "confirmed", amount_czk: 840, received_amount_czk: 840, pass_games: 5, confirmed_at: "2026-11-05T10:00:00.000Z" },
-      { id: "t-unpaid", status: "pending", amount_czk: 840, received_amount_czk: null, pass_games: 5, confirmed_at: null },
+      { id: "t-pass", status: "confirmed", amount_thb: 840, received_amount_thb: 840, pass_games: 5, confirmed_at: "2026-11-05T10:00:00.000Z" },
+      { id: "t-unpaid", status: "pending", amount_thb: 840, received_amount_thb: null, pass_games: 5, confirmed_at: null },
     ];
 
     // Act
     const dashboard = await getAdminDashboard({ now: NOW });
 
     // Assert
-    expect(dashboard.revenueMonthCzk).toBe(1020);
+    expect(dashboard.revenueMonthThb).toBe(1020);
   });
 });
 

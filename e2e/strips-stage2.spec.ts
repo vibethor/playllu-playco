@@ -75,7 +75,7 @@ test.describe("Stage 2 strips — the claim bar", () => {
       // `create_booking` on the cash rail spends whatever credit the player
       // has, and a wallet that COVERS the game pays it outright — the booking
       // is born `confirmed` and this bar reads `holding-paid`. The spec had
-      // always relied on the runner being too poor to afford a 200 CZK game,
+      // always relied on the runner being too poor to afford a 200 THB game,
       // which was true only because of where this file happened to fall in the
       // run order. Deleting two other spec files was enough to break it, and
       // the failure said `holding-paid` on a test about being unpaid.
@@ -95,7 +95,7 @@ test.describe("Stage 2 strips — the claim bar", () => {
       await strip("03-holding-unpaid", "holding-unpaid");
 
       // --- 4. Czech, holding unpaid ----------------------------------------
-      // Czech is a LAYOUT check, not a translation one: `K úhradě 200 CZK`
+      // Czech is a LAYOUT check, not a translation one: `K úhradě 200 THB`
       // beside `Zrušit` is the longest this bar gets in any language.
       await context.addCookies([
         { name: LOCALE_COOKIE, value: "cs", domain: "localhost", path: "/" },

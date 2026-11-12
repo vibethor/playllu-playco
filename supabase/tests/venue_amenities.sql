@@ -81,7 +81,7 @@ insert into public.venues (id, name) values
 -- Four games at that venue, in the four statuses that decide whether a booking
 -- counts. `games_played` must count the played and settled ones and neither of
 -- the others.
-insert into public.games (id, venue, venue_id, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, venue_id, starts_at, capacity, price_thb, status) values
   ('d0000000-0000-0000-0000-00000000381a', 'Amenity Test Pitch',
    'c0000000-0000-0000-0000-0000000038a1', now() + interval '7 days', 12, 150, 'published'),
   ('d0000000-0000-0000-0000-00000000382a', 'Amenity Test Pitch',
@@ -92,7 +92,7 @@ insert into public.games (id, venue, venue_id, starts_at, capacity, price_czk, s
    'c0000000-0000-0000-0000-0000000038a1', now() - interval '21 days', 12, 150, 'cancelled');
 
 insert into public.bookings
-  (id, game_id, player_id, status, payment_method, price_czk)
+  (id, game_id, player_id, status, payment_method, price_thb)
 values
   -- Upcoming: a commitment, not a game played.
   ('e0000000-0000-0000-0000-00000000381a', 'd0000000-0000-0000-0000-00000000381a',

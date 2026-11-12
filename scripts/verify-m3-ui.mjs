@@ -44,7 +44,7 @@ async function makeGame(venue, capacity = 4) {
       venue: `${venue} ${STAMP}`,
       starts_at: new Date(Date.now() + 96 * 3600_000).toISOString(),
       capacity,
-      price_czk: 200,
+      price_thb: 200,
       status: 'published',
     })
     .select('id, venue')
@@ -127,7 +127,7 @@ try {
   await admin.rpc('confirm_booking', {
     p_booking_id: booking.id,
     p_confirmed_by: playerId,
-    p_received_amount_czk: 200,
+    p_received_amount_thb: 200,
   });
 
   await page.goto(`${BASE}/account`, { waitUntil: 'networkidle' });
@@ -147,11 +147,11 @@ try {
   check(after?.status === 'cancelled', 'the booking is cancelled', after?.status ?? 'missing');
 
   const { data: ledger } = await admin
-    .from('credit_ledger').select('delta_czk').eq('player_id', playerId);
+    .from('credit_ledger').select('delta_thb').eq('player_id', playerId);
   check(
-    ledger.reduce((s, r) => s + r.delta_czk, 0) === 200,
+    ledger.reduce((s, r) => s + r.delta_thb, 0) === 200,
     'credit landed in the ledger',
-    `${ledger.reduce((s, r) => s + r.delta_czk, 0)} CZK`,
+    `${ledger.reduce((s, r) => s + r.delta_thb, 0)} THB`,
   );
 
   step('full-credit booking -> payment-confirmed, spot-held suppressed');

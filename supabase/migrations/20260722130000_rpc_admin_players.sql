@@ -25,7 +25,7 @@
 
 create function public.grant_credit(
   p_player_id          uuid,
-  p_delta_czk          integer,
+  p_delta_thb          integer,
   p_reason             public.credit_reason default 'admin_grant',
   p_unmatched_payment  boolean default false,
   p_note               text default null
@@ -44,7 +44,7 @@ begin
       using detail = 'grant_credit requires an admin session or service role';
   end if;
 
-  if p_delta_czk is null or p_delta_czk = 0 then
+  if p_delta_thb is null or p_delta_thb = 0 then
     raise exception 'INVALID_CREDIT_DELTA';
   end if;
 
@@ -68,24 +68,24 @@ begin
   -- concurrent negative adjustments could each see a sufficient balance.
   perform pg_advisory_xact_lock(hashtextextended(p_player_id::text, 0));
 
-  select coalesce(sum(l.delta_czk), 0) into v_balance
+  select coalesce(sum(l.delta_thb), 0) into v_balance
     from public.credit_ledger l
    where l.player_id = p_player_id;
 
   -- Same non-negativity rule create_booking enforces, applied here because an
   -- adjustment may be negative. A wallet is never allowed to go into debt.
-  if v_balance + p_delta_czk < 0 then
+  if v_balance + p_delta_thb < 0 then
     raise exception 'CREDIT_NEGATIVE_BLOCKED'
-      using detail = 'balance ' || v_balance::text || ' cannot absorb ' || p_delta_czk::text;
+      using detail = 'balance ' || v_balance::text || ' cannot absorb ' || p_delta_thb::text;
   end if;
 
-  insert into public.credit_ledger (player_id, delta_czk, reason)
-  values (p_player_id, p_delta_czk, p_reason);
+  insert into public.credit_ledger (player_id, delta_thb, reason)
+  values (p_player_id, p_delta_thb, p_reason);
 
   insert into public.events (event_type, player_id, metadata, city, brand)
   values ('credit_issued', p_player_id,
           jsonb_build_object(
-            'amount_czk', p_delta_czk,
+            'amount_thb', p_delta_thb,
             'reason', p_reason::text,
             'note', p_note,
             'granted_by', public.current_player_id(),
@@ -102,13 +102,13 @@ begin
     insert into public.events (event_type, player_id, metadata, city, brand)
     values ('payment_unmatched', p_player_id,
             jsonb_build_object(
-              'amount_czk', p_delta_czk,
+              'amount_thb', p_delta_thb,
               'note', p_note,
               'resolved_by', public.current_player_id()),
             'prague', 'hrajfotbal');
   end if;
 
-  return v_balance + p_delta_czk;
+  return v_balance + p_delta_thb;
 end;
 $$;
 

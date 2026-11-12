@@ -1,5 +1,5 @@
 import { PITCH_SEASONS, type PitchCostPair } from "@/lib/admin/venues/pitchCosts";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import type { PitchSeason } from "@/lib/types/database";
 import { strings } from "@/lib/strings";
 
@@ -10,7 +10,7 @@ import { strings } from "@/lib/strings";
  */
 export function PitchCostReadout({ costs, season }: { costs: PitchCostPair; season: PitchSeason }) {
   const copy = strings.admin.pitch;
-  const amounts: Record<PitchSeason, number> = { summer: costs.summerCzk, winter: costs.winterCzk };
+  const amounts: Record<PitchSeason, number> = { summer: costs.summerThb, winter: costs.winterThb };
 
   return (
     <div
@@ -26,7 +26,7 @@ export function PitchCostReadout({ costs, season }: { costs: PitchCostPair; seas
               data-in-force={each === season ? "true" : "false"}
               className={`m-0 tabular-nums ${each === season ? "font-semibold text-volt" : "text-bone"}`}
             >
-              {formatCzk(amounts[each])}
+              {formatThb(amounts[each])}
             </dd>
           </div>
         ))}

@@ -14,7 +14,7 @@ export interface SummarisableGame {
   unpaidCount: number;
 }
 
-export type SummaryEconomics = Pick<GameEconomics, "revenueCzk" | "pitchCostCzk" | "profitCzk">;
+export type SummaryEconomics = Pick<GameEconomics, "revenueThb" | "pitchCostThb" | "profitThb">;
 
 export interface GamesSummary {
   games: number;
@@ -25,10 +25,10 @@ export interface GamesSummary {
   unpaidBookings: number;
   money: {
     /** Every game the economics cover, with or without a pitch cost. */
-    revenueCzk: number;
-    pitchCostCzk: number;
+    revenueThb: number;
+    pitchCostThb: number;
     /** Over the games that have a pitch cost — the only ones a profit means anything for. */
-    profitCzk: number;
+    profitThb: number;
     costedGames: number;
     /** Costed games whose money has reached the pitch cost. */
     coveredGames: number;
@@ -68,18 +68,18 @@ function sumMoney(
   for (const game of games) {
     const row = economics.get(game.id);
     if (!row) continue;
-    revenue += row.revenueCzk;
-    if (row.pitchCostCzk === null || row.profitCzk === null) continue;
-    cost += row.pitchCostCzk;
-    profit += row.profitCzk;
+    revenue += row.revenueThb;
+    if (row.pitchCostThb === null || row.profitThb === null) continue;
+    cost += row.pitchCostThb;
+    profit += row.profitThb;
     costedGames += 1;
-    if (Math.round(row.profitCzk) >= 0) coveredGames += 1;
+    if (Math.round(row.profitThb) >= 0) coveredGames += 1;
   }
 
   return {
-    revenueCzk: Math.round(revenue),
-    pitchCostCzk: Math.round(cost),
-    profitCzk: Math.round(profit),
+    revenueThb: Math.round(revenue),
+    pitchCostThb: Math.round(cost),
+    profitThb: Math.round(profit),
     costedGames,
     coveredGames,
   };

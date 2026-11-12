@@ -21,11 +21,11 @@ function booking(overrides: Partial<BookingSeatValue>): BookingSeatValue {
     credit_seats: 0,
     free_seats: 0,
     unpaid_seats: 0,
-    single_czk: 0,
-    pass_czk: 0,
-    credit_czk: 0,
-    kept_czk: 0,
-    owed_czk: 0,
+    single_thb: 0,
+    pass_thb: 0,
+    credit_thb: 0,
+    kept_thb: 0,
+    owed_thb: 0,
     ...overrides,
   };
 }
@@ -39,76 +39,76 @@ describe("revenueMix", () => {
   it("adds up single-game, Game Pass and other Credit seats separately", () => {
     // Arrange
     const values = [
-      booking({ booking_id: "b1", single_seats: 2, single_czk: 360, seats: 2 }),
-      booking({ booking_id: "b2", pass_seats: 1, pass_czk: 150 }),
-      booking({ booking_id: "b3", credit_seats: 1, credit_czk: 180 }),
+      booking({ booking_id: "b1", single_seats: 2, single_thb: 360, seats: 2 }),
+      booking({ booking_id: "b2", pass_seats: 1, pass_thb: 150 }),
+      booking({ booking_id: "b3", credit_seats: 1, credit_thb: 180 }),
     ];
 
     // Act
     const mix = revenueMix(values, PRICES);
 
     // Assert
-    expect(mix.single).toEqual({ seats: 2, czk: 360 });
-    expect(mix.pass).toEqual({ seats: 1, czk: 150 });
-    expect(mix.credit).toEqual({ seats: 1, czk: 180 });
+    expect(mix.single).toEqual({ seats: 2, thb: 360 });
+    expect(mix.pass).toEqual({ seats: 1, thb: 150 });
+    expect(mix.credit).toEqual({ seats: 1, thb: 180 });
   });
 
   it("counts money kept from late cancellations, and how many cancellations kept it", () => {
     // Arrange
     const values = [
-      booking({ booking_id: "b1", status: "cancelled", seats: 0, kept_czk: 180 }),
-      booking({ booking_id: "b2", status: "cancelled", seats: 0, kept_czk: 0 }),
-      booking({ booking_id: "b3", single_seats: 1, single_czk: 180 }),
+      booking({ booking_id: "b1", status: "cancelled", seats: 0, kept_thb: 180 }),
+      booking({ booking_id: "b2", status: "cancelled", seats: 0, kept_thb: 0 }),
+      booking({ booking_id: "b3", single_seats: 1, single_thb: 180 }),
     ];
 
     // Act
     const mix = revenueMix(values, PRICES);
 
     // Assert
-    expect(mix.kept).toEqual({ czk: 180, cancellations: 1 });
-    expect(mix.totalCzk).toBe(360);
+    expect(mix.kept).toEqual({ thb: 180, cancellations: 1 });
+    expect(mix.totalThb).toBe(360);
   });
 
   it("works out the average a seat brought, single against pass", () => {
     // Arrange — five games for 750 is 150 a pass seat.
     const values = [
-      booking({ booking_id: "b1", single_seats: 2, single_czk: 360 }),
-      booking({ booking_id: "b2", pass_seats: 3, pass_czk: 450 }),
+      booking({ booking_id: "b1", single_seats: 2, single_thb: 360 }),
+      booking({ booking_id: "b2", pass_seats: 3, pass_thb: 450 }),
     ];
 
     // Act
     const mix = revenueMix(values, PRICES);
 
     // Assert
-    expect(mix.avgSingleCzk).toBe(180);
-    expect(mix.avgPassCzk).toBe(150);
-    expect(mix.passGapPerSeatCzk).toBe(30);
+    expect(mix.avgSingleThb).toBe(180);
+    expect(mix.avgPassThb).toBe(150);
+    expect(mix.passGapPerSeatThb).toBe(30);
   });
 
   it("has no average for a kind nobody paid with", () => {
     // Arrange
-    const values = [booking({ single_seats: 1, single_czk: 180 })];
+    const values = [booking({ single_seats: 1, single_thb: 180 })];
 
     // Act
     const mix = revenueMix(values, PRICES);
 
     // Assert
-    expect(mix.avgPassCzk).toBeNull();
-    expect(mix.passGapPerSeatCzk).toBeNull();
+    expect(mix.avgPassThb).toBeNull();
+    expect(mix.passGapPerSeatThb).toBeNull();
   });
 
   it("prices the pass discount against each game's own price", () => {
     // Arrange — two pass seats on a 180 game and one on a 200 game, at 150 each.
     const values = [
-      booking({ booking_id: "b1", game_id: "g1", pass_seats: 2, pass_czk: 300 }),
-      booking({ booking_id: "b2", game_id: "g2", pass_seats: 1, pass_czk: 150 }),
+      booking({ booking_id: "b1", game_id: "g1", pass_seats: 2, pass_thb: 300 }),
+      booking({ booking_id: "b2", game_id: "g2", pass_seats: 1, pass_thb: 150 }),
     ];
 
     // Act
     const mix = revenueMix(values, PRICES);
 
     // Assert — (2 × 180 − 300) + (1 × 200 − 150)
-    expect(mix.passGapTotalCzk).toBe(110);
+    expect(mix.passGapTotalThb).toBe(110);
   });
 
   it("counts free seats — gifts and seed bookings — without adding money", () => {
@@ -120,6 +120,6 @@ describe("revenueMix", () => {
 
     // Assert
     expect(mix.freeSeats).toBe(2);
-    expect(mix.totalCzk).toBe(0);
+    expect(mix.totalThb).toBe(0);
   });
 });

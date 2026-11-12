@@ -1,4 +1,4 @@
-import { paymentsBetween, totalCzk } from "@/lib/admin/money/payments";
+import { paymentsBetween, totalThb } from "@/lib/admin/money/payments";
 import { readAllPages } from "@/lib/admin/money/readAll";
 import { createServiceRoleSupabaseClient } from "@/lib/supabase/clients";
 
@@ -23,15 +23,15 @@ import { createServiceRoleSupabaseClient } from "@/lib/supabase/clients";
  * three cannot disagree about what revenue is.
  */
 export interface RevenueSplit {
-  gamesCzk: number;
-  passCzk: number;
-  topupCzk: number;
+  gamesThb: number;
+  passThb: number;
+  topupThb: number;
 }
 
 export interface Revenue extends RevenueSplit {
-  totalCzk: number;
+  totalThb: number;
   /** Every amount with the moment it arrived — for the week bars. */
-  entries: { at: string; czk: number }[];
+  entries: { at: string; thb: number }[];
 }
 
 interface Bounds {
@@ -44,7 +44,7 @@ async function creditedCheckouts(bounds: Bounds) {
   return readAllPages("credited checkouts", (from, to) => {
     let query = service
       .from("checkout_sessions")
-      .select("id,amount_czk,settled_at")
+      .select("id,amount_thb,settled_at")
       .eq("status", "credited")
       .not("settled_at", "is", null);
     if (bounds.from) query = query.gte("settled_at", bounds.from);
@@ -58,7 +58,7 @@ async function confirmedTopups(bounds: Bounds) {
   return readAllPages("confirmed top-ups", (from, to) => {
     let query = service
       .from("credit_topups")
-      .select("id,amount_czk,received_amount_czk,pass_games,confirmed_at")
+      .select("id,amount_thb,received_amount_thb,pass_games,confirmed_at")
       .eq("status", "confirmed")
       .not("confirmed_at", "is", null);
     if (bounds.from) query = query.gte("confirmed_at", bounds.from);
@@ -74,23 +74,23 @@ export async function revenueBetween(bounds: Bounds): Promise<Revenue> {
     confirmedTopups(bounds),
   ]);
 
-  const entries: Revenue["entries"] = payments.map(({ at, czk }) => ({ at, czk }));
-  let gamesCzk = totalCzk(payments);
+  const entries: Revenue["entries"] = payments.map(({ at, thb }) => ({ at, thb }));
+  let gamesThb = totalThb(payments);
   for (const row of credited) {
     if (!row.settled_at) continue;
-    gamesCzk += row.amount_czk;
-    entries.push({ at: row.settled_at, czk: row.amount_czk });
+    gamesThb += row.amount_thb;
+    entries.push({ at: row.settled_at, thb: row.amount_thb });
   }
 
-  let passCzk = 0;
-  let topupCzk = 0;
+  let passThb = 0;
+  let topupThb = 0;
   for (const row of topups) {
     if (!row.confirmed_at) continue;
-    const czk = row.received_amount_czk ?? row.amount_czk;
-    if (row.pass_games !== null) passCzk += czk;
-    else topupCzk += czk;
-    entries.push({ at: row.confirmed_at, czk });
+    const thb = row.received_amount_thb ?? row.amount_thb;
+    if (row.pass_games !== null) passThb += thb;
+    else topupThb += thb;
+    entries.push({ at: row.confirmed_at, thb });
   }
 
-  return { gamesCzk, passCzk, topupCzk, totalCzk: gamesCzk + passCzk + topupCzk, entries };
+  return { gamesThb, passThb, topupThb, totalThb: gamesThb + passThb + topupThb, entries };
 }

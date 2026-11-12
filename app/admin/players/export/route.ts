@@ -17,7 +17,7 @@ import { listPlayers, type AdminPlayerRow } from "@/lib/admin/queries";
  * somebody, and exporting the column would put every number in the group in one
  * file for no use anyone has asked for.
  *
- * `balance_czk` is summed from the append-only ledger by `listPlayers`, not
+ * `balance_thb` is summed from the append-only ledger by `listPlayers`, not
  * from a cached column — the same number the page shows, from the same call.
  */
 export const dynamic = "force-dynamic";
@@ -25,7 +25,7 @@ export const dynamic = "force-dynamic";
 const COLUMNS: CsvColumn<AdminPlayerRow>[] = [
   { header: "nickname", value: (p) => p.nickname },
   { header: "email", value: (p) => p.email },
-  { header: "balance_czk", value: (p) => p.balanceCzk },
+  { header: "balance_thb", value: (p) => p.balanceThb },
   { header: "bookings", value: (p) => p.bookingCount },
   { header: "is_shadow", value: (p) => p.isShadow },
   { header: "is_admin", value: (p) => p.isAdmin },

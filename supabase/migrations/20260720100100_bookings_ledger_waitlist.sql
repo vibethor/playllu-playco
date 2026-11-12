@@ -97,10 +97,10 @@ create table public.bookings (
   -- seed_free. Unique across all time — see the sequence comment above.
   payment_code bigint unique,
 
-  -- Locked at booking time: a later change to games.price_czk must not
+  -- Locked at booking time: a later change to games.price_thb must not
   -- retroactively alter what an existing booking owes.
-  price_czk integer not null,
-  credit_applied_czk integer not null default 0,
+  price_thb integer not null,
+  credit_applied_thb integer not null default 0,
 
   is_seed boolean not null default false,
   booked_by_admin boolean not null default false,
@@ -122,9 +122,9 @@ create table public.bookings (
 
   created_at timestamptz not null default now(),
 
-  constraint bookings_price_non_negative check (price_czk >= 0),
-  constraint bookings_credit_applied_non_negative check (credit_applied_czk >= 0),
-  constraint bookings_credit_applied_within_price check (credit_applied_czk <= price_czk),
+  constraint bookings_price_non_negative check (price_thb >= 0),
+  constraint bookings_credit_applied_non_negative check (credit_applied_thb >= 0),
+  constraint bookings_credit_applied_within_price check (credit_applied_thb <= price_thb),
 
   -- Only QR bookings carry a variable symbol.
   constraint bookings_payment_code_qr_only check (
@@ -157,7 +157,7 @@ alter table public.events
 -- credit_ledger
 --
 -- Append-only by privilege, not merely by convention. A player's balance is
--- SUM(delta_czk) over their rows; if any actor can UPDATE or DELETE a row, the
+-- SUM(delta_thb) over their rows; if any actor can UPDATE or DELETE a row, the
 -- balance is no longer a derivable fact.
 --
 -- Non-negativity is deliberately NOT a table constraint: a per-row CHECK cannot
@@ -172,12 +172,12 @@ create table public.credit_ledger (
   player_id uuid not null references public.players (id) on delete cascade,
 
   -- Negative for redemptions, positive for grants and cancellation credit.
-  delta_czk integer not null,
+  delta_thb integer not null,
   reason public.credit_reason not null,
   booking_id uuid references public.bookings (id) on delete set null,
   created_at timestamptz not null default now(),
 
-  constraint credit_ledger_delta_non_zero check (delta_czk <> 0)
+  constraint credit_ledger_delta_non_zero check (delta_thb <> 0)
 );
 
 create index credit_ledger_player_id_idx on public.credit_ledger (player_id);

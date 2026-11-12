@@ -221,9 +221,9 @@ begin
       using detail = 'only ' || v_room::text || ' further guest(s) fit';
   end if;
 
-  v_cost := v_game.price_czk * p_guest_count;
+  v_cost := v_game.price_thb * p_guest_count;
 
-  select coalesce(sum(delta_czk), 0) into v_balance
+  select coalesce(sum(delta_thb), 0) into v_balance
     from public.credit_ledger where player_id = v_player;
 
   if v_balance < v_cost then
@@ -231,24 +231,24 @@ begin
       using detail = 'balance ' || v_balance::text || ' < ' || v_cost::text;
   end if;
 
-  insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+  insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
        values (v_player, -v_cost, 'redemption', p_booking_id);
 
   update public.bookings
      set guest_count        = guest_count + p_guest_count,
-         price_czk          = price_czk + v_cost,
-         credit_applied_czk = credit_applied_czk + v_cost
+         price_thb          = price_thb + v_cost,
+         credit_applied_thb = credit_applied_thb + v_cost
    where id = p_booking_id;
 
   insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
   values ('booking_guests_added', v_player, v_booking.game_id, p_booking_id,
-          jsonb_build_object('added', p_guest_count, 'paid_czk', v_cost,
+          jsonb_build_object('added', p_guest_count, 'paid_thb', v_cost,
                              'rail', 'credit'),
           v_game.city, v_game.brand);
 
   insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
   values ('credit_redeemed', v_player, v_booking.game_id, p_booking_id,
-          jsonb_build_object('amount_czk', v_cost, 'reason', 'add_guests'),
+          jsonb_build_object('amount_thb', v_cost, 'reason', 'add_guests'),
           v_game.city, v_game.brand);
 
   perform public.sync_game_fullness(v_booking.game_id);
@@ -266,7 +266,7 @@ create or replace function public.open_add_guests_checkout(
   p_booking_id        uuid,
   p_guest_count       integer,
   p_stripe_session_id text,
-  p_amount_czk        integer
+  p_amount_thb        integer
 )
 returns uuid
 language plpgsql
@@ -294,10 +294,10 @@ begin
   end if;
 
   insert into public.checkout_sessions
-         (stripe_session_id, game_id, player_id, guest_count, amount_czk,
+         (stripe_session_id, game_id, player_id, guest_count, amount_thb,
           kind, target_booking_id)
        values (p_stripe_session_id, v_booking.game_id, v_player,
-               p_guest_count, p_amount_czk, 'add_guests', p_booking_id)
+               p_guest_count, p_amount_thb, 'add_guests', p_booking_id)
     returning id into v_id;
 
   return v_id;
@@ -317,7 +317,7 @@ grant execute on function public.open_add_guests_checkout(uuid, integer, text, i
 -- -----------------------------------------------------------------------------
 create or replace function public.settle_checkout_session(
   p_stripe_session_id text,
-  p_amount_czk        integer
+  p_amount_thb        integer
 )
 returns text
 language plpgsql
@@ -389,20 +389,20 @@ begin
       if found and v_target.status = 'confirmed' then
         update public.bookings
            set guest_count = guest_count + v_session.guest_count,
-               price_czk   = price_czk + p_amount_czk
+               price_thb   = price_thb + p_amount_thb
          where id = v_target.id;
 
         insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
         values ('booking_guests_added', v_session.player_id, v_session.game_id,
                 v_target.id,
                 jsonb_build_object('added', v_session.guest_count,
-                                   'paid_czk', p_amount_czk, 'rail', 'checkout'),
+                                   'paid_thb', p_amount_thb, 'rail', 'checkout'),
                 v_game.city, v_game.brand);
 
         insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
         values ('payment_confirmed', v_session.player_id, v_session.game_id,
                 v_target.id,
-                jsonb_build_object('amount_czk', p_amount_czk,
+                jsonb_build_object('amount_thb', p_amount_thb,
                                    'session', p_stripe_session_id),
                 v_game.city, v_game.brand);
 
@@ -416,22 +416,22 @@ begin
 
     else
       insert into public.bookings
-             (game_id, player_id, status, payment_method, price_czk,
-              credit_applied_czk, guest_count, stripe_session_id)
+             (game_id, player_id, status, payment_method, price_thb,
+              credit_applied_thb, guest_count, stripe_session_id)
            values (v_session.game_id, v_session.player_id, 'confirmed', 'qr',
-                   v_session.amount_czk, 0, v_session.guest_count,
+                   v_session.amount_thb, 0, v_session.guest_count,
                    p_stripe_session_id)
         returning id into v_booking;
 
       insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
       values ('booking_created', v_session.player_id, v_session.game_id, v_booking,
-              jsonb_build_object('seats', v_wanted, 'paid_czk', p_amount_czk,
+              jsonb_build_object('seats', v_wanted, 'paid_thb', p_amount_thb,
                                  'rail', 'checkout'),
               v_game.city, v_game.brand);
 
       insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
       values ('payment_confirmed', v_session.player_id, v_session.game_id, v_booking,
-              jsonb_build_object('amount_czk', p_amount_czk,
+              jsonb_build_object('amount_thb', p_amount_thb,
                                  'session', p_stripe_session_id),
               v_game.city, v_game.brand);
 
@@ -449,12 +449,12 @@ begin
    * for a vanished booking as well as for a full pitch. Both are "we cannot
    * give you what you paid for", and both pay back the same way.
    */
-  insert into public.credit_ledger (player_id, delta_czk, reason)
-       values (v_session.player_id, p_amount_czk, 'cancellation_credit');
+  insert into public.credit_ledger (player_id, delta_thb, reason)
+       values (v_session.player_id, p_amount_thb, 'cancellation_credit');
 
   insert into public.events (event_type, player_id, game_id, metadata, city, brand)
   values ('credit_issued', v_session.player_id, v_session.game_id,
-          jsonb_build_object('amount_czk', p_amount_czk,
+          jsonb_build_object('amount_thb', p_amount_thb,
                              'reason', 'checkout_game_full',
                              'kind', v_session.kind,
                              'session', p_stripe_session_id),
@@ -479,8 +479,8 @@ begin
      set status           = 'credited',
          settled_at       = now(),
          attention_at     = now(),
-         attention_reason = 'paid ' || p_amount_czk::text
-                         || ' CZK for ' || v_session.kind
+         attention_reason = 'paid ' || p_amount_thb::text
+                         || ' THB for ' || v_session.kind
                          || ' after the game filled — credited in full',
          booking_id       = null
    where id = v_session.id;
@@ -559,7 +559,7 @@ grant execute on function public.app_capabilities() to anon, authenticated, serv
 -- `scripts/apply-migration.mjs` COMMITS. On 2026-09-12 round 29's drill was
 -- applied to production and left behind a fake venue, two fake games, two
 -- bookings against a real player, a real "you were marked as a no-show"
--- notification in his bell, two games' worth of inflated stats, 150 CZK of
+-- notification in his bell, two games' worth of inflated stats, 150 THB of
 -- phantom money owed, and a game the nightly sweep would have reported as
 -- needing attention every night for ever.
 --

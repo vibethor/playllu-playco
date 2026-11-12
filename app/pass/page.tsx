@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
  * `/pass` — the tiers, with the expiry stated before the button (§4.2).
  *
  * A PASS IS DISCOUNTED WALLET CREDIT WITH AN EXPIRY. Not a ticket, not a
- * counter of games. The copy says so and the page shows CZK with a
+ * counter of games. The copy says so and the page shows THB with a
  * games-equivalent beside it, because unit-credits were rejected for a good
  * reason: per-game pricing already varies, and a "5 games" balance starts
  * owing fractions of a game the moment two games cost differently.

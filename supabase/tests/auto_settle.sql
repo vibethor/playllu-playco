@@ -6,7 +6,7 @@
 -- THIS DRILL USED TO LIVE IN THE MIGRATION, and on 2026-09-12 it was applied to
 -- production and COMMITTED — leaving a fake venue, two fake games, two bookings
 -- against a real player, a real no-show notification in his bell, inflated
--- stats and 150 CZK of phantom money owed. `run.mjs` wraps every suite in
+-- stats and 150 THB of phantom money owed. `run.mjs` wraps every suite in
 -- `begin; … rollback;` BY DESIGN, so the same fixtures here cannot escape.
 -- A migration asserts SHAPE; behaviour is asserted in this directory.
 -- =============================================================================
@@ -75,25 +75,25 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin) values
    'a0000000-0000-0000-0000-0000000a5e02', false);
 
 -- A CLEAN game: kicked off, paid booking, nothing holding it open.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('9a000000-0000-0000-0000-0000000a5e01', 'Sweep Clean',
    now() - interval '6 hours', 10, 150, 'published', 60);
-insert into public.bookings (game_id, player_id, status, payment_method, price_czk,
-                             credit_applied_czk, guest_count)
+insert into public.bookings (game_id, player_id, status, payment_method, price_thb,
+                             credit_applied_thb, guest_count)
   values ('9a000000-0000-0000-0000-0000000a5e01', 'aaaa0000-0000-0000-0000-0000000a5e02',
           'confirmed', 'qr', 150, 0, 0);
 
 -- A HELD game: kicked off, but carrying an unpaid `reserved` row.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('9a000000-0000-0000-0000-0000000a5e02', 'Sweep Held',
    now() - interval '6 hours', 10, 150, 'published', 60);
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk,
-                             credit_applied_czk, guest_count)
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb,
+                             credit_applied_thb, guest_count)
   values ('7a000000-0000-0000-0000-0000000a5e02', '9a000000-0000-0000-0000-0000000a5e02',
           'aaaa0000-0000-0000-0000-0000000a5e02', 'reserved', 'cash', 150, 0, 0);
 
 -- An EARLY game: kicked off half an hour ago, still inside its buffer.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('9a000000-0000-0000-0000-0000000a5e03', 'Sweep Early',
    now() - interval '30 minutes', 10, 150, 'published', 60);
 

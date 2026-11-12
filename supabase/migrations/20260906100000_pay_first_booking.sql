@@ -60,7 +60,7 @@ create table if not exists public.checkout_sessions (
   game_id           uuid not null references public.games(id) on delete cascade,
   player_id         uuid not null references public.players(id) on delete cascade,
   guest_count       integer not null default 0 check (guest_count >= 0),
-  amount_czk        integer not null check (amount_czk > 0),
+  amount_thb        integer not null check (amount_thb > 0),
   /*
    * open      — the form is on somebody's screen
    * booked    — paid, and a seat was there
@@ -102,7 +102,7 @@ create or replace function public.open_checkout(
   p_game_id           uuid,
   p_guest_count       integer,
   p_stripe_session_id text,
-  p_amount_czk        integer
+  p_amount_thb        integer
 )
 returns uuid
 language plpgsql
@@ -119,9 +119,9 @@ begin
   end if;
 
   insert into public.checkout_sessions
-         (stripe_session_id, game_id, player_id, guest_count, amount_czk)
+         (stripe_session_id, game_id, player_id, guest_count, amount_thb)
        values (p_stripe_session_id, p_game_id, v_player,
-               greatest(0, coalesce(p_guest_count, 0)), p_amount_czk)
+               greatest(0, coalesce(p_guest_count, 0)), p_amount_thb)
     returning id into v_id;
 
   return v_id;
@@ -138,7 +138,7 @@ grant execute on function public.open_checkout(uuid, integer, text, integer)
 -- -----------------------------------------------------------------------------
 create or replace function public.settle_checkout_session(
   p_stripe_session_id text,
-  p_amount_czk        integer
+  p_amount_thb        integer
 )
 returns text
 language plpgsql
@@ -199,22 +199,22 @@ begin
      and v_seats + v_wanted <= v_game.capacity then
 
     insert into public.bookings
-           (game_id, player_id, status, payment_method, price_czk,
-            credit_applied_czk, guest_count, stripe_session_id)
+           (game_id, player_id, status, payment_method, price_thb,
+            credit_applied_thb, guest_count, stripe_session_id)
          values (v_session.game_id, v_session.player_id, 'confirmed', 'qr',
-                 v_session.amount_czk, 0, v_session.guest_count,
+                 v_session.amount_thb, 0, v_session.guest_count,
                  p_stripe_session_id)
       returning id into v_booking;
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('booking_created', v_session.player_id, v_session.game_id, v_booking,
-            jsonb_build_object('seats', v_wanted, 'paid_czk', p_amount_czk,
+            jsonb_build_object('seats', v_wanted, 'paid_thb', p_amount_thb,
                                'rail', 'checkout'),
             v_game.city, v_game.brand);
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('payment_confirmed', v_session.player_id, v_session.game_id, v_booking,
-            jsonb_build_object('amount_czk', p_amount_czk,
+            jsonb_build_object('amount_thb', p_amount_thb,
                                'session', p_stripe_session_id),
             v_game.city, v_game.brand);
 
@@ -238,12 +238,12 @@ begin
    * deliver, and putting a clock on it would make our race the player's
    * problem.
    */
-  insert into public.credit_ledger (player_id, delta_czk, reason)
-       values (v_session.player_id, p_amount_czk, 'cancellation_credit');
+  insert into public.credit_ledger (player_id, delta_thb, reason)
+       values (v_session.player_id, p_amount_thb, 'cancellation_credit');
 
   insert into public.events (event_type, player_id, game_id, metadata, city, brand)
   values ('credit_issued', v_session.player_id, v_session.game_id,
-          jsonb_build_object('amount_czk', p_amount_czk,
+          jsonb_build_object('amount_thb', p_amount_thb,
                              'reason', 'checkout_game_full',
                              'session', p_stripe_session_id),
           v_game.city, v_game.brand);
@@ -261,8 +261,8 @@ begin
      set status           = 'credited',
          settled_at       = now(),
          attention_at     = now(),
-         attention_reason = 'paid ' || p_amount_czk::text
-                         || ' CZK after the game filled — credited in full',
+         attention_reason = 'paid ' || p_amount_thb::text
+                         || ' THB after the game filled — credited in full',
          booking_id       = null
    where id = v_session.id;
 
@@ -519,12 +519,12 @@ begin
 
     insert into public.venues (name) values ('pay first probe') returning id into v_venue;
     -- CAPACITY ONE. The whole point is what the second payer gets.
-    insert into public.games (venue, venue_id, starts_at, capacity, price_czk, status)
+    insert into public.games (venue, venue_id, starts_at, capacity, price_thb, status)
          values ('pay first probe', v_venue, now() + interval '2 days', 1, 150, 'published')
       returning id into v_game;
 
     insert into public.checkout_sessions
-           (stripe_session_id, game_id, player_id, guest_count, amount_czk)
+           (stripe_session_id, game_id, player_id, guest_count, amount_thb)
          values ('cs_probe_first', v_game, v_a, 0, 150),
                 ('cs_probe_second', v_game, v_b, 0, 150);
 
@@ -550,7 +550,7 @@ begin
     end if;
 
     -- THE RESIDUAL: the second payer completes anyway, in the same instant.
-    select coalesce(sum(delta_czk), 0) into v_balance
+    select coalesce(sum(delta_thb), 0) into v_balance
       from public.credit_ledger where player_id = v_b;
 
     select public.settle_checkout_session('cs_probe_second', 150) into v_outcome;
@@ -558,7 +558,7 @@ begin
       raise exception 'pay first: the second payer got % rather than credited', v_outcome;
     end if;
 
-    if (select coalesce(sum(delta_czk), 0) from public.credit_ledger where player_id = v_b)
+    if (select coalesce(sum(delta_thb), 0) from public.credit_ledger where player_id = v_b)
        <> v_balance + 150 then
       raise exception 'pay first: the second payer was not credited in full';
     end if;

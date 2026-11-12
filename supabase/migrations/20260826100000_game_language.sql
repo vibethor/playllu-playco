@@ -157,7 +157,7 @@ begin
   if v_venue is null then
     raise notice 'no venue to exercise the CHECKs against — constraints created';
   else
-    insert into public.games (venue, venue_id, starts_at, capacity, price_czk, format, language)
+    insert into public.games (venue, venue_id, starts_at, capacity, price_thb, format, language)
     values ('__migration probe__', v_venue, now() + interval '400 days', 10, 150, '7v7v7v7', 'uk-ru')
     returning id into v_game;
 

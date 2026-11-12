@@ -83,7 +83,7 @@ insert into public.players (id, nickname, email, auth_user_id) values
   ('bbbb0000-0000-0000-0000-00000000ab02', 'NotifyTwo',   'n2@test.invalid', 'b0000000-0000-0000-0000-00000000ab02'),
   ('cccc0000-0000-0000-0000-00000000ab03', 'NotifyThree', 'n3@test.invalid', 'c0000000-0000-0000-0000-00000000ab03');
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('9a000000-0000-0000-0000-00000000000a', 'Notify Game', now() + interval '7 days', 1, 200, 'full');
 
 -- Three players join the waitlist through the real RPC.
@@ -180,7 +180,7 @@ update public.waitlist
  where game_id = '9a000000-0000-0000-0000-00000000000a'
    and player_id = 'cccc0000-0000-0000-0000-00000000ab03';
 
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk)
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb)
 values ('bbbb1111-0000-0000-0000-00000000000b', '9a000000-0000-0000-0000-00000000000a',
         'cccc0000-0000-0000-0000-00000000ab03', 'reserved', 'cash', 200);
 

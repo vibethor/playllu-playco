@@ -15,7 +15,7 @@
 create type public.cancel_result as (
   id uuid,
   status public.booking_status,
-  credit_issued_czk integer,
+  credit_issued_thb integer,
   cancel_lead_hours numeric(6, 2)
 );
 
@@ -87,9 +87,9 @@ begin
   -- A seed_free booking is confirmed at price 0, so this yields 0 — correct:
   -- no money was ever applied.
   if v_booking.status = 'confirmed' then
-    v_credit := v_booking.price_czk;
+    v_credit := v_booking.price_thb;
   else
-    v_credit := v_booking.credit_applied_czk;
+    v_credit := v_booking.credit_applied_thb;
   end if;
 
   update public.bookings
@@ -98,12 +98,12 @@ begin
    where id = p_booking_id;
 
   if v_credit > 0 then
-    insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+    insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
     values (v_booking.player_id, v_credit, 'cancellation_credit', p_booking_id);
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_issued', v_booking.player_id, v_booking.game_id, p_booking_id,
-            jsonb_build_object('amount_czk', v_credit, 'reason', 'cancellation_credit'),
+            jsonb_build_object('amount_thb', v_credit, 'reason', 'cancellation_credit'),
             v_game.city, v_game.brand);
   end if;
 
@@ -111,7 +111,7 @@ begin
   values ('booking_cancelled', v_booking.player_id, v_booking.game_id, p_booking_id,
           jsonb_build_object(
             'cancel_lead_hours', v_lead_hours,
-            'credit_issued_czk', v_credit,
+            'credit_issued_thb', v_credit,
             'previous_status', v_booking.status),
           v_game.city, v_game.brand);
 

@@ -67,7 +67,7 @@ comment on column public.games.guest_count is
 
 comment on column public.bookings.guest_count is
   'Party guests riding on this booking. Total seats are 1 + guest_count, '
-  'price_czk is the whole party''s, and cancelling releases all of them.';
+  'price_thb is the whole party''s, and cancelling releases all of them.';
 
 -- -----------------------------------------------------------------------------
 -- 2. The single definition of how full a game is
@@ -417,9 +417,9 @@ begin
 
   -- THE PARTY'S PRICE IS THE BOOKING'S PRICE, and that is what makes every
   -- downstream reader work untouched: the variable symbol is for this amount,
-  -- `credit_applied_czk` is capped by it, the confirmation email quotes it,
+  -- `credit_applied_thb` is capped by it, the confirmation email quotes it,
   -- and `cancel_booking` refunds it. One booking owes one number.
-  v_price := v_game.price_czk * v_seats;
+  v_price := v_game.price_thb * v_seats;
 
   if v_player.is_seed then
     v_method         := 'seed_free';
@@ -429,7 +429,7 @@ begin
     v_payment_code   := null;
     v_status         := 'confirmed';
   else
-    select coalesce(sum(cl.delta_czk), 0) into v_balance
+    select coalesce(sum(cl.delta_thb), 0) into v_balance
       from public.credit_ledger cl
      where cl.player_id = p_player_id;
 
@@ -461,7 +461,7 @@ begin
 
   insert into public.bookings (
     game_id, player_id, status, payment_method, payment_code,
-    price_czk, credit_applied_czk, is_seed, booked_by_admin, guest_count
+    price_thb, credit_applied_thb, is_seed, booked_by_admin, guest_count
   ) values (
     p_game_id, p_player_id, v_status, v_method, v_payment_code,
     v_price, v_credit_applied, v_player.is_seed, p_booked_by_admin, p_guest_count
@@ -475,16 +475,16 @@ begin
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_redeemed', p_player_id, p_game_id, v_booking_id,
-            jsonb_build_object('amount_czk', v_credit_applied), v_game.city, v_game.brand);
+            jsonb_build_object('amount_thb', v_credit_applied), v_game.city, v_game.brand);
   end if;
 
   insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
   values ('booking_created', p_player_id, p_game_id, v_booking_id,
           jsonb_build_object(
             'payment_method', v_method,
-            'price_czk', v_price,
-            'credit_applied_czk', v_credit_applied,
-            'amount_due_czk', v_amount_due,
+            'price_thb', v_price,
+            'credit_applied_thb', v_credit_applied,
+            'amount_due_thb', v_amount_due,
             'guest_count', p_guest_count,
             'seats', v_seats,
             'booked_by_admin', p_booked_by_admin),
@@ -493,7 +493,7 @@ begin
   if v_status = 'confirmed' then
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('payment_confirmed', p_player_id, p_game_id, v_booking_id,
-            jsonb_build_object('method', v_method, 'amount_czk', 0),
+            jsonb_build_object('method', v_method, 'amount_thb', 0),
             v_game.city, v_game.brand);
   end if;
 

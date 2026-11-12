@@ -72,7 +72,7 @@ insert into public.venues (id, name) values
   ('7eee0000-0000-0000-0000-0000000039e1', 'Archive Me Ground'),
   ('7eee0000-0000-0000-0000-0000000039e2', 'Empty Ground');
 
-insert into public.games (id, venue, venue_id, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, venue_id, starts_at, capacity, price_thb, status, duration_minutes) values
   ('9eee0000-0000-0000-0000-0000000039f1', 'Archive Me Ground', '7eee0000-0000-0000-0000-0000000039e1',
    now() - interval '10 days', 12, 180, 'settled', 90);
 

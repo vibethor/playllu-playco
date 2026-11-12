@@ -66,7 +66,7 @@ insert into public.players (id, nickname, email, auth_user_id) values
   ('cccc0000-0000-0000-0000-0000000000f3', 'PosPlayerC', 'pc@test.invalid', 'c0000000-0000-0000-0000-0000000000f3'),
   ('dddd0000-0000-0000-0000-0000000000f4', 'PosPlayerD', 'pd@test.invalid', 'd0000000-0000-0000-0000-0000000000f4');
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('8f000000-0000-0000-0000-00000000000f', 'Position Game', now() + interval '7 days', 1, 200, 'full'),
   ('8e000000-0000-0000-0000-00000000000e', 'Other Game',    now() + interval '8 days', 1, 200, 'full');
 
@@ -127,7 +127,7 @@ reset role;
 -- =============================================================================
 
 -- A converts to a booking; B and C each move up one.
-insert into public.bookings (id, game_id, player_id, payment_method, status, price_czk)
+insert into public.bookings (id, game_id, player_id, payment_method, status, price_thb)
 values ('7f000000-0000-0000-0000-00000000000f', '8f000000-0000-0000-0000-00000000000f',
         'aaaa0000-0000-0000-0000-0000000000f1', 'cash', 'reserved', 200);
 

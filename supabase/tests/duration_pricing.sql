@@ -1,7 +1,7 @@
 -- =============================================================================
 -- ROUND 35 v5 — the price follows the length, and a credit buys 90 minutes.
 -- ROUND 40 — ~~and a credit buys 90 minutes~~: a game of ANY length is one
--- Credit, and every length prefills the Credit price. The 150 CZK hour is gone.
+-- Credit, and every length prefills the Credit price. The 150 THB hour is gone.
 --
 -- Run:  node supabase/tests/run.mjs duration_pricing
 -- =============================================================================
@@ -76,11 +76,11 @@ insert into public.venues (id, name) values
   ('11110000-0000-0000-0000-00000000dd01', 'Duration Pitch');
 
 create function pg_temp.bal(p uuid) returns integer language sql security definer as $$
-  select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger where player_id = p
+  select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger where player_id = p
 $$;
 
 create function pg_temp.game_price(p uuid) returns integer language sql security definer as $$
-  select price_czk from public.games where id = p
+  select price_thb from public.games where id = p
 $$;
 
 create function pg_temp.bk(p_game uuid, p_player uuid) returns public.bookings
@@ -99,7 +99,7 @@ select pg_temp.ok(public.price_for_duration(90) = 180, 'ninety minutes is 180');
 select pg_temp.ok(public.price_for_duration(null) = 180, 'so is a null length');
 select pg_temp.ok(public.price_for_duration(120) = 180, 'and so is anything else');
 select pg_temp.ok(
-  public.price_for_duration(60) = public.credit_seat_price_czk(),
+  public.price_for_duration(60) = public.credit_seat_price_thb(),
   'because a game IS one Credit — the prefill is the Credit price, called, not copied');
 
 -- =============================================================================
@@ -110,7 +110,7 @@ select pg_temp.ok(
 -- enforces. These two fixtures are priced deliberately ACROSS the mapping —
 -- a 60-minute game at the credit-seat price, a 90-minute game at the 60-minute
 -- one — so that everything below about credit eligibility is proved to key on
--- the DURATION and not on the number in `price_czk`. If eligibility ever
+-- the DURATION and not on the number in `price_thb`. If eligibility ever
 -- quietly started reading the price, these prices are the ones that would
 -- catch it.
 -- =============================================================================
@@ -176,7 +176,7 @@ select pg_temp.ok(
 -- ROUND 40 — A CREDIT PAYS FOR A GAME OF ANY LENGTH, AT ANY PRICE
 -- =============================================================================
 
-insert into public.credit_ledger (player_id, delta_czk, reason) values
+insert into public.credit_ledger (player_id, delta_thb, reason) values
   ('6ddd0000-0000-0000-0000-00000000dd02', 3 * 180, 'admin_grant'),
   ('6ddd0000-0000-0000-0000-00000000dd03', 3 * 180, 'admin_grant');
 
@@ -205,7 +205,7 @@ select pg_temp.ok(
   pg_temp.bal('6ddd0000-0000-0000-0000-00000000dd03')::text);
 
 select pg_temp.ok(
-  (pg_temp.bk((select id from _made), '6ddd0000-0000-0000-0000-00000000dd03')).credit_applied_czk = 180
+  (pg_temp.bk((select id from _made), '6ddd0000-0000-0000-0000-00000000dd03')).credit_applied_thb = 180
   and (pg_temp.bk((select id from _made), '6ddd0000-0000-0000-0000-00000000dd03')).status = 'confirmed',
   'flat at the Credit rate whatever the card price is, and settled');
 
@@ -253,13 +253,13 @@ select pg_temp.ok(
 
 select pg_temp.ok(
   (select count(*) from public.bookings
-    where credit_applied_czk > 0
-      and credit_applied_czk % public.credit_seat_price_czk() <> 0) = 0,
+    where credit_applied_thb > 0
+      and credit_applied_thb % public.credit_seat_price_thb() <> 0) = 0,
   'and every credit that WAS applied came in whole seats — flat at 180 each, '
   'unmoved by a game priced at 150 or at 4242',
   (select count(*)::text from public.bookings
-    where credit_applied_czk > 0
-      and credit_applied_czk % public.credit_seat_price_czk() <> 0));
+    where credit_applied_thb > 0
+      and credit_applied_thb % public.credit_seat_price_thb() <> 0));
 
 select seq, label, case when passed then 'PASS' else 'FAIL' end as result, detail
 from _results order by seq;

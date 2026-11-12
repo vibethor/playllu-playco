@@ -50,19 +50,19 @@ async function ageGame(gameId: string, hoursAgo: number) {
 }
 
 /** A PAID booking, through pay-first — the rail every real booking now takes. */
-async function bookPaid(gameId: string, sessionId: string, priceCzk = 150) {
+async function bookPaid(gameId: string, sessionId: string, priceThb = 150) {
   const client = await apiClientFor(players.runner);
   const opened = await client.rpc("open_checkout", {
     p_game_id: gameId,
     p_guest_count: 0,
     p_stripe_session_id: sessionId,
-    p_amount_czk: priceCzk,
+    p_amount_thb: priceThb,
   });
   expect(opened.error, `open_checkout: ${opened.error?.message}`).toBeNull();
 
   const settled = await serviceClient().rpc("settle_checkout_session", {
     p_stripe_session_id: sessionId,
-    p_amount_czk: priceCzk,
+    p_amount_thb: priceThb,
   });
   expect(settled.error, `settle_checkout_session: ${settled.error?.message}`).toBeNull();
   expect(settled.data).toBe("booked");
@@ -101,7 +101,7 @@ const RUN = `r29${Date.now().toString(36)}`;
 
 test("one sweep takes a played game all the way to settled", async () => {
   // Arrange — a paid booking, then the game aged past its buffer.
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
 
   try {
     const admin = serviceClient();
@@ -142,7 +142,7 @@ test("an unpaid hold stops the close, and the sweep says which game", async () =
    * and it must name the game.
    */
   // Arrange
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
   const walletBefore = await bookUnpaid(game.id);
 
   try {
@@ -170,7 +170,7 @@ test("resolving the hold lets a later sweep close the game", async () => {
    * would be a trap.
    */
   // Arrange
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
   const walletBefore = await bookUnpaid(game.id);
 
   try {
@@ -194,7 +194,7 @@ test("resolving the hold lets a later sweep close the game", async () => {
     const confirmed = await organizer.rpc("confirm_booking", {
       p_booking_id: bookingId,
       p_confirmed_by: players.organizer.id,
-      p_received_amount_czk: 150,
+      p_received_amount_thb: 150,
     });
     expect(confirmed.error, `confirm_booking: ${confirmed.error?.message}`).toBeNull();
 
@@ -216,7 +216,7 @@ test("attendance is still editable after the sweep has settled the game", async 
    * automated at all. A late no-show mark must still land.
    */
   // Arrange
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
 
   try {
     await bookPaid(game.id, `cs_${RUN}_late`);

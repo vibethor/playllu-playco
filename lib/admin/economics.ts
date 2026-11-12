@@ -18,7 +18,7 @@ import type { BookingSeatValue, GameEconomicsRow, PitchSeason } from "@/lib/type
 
 export interface GameEconomics {
   gameId: string;
-  priceCzk: number;
+  priceThb: number;
   capacity: number;
   seatsTaken: number;
   houseGuests: number;
@@ -32,24 +32,24 @@ export interface GameEconomics {
   creditSeats: number;
   /** Admin gifts and seed bookings: a seat, no money. */
   freeSeats: number;
-  singleCzk: number;
-  passCzk: number;
-  creditCzk: number;
+  singleThb: number;
+  passThb: number;
+  creditThb: number;
   /** Kept from late cancellations and removals that returned nothing. */
-  keptCzk: number;
+  keptThb: number;
   /** What unpaid bookings still owe. Not revenue. */
-  owedCzk: number;
-  revenueCzk: number;
+  owedThb: number;
+  revenueThb: number;
   /** Null when the game has no venue — and then no profit or break-even either. */
-  pitchCostCzk: number | null;
-  profitCzk: number | null;
+  pitchCostThb: number | null;
+  profitThb: number | null;
   breakEvenSeats: number | null;
 }
 
 export function toGameEconomics(row: GameEconomicsRow): GameEconomics {
   return {
     gameId: row.game_id,
-    priceCzk: row.price_czk,
+    priceThb: row.price_thb,
     capacity: row.capacity,
     seatsTaken: row.seats_taken,
     houseGuests: row.house_guests,
@@ -58,14 +58,14 @@ export function toGameEconomics(row: GameEconomicsRow): GameEconomics {
     passSeats: Number(row.pass_seats),
     creditSeats: Number(row.credit_seats),
     freeSeats: Number(row.free_seats),
-    singleCzk: Number(row.single_czk),
-    passCzk: Number(row.pass_czk),
-    creditCzk: Number(row.credit_czk),
-    keptCzk: Number(row.kept_czk),
-    owedCzk: row.owed_czk,
-    revenueCzk: Number(row.revenue_czk),
-    pitchCostCzk: row.pitch_cost_czk,
-    profitCzk: row.profit_czk === null ? null : Number(row.profit_czk),
+    singleThb: Number(row.single_thb),
+    passThb: Number(row.pass_thb),
+    creditThb: Number(row.credit_thb),
+    keptThb: Number(row.kept_thb),
+    owedThb: row.owed_thb,
+    revenueThb: Number(row.revenue_thb),
+    pitchCostThb: row.pitch_cost_thb,
+    profitThb: row.profit_thb === null ? null : Number(row.profit_thb),
     breakEvenSeats: row.break_even_seats,
   };
 }
@@ -93,10 +93,10 @@ export async function getBookingSeatValues(gameIds: string[]): Promise<BookingSe
     credit_seats: Number(row.credit_seats),
     free_seats: Number(row.free_seats),
     unpaid_seats: Number(row.unpaid_seats),
-    single_czk: Number(row.single_czk),
-    pass_czk: Number(row.pass_czk),
-    credit_czk: Number(row.credit_czk),
-    kept_czk: Number(row.kept_czk),
+    single_thb: Number(row.single_thb),
+    pass_thb: Number(row.pass_thb),
+    credit_thb: Number(row.credit_thb),
+    kept_thb: Number(row.kept_thb),
   }));
 }
 
@@ -109,22 +109,22 @@ export async function getPitchSeason(): Promise<PitchSeason> {
 }
 
 export interface VenuePitchCost {
-  summerCzk: number;
-  winterCzk: number;
+  summerThb: number;
+  winterThb: number;
 }
 
 /** Every venue's summer and winter pitch cost, keyed by venue id. */
 export async function getVenuePitchCosts(): Promise<Map<string, VenuePitchCost>> {
   const service = createServiceRoleSupabaseClient();
-  const { data, error } = await service.from("venue_pitch_costs").select("venue_id, summer_czk, winter_czk");
+  const { data, error } = await service.from("venue_pitch_costs").select("venue_id, summer_thb, winter_thb");
   if (error) throw new Error(`venue_pitch_costs read failed: ${error.message}`, { cause: error });
   return new Map(
-    (data ?? []).map((row) => [row.venue_id, { summerCzk: row.summer_czk, winterCzk: row.winter_czk }]),
+    (data ?? []).map((row) => [row.venue_id, { summerThb: row.summer_thb, winterThb: row.winter_thb }]),
   );
 }
 
 export interface GamePitchCost {
-  costCzk: number;
+  costThb: number;
   /** True when an admin typed it; false when it came from the venue and season. */
   setByHand: boolean;
 }
@@ -134,9 +134,9 @@ export async function getGamePitchCost(gameId: string): Promise<GamePitchCost | 
   const service = createServiceRoleSupabaseClient();
   const { data, error } = await service
     .from("game_pitch_costs")
-    .select("cost_czk, set_by_hand")
+    .select("cost_thb, set_by_hand")
     .eq("game_id", gameId)
     .maybeSingle();
   if (error) throw new Error(`game_pitch_costs read failed: ${error.message}`, { cause: error });
-  return data ? { costCzk: data.cost_czk, setByHand: data.set_by_hand } : null;
+  return data ? { costThb: data.cost_thb, setByHand: data.set_by_hand } : null;
 }

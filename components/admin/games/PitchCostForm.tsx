@@ -22,16 +22,16 @@ const INITIAL: PitchCostState = { status: "idle" };
  */
 export function PitchCostForm({
   gameId,
-  costCzk,
+  costThb,
   setByHand,
 }: {
   gameId: string;
   /** The cost now, or null for a game with none. */
-  costCzk: number | null;
+  costThb: number | null;
   setByHand: boolean;
 }) {
   const [state, formAction] = useActionState(setPitchCostAction, INITIAL);
-  const [value, setValue] = useState(setByHand && costCzk !== null ? String(costCzk) : "");
+  const [value, setValue] = useState(setByHand && costThb !== null ? String(costThb) : "");
 
   return (
     <form action={formAction} data-testid="pitch-cost-form" className="mt-4">
@@ -42,13 +42,13 @@ export function PitchCostForm({
       <div className="mt-1 flex gap-2">
         <input
           id="pitch-cost-input"
-          name="costCzk"
+          name="costThb"
           type="number"
           inputMode="numeric"
           min={0}
           step={1}
           value={value}
-          placeholder={costCzk === null ? undefined : String(costCzk)}
+          placeholder={costThb === null ? undefined : String(costThb)}
           onChange={(event) => setValue(event.target.value)}
           data-testid="pitch-cost-input"
           className="min-h-11 w-full min-w-0 flex-1 rounded-control border border-hairline-strong bg-surface px-3 py-2 text-[13px] tabular-nums text-bone outline-none transition-colors placeholder:text-faint focus:border-volt"

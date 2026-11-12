@@ -34,11 +34,11 @@ const input = {
   accountUrl: "https://hrajfotbal.com/account",
   recipients: [
     // paid — gets the notice AND the credit receipt
-    { bookingId: "b1", email: "paid@example.com", nickname: "Paid", creditCzk: 200 },
+    { bookingId: "b1", email: "paid@example.com", nickname: "Paid", creditThb: 200 },
     // unpaid reservation — notice only, nothing to receipt
-    { bookingId: "b2", email: "unpaid@example.com", nickname: "Unpaid", creditCzk: 0 },
+    { bookingId: "b2", email: "unpaid@example.com", nickname: "Unpaid", creditThb: 0 },
     // shadow player with no address — skipped, not an error
-    { bookingId: "b3", email: null, nickname: "Shadow", creditCzk: 200 },
+    { bookingId: "b3", email: null, nickname: "Shadow", creditThb: 200 },
   ],
 };
 

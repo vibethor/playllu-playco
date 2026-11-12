@@ -72,7 +72,7 @@ insert into public.players (id, nickname, email, phone, auth_user_id, is_admin) 
   ('6bbb0000-0000-0000-0000-0000000000b3', 'BanBystander', 'ban-c@test.invalid', '+420777000222', '60000000-0000-0000-0000-0000000000b3', false),
   ('6bbb0000-0000-0000-0000-0000000000b4', 'BanOther',  'ban-d@test.invalid', null,          '60000000-0000-0000-0000-0000000000b4', false);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('9bbb0000-0000-0000-0000-0000000000b1', 'Ban Future', now() + interval '30 hours', 12, 180, 'published'),
   ('9bbb0000-0000-0000-0000-0000000000b2', 'Ban Past',   now() - interval '30 hours', 12, 180, 'played');
 
@@ -94,7 +94,7 @@ select pg_temp.act_as('60000000-0000-0000-0000-0000000000b2');
 select public.create_booking('9bbb0000-0000-0000-0000-0000000000b1', 'cash', null, null, 1);
 reset role;
 
-insert into public.bookings (game_id, player_id, status, payment_method, price_czk)
+insert into public.bookings (game_id, player_id, status, payment_method, price_thb)
 values ('9bbb0000-0000-0000-0000-0000000000b2', '6bbb0000-0000-0000-0000-0000000000b2',
         'confirmed', 'cash', 180);
 

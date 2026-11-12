@@ -64,7 +64,7 @@ function walk(table: Table, prefix: string[] = []): [string, string][] {
  * remainders. The round-34 crowns-when-uneven fallback died with the
  * seat-denominated ruling and this is what keeps it dead.
  *
- * CARD PRICES ARE NOT THE TARGET AND MUST NOT BE CAUGHT. A game costs 180 CZK
+ * CARD PRICES ARE NOT THE TARGET AND MUST NOT BE CAUGHT. A game costs 180 THB
  * by card and saying so is the product working; what is banned is a
  * credit-denominated amount rendered as money. The rule below is therefore
  * narrow on purpose: a string is an offender only when it is ABOUT credit AND
@@ -78,7 +78,7 @@ function walk(table: Table, prefix: string[] = []): [string, string][] {
  */
 const CREDIT_WORD = /credit|kredit|кредит/i;
 /** A money placeholder or a currency, in any of the four languages. */
-const MONEY = /\{amount\}|\{total\}|\{czk\}|\bCZK\b|Kč|крон/i;
+const MONEY = /\{amount\}|\{total\}|\{thb\}|\bTHB\b|Kč|крон/i;
 /** The escape hatch, and the only one: the string also names credits as credits. */
 const CREDITS_PLACEHOLDER = /\{credits\}/;
 

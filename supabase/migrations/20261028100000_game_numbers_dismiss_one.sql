@@ -166,7 +166,7 @@ as $$
        where n.nspname = 'public' and p.proname = 'cancel_guests')),
     'creditsAreSeats',   to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-       where n.nspname = 'public' and p.proname = 'credit_seat_price_czk')),
+       where n.nspname = 'public' and p.proname = 'credit_seat_price_thb')),
     'seatsTakenMany',    to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'game_seats_taken_many')),

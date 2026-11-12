@@ -3,12 +3,12 @@
 --
 -- Contract §4.2, substrate RATIFIED 2026-08-01. A pass is discounted wallet
 -- credit with an expiry date: not a separate currency, not a ticket, not a
--- counter of games. It buys CZK into the existing wallet at a discount, and
--- that CZK spends through the rails Phase 1 built.
+-- counter of games. It buys THB into the existing wallet at a discount, and
+-- that THB spends through the rails Phase 1 built.
 --
 -- THE ONE INVARIANT THIS MIGRATION EXISTS TO PROTECT:
 --
---     BALANCE IS STILL SUM(delta_czk) OVER credit_ledger.
+--     BALANCE IS STILL SUM(delta_thb) OVER credit_ledger.
 --
 -- Every surface, every test and the whole wallet rests on that. The rejected
 -- alternative was a balance function excluding expired remainders — always
@@ -39,7 +39,7 @@
 --                  top-ups, admin grants, cancellation credits from cash/QR
 --
 -- That trichotomy is what makes "sum of every batch's remainder plus the
--- ordinary pool" equal SUM(delta_czk) exactly — i.e. what makes the allocator
+-- ordinary pool" equal SUM(delta_thb) exactly — i.e. what makes the allocator
 -- able to spend precisely the balance and no more.
 -- -----------------------------------------------------------------------------
 
@@ -52,7 +52,7 @@ alter table public.credit_ledger
 -- an expiring debt, which is not a thing this product has.
 alter table public.credit_ledger
   add constraint credit_ledger_batch_positive check (
-    expires_at is null or delta_czk > 0
+    expires_at is null or delta_thb > 0
   );
 
 -- A row cannot be both a batch and a draw against one.
@@ -73,7 +73,7 @@ create index credit_ledger_expiry_idx
 comment on column public.credit_ledger.expires_at is
   'Set on a positive BATCH row (a pass purchase). Null everywhere else, which '
   'is what "this credit does not expire" means. Balance is still '
-  'SUM(delta_czk) — the sweep writes a compensating negative row rather than '
+  'SUM(delta_thb) — the sweep writes a compensating negative row rather than '
   'any reader filtering on this column.';
 comment on column public.credit_ledger.batch_id is
   'On a redemption, refund or expiry row: the batch it draws from, returns to '
@@ -97,18 +97,18 @@ comment on column public.credit_ledger.expiry_notified_at is
 
 create table public.pass_tiers (
   games integer primary key,
-  price_czk integer not null,
-  credited_czk integer not null,
+  price_thb integer not null,
+  credited_thb integer not null,
   /** Null = never expires. Only the 1-game tier. */
   expires_months integer,
 
   constraint pass_tiers_games_positive check (games > 0),
-  constraint pass_tiers_price_positive check (price_czk > 0),
-  constraint pass_tiers_credited_rule check (credited_czk = games * 150),
+  constraint pass_tiers_price_positive check (price_thb > 0),
+  constraint pass_tiers_credited_rule check (credited_thb = games * 150),
   -- A tier may not cost MORE than it credits. The 1-game tier is deliberately
   -- not a discount and sits at par; anything above par would be a penalty for
   -- pre-buying, which is the opposite of the offer.
-  constraint pass_tiers_not_a_penalty check (price_czk <= credited_czk),
+  constraint pass_tiers_not_a_penalty check (price_thb <= credited_thb),
   constraint pass_tiers_expiry_range check (
     expires_months is null or expires_months between 1 and 24
   )
@@ -117,7 +117,7 @@ create table public.pass_tiers (
 -- The 1-game tier is deliberately not a discount and does not expire: it is
 -- the ordinary top-up, priced honestly and listed alongside so the discount on
 -- the others is legible.
-insert into public.pass_tiers (games, price_czk, credited_czk, expires_months) values
+insert into public.pass_tiers (games, price_thb, credited_thb, expires_months) values
   (1,   150,  150,  null),
   (5,   700,  750,  1),
   (8,  1080, 1200,  1),
@@ -244,8 +244,8 @@ alter table public.events add constraint events_event_type_catalog check (
 create function public.credit_batches(p_player_id uuid)
 returns table (
   batch_id uuid,
-  original_czk integer,
-  remaining_czk integer,
+  original_thb integer,
+  remaining_thb integer,
   expires_at timestamptz,
   created_at timestamptz
 )
@@ -256,11 +256,11 @@ set search_path = ''
 as $$
   select
     b.id,
-    b.delta_czk,
+    b.delta_thb,
     -- The batch row itself plus every row that draws from, returns to, or
     -- closes it. Redemptions and expiries are negative; refunds are positive.
-    (b.delta_czk + coalesce((
-      select sum(m.delta_czk)
+    (b.delta_thb + coalesce((
+      select sum(m.delta_thb)
         from public.credit_ledger m
        where m.batch_id = b.id
     ), 0))::integer,
@@ -303,8 +303,8 @@ comment on function public.credit_batches(uuid) is
 create function public.my_credit_batches()
 returns table (
   batch_id uuid,
-  original_czk integer,
-  remaining_czk integer,
+  original_thb integer,
+  remaining_thb integer,
   expires_at timestamptz,
   created_at timestamptz
 )

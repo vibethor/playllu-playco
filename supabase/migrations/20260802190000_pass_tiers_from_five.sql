@@ -1,8 +1,8 @@
 -- =============================================================================
 -- Migration 36 — the pass starts at five games
 --
--- The 1-game tier is removed (ruled 2026-08-02). It was seeded at par — 150 CZK
--- for 150 CZK of credit, never expiring — on the reasoning that a reference
+-- The 1-game tier is removed (ruled 2026-08-02). It was seeded at par — 150 THB
+-- for 150 THB of credit, never expiring — on the reasoning that a reference
 -- point makes the other discounts legible. In practice it sat first on the
 -- page, where the best offer belongs, and offered nothing: a reader who took in
 -- only the top card concluded the pass was not a discount. The reference price

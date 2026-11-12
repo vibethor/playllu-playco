@@ -75,7 +75,7 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin) values
   ('6eee0000-0000-0000-0000-0000000039a3', 'DgoOther', 'dgo-other@test.invalid',
    '60000000-0000-0000-0000-0000000039a3', false);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   -- upcoming, one CONFIRMED booking
   ('9eee0000-0000-0000-0000-0000000039b1', 'Upcoming Confirmed', now() + interval '3 days', 12, 180, 'published', 90),
   -- upcoming, one RESERVED booking (on the lineup, not yet paid)
@@ -91,7 +91,7 @@ insert into public.games (id, venue, starts_at, capacity, price_czk, status, dur
   -- empty, upcoming
   ('9eee0000-0000-0000-0000-0000000039b7', 'Upcoming Empty',      now() + interval '3 days', 12, 180, 'published', 90);
 
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk, credit_applied_czk) values
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb, credit_applied_thb) values
   ('b0000000-0000-0000-0000-0000000039c1', '9eee0000-0000-0000-0000-0000000039b1', '6eee0000-0000-0000-0000-0000000039a2', 'confirmed', 'cash', 180, 0),
   ('b0000000-0000-0000-0000-0000000039c2', '9eee0000-0000-0000-0000-0000000039b2', '6eee0000-0000-0000-0000-0000000039a2', 'reserved',  'cash', 180, 0),
   ('b0000000-0000-0000-0000-0000000039c3', '9eee0000-0000-0000-0000-0000000039b3', '6eee0000-0000-0000-0000-0000000039a2', 'cancelled', 'cash', 180, 0),
@@ -103,7 +103,7 @@ insert into public.bookings (id, game_id, player_id, status, payment_method, pri
 
 -- The credit-paid seat on the settled game: a grant, then the redemption that
 -- points at the booking. The redemption must SURVIVE the delete.
-insert into public.credit_ledger (player_id, delta_czk, reason, booking_id) values
+insert into public.credit_ledger (player_id, delta_thb, reason, booking_id) values
   ('6eee0000-0000-0000-0000-0000000039a2',  300, 'admin_grant', null),
   ('6eee0000-0000-0000-0000-0000000039a2', -150, 'redemption',  'b0000000-0000-0000-0000-0000000039c6');
 
@@ -112,7 +112,7 @@ create function pg_temp.game_exists(p uuid) returns boolean language sql securit
 $$;
 
 create function pg_temp.bal(p uuid) returns integer language sql security definer as $$
-  select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger where player_id = p
+  select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger where player_id = p
 $$;
 
 create temp table _before as
@@ -191,7 +191,7 @@ select pg_temp.ok(
 select pg_temp.ok(
   (select count(*) from public.credit_ledger
     where player_id = '6eee0000-0000-0000-0000-0000000039a2'
-      and reason = 'redemption' and booking_id is null and delta_czk = -150) = 1,
+      and reason = 'redemption' and booking_id is null and delta_thb = -150) = 1,
   'the redemption row SURVIVES, unlinked — ON DELETE SET NULL');
 
 select pg_temp.ok(

@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { removeCreditAction, type GrantCreditState } from "@/app/admin/players/actions";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import { adminWallet } from "@/lib/admin/credits";
 import { strings } from "@/lib/strings";
 import { chipDanger, chipDangerSolid, chipQuiet, fieldInput, fieldLabel } from "@/components/admin/players/controlStyles";
@@ -35,14 +35,14 @@ const INITIAL: GrantCreditState = { status: "idle" };
  */
 export function RemoveCreditForm({
   playerId,
-  balanceCzk,
+  balanceThb,
 }: {
   playerId: string;
   /** Shown so the admin can see what they are taking from. Not a gate. */
-  balanceCzk: number;
+  balanceThb: number;
 }) {
   const [state, formAction] = useActionState(removeCreditAction, INITIAL);
-  const wallet = adminWallet(balanceCzk);
+  const wallet = adminWallet(balanceThb);
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
@@ -74,9 +74,9 @@ export function RemoveCreditForm({
           "{balance}",
           `${wallet.credits} credits`,
         )}
-        {wallet.remainderCzk !== null && (
+        {wallet.remainderThb !== null && (
           <span className="ml-2 normal-case tracking-normal text-faint">
-            {strings.admin.walletExactCzk.replace("{czk}", formatCzk(wallet.remainderCzk))}
+            {strings.admin.walletExactThb.replace("{thb}", formatThb(wallet.remainderThb))}
           </span>
         )}
       </p>
@@ -119,10 +119,10 @@ export function RemoveCreditForm({
       )}
       {state.status === "granted" && (
         <p data-testid="remove-credit-done" className="m-0 text-[12px] text-volt">
-          {typeof state.balanceCzk === "number"
+          {typeof state.balanceThb === "number"
             ? strings.admin.removeCreditDone.replace(
                 "{balance}",
-                `${adminWallet(state.balanceCzk).credits} credits`,
+                `${adminWallet(state.balanceThb).credits} credits`,
               )
             : strings.admin.removeCreditDoneBare}
         </p>

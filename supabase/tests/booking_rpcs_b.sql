@@ -104,7 +104,7 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin) values
 -- takes no credit at all — so every game a credit is spent on below says how
 -- long it is. The price follows from that, which is why none of these rows
 -- states one it chose.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('91110000-0000-0000-0000-000000000001', 'Exact',      now() + interval '7 days', 10, 200, 'published', 90),
   ('92220000-0000-0000-0000-000000000002', 'Over',       now() + interval '7 days', 10, 200, 'published', 90),
   ('93330000-0000-0000-0000-000000000003', 'Under',      now() + interval '7 days', 10, 200, 'published', 90),
@@ -160,8 +160,8 @@ select pg_temp.act_as('d0000000-0000-0000-0000-0000000000d1');
 select pg_temp.ok(
   (select (public.confirm_booking(
     pg_temp.booking_id_for('91110000-0000-0000-0000-000000000001'),
-    'dddd0000-0000-0000-0000-00000000000d')).credit_issued_czk) = 0,
-  'a NULL received_amount_czk confirms at the expected amount, credit_issued 0');
+    'dddd0000-0000-0000-0000-00000000000d')).credit_issued_thb) = 0,
+  'a NULL received_amount_thb confirms at the expected amount, credit_issued 0');
 reset role;
 
 select pg_temp.ok(
@@ -184,8 +184,8 @@ select pg_temp.act_as('d0000000-0000-0000-0000-0000000000d1');
 select pg_temp.ok(
   (select (public.confirm_booking(
     pg_temp.booking_id_for('92220000-0000-0000-0000-000000000002'),
-    'dddd0000-0000-0000-0000-00000000000d', 250)).credit_issued_czk) = 50,
-  'overpayment of 250 on a 200 booking returns credit_issued_czk = 50');
+    'dddd0000-0000-0000-0000-00000000000d', 250)).credit_issued_thb) = 50,
+  'overpayment of 250 on a 200 booking returns credit_issued_thb = 50');
 reset role;
 
 select pg_temp.ok(
@@ -194,7 +194,7 @@ select pg_temp.ok(
   'the overpaid booking is still confirmed');
 
 select pg_temp.ok(
-  (select delta_czk from public.credit_ledger
+  (select delta_thb from public.credit_ledger
     where booking_id = pg_temp.booking_id_for('92220000-0000-0000-0000-000000000002')) = 50,
   'exactly one positive ledger row of +50 is written for the difference');
 
@@ -277,15 +277,15 @@ reset role;
 -- the 200 booking applies the full 100 and expiry must return all 100. Stating
 -- the running balance explicitly here because getting it wrong is exactly what
 -- made this assertion fail first time round — against a correct RPC.
-insert into public.credit_ledger (player_id, delta_czk, reason) values
+insert into public.credit_ledger (player_id, delta_thb, reason) values
   ('bbbb0000-0000-0000-0000-00000000000b', 130, 'admin_grant');
 
 select pg_temp.ok(
-  (select coalesce(sum(delta_czk), 0) from public.credit_ledger
+  (select coalesce(sum(delta_thb), 0) from public.credit_ledger
     where player_id = 'bbbb0000-0000-0000-0000-00000000000b') = 180,
   'player B''s balance before the expiring booking is 180 — one credit, made of '
   'a 50 overpayment and a 130 grant',
-  'balance=' || (select coalesce(sum(delta_czk), 0) from public.credit_ledger
+  'balance=' || (select coalesce(sum(delta_thb), 0) from public.credit_ledger
                   where player_id = 'bbbb0000-0000-0000-0000-00000000000b'));
 
 -- A PARTY OF TWO, forced by round 35's ruling: a SINGLE seat covered by a
@@ -298,22 +298,22 @@ select public.create_booking('9aaa0000-0000-0000-0000-00000000000a', 'qr', null,
 reset role;
 
 select pg_temp.ok(
-  (select credit_applied_czk from public.bookings
+  (select credit_applied_thb from public.bookings
     where game_id = '9aaa0000-0000-0000-0000-00000000000a') = 180,
   'the booking applies ONE CREDIT and leaves the rest due');
 
 select pg_temp.act_as_service();
 select pg_temp.ok(
   (select (public.expire_booking(
-    pg_temp.booking_id_for('9aaa0000-0000-0000-0000-00000000000a'))).credit_issued_czk) = 180,
+    pg_temp.booking_id_for('9aaa0000-0000-0000-0000-00000000000a'))).credit_issued_thb) = 180,
   'expiring a booking with applied credit returns ALL of it to the wallet');
 reset role;
 
 select pg_temp.ok(
-  (select coalesce(sum(delta_czk), 0) from public.credit_ledger
+  (select coalesce(sum(delta_thb), 0) from public.credit_ledger
     where player_id = 'bbbb0000-0000-0000-0000-00000000000b') = 180,
   'player B ends where they started: the expiry confiscated nothing',
-  'balance=' || (select coalesce(sum(delta_czk), 0) from public.credit_ledger
+  'balance=' || (select coalesce(sum(delta_thb), 0) from public.credit_ledger
                   where player_id = 'bbbb0000-0000-0000-0000-00000000000b'));
 
 -- =============================================================================
@@ -330,7 +330,7 @@ select public.expire_booking(pg_temp.booking_id_for('95550000-0000-0000-0000-000
 select pg_temp.ok(
   (select (public.confirm_booking(
     pg_temp.booking_id_for('95550000-0000-0000-0000-000000000005'),
-    null, 200)).credit_issued_czk) = 200,
+    null, 200)).credit_issued_thb) = 200,
   'a payment landing after expiry is credited IN FULL (200)');
 reset role;
 
@@ -469,7 +469,7 @@ select pg_temp.ok(
   'only the PAID booking produces a cancellation_credit row');
 
 select pg_temp.ok(
-  (select cl.delta_czk from public.credit_ledger cl
+  (select cl.delta_thb from public.credit_ledger cl
     join public.bookings b on b.id = cl.booking_id
    where b.game_id = '98880000-0000-0000-0000-000000000008'
      and cl.reason = 'cancellation_credit') = 200,
@@ -527,7 +527,7 @@ reset role;
 -- =============================================================================
 
 select pg_temp.ok(
-  not exists (select 1 from public.credit_ledger group by player_id having sum(delta_czk) < 0),
+  not exists (select 1 from public.credit_ledger group by player_id having sum(delta_thb) < 0),
   'no player''s ledger sums below zero anywhere in this run');
 
 select seq, label, case when passed then 'PASS' else 'FAIL' end as result, detail

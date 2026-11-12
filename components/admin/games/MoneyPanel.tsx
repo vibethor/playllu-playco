@@ -1,12 +1,12 @@
 import { BreakEvenLine } from "@/components/admin/games/BreakEvenLine";
 import { PitchCostForm } from "@/components/admin/games/PitchCostForm";
 import { BreakdownBars, type BreakdownRow } from "@/components/admin/ui/BreakdownBars";
-import { SignedCzk } from "@/components/admin/ui/Money";
+import { SignedThb } from "@/components/admin/ui/Money";
 import { Panel } from "@/components/admin/ui/Panel";
 import type { GameEconomics, GamePitchCost } from "@/lib/admin/economics";
 import { breakEvenOutlook } from "@/lib/admin/games/breakEven";
 import { formatSeats } from "@/lib/admin/seatBar";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import { strings } from "@/lib/strings";
 
 const hub = strings.admin.gamesHub;
@@ -40,20 +40,20 @@ export function MoneyPanel({
 }) {
   const split: BreakdownRow[] = (
     [
-      ["single", economics.singleSeats, economics.singleCzk],
-      ["pass", economics.passSeats, economics.passCzk],
-      ["credit", economics.creditSeats, economics.creditCzk],
+      ["single", economics.singleSeats, economics.singleThb],
+      ["pass", economics.passSeats, economics.passThb],
+      ["credit", economics.creditSeats, economics.creditThb],
     ] as const
   )
-    .filter(([, , czk]) => czk > 0)
-    .map(([kind, seats, czk]) => ({
+    .filter(([, , thb]) => thb > 0)
+    .map(([kind, seats, thb]) => ({
       key: kind,
       label: `${strings.admin.seatKinds[kind]} · ${seatsLabel(seats)}`,
-      value: czk,
-      display: formatCzk(czk),
+      value: thb,
+      display: formatThb(thb),
     }));
-  if (economics.keptCzk > 0) {
-    split.push({ key: "kept", label: hub.kept, value: economics.keptCzk, display: formatCzk(economics.keptCzk) });
+  if (economics.keptThb > 0) {
+    split.push({ key: "kept", label: hub.kept, value: economics.keptThb, display: formatThb(economics.keptThb) });
   }
 
   return (
@@ -61,15 +61,15 @@ export function MoneyPanel({
       title={hub.moneyTitle}
       testId="game-money"
       action={
-        economics.profitCzk !== null && (
-          <SignedCzk amount={economics.profitCzk} className="text-body font-bold" testId="game-money-profit" />
+        economics.profitThb !== null && (
+          <SignedThb amount={economics.profitThb} className="text-body font-bold" testId="game-money-profit" />
         )
       }
     >
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-small text-muted">{hub.revenue}</span>
         <span data-testid="game-revenue" className="font-display text-[28px] leading-none tabular-nums text-white">
-          {formatCzk(economics.revenueCzk)}
+          {formatThb(economics.revenueThb)}
         </span>
       </div>
       <div className="mt-3">
@@ -77,14 +77,14 @@ export function MoneyPanel({
       </div>
 
       <dl className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-2 border-t border-hairline pt-4 text-small">
-        {economics.owedCzk > 0 && (
+        {economics.owedThb > 0 && (
           <>
             <dt className="min-w-0 text-muted">
               {hub.owed}
               <span className="block text-[11px] text-faint">{hub.owedHint}</span>
             </dt>
             <dd data-testid="game-owed" className="m-0 text-right tabular-nums text-warn">
-              {formatCzk(economics.owedCzk)}
+              {formatThb(economics.owedThb)}
             </dd>
           </>
         )}
@@ -104,14 +104,14 @@ export function MoneyPanel({
           )}
         </dt>
         <dd data-testid="game-pitch-cost" className="m-0 text-right tabular-nums text-bone">
-          {economics.pitchCostCzk === null ? hub.noPitchCost : `− ${formatCzk(economics.pitchCostCzk)}`}
+          {economics.pitchCostThb === null ? hub.noPitchCost : `− ${formatThb(economics.pitchCostThb)}`}
         </dd>
 
-        {economics.profitCzk !== null && (
+        {economics.profitThb !== null && (
           <>
             <dt className="border-t border-hairline pt-2 font-semibold text-white">{hub.profit}</dt>
             <dd className="m-0 border-t border-hairline pt-2 text-right text-body font-bold">
-              <SignedCzk amount={economics.profitCzk} testId="game-profit" />
+              <SignedThb amount={economics.profitThb} testId="game-profit" />
             </dd>
           </>
         )}
@@ -133,10 +133,10 @@ export function MoneyPanel({
         )}
       </dl>
 
-      {economics.pitchCostCzk === null && !pitch && (
+      {economics.pitchCostThb === null && !pitch && (
         <p className="mt-3 text-[12px] text-muted">{hub.pitchCostNone}</p>
       )}
-      <PitchCostForm gameId={gameId} costCzk={pitch?.costCzk ?? null} setByHand={pitch?.setByHand ?? false} />
+      <PitchCostForm gameId={gameId} costThb={pitch?.costThb ?? null} setByHand={pitch?.setByHand ?? false} />
     </Panel>
   );
 }

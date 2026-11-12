@@ -51,7 +51,7 @@ export const policy = {
      * At or beyond this lead the refund is exactly what v1 gave: full value for
      * money actually applied, pass credit returning to its own batch with that
      * batch's expiry. Inside it, the spot is released and nothing is credited;
-     * `cancel_booking` records `forfeited_czk` on the `booking_cancelled`
+     * `cancel_booking` records `forfeited_thb` on the `booking_cancelled`
      * event so a later complaint can be answered from the log.
      *
      * This is the number the player-facing copy describes — see

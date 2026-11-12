@@ -26,7 +26,7 @@ import type { StringsOverlay } from "@/lib/i18n/resolve";
  * THE PAYMENT VOCABULARY STAYS CZECH, exactly as in the Russian overlay and
  * for exactly the same reason. A Ukrainian-speaking player in Prague pays from
  * a Czech bank account: the screen they are about to open says "variabilní
- * symbol" and offers a "QR platba", and the amount is in CZK. A translated
+ * symbol" and offers a "QR platba", and the amount is in THB. A translated
  * reference field is a payment that arrives unmatched.
  *
  * Register: "ти", matching the familiar tone of the English, Czech and
@@ -646,9 +646,9 @@ export const uk: StringsOverlay = {
     topupLede: "Додай кредит зараз — він автоматично застосується до наступного бронювання.",
     topupCta: "Отримати абонемент",
     topupAmountLabel: "Сума",
-    topupCustomLabel: "Або інша сума (CZK)",
+    topupCustomLabel: "Або інша сума (THB)",
     topupSubmit: "Показати QR для оплати",
-    topupOutOfRange: "Обери суму від 50 до 2000 CZK.",
+    topupOutOfRange: "Обери суму від 50 до 2000 THB.",
     topupPendingTitle: "Чекаємо на твій платіж",
     topupPendingBody:
       "Відскануй код у банківському застосунку. Кредити надійдуть, щойно організатор підтвердить, що платіж надійшов.",
@@ -817,7 +817,7 @@ export const uk: StringsOverlay = {
     close: "Закрити",
     dismiss: "Сховати сповіщення",
     loading: "Завантаження…",
-    // `czk` is NOT translated — see the header note on money.
+    // `thb` is NOT translated — see the header note on money.
   },
 
   /**

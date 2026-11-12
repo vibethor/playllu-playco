@@ -75,7 +75,7 @@ insert into public.players (id, nickname, email, phone, auth_user_id) values
   -- Shadow: no auth_user_id. Nobody's session can ever match this row.
   ('c0000000-0000-0000-0000-00000000000c', 'TestShadowC', null, '+420333333333', null);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('11110000-0000-0000-0000-000000000001', 'Draft Venue',     now() + interval '7 days', 12, 200, 'draft'),
   ('22220000-0000-0000-0000-000000000002', 'Published Venue', now() + interval '8 days', 12, 200, 'published'),
   ('33330000-0000-0000-0000-000000000003', 'Full Venue',      now() + interval '9 days', 12, 200, 'full'),

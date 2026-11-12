@@ -70,7 +70,7 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin) values
   ('6eee0000-0000-0000-0000-0000000000e2', 'DelPlayer', 'dcg-b@test.invalid',
    '60000000-0000-0000-0000-0000000000e2', false);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('9eee0000-0000-0000-0000-0000000000e1', 'Delete Me', now() + interval '30 hours', 12, 180, 'published'),
   ('9eee0000-0000-0000-0000-0000000000e2', 'Keep Me',   now() + interval '31 hours', 12, 180, 'published');
 
@@ -79,7 +79,7 @@ create function pg_temp.game_exists(p uuid) returns boolean language sql securit
 $$;
 
 create function pg_temp.bal(p uuid) returns integer language sql security definer as $$
-  select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger where player_id = p
+  select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger where player_id = p
 $$;
 
 -- =============================================================================

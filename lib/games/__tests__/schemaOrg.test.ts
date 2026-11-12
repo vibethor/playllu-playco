@@ -11,7 +11,7 @@ const game: GameRow = {
   venue_id: "22222222-2222-2222-2222-222222222222",
   starts_at: "2026-08-01T17:00:00.000Z",
   capacity: 12,
-  price_czk: 200,
+  price_thb: 200,
   status: "published",
   guest_count: 0,
   format: "6v6",
@@ -78,10 +78,10 @@ describe("gameEventSchema", () => {
     expect(schema["@type"]).toBe("SportsEvent");
   });
 
-  it("prices the offer in CZK regardless of anything else, because the QR is an SPD string", () => {
+  it("prices the offer in THB regardless of anything else, because the QR is an SPD string", () => {
     const offers = gameEventSchema(base).offers as Record<string, unknown>;
     expect(offers.price).toBe(200);
-    expect(offers.priceCurrency).toBe("CZK");
+    expect(offers.priceCurrency).toBe("THB");
   });
 
   it("reports InStock while spots remain and SoldOut at zero", () => {

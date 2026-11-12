@@ -26,11 +26,11 @@ export interface ProfitRow {
 }
 
 export interface ProfitTotals {
-  revenueCzk: number;
+  revenueThb: number;
   /** Over games with a pitch cost. */
-  pitchCostCzk: number;
+  pitchCostThb: number;
   /** Over games with a pitch cost. */
-  profitCzk: number;
+  profitThb: number;
   costedGames: number;
   /** Games with a cost whose profit is zero or more. */
   brokeEven: number;
@@ -47,24 +47,24 @@ export function profitTable(
   });
 
   const totals: ProfitTotals = {
-    revenueCzk: 0,
-    pitchCostCzk: 0,
-    profitCzk: 0,
+    revenueThb: 0,
+    pitchCostThb: 0,
+    profitThb: 0,
     costedGames: 0,
     brokeEven: 0,
     uncostedGames: 0,
   };
 
   for (const { economics } of rows) {
-    totals.revenueCzk += economics.revenueCzk;
-    if (economics.pitchCostCzk === null || economics.profitCzk === null) {
+    totals.revenueThb += economics.revenueThb;
+    if (economics.pitchCostThb === null || economics.profitThb === null) {
       totals.uncostedGames += 1;
       continue;
     }
     totals.costedGames += 1;
-    totals.pitchCostCzk += economics.pitchCostCzk;
-    totals.profitCzk += economics.profitCzk;
-    if (economics.profitCzk >= 0) totals.brokeEven += 1;
+    totals.pitchCostThb += economics.pitchCostThb;
+    totals.profitThb += economics.profitThb;
+    if (economics.profitThb >= 0) totals.brokeEven += 1;
   }
 
   return { rows, totals };

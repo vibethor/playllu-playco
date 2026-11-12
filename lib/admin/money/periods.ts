@@ -26,7 +26,7 @@ export interface MonthBounds {
 export interface WeekBar {
   /** `W1`…`W5` — the frame's own labels. */
   label: string;
-  revenueCzk: number;
+  revenueThb: number;
 }
 
 /** The longest a month runs in weeks from the 1st: days 29–31 are week five. */
@@ -76,17 +76,17 @@ export function weeksInMonth(bounds: MonthBounds): number {
  * Payments in a month as the week chart's bars. EMPTY WHEN NOTHING WAS PAID —
  * the page draws no chart rather than five baselines.
  */
-export function bucketByWeek(payments: readonly { at: string; czk: number }[], bounds: MonthBounds): WeekBar[] {
+export function bucketByWeek(payments: readonly { at: string; thb: number }[], bounds: MonthBounds): WeekBar[] {
   if (payments.length === 0) return [];
 
   const totals = new Map<number, number>();
   for (const payment of payments) {
     const week = weekOfMonth(payment.at);
-    totals.set(week, (totals.get(week) ?? 0) + payment.czk);
+    totals.set(week, (totals.get(week) ?? 0) + payment.thb);
   }
 
   return Array.from({ length: weeksInMonth(bounds) }, (_, i) => ({
     label: `W${i + 1}`,
-    revenueCzk: totals.get(i) ?? 0,
+    revenueThb: totals.get(i) ?? 0,
   }));
 }

@@ -257,9 +257,9 @@ begin
   select * into v_game from public.games g where g.id = v_booking.game_id;
 
   if v_booking.status = 'confirmed' then
-    v_credit := v_booking.price_czk;
+    v_credit := v_booking.price_thb;
   else
-    v_credit := v_booking.credit_applied_czk;
+    v_credit := v_booking.credit_applied_thb;
   end if;
 
   update public.bookings
@@ -269,18 +269,18 @@ begin
    where id = p_booking_id;
 
   if v_credit > 0 then
-    insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+    insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
     values (v_booking.player_id, v_credit, 'cancellation_credit', p_booking_id);
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_issued', v_booking.player_id, v_booking.game_id, p_booking_id,
-            jsonb_build_object('amount_czk', v_credit, 'reason', 'admin_removed'),
+            jsonb_build_object('amount_thb', v_credit, 'reason', 'admin_removed'),
             v_game.city, v_game.brand);
   end if;
 
   insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
   values ('admin_booking_removed', v_booking.player_id, v_booking.game_id, p_booking_id,
-          jsonb_build_object('credit_issued_czk', v_credit), v_game.city, v_game.brand);
+          jsonb_build_object('credit_issued_thb', v_credit), v_game.city, v_game.brand);
 
   -- The seat is free again, so the fullness flag and the waitlist both matter.
   perform public.sync_game_fullness(v_booking.game_id);
@@ -295,7 +295,7 @@ grant execute on function public.admin_remove_booking(uuid) to authenticated, se
 comment on function public.admin_remove_booking(uuid) is
   'Admin releases a player''s seat. Credits in full regardless of lead time — '
   'the cancel_game rule, not the cancel_booking one, because the player did '
-  'not choose this. Returns the credit issued in CZK.';
+  'not choose this. Returns the credit issued in THB.';
 
 -- -----------------------------------------------------------------------------
 -- 5. Item 18 — deleting a venue and deleting a game

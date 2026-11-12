@@ -8,7 +8,7 @@
 --
 -- WHAT THIS CANNOT UNDO. Credit that was forfeited while the cutoff was in
 -- force is not re-issued — there is no record of an intent to refund, only a
--- `booking_cancelled` event carrying `forfeited_czk`. If credit has to be
+-- `booking_cancelled` event carrying `forfeited_thb`. If credit has to be
 -- returned to anyone, that is `grant_credit` per player, by hand, from those
 -- events. Stated here because a rollback that looks total and is not is worse
 -- than one that says so.
@@ -66,9 +66,9 @@ begin
   v_lead_hours := round(extract(epoch from (v_game.starts_at - now()))::numeric / 3600.0, 2);
 
   if v_booking.status = 'confirmed' then
-    v_credit := v_booking.price_czk;
+    v_credit := v_booking.price_thb;
   else
-    v_credit := v_booking.credit_applied_czk;
+    v_credit := v_booking.credit_applied_thb;
   end if;
 
   update public.bookings
@@ -78,31 +78,31 @@ begin
 
   if v_credit > 0 then
     for v_redemption in
-      select cl.batch_id, -cl.delta_czk as amount_czk, b.expires_at
+      select cl.batch_id, -cl.delta_thb as amount_thb, b.expires_at
         from public.credit_ledger cl
         join public.credit_ledger b on b.id = cl.batch_id
        where cl.booking_id = p_booking_id
          and cl.reason = 'redemption'
          and cl.batch_id is not null
     loop
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, batch_id)
-      values (v_booking.player_id, v_redemption.amount_czk, 'cancellation_credit',
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, batch_id)
+      values (v_booking.player_id, v_redemption.amount_thb, 'cancellation_credit',
               p_booking_id, v_redemption.batch_id);
-      v_refunded := v_refunded + v_redemption.amount_czk;
+      v_refunded := v_refunded + v_redemption.amount_thb;
     end loop;
 
     v_unexpiring := v_credit - v_refunded;
     if v_unexpiring > 0 then
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
       values (v_booking.player_id, v_unexpiring, 'cancellation_credit', p_booking_id);
     end if;
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_issued', v_booking.player_id, v_booking.game_id, p_booking_id,
             jsonb_build_object(
-              'amount_czk', v_credit,
+              'amount_thb', v_credit,
               'reason', 'cancellation_credit',
-              'returned_to_batches_czk', v_refunded),
+              'returned_to_batches_thb', v_refunded),
             v_game.city, v_game.brand);
   end if;
 
@@ -110,7 +110,7 @@ begin
   values ('booking_cancelled', v_booking.player_id, v_booking.game_id, p_booking_id,
           jsonb_build_object(
             'cancel_lead_hours', v_lead_hours,
-            'credit_issued_czk', v_credit,
+            'credit_issued_thb', v_credit,
             'previous_status', v_booking.status),
           v_game.city, v_game.brand);
 

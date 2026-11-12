@@ -113,9 +113,9 @@ const INTENTIONALLY_UNTRANSLATED = new Set([
    * that has nothing in it to review.
    */
   "games.addGuests.pick",
-  // Money. `formatCzk()` renders CZK in every language, and the amount has to
+  // Money. `formatThb()` renders THB in every language, and the amount has to
   // match what the Czech banking app shows.
-  "common.czk",
+  "common.thb",
   /*
    * The bank's own words in every email (round 41): the player is about to
    * type them into a Czech banking app, so a translated label is a payment
@@ -259,9 +259,9 @@ describe("resolveStrings", () => {
     expect(t.emails.spotHeld.subject).not.toBe(strings.emails.spotHeld.subject);
   });
 
-  it("keeps money in CZK in every language", () => {
+  it("keeps money in THB in every language", () => {
     for (const locale of LOCALES) {
-      expect(resolveStrings(locale).common.czk).toBe("CZK");
+      expect(resolveStrings(locale).common.thb).toBe("THB");
     }
   });
 

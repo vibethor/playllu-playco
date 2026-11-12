@@ -22,7 +22,7 @@ import { playerSpend } from "@/lib/admin/players/spend";
 import { getAdminPlayer } from "@/lib/admin/queries";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { appCapabilities } from "@/lib/db/capabilities";
-import { formatCzk, formatDate } from "@/lib/format";
+import { formatThb, formatDate } from "@/lib/format";
 import { avatarUrl } from "@/lib/storage/avatar";
 import { profilePhotoVersion } from "@/lib/storage/photoVersions";
 import { strings } from "@/lib/strings";
@@ -73,7 +73,7 @@ export default async function AdminPlayerPage({ params }: { params: Promise<{ id
   // exist is a button that 404s, which round 12 ruled against.
   const capabilities = await appCapabilities();
 
-  const { player, balanceCzk, games } = detail;
+  const { player, balanceThb, games } = detail;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   const [photoVersion, coverVersion] = await Promise.all([
     profilePhotoVersion(player.photo_path),
@@ -84,7 +84,7 @@ export default async function AdminPlayerPage({ params }: { params: Promise<{ id
   const cover = avatarUrl(supabaseUrl, player.cover_path ?? null, coverVersion);
 
   const figures = historyFigures(games);
-  const wallet = adminWallet(balanceCzk);
+  const wallet = adminWallet(balanceThb);
   const spend = capabilities.pitchCosts
     ? playerSpend(await getBookingSeatValues([...new Set(games.map((row) => row.gameId))]), player.id)
     : null;
@@ -123,9 +123,9 @@ export default async function AdminPlayerPage({ params }: { params: Promise<{ id
           its exact crowns beneath.
         */}
         <KpiTile label={t.playerKpis.credit} value={String(wallet.credits)} valueTestId="admin-player-balance">
-          {wallet.remainderCzk !== null && (
+          {wallet.remainderThb !== null && (
             <span data-testid="admin-player-balance-exact" className="text-faint">
-              {strings.admin.walletExactCzk.replace("{czk}", formatCzk(wallet.remainderCzk))}
+              {strings.admin.walletExactThb.replace("{thb}", formatThb(wallet.remainderThb))}
             </span>
           )}
         </KpiTile>
@@ -212,7 +212,7 @@ export default async function AdminPlayerPage({ params }: { params: Promise<{ id
           <SectionHeading title={t.creditTitle} lede={t.creditLede} />
           <div className="flex flex-wrap items-start gap-x-5 gap-y-3">
             <GrantCreditForm playerId={player.id} />
-            <RemoveCreditForm playerId={player.id} balanceCzk={balanceCzk} />
+            <RemoveCreditForm playerId={player.id} balanceThb={balanceThb} />
           </div>
         </Panel>
       </div>

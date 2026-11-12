@@ -291,8 +291,8 @@ export interface PitchCostState {
   /** The boxes that did not hold a whole crown amount, so each can say so. */
   invalid?: PitchCostField[];
   /** What was saved — the confirmation names the one new games take. */
-  summerCzk?: number;
-  winterCzk?: number;
+  summerThb?: number;
+  winterThb?: number;
 }
 
 /**
@@ -317,8 +317,8 @@ export async function saveVenuePitchCostsAction(
   if (!venueId) return { status: "error", message: toAdminErrorMessage("VENUE_NOT_FOUND") };
 
   const parsed = parsePitchCostForm({
-    summer: formData.get("summerCzk"),
-    winter: formData.get("winterCzk"),
+    summer: formData.get("summerThb"),
+    winter: formData.get("winterThb"),
   });
   if (!parsed.ok) {
     return { status: "error", message: strings.admin.pitchCostOutOfRange, invalid: parsed.invalid };
@@ -327,13 +327,13 @@ export async function saveVenuePitchCostsAction(
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("set_venue_pitch_costs", {
     p_venue_id: venueId,
-    p_summer_czk: parsed.summerCzk,
-    p_winter_czk: parsed.winterCzk,
+    p_summer_thb: parsed.summerThb,
+    p_winter_thb: parsed.winterThb,
   });
   if (error) return { status: "error", message: toAdminErrorMessage(error.message) };
 
   revalidatePath("/admin", "layout");
-  return { status: "saved", summerCzk: parsed.summerCzk, winterCzk: parsed.winterCzk };
+  return { status: "saved", summerThb: parsed.summerThb, winterThb: parsed.winterThb };
 }
 
 export interface PitchSeasonState {

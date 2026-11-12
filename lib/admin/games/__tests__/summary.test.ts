@@ -14,14 +14,14 @@ const game = (id: string, activeCount: number, capacity: number, waitlistCount =
   unpaidCount,
 });
 
-const money = (revenueCzk: number, pitchCostCzk: number | null, profitCzk: number | null) => ({
-  priceCzk: 200,
+const money = (revenueThb: number, pitchCostThb: number | null, profitThb: number | null) => ({
+  priceThb: 200,
   capacity: 10,
   seatsTaken: 5,
   unpaidSeats: 0,
-  revenueCzk,
-  pitchCostCzk,
-  profitCzk,
+  revenueThb,
+  pitchCostThb,
+  profitThb,
 });
 
 describe("summariseGames", () => {
@@ -72,9 +72,9 @@ describe("summariseGames", () => {
 
     // Assert
     expect(summary.money).toEqual({
-      revenueCzk: 2100,
-      pitchCostCzk: 2000,
-      profitCzk: -200,
+      revenueThb: 2100,
+      pitchCostThb: 2000,
+      profitThb: -200,
       costedGames: 2,
       coveredGames: 1,
     });
@@ -101,6 +101,6 @@ describe("summariseGames", () => {
     const summary = summariseGames(games, economics);
 
     // Assert
-    expect(summary.money).toMatchObject({ revenueCzk: 1000, costedGames: 1 });
+    expect(summary.money).toMatchObject({ revenueThb: 1000, costedGames: 1 });
   });
 });

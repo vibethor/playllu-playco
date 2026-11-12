@@ -59,7 +59,7 @@ const VALUE: Record<Exclude<PlayerSortKey, "name">, (p: DirectoryPlayer) => numb
   joined: (p) => Date.parse(p.createdAt),
   played: (p) => p.gamesPlayed,
   "last-game": (p) => (p.lastGameAt === null ? null : Date.parse(p.lastGameAt)),
-  credit: (p) => p.balanceCzk,
+  credit: (p) => p.balanceThb,
 };
 
 function byName(a: DirectoryPlayer, b: DirectoryPlayer): number {

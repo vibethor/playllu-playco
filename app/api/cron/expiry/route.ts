@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   // Uses the (status, expires_at) index from Phase 4.
   const { data: due, error } = await supabase
     .from("bookings")
-    .select("id, game_id, player_id, price_czk, credit_applied_czk")
+    .select("id, game_id, player_id, price_thb, credit_applied_thb")
     .eq("status", "reserved")
     .not("expires_at", "is", null)
     .lt("expires_at", new Date().toISOString());

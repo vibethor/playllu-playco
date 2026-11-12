@@ -8,7 +8,7 @@ import {
 } from "@/app/admin/games/[id]/actions";
 import { PaymentBadge } from "@/components/admin/PaymentBadge";
 import type { AdminBookingRow } from "@/lib/admin/queries";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import { strings } from "@/lib/strings";
 
 const INITIAL: ConfirmPaymentState = { status: "idle" };
@@ -53,7 +53,7 @@ export function ConfirmPaymentRow({
                 {strings.admin.vsLabel} <span className="text-bone">{booking.paymentCode}</span> ·{" "}
               </>
             )}
-            {strings.admin.amountDueLabel} <span className="text-warn">{formatCzk(booking.amountDueCzk)}</span>
+            {strings.admin.amountDueLabel} <span className="text-warn">{formatThb(booking.amountDueThb)}</span>
           </div>
         </div>
 
@@ -69,7 +69,7 @@ export function ConfirmPaymentRow({
                 name="receivedAmount"
                 type="number"
                 min={0}
-                defaultValue={booking.amountDueCzk}
+                defaultValue={booking.amountDueThb}
                 data-testid="received-amount"
                 className="min-h-11 w-[110px] rounded-control border border-hairline-strong bg-surface px-3 py-2 text-[13px] tabular-nums text-bone outline-none focus:border-volt"
               />
@@ -92,10 +92,10 @@ export function ConfirmPaymentRow({
         {state.status === "confirmed" && (
           <span data-testid="confirm-result" className="text-[12px] text-volt">
             {state.wasExpired ? strings.admin.expiredCreditedNotice : strings.admin.paymentConfirmed}
-            {state.creditIssuedCzk ? (
+            {state.creditIssuedThb ? (
               <>
                 {" "}
-                {strings.admin.creditIssuedNotice} {formatCzk(state.creditIssuedCzk)}
+                {strings.admin.creditIssuedNotice} {formatThb(state.creditIssuedThb)}
               </>
             ) : null}
           </span>
@@ -103,7 +103,7 @@ export function ConfirmPaymentRow({
 
         {state.status === "underpaid" && (
           <span role="alert" data-testid="underpaid-result" className="text-[12px] text-bone">
-            {strings.admin.underpaidNotice} {formatCzk(state.shortfallCzk ?? 0)} — {strings.admin.underpaidHint}
+            {strings.admin.underpaidNotice} {formatThb(state.shortfallThb ?? 0)} — {strings.admin.underpaidHint}
           </span>
         )}
 

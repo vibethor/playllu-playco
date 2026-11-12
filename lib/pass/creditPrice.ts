@@ -13,12 +13,12 @@
  * constant sitting in a module that talks to a database is a client-boundary
  * landmine, and the fix is that the constant does not live there.
  *
- * THE VALUE IS THE CREDITS RULING: one credit is one game at 180 CZK, and the
+ * THE VALUE IS THE CREDITS RULING: one credit is one game at 180 THB, and the
  * whole product divides balances by it. `lib/pass/queries.ts` re-exports it so
  * existing callers are unchanged.
  *
  * ~~150.~~ 180 SINCE ROUND 35 v2, and it moved with
- * `public.credit_seat_price_czk()` in the same round. **SQL IS THE AUTHORITY**
+ * `public.credit_seat_price_thb()` in the same round. **SQL IS THE AUTHORITY**
  * — a route guard is skipped by anyone using curl, and every debit is decided
  * inside `create_booking_internal`. This is the display mirror, and the two
  * must move together.
@@ -29,4 +29,4 @@
  * and now calls the function. A price in four places is a price that will
  * disagree with itself.
  */
-export const PASS_REFERENCE_PRICE_CZK = 180;
+export const PASS_REFERENCE_PRICE_THB = 180;

@@ -73,7 +73,7 @@ insert into public.players (id, nickname, email, auth_user_id) values
   ('aaaa0000-0000-0000-0000-0000000000e1', 'WaitPlayerA', 'wa@test.invalid', 'a0000000-0000-0000-0000-0000000000e1'),
   ('bbbb0000-0000-0000-0000-0000000000e2', 'WaitPlayerB', 'wb@test.invalid', 'b0000000-0000-0000-0000-0000000000e2');
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('9f000000-0000-0000-0000-00000000000f', 'Full Game',      now() + interval '7 days', 1, 200, 'full'),
   ('9e000000-0000-0000-0000-00000000000e', 'Published Game', now() + interval '7 days', 10, 200, 'published'),
   ('9d000000-0000-0000-0000-00000000000d', 'Draft Game',     now() + interval '7 days', 10, 200, 'draft'),

@@ -141,7 +141,7 @@ begin
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('booking_cancelled', p_player_id, v_booking.game_id, v_booking.id,
             jsonb_build_object('reason', 'account_deleted', 'by_player_id', v_actor,
-                               'credit_issued_czk', 0,
+                               'credit_issued_thb', 0,
                                'previous_status', v_booking.status),
             v_game.city, v_game.brand);
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
@@ -156,20 +156,20 @@ begin
 
   -- Unused Credits lapse (4.7): every batch's remainder, then the pool.
   for v_batch in
-    select * from public.credit_batches(p_player_id) where remaining_czk > 0
+    select * from public.credit_batches(p_player_id) where remaining_thb > 0
   loop
-    insert into public.credit_ledger (player_id, delta_czk, reason, batch_id, note)
-    values (p_player_id, -v_batch.remaining_czk, 'pass_expiry', v_batch.batch_id, 'account deleted');
-    v_lapsed := v_lapsed + v_batch.remaining_czk;
+    insert into public.credit_ledger (player_id, delta_thb, reason, batch_id, note)
+    values (p_player_id, -v_batch.remaining_thb, 'pass_expiry', v_batch.batch_id, 'account deleted');
+    v_lapsed := v_lapsed + v_batch.remaining_thb;
   end loop;
 
-  select coalesce(sum(cl.delta_czk), 0)::integer into v_pool
+  select coalesce(sum(cl.delta_thb), 0)::integer into v_pool
     from public.credit_ledger cl
    where cl.player_id = p_player_id
      and cl.expires_at is null
      and cl.batch_id is null;
   if v_pool > 0 then
-    insert into public.credit_ledger (player_id, delta_czk, reason, note)
+    insert into public.credit_ledger (player_id, delta_thb, reason, note)
     values (p_player_id, -v_pool, 'pass_expiry', 'account deleted');
     v_lapsed := v_lapsed + v_pool;
   end if;
@@ -195,7 +195,7 @@ begin
           jsonb_build_object('by', case when v_self then 'self' else 'admin' end,
                              'by_player_id', v_actor,
                              'bookings_cancelled', v_cancelled,
-                             'credits_lapsed_czk', v_lapsed));
+                             'credits_lapsed_thb', v_lapsed));
 
   return jsonb_build_object(
     'auth_user_id', v_player.auth_user_id,
@@ -258,7 +258,7 @@ as $$
        where n.nspname = 'public' and p.proname = 'cancel_guests')),
     'creditsAreSeats',   to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-       where n.nspname = 'public' and p.proname = 'credit_seat_price_czk')),
+       where n.nspname = 'public' and p.proname = 'credit_seat_price_thb')),
     'seatsTakenMany',    to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'game_seats_taken_many')),

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PlayerTags } from "@/components/admin/players/PlayerTags";
 import { PlayerTile } from "@/components/admin/players/PlayerTile";
 import { SortArrow } from "@/components/admin/players/SortArrow";
-import { creditsFromCzk } from "@/lib/admin/credits";
+import { creditsFromThb } from "@/lib/admin/credits";
 import type { PlayerSegment } from "@/lib/admin/players/segments";
 import { nextSort, playersHref, type PlayerSort, type PlayerSortKey } from "@/lib/admin/players/sort";
 import type { DirectoryPlayer } from "@/lib/admin/players/types";
@@ -148,7 +148,7 @@ export function PlayersTable({
         <tbody role="rowgroup" className="block md:contents">
           {players.map((player) => {
             const photo = photoUrls.get(player.id) ?? null;
-            const credits = creditsFromCzk(player.balanceCzk);
+            const credits = creditsFromThb(player.balanceThb);
             return (
               <tr
                 key={player.id}
@@ -238,7 +238,7 @@ export function PlayersTable({
                 <td role="cell" className="col-start-4 row-start-1 min-w-0 self-center text-right md:col-start-auto md:row-start-auto">
                   <span
                     data-testid="player-balance"
-                    data-balance={player.balanceCzk}
+                    data-balance={player.balanceThb}
                     data-credits={credits}
                     className={`whitespace-nowrap text-small font-semibold tabular-nums ${credits > 0 ? "text-volt" : "text-faint"}`}
                   >

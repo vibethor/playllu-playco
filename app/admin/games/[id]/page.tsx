@@ -16,7 +16,7 @@ import { PublishedBanner } from "@/components/admin/games/PublishedBanner";
 import { SeatMap } from "@/components/admin/games/SeatMap";
 import { StatusChip } from "@/components/admin/games/StatusChip";
 import { Tile, TileRow } from "@/components/admin/games/Tile";
-import { SignedCzk } from "@/components/admin/ui/Money";
+import { SignedThb } from "@/components/admin/ui/Money";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { Panel } from "@/components/admin/ui/Panel";
 import { deleteErasesHistory } from "@/lib/admin/gameDelete";
@@ -38,7 +38,7 @@ import {
 } from "@/lib/admin/queries";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { appCapabilities } from "@/lib/db/capabilities";
-import { formatCzk, formatGameDateTime, formatGameTimeSpan } from "@/lib/format";
+import { formatThb, formatGameDateTime, formatGameTimeSpan } from "@/lib/format";
 import { gameEndsAt } from "@/lib/games/duration";
 import { strings } from "@/lib/strings";
 import { pickableVenues } from "@/lib/venues/archive";
@@ -207,7 +207,7 @@ export default async function AdminGamePage({
           />
           <Tile
             label={hub.tilePrice}
-            value={formatCzk(game.price_czk)}
+            value={formatThb(game.price_thb)}
             detail={
               game.duration_minutes ? hub.durationMinutes.replace("{n}", String(game.duration_minutes)) : undefined
             }
@@ -218,10 +218,10 @@ export default async function AdminGamePage({
             valueTestId="admin-waitlist-depth"
             detail={hub.tileWaitingOne}
           />
-          {economics && economics.profitCzk !== null ? (
+          {economics && economics.profitThb !== null ? (
             <Tile
               label={hub.profit}
-              value={<SignedCzk amount={economics.profitCzk} testId="game-tile-profit" />}
+              value={<SignedThb amount={economics.profitThb} testId="game-tile-profit" />}
               detail={profitDetail}
             />
           ) : (

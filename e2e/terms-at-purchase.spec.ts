@@ -41,7 +41,7 @@ test("a booking is not made until the terms box is ticked", async ({ page, conte
   // Arrange — a wallet that covers the game, so credit is preselected and
   // Confirm is live: the terms box is the only thing left in the way.
   await signInAs(context, players.runner);
-  await setWalletTo(players.runner.id, game.priceCzk);
+  await setWalletTo(players.runner.id, game.priceThb);
   await page.goto(`/game/${game.id}/book`);
   await expect(page.getByTestId("pay-credit-input")).toBeChecked();
 

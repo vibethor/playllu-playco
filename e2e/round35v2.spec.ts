@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { LOCALE_COOKIE } from "../lib/i18n/locales";
-import { PASS_REFERENCE_PRICE_CZK } from "../lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "../lib/pass/creditPrice";
 import { apiClientFor, players, serviceClient, signInAs } from "./helpers/session";
 import { createScratchGame, destroyScratchGame, setWalletTo } from "./helpers/scaffold";
 
@@ -41,7 +41,7 @@ test("the pass page sells the owner's five tiers at the owner's five prices", as
    * THE PRICES ARE THE RULING; THE PERCENTAGES ARE COMPUTED FROM THEM. Both are
    * asserted, because the computation is the part that could silently disagree:
    * `PassTierCard` derives the discount from the anchor, and the anchor derives
-   * from `PASS_REFERENCE_PRICE_CZK`. If the constant and the tiers ever part
+   * from `PASS_REFERENCE_PRICE_THB`. If the constant and the tiers ever part
    * company the percentages move and the prices do not.
    */
   const expected = [
@@ -56,8 +56,8 @@ test("the pass page sells the owner's five tiers at the owner's five prices", as
     const card = page.locator(`[data-testid="pass-tier"][data-games="${tier.games}"]`);
     await expect(card, `no card for the ${tier.games}-game tier`).toHaveCount(1);
     /*
-     * SEPARATORS STRIPPED BEFORE COMPARING. The page renders "1,296 CZK" —
-     * `formatCzk` groups thousands, and the discount is "−7 %" with a thin
+     * SEPARATORS STRIPPED BEFORE COMPARING. The page renders "1,296 THB" —
+     * `formatThb` groups thousands, and the discount is "−7 %" with a thin
      * space before the sign. Asserting the grouped, spaced form would be
      * asserting the locale's punctuation rather than the price, and it would
      * fail the day the locale changes without anything being wrong.
@@ -70,7 +70,7 @@ test("the pass page sells the owner's five tiers at the owner's five prices", as
   }
 
   // And the anchor really is the seat price, not a number that happens to match.
-  expect(PASS_REFERENCE_PRICE_CZK).toBe(180);
+  expect(PASS_REFERENCE_PRICE_THB).toBe(180);
 });
 
 // =============================================================================

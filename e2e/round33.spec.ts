@@ -361,7 +361,7 @@ test("a party of thirteen is actually bookable, and priced at fourteen seats", a
    * proves the CONTROL reaches it — the dropdown, the hidden field, the action
    * and the price, in the order a player meets them.
    */
-  const game = await createScratchGame({ capacity: 20, priceCzk: 150, hoursFromNow: 24 * 15 });
+  const game = await createScratchGame({ capacity: 20, priceThb: 150, hoursFromNow: 24 * 15 });
   const admin = serviceClient();
   try {
     await signInAs(context, players.creditRich);
@@ -388,7 +388,7 @@ test("a party of thirteen is actually bookable, and priced at fourteen seats", a
       p_guest_count: 13,
     });
     expect(booked.error, `create_booking: ${booked.error?.message}`).toBeNull();
-    expect((booked.data as { price_czk: number }).price_czk).toBe(150 * 14);
+    expect((booked.data as { price_thb: number }).price_thb).toBe(150 * 14);
   } finally {
     await destroyScratchGame(game.id);
   }

@@ -1,7 +1,7 @@
 import { ExportCsvLink } from "@/components/admin/ExportCsvLink";
 import { Panel } from "@/components/admin/ui/Panel";
 import type { Transaction } from "@/lib/admin/financials";
-import { formatCzk, formatDate } from "@/lib/format";
+import { formatThb, formatDate } from "@/lib/format";
 import { strings } from "@/lib/strings";
 
 /**
@@ -41,11 +41,11 @@ export function LedgerPanel({ transactions }: { transactions: Transaction[] }) {
                   than red — it is not a loss, it is a seat being used. */}
               <span
                 className={`shrink-0 whitespace-nowrap text-body font-bold tabular-nums ${
-                  tx.amountCzk >= 0 ? "text-volt" : "text-muted"
+                  tx.amountThb >= 0 ? "text-volt" : "text-muted"
                 }`}
               >
-                {tx.amountCzk >= 0 ? "+" : "−"}
-                {formatCzk(Math.abs(tx.amountCzk))}
+                {tx.amountThb >= 0 ? "+" : "−"}
+                {formatThb(Math.abs(tx.amountThb))}
               </span>
             </li>
           ))}

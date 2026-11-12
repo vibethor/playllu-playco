@@ -122,13 +122,13 @@ create table public.credit_topups (
   player_id uuid not null references public.players (id) on delete cascade,
 
   -- What the player asked for. After confirmation this is a record of intent,
-  -- not of money: `received_amount_czk` is what actually arrived.
-  amount_czk integer not null,
+  -- not of money: `received_amount_thb` is what actually arrived.
+  amount_thb integer not null,
 
   payment_code bigint not null unique,
   status public.topup_status not null default 'pending',
 
-  received_amount_czk integer,
+  received_amount_thb integer,
   confirmed_by uuid references public.players (id) on delete set null,
   confirmed_at timestamptz,
 
@@ -139,9 +139,9 @@ create table public.credit_topups (
 
   -- Bounds enforced here as well as in the RPC. The RPC gives a named error to
   -- a person; this makes the range true of the table regardless of who writes.
-  constraint credit_topups_amount_range check (amount_czk between 50 and 2000),
+  constraint credit_topups_amount_range check (amount_thb between 50 and 2000),
   constraint credit_topups_received_positive check (
-    received_amount_czk is null or received_amount_czk > 0
+    received_amount_thb is null or received_amount_thb > 0
   ),
   -- A confirmed row must carry its confirmation, and a pending one must not.
   constraint credit_topups_confirmation_paired check (
@@ -175,13 +175,13 @@ grant select on public.credit_topups to service_role;
 
 comment on table public.credit_topups is
   'Player-initiated wallet top-ups. Pending rows are NOT balance: the balance '
-  'is SUM(credit_ledger.delta_czk), and a pending top-up writes no ledger row.';
+  'is SUM(credit_ledger.delta_thb), and a pending top-up writes no ledger row.';
 
 -- =============================================================================
 -- create_topup — owner only
 -- =============================================================================
 
-create function public.create_topup(p_amount_czk integer)
+create function public.create_topup(p_amount_thb integer)
 returns public.credit_topups
 language plpgsql
 security definer
@@ -198,20 +198,20 @@ begin
 
   -- Identity comes from the session and there is no player argument, so there
   -- is nothing to pass that would create a top-up against someone else.
-  if p_amount_czk is null or p_amount_czk < 50 or p_amount_czk > 2000 then
+  if p_amount_thb is null or p_amount_thb < 50 or p_amount_thb > 2000 then
     raise exception 'AMOUNT_OUT_OF_RANGE'
-      using detail = 'top-ups are between 50 and 2000 CZK';
+      using detail = 'top-ups are between 50 and 2000 THB';
   end if;
 
-  insert into public.credit_topups (player_id, amount_czk, payment_code)
-  values (v_player_id, p_amount_czk, public.next_topup_code())
+  insert into public.credit_topups (player_id, amount_thb, payment_code)
+  values (v_player_id, p_amount_thb, public.next_topup_code())
   returning * into v_row;
 
   insert into public.events (event_type, player_id, metadata)
   values ('topup_requested', v_player_id,
           jsonb_build_object(
             'topup_id', v_row.id,
-            'amount_czk', p_amount_czk,
+            'amount_thb', p_amount_thb,
             'payment_code', v_row.payment_code));
 
   return v_row;
@@ -237,14 +237,14 @@ comment on function public.create_topup(integer) is
 create type public.topup_result as (
   id uuid,
   status public.topup_status,
-  credited_czk integer,
-  balance_czk integer
+  credited_thb integer,
+  balance_thb integer
 );
 
 create function public.confirm_topup(
   p_topup_id            uuid,
   p_confirmed_by        uuid default null,
-  p_received_amount_czk integer default null
+  p_received_amount_thb integer default null
 )
 returns public.topup_result
 language plpgsql
@@ -282,7 +282,7 @@ begin
 
   -- The whole reconciliation rule, in one line: what arrived is what is
   -- credited. Null means the admin is confirming at the amount asked for.
-  v_credited := coalesce(p_received_amount_czk, v_topup.amount_czk);
+  v_credited := coalesce(p_received_amount_thb, v_topup.amount_thb);
   if v_credited <= 0 then
     raise exception 'AMOUNT_OUT_OF_RANGE' using detail = 'credited amount must be positive';
   end if;
@@ -291,26 +291,26 @@ begin
 
   update public.credit_topups
   set status = 'confirmed',
-      received_amount_czk = v_credited,
+      received_amount_thb = v_credited,
       confirmed_by = v_actor,
       confirmed_at = now()
   where id = p_topup_id;
 
   -- Ledger, status and event in ONE transaction. A credited top-up whose ledger
   -- row is missing is money the player paid and cannot spend.
-  insert into public.credit_ledger (player_id, delta_czk, reason)
+  insert into public.credit_ledger (player_id, delta_thb, reason)
   values (v_topup.player_id, v_credited, 'topup');
 
   insert into public.events (event_type, player_id, metadata)
   values ('topup_confirmed', v_topup.player_id,
           jsonb_build_object(
             'topup_id', v_topup.id,
-            'requested_czk', v_topup.amount_czk,
-            'credited_czk', v_credited,
+            'requested_thb', v_topup.amount_thb,
+            'credited_thb', v_credited,
             'payment_code', v_topup.payment_code,
             'confirmed_by', v_actor));
 
-  select coalesce(sum(delta_czk), 0) into v_balance
+  select coalesce(sum(delta_thb), 0) into v_balance
   from public.credit_ledger where player_id = v_topup.player_id;
 
   return (v_topup.id, 'confirmed'::public.topup_status, v_credited, v_balance);

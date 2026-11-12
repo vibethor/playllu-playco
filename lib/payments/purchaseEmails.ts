@@ -1,4 +1,4 @@
-import { creditsFromCzk } from "@/lib/admin/credits";
+import { creditsFromThb } from "@/lib/admin/credits";
 import { bookingEmailContext } from "@/lib/cron/context";
 import { dispatchEmail, sendCreditsPurchasedEmail } from "@/lib/email/dispatch";
 import { emailLocalePreference } from "@/lib/email/recipientLocale";
@@ -31,7 +31,7 @@ type Service = ReturnType<typeof createServiceRoleSupabaseClient>;
  */
 export async function sendPurchaseEmails(
   supabase: Service,
-  input: { payload: string; outcome: string; sessionId: string; reference: string | null; amountCzk: number },
+  input: { payload: string; outcome: string; sessionId: string; reference: string | null; amountThb: number },
 ): Promise<void> {
   try {
     if (input.outcome === "booked" || input.outcome === "credited") {
@@ -56,15 +56,15 @@ function termsFrom(payload: string): PaymentReceipt["terms"] {
 }
 
 function cardReceipt(
-  input: { sessionId: string; amountCzk: number; payload: string },
+  input: { sessionId: string; amountThb: number; payload: string },
   extra: Partial<PaymentReceipt> = {},
 ): PaymentReceipt {
   const paidAt = new Date();
   return {
     orderId: input.sessionId,
     paidAt: paidAt.toISOString(),
-    credits: creditsFromCzk(input.amountCzk),
-    amountCzk: input.amountCzk,
+    credits: creditsFromThb(input.amountThb),
+    amountThb: input.amountThb,
     method: "card",
     validUntil: creditsValidUntil(paidAt).toISOString(),
     terms: termsFrom(input.payload),
@@ -78,14 +78,14 @@ async function readerLocale(email: string, payload: string) {
 }
 
 async function balanceCredits(supabase: Service, playerId: string): Promise<number | null> {
-  const { data, error } = await supabase.from("credit_ledger").select("delta_czk").eq("player_id", playerId);
+  const { data, error } = await supabase.from("credit_ledger").select("delta_thb").eq("player_id", playerId);
   if (error || !data) return null;
-  return creditsFromCzk((data as { delta_czk: number }[]).reduce((sum, row) => sum + row.delta_czk, 0));
+  return creditsFromThb((data as { delta_thb: number }[]).reduce((sum, row) => sum + row.delta_thb, 0));
 }
 
 async function afterCheckout(
   supabase: Service,
-  input: { payload: string; outcome: string; sessionId: string; amountCzk: number },
+  input: { payload: string; outcome: string; sessionId: string; amountThb: number },
 ): Promise<void> {
   const { data: row } = await supabase
     .from("checkout_sessions")
@@ -127,7 +127,7 @@ async function afterCheckout(
     session.booking_id
       ? supabase
           .from("bookings")
-          .select("price_czk, credit_applied_czk, guest_count")
+          .select("price_thb, credit_applied_thb, guest_count")
           .eq("id", session.booking_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
@@ -135,7 +135,7 @@ async function afterCheckout(
   if (!game) return;
 
   const context = await bookingEmailContext(
-    booking ?? { price_czk: input.amountCzk, credit_applied_czk: input.amountCzk, guest_count: session.guest_count ?? 0 },
+    booking ?? { price_thb: input.amountThb, credit_applied_thb: input.amountThb, guest_count: session.guest_count ?? 0 },
     game,
     player,
     { withIcs: session.kind !== "add_guests" },
@@ -148,7 +148,7 @@ async function afterCheckout(
       ...context,
       bookingKind: session.kind === "add_guests" ? "guests" : "booking",
       // What THIS payment bought: the guests' places, not the whole booking's.
-      creditsPaid: creditsFromCzk(input.amountCzk),
+      creditsPaid: creditsFromThb(input.amountThb),
       receipt: cardReceipt(input, { usedForGame: true }),
     },
   });
@@ -157,7 +157,7 @@ async function afterCheckout(
 async function afterPurchase(
   supabase: Service,
   reference: string,
-  input: { payload: string; sessionId: string; amountCzk: number },
+  input: { payload: string; sessionId: string; amountThb: number },
 ): Promise<void> {
   const { data: topup } = await supabase
     .from("credit_topups")
@@ -198,11 +198,11 @@ async function afterPurchase(
 async function afterBookingPayment(
   supabase: Service,
   bookingId: string,
-  input: { payload: string; sessionId: string; amountCzk: number },
+  input: { payload: string; sessionId: string; amountThb: number },
 ): Promise<void> {
   const { data: booking } = await supabase
     .from("bookings")
-    .select("game_id, player_id, price_czk, credit_applied_czk, guest_count")
+    .select("game_id, player_id, price_thb, credit_applied_thb, guest_count")
     .eq("id", bookingId)
     .maybeSingle();
   if (!booking) return;
@@ -220,7 +220,7 @@ async function afterBookingPayment(
     locale: await readerLocale(player.email, input.payload),
     context: {
       ...context,
-      creditsPaid: creditsFromCzk(input.amountCzk),
+      creditsPaid: creditsFromThb(input.amountThb),
       receipt: cardReceipt(input, { usedForGame: true }),
     },
   });

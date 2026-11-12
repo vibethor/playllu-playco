@@ -1,4 +1,4 @@
-import { PASS_REFERENCE_PRICE_CZK } from "../lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "../lib/pass/creditPrice";
 import { expect, test } from "@playwright/test";
 import { players, serviceClient, signInAs } from "./helpers/session.ts";
 
@@ -75,9 +75,9 @@ test("a credit grant without a note is refused on the server", async ({ page, co
   const balanceBefore = async () => {
     const { data } = await admin
       .from("credit_ledger")
-      .select("delta_czk")
+      .select("delta_thb")
       .eq("player_id", id);
-    return (data ?? []).reduce((sum, row) => sum + row.delta_czk, 0);
+    return (data ?? []).reduce((sum, row) => sum + row.delta_thb, 0);
   };
 
   const before = await balanceBefore();
@@ -128,9 +128,9 @@ test("a credit grant with a note writes a ledger row carrying it", async ({
     .poll(async () => {
       const { data } = await admin
         .from("credit_ledger")
-        .select("delta_czk,reason")
+        .select("delta_thb,reason")
         .eq("player_id", id)
-        .eq("delta_czk", 2 * PASS_REFERENCE_PRICE_CZK)
+        .eq("delta_thb", 2 * PASS_REFERENCE_PRICE_THB)
         .eq("reason", "admin_grant");
       return (data ?? []).length;
     })

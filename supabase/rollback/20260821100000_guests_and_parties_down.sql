@@ -3,7 +3,7 @@
 -- DESTRUCTIVE IN ONE DIRECTION ONLY, and it is worth naming: dropping
 -- `guest_count` discards every house guest and every party seat. A party
 -- booking becomes a single-seat booking still priced for the whole party, so
--- its `price_czk` will read as a multiple of the game price with nothing to
+-- its `price_thb` will read as a multiple of the game price with nothing to
 -- explain it. Cancel outstanding parties before running this.
 
 drop view public.game_roster_public;

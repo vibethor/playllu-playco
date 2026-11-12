@@ -123,7 +123,7 @@ insert into public.players (id, nickname, email, auth_user_id) values
   ('7aaa0000-0000-0000-0000-00000000000a', 'OpPlayerA', 'op-a@test.invalid', '70000000-0000-0000-0000-000000000071'),
   ('7bbb0000-0000-0000-0000-00000000000b', 'OpPlayerB', 'op-b@test.invalid', '70000000-0000-0000-0000-000000000072');
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('97770000-0000-0000-0000-000000000001', 'Online Cap Four', now() + interval '7 days', 4, 150, 'published'),
   ('97770000-0000-0000-0000-000000000002', 'Online Cap Two',  now() + interval '8 days', 2, 150, 'published');
 
@@ -136,7 +136,7 @@ select pg_temp.act_as('70000000-0000-0000-0000-000000000071');
 -- A party of two, online: two seats, marked pending.
 select pg_temp.ok(
   (select (public.create_booking(
-     '97770000-0000-0000-0000-000000000001', 'qr', null, null, 1, true)).price_czk) = 300,
+     '97770000-0000-0000-0000-000000000001', 'qr', null, null, 1, true)).price_thb) = 300,
   'an online party is priced whole, like any other');
 
 reset role;
@@ -304,7 +304,7 @@ select pg_temp.ok(
 select pg_temp.ok(
   pg_temp.attention_reason(
     pg_temp.bid('97770000-0000-0000-0000-000000000001',
-                '7bbb0000-0000-0000-0000-00000000000b')) like 'paid 10 CZK%',
+                '7bbb0000-0000-0000-0000-00000000000b')) like 'paid 10 THB%',
   'and the reason records the shortfall for the person who resolves it');
 
 select pg_temp.ok(

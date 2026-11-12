@@ -96,7 +96,7 @@ async function asPlayer(context: import("@playwright/test").BrowserContext) {
 test("every primary tap on the five journeys answers within 100ms", async ({ page, context }) => {
   const game = await createScratchGame({
     durationMinutes: 90,
-    priceCzk: 180,
+    priceThb: 180,
     surface: "turf",
     /*
      * Inside the eight days the lists show (2026-11-02). Journeys 1 and 2 press

@@ -1,4 +1,4 @@
-import { PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "@/lib/pass/creditPrice";
 import { createServerSupabaseClient } from "@/lib/supabase/clients";
 
 /**
@@ -14,20 +14,20 @@ import { createServerSupabaseClient } from "@/lib/supabase/clients";
 
 export interface PassTier {
   games: number;
-  priceCzk: number;
-  creditedCzk: number;
+  priceThb: number;
+  creditedThb: number;
   /** Null = never expires. Only the 1-game tier. */
   expiresMonths: number | null;
   /** What one game works out at. The number the offer is actually judged on. */
-  perGameCzk: number;
-  /** `creditedCzk - priceCzk`. Zero on the 1-game tier, and that is the point. */
-  savingCzk: number;
+  perGameThb: number;
+  /** `creditedThb - priceThb`. Zero on the 1-game tier, and that is the point. */
+  savingThb: number;
 }
 
 export interface CreditBatch {
   batchId: string;
-  originalCzk: number;
-  remainingCzk: number;
+  originalThb: number;
+  remainingThb: number;
   expiresAt: string;
 }
 
@@ -36,21 +36,21 @@ export async function listPassTiers(): Promise<PassTier[]> {
 
   const { data, error } = await supabase
     .from("pass_tiers")
-    .select("games, price_czk, credited_czk, expires_months")
+    .select("games, price_thb, credited_thb, expires_months")
     .order("games", { ascending: true });
 
   if (error || !data) return [];
 
   return data.map((row) => ({
     games: row.games,
-    priceCzk: row.price_czk,
-    creditedCzk: row.credited_czk,
+    priceThb: row.price_thb,
+    creditedThb: row.credited_thb,
     expiresMonths: row.expires_months,
     // Rounded to a whole crown for display. Every current tier divides
     // exactly; the rounding is here so a future one that does not cannot
     // render "139.99999".
-    perGameCzk: Math.round(row.price_czk / row.games),
-    savingCzk: row.credited_czk - row.price_czk,
+    perGameThb: Math.round(row.price_thb / row.games),
+    savingThb: row.credited_thb - row.price_thb,
   }));
 }
 
@@ -70,11 +70,11 @@ export async function listMyBatches(): Promise<CreditBatch[]> {
   return data
     // A spent-out batch is history, and the account page is answering "what
     // have I got" rather than "what did I have".
-    .filter((row) => row.remaining_czk > 0)
+    .filter((row) => row.remaining_thb > 0)
     .map((row) => ({
       batchId: row.batch_id,
-      originalCzk: row.original_czk,
-      remainingCzk: row.remaining_czk,
+      originalThb: row.original_thb,
+      remainingThb: row.remaining_thb,
       expiresAt: row.expires_at,
     }));
 }
@@ -82,7 +82,7 @@ export async function listMyBatches(): Promise<CreditBatch[]> {
 /**
  * The reference price the tiers are built on.
  *
- * NOT A PRICE ANYONE IS EVER CHARGED — `games.price_czk` is the only thing the
+ * NOT A PRICE ANYONE IS EVER CHARGED — `games.price_thb` is the only thing the
  * booking path reads. This exists so "≈ 5 games" can be computed, and it is
  * exported so the number appears once rather than in each caller.
  */
@@ -92,7 +92,7 @@ export async function listMyBatches(): Promise<CreditBatch[]> {
  * — so a CLIENT component importing the constant from here dragged
  * `next/headers` across the boundary. Existing callers are unchanged.
  */
-export { PASS_REFERENCE_PRICE_CZK };
+export { PASS_REFERENCE_PRICE_THB };
 
 /**
  * The tier the pass page tags "Most popular".
@@ -118,9 +118,9 @@ export const MOST_POPULAR_GAMES = 12;
  */
 export function bestDiscountPercent(tiers: PassTier[]): number {
   const best = tiers.reduce((max, tier) => {
-    const anchor = tier.games * PASS_REFERENCE_PRICE_CZK;
+    const anchor = tier.games * PASS_REFERENCE_PRICE_THB;
     if (anchor <= 0) return max;
-    return Math.max(max, ((anchor - tier.priceCzk) / anchor) * 100);
+    return Math.max(max, ((anchor - tier.priceThb) / anchor) * 100);
   }, 0);
   return Math.floor(best);
 }
@@ -128,16 +128,16 @@ export function bestDiscountPercent(tiers: PassTier[]): number {
 /**
  * "≈ 5 games" for an amount of credit.
  *
- * THE GAMES-EQUIVALENT IS THE WHOLE REASON CZK WORKS AS THE UNIT (§4.2).
+ * THE GAMES-EQUIVALENT IS THE WHOLE REASON THB WORKS AS THE UNIT (§4.2).
  * Unit-credits were rejected because per-game pricing varies — a "5 games"
  * balance starts owing fractions of a game the moment two games cost
- * differently. CZK with an approximate games count gives the same mental model
+ * differently. THB with an approximate games count gives the same mental model
  * without lying about what is stored, and the "≈" is doing real work: it says
  * this is a guide, not a promise.
  *
  * Floored, never rounded up. Telling someone they have five games left when
  * they have four and a half is the one direction this must not err in.
  */
-export function gamesEquivalent(amountCzk: number): number {
-  return Math.floor(Math.max(0, amountCzk) / PASS_REFERENCE_PRICE_CZK);
+export function gamesEquivalent(amountThb: number): number {
+  return Math.floor(Math.max(0, amountThb) / PASS_REFERENCE_PRICE_THB);
 }

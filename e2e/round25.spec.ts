@@ -45,7 +45,7 @@ test("the online option stays live and the flow never dead-ends", async ({
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
 
   try {
     await signInAs(context, players.runner);
@@ -74,7 +74,7 @@ test("the online option stays live and the flow never dead-ends", async ({
 });
 
 test("the checkout page refuses a game it cannot sell", async ({ page, context }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
 
   try {
     /*

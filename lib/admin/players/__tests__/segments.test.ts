@@ -7,7 +7,7 @@ import {
   playerKpis,
   segmentCounts,
 } from "@/lib/admin/players/segments";
-import { PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "@/lib/pass/creditPrice";
 import { aPlayer } from "./fixtures";
 
 /**
@@ -83,7 +83,7 @@ describe("inSegment", () => {
 
   it("keeps a shadow out of every segment but its own, even one that has played", () => {
     // Arrange
-    const shadow = aPlayer({ kind: "shadow", gamesPlayed: 4, bookingCount: 4, balanceCzk: 900 });
+    const shadow = aPlayer({ kind: "shadow", gamesPlayed: 4, bookingCount: 4, balanceThb: 900 });
 
     // Act
     const segments = (["played", "came-back", "has-credit", "never-booked", "not-counted"] as const).filter(
@@ -117,8 +117,8 @@ describe("inSegment", () => {
   });
 
   it("needs a whole Credit for has Credit — a smaller balance buys no seat", () => {
-    expect(inSegment(aPlayer({ balanceCzk: PASS_REFERENCE_PRICE_CZK }), "has-credit")).toBe(true);
-    expect(inSegment(aPlayer({ balanceCzk: PASS_REFERENCE_PRICE_CZK - 1 }), "has-credit")).toBe(false);
+    expect(inSegment(aPlayer({ balanceThb: PASS_REFERENCE_PRICE_THB }), "has-credit")).toBe(true);
+    expect(inSegment(aPlayer({ balanceThb: PASS_REFERENCE_PRICE_THB - 1 }), "has-credit")).toBe(false);
   });
 
   it("finds an unfinished checkout and a marketing opt-in", () => {
@@ -185,9 +185,9 @@ describe("playerKpis", () => {
   it("counts Credit holders and the whole Credits they hold", () => {
     // Arrange
     const players = [
-      aPlayer({ balanceCzk: PASS_REFERENCE_PRICE_CZK * 3 + 20 }),
-      aPlayer({ balanceCzk: PASS_REFERENCE_PRICE_CZK }),
-      aPlayer({ balanceCzk: 50 }),
+      aPlayer({ balanceThb: PASS_REFERENCE_PRICE_THB * 3 + 20 }),
+      aPlayer({ balanceThb: PASS_REFERENCE_PRICE_THB }),
+      aPlayer({ balanceThb: 50 }),
     ];
 
     // Act
@@ -202,7 +202,7 @@ describe("playerKpis", () => {
     // Arrange
     const players = [
       aPlayer({ marketingOptIn: true }),
-      aPlayer({ kind: "shadow", marketingOptIn: true, gamesPlayed: 3, balanceCzk: 900 }),
+      aPlayer({ kind: "shadow", marketingOptIn: true, gamesPlayed: 3, balanceThb: 900 }),
       aPlayer({ kind: "seed", marketingOptIn: true, gamesPlayed: 3 }),
       aPlayer({ kind: "deleted" }),
     ];

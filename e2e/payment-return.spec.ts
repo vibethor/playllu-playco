@@ -18,7 +18,7 @@ import {
  * and nothing for this page to wait for. Cancelling a booking CREDITS the
  * player — which is what `clearActiveBookings` does — so each run of this file
  * paid the runner back for the last one, and after a few the wallet covered a
- * 150 CZK game outright and every test here failed on a booking that was
+ * 150 THB game outright and every test here failed on a booking that was
  * already confirmed.
  *
  * That is the seed drifting, caused by this file rather than suffered by it.
@@ -76,7 +76,7 @@ function signedEvent(sessionId: string, reference: string, amountMinor: number) 
         id: sessionId,
         client_reference_id: reference,
         amount_total: amountMinor,
-        currency: "czk",
+        currency: "thb",
       },
     },
   });
@@ -107,22 +107,22 @@ async function openCheckout(
   who: (typeof players)[keyof typeof players],
   gameId: string,
   sessionId: string,
-  amountCzk: number,
+  amountThb: number,
 ) {
   const client = await apiClientFor(who);
   const { error } = await client.rpc("open_checkout", {
     p_game_id: gameId,
     p_guest_count: 0,
     p_stripe_session_id: sessionId,
-    p_amount_czk: amountCzk,
+    p_amount_thb: amountThb,
   });
   expect(error, `open_checkout: ${error?.message}`).toBeNull();
 }
 
-async function settleCheckout(sessionId: string, amountCzk: number) {
+async function settleCheckout(sessionId: string, amountThb: number) {
   const { data, error } = await serviceClient().rpc("settle_checkout_session", {
     p_stripe_session_id: sessionId,
-    p_amount_czk: amountCzk,
+    p_amount_thb: amountThb,
   });
   expect(error, `settle_checkout_session: ${error?.message}`).toBeNull();
   return data as string;
@@ -153,7 +153,7 @@ test.describe("the Stripe return page", () => {
     context,
     request,
   }) => {
-    const game = await createScratchGame({ capacity: 6, priceCzk: PRICE });
+    const game = await createScratchGame({ capacity: 6, priceThb: PRICE });
     try {
       await withEmptyWallet("runner");
       await signInAs(context, players.runner);
@@ -233,7 +233,7 @@ test.describe("the Stripe return page", () => {
         p_pass_games: 5,
       });
       expect(error, error?.message).toBeNull();
-      const topup = data as { id: string; amount_czk: number };
+      const topup = data as { id: string; amount_thb: number };
       await stash(context, "pass", topup.id);
 
       await page.goto("/payment/return", { waitUntil: "networkidle" });
@@ -242,7 +242,7 @@ test.describe("the Stripe return page", () => {
       const { payload, header } = signedEvent(
         `cs_r15_pass_${RUN}`,
         topup.id,
-        topup.amount_czk * 100,
+        topup.amount_thb * 100,
       );
       const res = await request.post("/api/stripe/webhook", {
         headers: { "stripe-signature": header, "content-type": "application/json" },
@@ -284,7 +284,7 @@ test.describe("the Stripe return page", () => {
     context,
     request,
   }) => {
-    const game = await createScratchGame({ capacity: 6, priceCzk: PRICE });
+    const game = await createScratchGame({ capacity: 6, priceThb: PRICE });
     try {
       await withEmptyWallet("runner");
       await signInAs(context, players.runner);
@@ -329,7 +329,7 @@ test.describe("the Stripe return page", () => {
     page,
     context,
   }) => {
-    const game = await createScratchGame({ capacity: 6, priceCzk: PRICE });
+    const game = await createScratchGame({ capacity: 6, priceThb: PRICE });
     try {
       await withEmptyWallet("runner");
       await signInAs(context, players.runner);
@@ -404,7 +404,7 @@ test("after a minute it stops implying it is imminent, and says what is true", a
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 6, priceCzk: PRICE });
+  const game = await createScratchGame({ capacity: 6, priceThb: PRICE });
   try {
     await withEmptyWallet("runner");
     await signInAs(context, players.runner);

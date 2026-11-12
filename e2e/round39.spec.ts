@@ -88,7 +88,7 @@ test("an upcoming game with one confirmed booking refuses with the cancel-first 
   context,
 }) => {
   // Arrange — a PAID seat, through pay-first.
-  const game = await createScratchGame({ capacity: 8, priceCzk: 180, durationMinutes: 90 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 180, durationMinutes: 90 });
   try {
     await clearActiveBookings("runner");
     const runner = await apiClientFor(players.runner);
@@ -97,12 +97,12 @@ test("an upcoming game with one confirmed booking refuses with the cancel-first 
       p_game_id: game.id,
       p_guest_count: 0,
       p_stripe_session_id: sessionId,
-      p_amount_czk: 180,
+      p_amount_thb: 180,
     });
     expect(opened.error, `open_checkout: ${opened.error?.message}`).toBeNull();
     const settled = await serviceClient().rpc("settle_checkout_session", {
       p_stripe_session_id: sessionId,
-      p_amount_czk: 180,
+      p_amount_thb: 180,
     });
     expect(settled.data).toBe("booked");
     const { data: rows } = await serviceClient()
@@ -138,7 +138,7 @@ test("a settled game deletes after a confirm that names the stats it takes", asy
   context,
 }) => {
   // Arrange — paid, aged into the past, swept to settled.
-  const game = await createScratchGame({ capacity: 8, priceCzk: 180, durationMinutes: 90 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 180, durationMinutes: 90 });
   let deleted = false;
   try {
     await clearActiveBookings("runner");
@@ -148,11 +148,11 @@ test("a settled game deletes after a confirm that names the stats it takes", asy
       p_game_id: game.id,
       p_guest_count: 0,
       p_stripe_session_id: sessionId,
-      p_amount_czk: 180,
+      p_amount_thb: 180,
     });
     const settledSession = await serviceClient().rpc("settle_checkout_session", {
       p_stripe_session_id: sessionId,
-      p_amount_czk: 180,
+      p_amount_thb: 180,
     });
     expect(settledSession.data).toBe("booked");
     const aged = await serviceClient()
@@ -217,7 +217,7 @@ test("archive takes a venue out of the picker and off no game; restore puts it b
     p_venue_id: venueId,
     p_starts_at: new Date(Date.now() + 24 * 12 * 3_600_000).toISOString(),
     p_capacity: 10,
-    p_price_czk: 180,
+    p_price_thb: 180,
     p_organizer_name: "E2E Organizer",
     p_format: null,
     p_surface: null,

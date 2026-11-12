@@ -193,7 +193,7 @@ select pg_temp.ok(
 select pg_temp.ok(
   pg_temp.attempt($q$
     insert into public.games
-      (venue, starts_at, capacity, price_czk, status, city, brand,
+      (venue, starts_at, capacity, price_thb, status, city, brand,
        allowed_skill_levels)
     values
       ('conformance-a probe', now() + interval '30 days', 10, 150, 'draft',
@@ -205,7 +205,7 @@ select pg_temp.ok(
 select pg_temp.ok(
   pg_temp.attempt($q$
     insert into public.games
-      (venue, starts_at, capacity, price_czk, status, city, brand,
+      (venue, starts_at, capacity, price_thb, status, city, brand,
        allowed_skill_levels)
     values
       ('conformance-a probe empty', now() + interval '30 days', 10, 150,
@@ -216,7 +216,7 @@ select pg_temp.ok(
 select pg_temp.ok(
   pg_temp.attempt($q$
     insert into public.games
-      (venue, starts_at, capacity, price_czk, status, city, brand, format)
+      (venue, starts_at, capacity, price_thb, status, city, brand, format)
     values
       ('conformance-a probe 3way', now() + interval '30 days', 18, 150,
        'draft', 'Praha', 'hrajfotbal', '6v6v6')
@@ -226,7 +226,7 @@ select pg_temp.ok(
 select pg_temp.ok(
   pg_temp.attempt($q$
     insert into public.games
-      (venue, starts_at, capacity, price_czk, status, city, brand,
+      (venue, starts_at, capacity, price_thb, status, city, brand,
        duration_minutes)
     values
       ('conformance-a probe dur', now() + interval '30 days', 10, 150,

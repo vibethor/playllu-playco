@@ -74,7 +74,7 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin) values
 -- Capacity 20 so the POLICY is the binding constraint rather than the pitch —
 -- the two are tested separately below, and a game that cannot seat fourteen
 -- would prove nothing about the ceiling.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('96660000-0000-0000-0000-0000000000d1', 'Party Cap Twenty', now() + interval '7 days', 20, 150, 'published'),
   ('96660000-0000-0000-0000-0000000000d2', 'Party Cap Six',    now() + interval '8 days',  6, 150, 'published');
 
@@ -107,7 +107,7 @@ select pg_temp.act_as('60000000-0000-0000-0000-0000000000d1');
 
 select pg_temp.ok(
   (select (public.create_booking(
-     '96660000-0000-0000-0000-0000000000d1', 'cash', null, null, 13)).price_czk)
+     '96660000-0000-0000-0000-0000000000d1', 'cash', null, null, 13)).price_thb)
    = 150 * 14,
   'a party of thirteen guests is booked, and priced at fourteen seats');
 

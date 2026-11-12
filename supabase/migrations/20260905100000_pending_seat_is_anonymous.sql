@@ -299,13 +299,13 @@ begin
     set local request.jwt.claims = '{"role":"service_role"}';
 
     insert into public.venues (name) values ('pending seat probe') returning id into v_venue;
-    insert into public.games (venue, venue_id, starts_at, capacity, price_czk, status)
+    insert into public.games (venue, venue_id, starts_at, capacity, price_thb, status)
          values ('pending seat probe', v_venue, now() + interval '2 days', 12, 150, 'published')
       returning id into v_game;
 
     -- A checkout in progress: reserved, pending, inside the window.
     insert into public.bookings
-           (game_id, player_id, status, price_czk, payment_method, payment_pending_at)
+           (game_id, player_id, status, price_thb, payment_method, payment_pending_at)
          values (v_game, v_player, 'reserved', 150, 'qr', now())
       returning id into v_booking;
 

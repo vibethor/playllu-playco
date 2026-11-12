@@ -1,10 +1,10 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
-  PITCH_COST_MAX_CZK,
+  PITCH_COST_MAX_THB,
   parsePitchCostForm,
   parsePitchSeason,
-  parseWholeCzk,
+  parseWholeThb,
   pitchCostInForce,
 } from "@/lib/admin/venues/pitchCosts";
 
@@ -19,13 +19,13 @@ import {
  * names the field, not the authority.
  */
 
-describe("parseWholeCzk — what counts as a typed pitch cost", () => {
+describe("parseWholeThb — what counts as a typed pitch cost", () => {
   it("reads a whole number of crowns", () => {
     // Arrange
     const typed = "1200";
 
     // Act
-    const parsed = parseWholeCzk(typed);
+    const parsed = parseWholeThb(typed);
 
     // Assert
     expect(parsed).toBe(1200);
@@ -36,7 +36,7 @@ describe("parseWholeCzk — what counts as a typed pitch cost", () => {
     const typed = [" 800 ", "1 200", "1 200"];
 
     // Act
-    const parsed = typed.map(parseWholeCzk);
+    const parsed = typed.map(parseWholeThb);
 
     // Assert
     expect(parsed).toEqual([800, 1200, 1200]);
@@ -44,21 +44,21 @@ describe("parseWholeCzk — what counts as a typed pitch cost", () => {
 
   it("accepts the two ends of the range, nothing and the ceiling", () => {
     // Arrange
-    const ends = ["0", String(PITCH_COST_MAX_CZK)];
+    const ends = ["0", String(PITCH_COST_MAX_THB)];
 
     // Act
-    const parsed = ends.map(parseWholeCzk);
+    const parsed = ends.map(parseWholeThb);
 
     // Assert
-    expect(parsed).toEqual([0, PITCH_COST_MAX_CZK]);
+    expect(parsed).toEqual([0, PITCH_COST_MAX_THB]);
   });
 
   it("refuses a cost above the ceiling, which is a typo rather than a price", () => {
     // Arrange
-    const typed = String(PITCH_COST_MAX_CZK + 1);
+    const typed = String(PITCH_COST_MAX_THB + 1);
 
     // Act
-    const parsed = parseWholeCzk(typed);
+    const parsed = parseWholeThb(typed);
 
     // Assert
     expect(parsed).toBeNull();
@@ -66,10 +66,10 @@ describe("parseWholeCzk — what counts as a typed pitch cost", () => {
 
   it("refuses a negative, a fraction, an exponent and a comma — none is a whole crown amount", () => {
     // Arrange — `1e3` is what a number input lets through; `1,200` is a decimal in Czech.
-    const typed = ["-5", "12.5", "1e3", "1,200", "800 CZK"];
+    const typed = ["-5", "12.5", "1e3", "1,200", "800 THB"];
 
     // Act
-    const parsed = typed.map(parseWholeCzk);
+    const parsed = typed.map(parseWholeThb);
 
     // Assert
     expect(parsed).toEqual([null, null, null, null, null]);
@@ -80,7 +80,7 @@ describe("parseWholeCzk — what counts as a typed pitch cost", () => {
     const empty = ["", "   ", null, undefined];
 
     // Act
-    const parsed = empty.map(parseWholeCzk);
+    const parsed = empty.map(parseWholeThb);
 
     // Assert
     expect(parsed).toEqual([null, null, null, null]);
@@ -91,7 +91,7 @@ describe("parseWholeCzk — what counts as a typed pitch cost", () => {
     const file = new Blob(["1200"]);
 
     // Act
-    const parsed = parseWholeCzk(file);
+    const parsed = parseWholeThb(file);
 
     // Assert
     expect(parsed).toBeNull();
@@ -107,7 +107,7 @@ describe("parsePitchCostForm — the two inputs together", () => {
     const result = parsePitchCostForm(form);
 
     // Assert
-    expect(result).toEqual({ ok: true, summerCzk: 800, winterCzk: 1200 });
+    expect(result).toEqual({ ok: true, summerThb: 800, winterThb: 1200 });
   });
 
   it("names the one field that is wrong, so the other keeps its value", () => {
@@ -134,7 +134,7 @@ describe("parsePitchCostForm — the two inputs together", () => {
 });
 
 describe("pitchCostInForce — which of a venue's two prices new games take", () => {
-  const costs = { summerCzk: 800, winterCzk: 1200 };
+  const costs = { summerThb: 800, winterThb: 1200 };
 
   it("is the winter price while the switch is on winter", () => {
     // Act
@@ -176,12 +176,12 @@ describe("parsePitchSeason — the switch's submitted value", () => {
 
 /**
  * THE CEILING IS SQL'S, AND THIS IS A COPY OF IT — so it is pinned to the
- * newest definition of `pitch_cost_max_czk()` in the migrations. If the
+ * newest definition of `pitch_cost_max_thb()` in the migrations. If the
  * ceiling moves there and not here, the form refuses a cost the RPC would
  * take (or lets through one it refuses, which only costs a round trip).
  */
-describe("PITCH_COST_MAX_CZK", () => {
-  it("is the ceiling the newest migration gives pitch_cost_max_czk()", () => {
+describe("PITCH_COST_MAX_THB", () => {
+  it("is the ceiling the newest migration gives pitch_cost_max_thb()", () => {
     // Arrange
     const dir = "supabase/migrations";
     const definitions = readdirSync(dir)
@@ -190,7 +190,7 @@ describe("PITCH_COST_MAX_CZK", () => {
       .flatMap((file) => {
         const sql = readFileSync(`${dir}/${file}`, "utf8");
         const pattern =
-          /function\s+public\.pitch_cost_max_czk\(\)[\s\S]*?\$\$\s*select\s+(\d+)\s*\$\$/gi;
+          /function\s+public\.pitch_cost_max_thb\(\)[\s\S]*?\$\$\s*select\s+(\d+)\s*\$\$/gi;
         return [...sql.matchAll(pattern)].map((match) => Number(match[1]));
       });
 
@@ -198,7 +198,7 @@ describe("PITCH_COST_MAX_CZK", () => {
     const newest = definitions.at(-1);
 
     // Assert
-    expect(definitions.length, "no migration defines pitch_cost_max_czk()").toBeGreaterThan(0);
-    expect(PITCH_COST_MAX_CZK).toBe(newest);
+    expect(definitions.length, "no migration defines pitch_cost_max_thb()").toBeGreaterThan(0);
+    expect(PITCH_COST_MAX_THB).toBe(newest);
   });
 });

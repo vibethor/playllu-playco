@@ -82,7 +82,7 @@ describe("game-cancelled fan-out (dry run)", () => {
       venue: `Cancel Evidence ${STAMP}`,
       starts_at: new Date(Date.now() + 5 * 86_400_000).toISOString(),
       capacity: 10,
-      price_czk: 200,
+      price_thb: 200,
       status: "published",
     });
 
@@ -144,7 +144,7 @@ describe("game-cancelled fan-out (dry run)", () => {
     expect(summary.notices).toBe(2);
 
     // A receipt ONLY for the confirmed booking whose money came back. The
-    // unpaid hold gets no receipt: a "0 CZK credited" receipt reads as a bug.
+    // unpaid hold gets no receipt: a "0 THB credited" receipt reads as a bug.
     expect(summary.receipts).toBe(1);
 
     // The email-less shadow is skipped, and that is a normal outcome.
@@ -157,8 +157,8 @@ describe("game-cancelled fan-out (dry run)", () => {
 
     // The credit the receipt reports is the credit the RPC actually issued.
     const paid = recipients.find((r) => r.email === `cx-paid-${STAMP}@test.invalid`);
-    expect(paid?.creditCzk).toBe(200);
+    expect(paid?.creditThb).toBe(200);
     const held = recipients.find((r) => r.email === `cx-hold-${STAMP}@test.invalid`);
-    expect(held?.creditCzk).toBe(0);
+    expect(held?.creditThb).toBe(0);
   }, 60_000);
 });

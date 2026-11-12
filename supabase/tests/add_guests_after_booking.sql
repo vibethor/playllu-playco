@@ -79,12 +79,12 @@ insert into public.players (id, nickname, email, auth_user_id) values
 -- takes no credit at all — so every game a credit is spent on below says how
 -- long it is. The price follows from that, which is why none of these rows
 -- states one it chose.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('9d000000-0000-0000-0000-0000000d9e01', 'Guest Pitch',
    now() + interval '2 days', 3, 150, 'published', 90);
 
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk,
-                             credit_applied_czk, guest_count)
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb,
+                             credit_applied_thb, guest_count)
   values ('7d000000-0000-0000-0000-0000000d9e01', '9d000000-0000-0000-0000-0000000d9e01',
           'aaaa0000-0000-0000-0000-0000000d9e01', 'confirmed', 'qr', 150, 0, 0);
 
@@ -164,8 +164,8 @@ select pg_temp.ok(
 -- the pitch is now full — both rails refuse, and money that arrives is credited
 -- =============================================================================
 
-insert into public.bookings (game_id, player_id, status, payment_method, price_czk,
-                             credit_applied_czk, guest_count)
+insert into public.bookings (game_id, player_id, status, payment_method, price_thb,
+                             credit_applied_thb, guest_count)
   values ('9d000000-0000-0000-0000-0000000d9e01', 'aaaa0000-0000-0000-0000-0000000d9e02',
           'confirmed', 'qr', 150, 0, 0);
 
@@ -182,13 +182,13 @@ reset role;
 
 -- Money that arrives anyway becomes credit IN FULL, and is queued for a human.
 insert into public.checkout_sessions
-       (stripe_session_id, game_id, player_id, guest_count, amount_czk, kind, target_booking_id)
+       (stripe_session_id, game_id, player_id, guest_count, amount_thb, kind, target_booking_id)
   values ('cs_test_addguest_late', '9d000000-0000-0000-0000-0000000d9e01',
           'aaaa0000-0000-0000-0000-0000000d9e01', 1, 150, 'add_guests',
           '7d000000-0000-0000-0000-0000000d9e01');
 
 create temp table _credit_before as
-  select coalesce(sum(delta_czk), 0) as bal from public.credit_ledger
+  select coalesce(sum(delta_thb), 0) as bal from public.credit_ledger
    where player_id = 'aaaa0000-0000-0000-0000-0000000d9e01';
 
 select pg_temp.act_as_service();
@@ -198,7 +198,7 @@ select pg_temp.ok(
 reset role;
 
 select pg_temp.ok(
-  (select coalesce(sum(delta_czk), 0) from public.credit_ledger
+  (select coalesce(sum(delta_thb), 0) from public.credit_ledger
     where player_id = 'aaaa0000-0000-0000-0000-0000000d9e01')
   = (select bal from _credit_before) + 150,
   'credited IN FULL — ruling O''s refund-in-kind');
@@ -218,7 +218,7 @@ select pg_temp.ok(
 
 select pg_temp.ok_probe(
   $q$insert into public.checkout_sessions
-       (stripe_session_id, game_id, player_id, guest_count, amount_czk, kind, target_booking_id)
+       (stripe_session_id, game_id, player_id, guest_count, amount_thb, kind, target_booking_id)
      values ('cs_test_bad', '9d000000-0000-0000-0000-0000000d9e01',
              'aaaa0000-0000-0000-0000-0000000d9e01', 1, 150, 'add_guests', null)
      returning id$q$,
@@ -230,13 +230,13 @@ select pg_temp.ok_probe(
 --
 -- The owner asked for this to be verified rather than assumed, and verifying it
 -- turned up a divergence worth naming: `add_guests_with_credit` charges
--- `game.price_czk x guests`, NOT `150 x guests`. On a 150 CZK game the two are
+-- `game.price_thb x guests`, NOT `150 x guests`. On a 150 THB game the two are
 -- the same number and the credits ruling holds exactly; on a game priced 180 or
 -- 200 — production has both — a guest costs more than one credit.
 --
 -- THE ASSERTION IS WRITTEN AGAINST THE GAME'S PRICE, because that is what the
 -- function does and a test must say what is true. The question of whether a
--- guest SHOULD cost one credit on a 200 CZK game is a money decision and it is
+-- guest SHOULD cost one credit on a 200 THB game is a money decision and it is
 -- the owner's; it is ledger row 277, not a silent change here.
 -- =============================================================================
 
@@ -249,7 +249,7 @@ select '9d000000-0000-0000-0000-0000000d9f02'::uuid as game_id,
 -- takes no credit at all — so every game a credit is spent on below says how
 -- long it is. The price follows from that, which is why none of these rows
 -- states one it chose.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('9d000000-0000-0000-0000-0000000d9f02', 'Add Guest Debit', now() + interval '9 days', 10, 200, 'published', 90);
 
 insert into auth.users (id, email) values
@@ -262,7 +262,7 @@ insert into public.players (id, nickname, email, auth_user_id) values
 -- guests' worth and not a crown more. `create_booking` applies the wallet inside
 -- its own transaction, so granting two here would leave one and the refusal
 -- below would fire for the wrong reason.
-insert into public.credit_ledger (player_id, delta_czk, reason)
+insert into public.credit_ledger (player_id, delta_thb, reason)
 values ('aaaa0000-0000-0000-0000-0000000d9f02', 3 * 180, 'admin_grant');
 
 select pg_temp.act_as('6d000000-0000-0000-0000-0000000d9f02');
@@ -281,7 +281,7 @@ create function pg_temp.debit_booking() returns uuid language sql security defin
 $$;
 
 create function pg_temp.debit_balance() returns integer language sql security definer as $$
-  select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger
+  select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger
    where player_id = 'aaaa0000-0000-0000-0000-0000000d9f02'
 $$;
 
@@ -313,7 +313,7 @@ select pg_temp.ok(
   (select count(*) from public.credit_ledger
     where booking_id = pg_temp.debit_booking()
       and reason = 'redemption'
-      and delta_czk = -2 * 180) = 1,
+      and delta_thb = -2 * 180) = 1,
   'as ONE redemption row, at the credit rate times the guest count');
 
 select seq, label, case when passed then 'PASS' else 'FAIL' end as result, detail

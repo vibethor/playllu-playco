@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { adminWallet, creditsFromCzk, czkFromCredits, isWholeCredits } from "@/lib/admin/credits";
-import { PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/creditPrice";
+import { adminWallet, creditsFromThb, thbFromCredits, isWholeCredits } from "@/lib/admin/credits";
+import { PASS_REFERENCE_PRICE_THB } from "@/lib/pass/creditPrice";
 
 /**
  * ROUND 31, ITEM 3 — admin counts credits, the ledger keeps crowns.
@@ -12,45 +12,45 @@ import { PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/creditPrice";
  * it. The two that stay literal are the ones whose point IS the number: a
  * balance that does not divide, and the floor.
  */
-const RATE = PASS_REFERENCE_PRICE_CZK;
+const RATE = PASS_REFERENCE_PRICE_THB;
 
-describe("czkFromCredits", () => {
+describe("thbFromCredits", () => {
   it("converts whole credits at the ruling's rate", () => {
-    expect(czkFromCredits(2)).toBe(2 * RATE);
-    expect(czkFromCredits(1)).toBe(RATE);
+    expect(thbFromCredits(2)).toBe(2 * RATE);
+    expect(thbFromCredits(1)).toBe(RATE);
   });
 
   it("is the ruling's constant, not a literal of its own", () => {
     /*
      * A SECOND COPY OF 150 IS THE BUG THIS GUARDS. The rate lives in
-     * `PASS_REFERENCE_PRICE_CZK` and the whole product divides by it; a
+     * `PASS_REFERENCE_PRICE_THB` and the whole product divides by it; a
      * hard-coded 150 here would keep passing on the day the price moves.
      */
-    expect(czkFromCredits(1)).toBe(PASS_REFERENCE_PRICE_CZK);
-    expect(czkFromCredits(7)).toBe(7 * PASS_REFERENCE_PRICE_CZK);
+    expect(thbFromCredits(1)).toBe(PASS_REFERENCE_PRICE_THB);
+    expect(thbFromCredits(7)).toBe(7 * PASS_REFERENCE_PRICE_THB);
   });
 });
 
-describe("creditsFromCzk", () => {
+describe("creditsFromThb", () => {
   it("counts whole credits a player can actually spend", () => {
-    expect(creditsFromCzk(3 * RATE)).toBe(3);
-    expect(creditsFromCzk(RATE)).toBe(1);
-    expect(creditsFromCzk(0)).toBe(0);
+    expect(creditsFromThb(3 * RATE)).toBe(3);
+    expect(creditsFromThb(RATE)).toBe(1);
+    expect(creditsFromThb(0)).toBe(0);
   });
 
   it("FLOORS rather than rounds — a part credit buys no game", () => {
     /*
-     * 149 CZK is not "one credit". Rounding up states a number the player
+     * 149 THB is not "one credit". Rounding up states a number the player
      * cannot spend, which is worse than stating a smaller true one.
      */
-    expect(creditsFromCzk(RATE - 1)).toBe(0);
-    expect(creditsFromCzk(2 * RATE - 1)).toBe(1);
+    expect(creditsFromThb(RATE - 1)).toBe(0);
+    expect(creditsFromThb(2 * RATE - 1)).toBe(1);
     // A ragged legacy balance, floored to what it can actually buy.
-    expect(creditsFromCzk(4460)).toBe(24);
+    expect(creditsFromThb(4460)).toBe(24);
   });
 
   it("never goes negative", () => {
-    expect(creditsFromCzk(-RATE)).toBe(0);
+    expect(creditsFromThb(-RATE)).toBe(0);
   });
 });
 
@@ -75,24 +75,24 @@ describe("isWholeCredits", () => {
 
 describe("adminWallet", () => {
   it("shows credits alone when the balance divides cleanly", () => {
-    expect(adminWallet(3 * RATE)).toEqual({ credits: 3, remainderCzk: null });
-    expect(adminWallet(0)).toEqual({ credits: 0, remainderCzk: null });
+    expect(adminWallet(3 * RATE)).toEqual({ credits: 3, remainderThb: null });
+    expect(adminWallet(0)).toEqual({ credits: 0, remainderThb: null });
   });
 
   it("HANDLES THE RAGGED BALANCE INSTEAD OF ROUNDING A LIE", () => {
     /*
      * The headline is a floor, so the difference is real money the organizer
-     * has to be able to see. `remainderCzk` is what the surface prints as
+     * has to be able to see. `remainderThb` is what the surface prints as
      * subtext — never instead of the credit count, always beside it.
      */
-    expect(adminWallet(4460)).toEqual({ credits: 24, remainderCzk: 4460 });
-    expect(adminWallet(110)).toEqual({ credits: 0, remainderCzk: 110 });
-    expect(adminWallet(50)).toEqual({ credits: 0, remainderCzk: 50 });
+    expect(adminWallet(4460)).toEqual({ credits: 24, remainderThb: 4460 });
+    expect(adminWallet(110)).toEqual({ credits: 0, remainderThb: 110 });
+    expect(adminWallet(50)).toEqual({ credits: 0, remainderThb: 50 });
   });
 
   it("round-trips a granted amount back to the credits that were typed", () => {
     for (const credits of [1, 2, 3, 10]) {
-      expect(adminWallet(czkFromCredits(credits))).toEqual({ credits, remainderCzk: null });
+      expect(adminWallet(thbFromCredits(credits))).toEqual({ credits, remainderThb: null });
     }
   });
 });

@@ -36,7 +36,7 @@ test("the transactions export is Excel-safe and carries the agreed columns", asy
   );
 
   const lines = body.split("\r\n");
-  expect(lines[0]).toBe("﻿date,player,reference,amount_czk,method,status");
+  expect(lines[0]).toBe("﻿date,player,reference,amount_thb,method,status");
 
   // CRLF records, per RFC 4180 — and what Excel expects.
   expect(body).toContain("\r\n");
@@ -69,5 +69,5 @@ test("the transactions export is Excel-safe and carries the agreed columns", asy
   expect(denied.status(), "an anonymous request was not redirected").toBe(307);
   expect(denied.headers()["location"]).toContain("/login");
   expect(denied.headers()["content-type"] ?? "").not.toContain("text/csv");
-  expect(await denied.text()).not.toContain("amount_czk");
+  expect(await denied.text()).not.toContain("amount_thb");
 });

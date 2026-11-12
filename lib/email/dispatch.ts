@@ -1,4 +1,4 @@
-import { creditsFromCzk } from "@/lib/admin/credits";
+import { creditsFromThb } from "@/lib/admin/credits";
 import { emailEnv, emailEnvFor } from "@/lib/email/env";
 import { emailLocaleFor } from "@/lib/email/recipientLocale";
 import { sendRenderedEmail, type SendEmailResult } from "@/lib/email/sendEmail";
@@ -84,11 +84,11 @@ export interface DispatchContext {
   places?: number;
   /** Round 41 — Credits the booking spent, shown as "Paid". */
   creditsPaid?: number | null;
-  amountDueCzk?: number;
+  amountDueThb?: number;
   variableSymbol?: number;
   spdString?: string;
-  /** Crowns a cancellation returned to the wallet; shown as Credits, never as CZK. */
-  creditCzk?: number;
+  /** Crowns a cancellation returned to the wallet; shown as Credits, never as THB. */
+  creditThb?: number;
   /** Round 41 — why nothing came back, when nothing did. */
   cancelOutcome?: CancelOutcome;
   /** Round 16 item 19 — the organizer's written reason for a cancellation. */
@@ -143,14 +143,14 @@ export function renderTemplate(
     mapsUrl: ctx.mapsUrl ?? null,
     gameUrl: ctx.gameUrl,
   };
-  const creditsReturned = creditsFromCzk(ctx.creditCzk ?? 0);
+  const creditsReturned = creditsFromThb(ctx.creditThb ?? 0);
 
   switch (template) {
     case "spot_held":
       return spotHeldEmail(
         {
           ...game,
-          amountDueCzk: ctx.amountDueCzk ?? 0,
+          amountDueThb: ctx.amountDueThb ?? 0,
           variableSymbol: ctx.variableSymbol ?? 0,
           spdString: ctx.spdString ?? "",
           ics: ctx.ics,
@@ -170,7 +170,7 @@ export function renderTemplate(
         env,
       );
     case "nudge":
-      return nudgeEmail({ ...game, amountDueCzk: ctx.amountDueCzk ?? 0 }, env);
+      return nudgeEmail({ ...game, amountDueThb: ctx.amountDueThb ?? 0 }, env);
     case "expiry":
       return expiryEmail(game, env);
     case "reminder":
@@ -269,7 +269,7 @@ export interface CancelledRecipient {
   email: string | null;
   nickname: string;
   /** Credit this cancellation returned. Zero for an unpaid reservation. */
-  creditCzk: number;
+  creditThb: number;
 }
 
 export interface FanOutInput {
@@ -324,7 +324,7 @@ export function resetFanOutGuard(): void {
  * Two emails for a credited player is deliberate and not a duplicate: the
  * notice says the game is off, the receipt accounts for the money. Players
  * with an unpaid reservation get the notice only — there is nothing to
- * receipt, and a "0 CZK credited" receipt reads as a bug.
+ * receipt, and a "0 THB credited" receipt reads as a bug.
  */
 export async function fanOutGameCancelled(input: FanOutInput): Promise<FanOutSummary> {
   const summary: FanOutSummary = {
@@ -346,7 +346,7 @@ export async function fanOutGameCancelled(input: FanOutInput): Promise<FanOutSum
       startsAt: input.startsAt,
       gameUrl: input.gameUrl,
       accountUrl: input.accountUrl,
-      creditCzk: recipient.creditCzk,
+      creditThb: recipient.creditThb,
       reason: input.reason ?? null,
       durationMinutes: input.durationMinutes ?? null,
       mapsUrl: input.mapsUrl ?? null,
@@ -355,7 +355,7 @@ export async function fanOutGameCancelled(input: FanOutInput): Promise<FanOutSum
     const sends: { event: DispatchableEvent; key: string }[] = [
       { event: "game_cancelled", key: `${input.gameId}:${recipient.bookingId}:notice` },
     ];
-    if (recipient.creditCzk > 0) {
+    if (recipient.creditThb > 0) {
       sends.push({
         event: "booking_cancelled",
         key: `${input.gameId}:${recipient.bookingId}:receipt`,

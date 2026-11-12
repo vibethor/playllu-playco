@@ -94,7 +94,7 @@ test("the bar against the claim bar, on a game with a booking — en", async ({
     { name: LOCALE_COOKIE, value: "en", domain: "localhost", path: "/" },
   ]);
 
-  const game = await createScratchGame({ capacity: 6, priceCzk: 200, hoursFromNow: 48 });
+  const game = await createScratchGame({ capacity: 6, priceThb: 200, hoursFromNow: 48 });
 
   try {
     // A real booking, so the claim bar carries a control rather than a bare

@@ -72,9 +72,9 @@ export async function GET(request: Request) {
       denominator: stats.fillRate.capacity,
     },
     {
-      metric: "confirmed_revenue_czk",
-      value: String(stats.confirmedRevenueCzk),
-      numerator: stats.confirmedRevenueCzk,
+      metric: "confirmed_revenue_thb",
+      value: String(stats.confirmedRevenueThb),
+      numerator: stats.confirmedRevenueThb,
       denominator: null,
     },
     {

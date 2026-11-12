@@ -61,7 +61,7 @@ export interface CancellationStats {
 export interface AdminStats {
   range: StatRange;
   fillRate: FillRateStats;
-  confirmedRevenueCzk: number;
+  confirmedRevenueThb: number;
   newReturning: NewReturningStats;
   cancellations: CancellationStats;
 }
@@ -116,9 +116,9 @@ async function getFillRate(range: StatRange): Promise<FillRateStats> {
 }
 
 /**
- * Confirmed revenue, in CZK.
+ * Confirmed revenue, in THB.
  *
- *   sum(price_czk - credit_applied_czk) over bookings with a
+ *   sum(price_thb - credit_applied_thb) over bookings with a
  *   payment_confirmed event in range, plus every Game Pass and top-up
  *   confirmed in range (2026-11-08: "revenue should count all the revenue
  *   including game pass")
@@ -133,7 +133,7 @@ async function getConfirmedRevenue(range: StatRange): Promise<number> {
   // The money page's own reading: one definition of "money that arrived" —
   // games, Game Passes and top-ups since 2026-11-08 — so the Revenue tile
   // and this one cannot drift.
-  return (await revenueBetween(range)).totalCzk;
+  return (await revenueBetween(range)).totalThb;
 }
 
 /**
@@ -281,7 +281,7 @@ export async function getAdminStats(window: StatWindow): Promise<AdminStats> {
 
 /** The bounded form, kept separate so the range can be supplied in a test. */
 export async function getAdminStatsForRange(range: StatRange): Promise<AdminStats> {
-  const [fillRate, confirmedRevenueCzk, newReturning, cancellations] =
+  const [fillRate, confirmedRevenueThb, newReturning, cancellations] =
     await Promise.all([
       getFillRate(range),
       getConfirmedRevenue(range),
@@ -289,7 +289,7 @@ export async function getAdminStatsForRange(range: StatRange): Promise<AdminStat
       getCancellations(range),
     ]);
 
-  return { range, fillRate, confirmedRevenueCzk, newReturning, cancellations };
+  return { range, fillRate, confirmedRevenueThb, newReturning, cancellations };
 }
 
 /**

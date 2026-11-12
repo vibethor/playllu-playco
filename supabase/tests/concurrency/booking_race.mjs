@@ -187,7 +187,7 @@ try {
     ($3,'CredA','cred-a@test.invalid',$6)`,
     [P.raceA, P.raceB, P.credA, U.raceA, U.raceB, U.credA]);
 
-  await admin.query(`insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+  await admin.query(`insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
     ($1,'Last Spot', now() + interval '7 days', 1, 200, 'published'),
     ($2,'Credit One', now() + interval '8 days', 10, 200, 'published'),
     ($3,'Credit Two', now() + interval '9 days', 10, 200, 'published'),
@@ -236,11 +236,11 @@ try {
   //
   // This is the race the game lock cannot catch: the two calls touch different
   // games, so they never contend on a game lock. Only the per-player lock and
-  // the balance re-read under it stop the same 200 CZK being spent twice.
+  // the balance re-read under it stop the same 200 THB being spent twice.
   // ===========================================================================
   {
     await admin.query(
-      `insert into public.credit_ledger (player_id, delta_czk, reason) values ($1, 200, 'admin_grant')`,
+      `insert into public.credit_ledger (player_id, delta_thb, reason) values ($1, 200, 'admin_grant')`,
       [P.credA]);
 
     const [c1, c2] = [await connect(), await connect()];
@@ -254,21 +254,21 @@ try {
         `r1=${r1.won} r2=${r2.won}`);
 
       const bal = await admin.query(
-        'select coalesce(sum(delta_czk),0)::int b from public.credit_ledger where player_id = $1',
+        'select coalesce(sum(delta_thb),0)::int b from public.credit_ledger where player_id = $1',
         [P.credA]);
       ok(bal.rows[0].b === 0, 'the wallet lands at exactly 0 — the 200 was spent once, not twice',
         `balance=${bal.rows[0].b}`);
-      ok(bal.rows[0].b >= 0, 'SUM(delta_czk) never goes below zero', `balance=${bal.rows[0].b}`);
+      ok(bal.rows[0].b >= 0, 'SUM(delta_thb) never goes below zero', `balance=${bal.rows[0].b}`);
 
       const applied = await admin.query(
-        `select coalesce(sum(credit_applied_czk),0)::int a from public.bookings
+        `select coalesce(sum(credit_applied_thb),0)::int a from public.bookings
           where player_id = $1 and status in ('reserved','confirmed')`, [P.credA]);
-      ok(applied.rows[0].a === 200, 'exactly 200 CZK of credit is applied across both bookings',
+      ok(applied.rows[0].a === 200, 'exactly 200 THB of credit is applied across both bookings',
         `applied=${applied.rows[0].a}`);
 
       const methods = await admin.query(
-        `select payment_method::text m, credit_applied_czk c from public.bookings
-          where player_id = $1 order by credit_applied_czk desc`, [P.credA]);
+        `select payment_method::text m, credit_applied_thb c from public.bookings
+          where player_id = $1 order by credit_applied_thb desc`, [P.credA]);
       const shape = methods.rows.map((r) => `${r.m}:${r.c}`).join(' ');
       ok(methods.rows.length === 2 &&
          methods.rows[0].c === 200 && methods.rows[0].m === 'credit' &&
@@ -296,7 +296,7 @@ try {
   // ===========================================================================
   {
     await admin.query(
-      `insert into public.credit_ledger (player_id, delta_czk, reason, expires_at)
+      `insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
        values ($1, 1000, 'topup', now() + interval '30 days'),
               ($2, 1000, 'topup', now() + interval '30 days')`,
       [P.raceA, P.raceB]);
@@ -321,14 +321,14 @@ try {
       // surviving a rolled-back booking would be money taken for a spot the
       // player never got.
       const spent = await admin.query(
-        `select coalesce(sum(delta_czk),0)::int n from public.credit_ledger
+        `select coalesce(sum(delta_thb),0)::int n from public.credit_ledger
           where player_id = any($1) and reason = 'redemption'`, [[P.raceA, P.raceB]]);
       ok(spent.rows[0].n === -200,
         'exactly one game was paid for out of the two batches, not two',
         `redeemed=${spent.rows[0].n}`);
 
       const balances = await admin.query(
-        `select player_id, coalesce(sum(delta_czk),0)::int n from public.credit_ledger
+        `select player_id, coalesce(sum(delta_thb),0)::int n from public.credit_ledger
           where player_id = any($1) group by player_id order by player_id`, [[P.raceA, P.raceB]]);
       ok(balances.rows.every((r) => r.n >= 0),
         'neither wallet went negative',
@@ -351,7 +351,7 @@ try {
   // ===========================================================================
   {
     await admin.query(
-      `insert into public.credit_ledger (player_id, delta_czk, reason, expires_at)
+      `insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
        values ($1, 200, 'topup', now() + interval '30 days')`,
       [P.credA]);
 
@@ -366,18 +366,18 @@ try {
         `r1=${r1.won} r2=${r2.won}`);
 
       const bal = await admin.query(
-        `select coalesce(sum(delta_czk),0)::int n from public.credit_ledger where player_id = $1`,
+        `select coalesce(sum(delta_thb),0)::int n from public.credit_ledger where player_id = $1`,
         [P.credA]);
       ok(bal.rows[0].n === 0, 'the batch was spent once, not twice', `balance=${bal.rows[0].n}`);
-      ok(bal.rows[0].n >= 0, 'SUM(delta_czk) never goes below zero, batches included',
+      ok(bal.rows[0].n >= 0, 'SUM(delta_thb) never goes below zero, batches included',
         `balance=${bal.rows[0].n}`);
 
       // And no BATCH went below zero either — the invariant the flat ledger
       // never had, checked here under real contention.
       const worst = await admin.query(
         `select min(remaining)::int n from (
-           select (b.delta_czk + coalesce((
-             select sum(m.delta_czk) from public.credit_ledger m where m.batch_id = b.id
+           select (b.delta_thb + coalesce((
+             select sum(m.delta_thb) from public.credit_ledger m where m.batch_id = b.id
            ),0)) as remaining
            from public.credit_ledger b
            where b.player_id = $1 and b.expires_at is not null
@@ -386,9 +386,9 @@ try {
         `min_remaining=${worst.rows[0].n}`);
 
       const applied = await admin.query(
-        `select coalesce(sum(credit_applied_czk),0)::int n from public.bookings
+        `select coalesce(sum(credit_applied_thb),0)::int n from public.bookings
           where player_id = $1 and game_id = any($2)`, [P.credA, [G.passOne, G.passTwo]]);
-      ok(applied.rows[0].n === 200, 'exactly 200 CZK of batch credit is applied across both bookings',
+      ok(applied.rows[0].n === 200, 'exactly 200 THB of batch credit is applied across both bookings',
         `applied=${applied.rows[0].n}`);
     } finally {
       await c1.end().catch(() => {});

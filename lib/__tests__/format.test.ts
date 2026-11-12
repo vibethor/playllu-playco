@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DISPLAY_TIME_ZONE,
-  formatCzk,
+  formatThb,
   formatGameDateTime,
   formatGameTime,
   formatGameTimeSpan,
@@ -85,6 +85,6 @@ describe("format", () => {
   });
 
   it("renders whole-crown amounts", () => {
-    expect(formatCzk(250)).toBe("250 CZK");
+    expect(formatThb(250)).toBe("250 THB");
   });
 });

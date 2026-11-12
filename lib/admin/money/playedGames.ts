@@ -30,7 +30,7 @@ export interface PlayedGame {
   id: string;
   startsAt: string;
   venue: string;
-  priceCzk: number;
+  priceThb: number;
 }
 
 /** Games played in a period — kicked off inside it, finished before `now`. Newest first. */
@@ -45,7 +45,7 @@ export async function playedGamesBetween(
   const rows = await readAllPages("played games", (from, to) => {
     let query = service
       .from("games")
-      .select("id,status,starts_at,duration_minutes,venue,price_czk")
+      .select("id,status,starts_at,duration_minutes,venue,price_thb")
       .in("status", [...PLAYABLE_STATUSES])
       .lt("starts_at", until);
     if (bounds.from) query = query.gte("starts_at", bounds.from);
@@ -54,5 +54,5 @@ export async function playedGamesBetween(
 
   return rows
     .filter((row) => hasBeenPlayed(row, now))
-    .map((row) => ({ id: row.id, startsAt: row.starts_at, venue: row.venue, priceCzk: row.price_czk }));
+    .map((row) => ({ id: row.id, startsAt: row.starts_at, venue: row.venue, priceThb: row.price_thb }));
 }

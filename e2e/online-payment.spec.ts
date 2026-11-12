@@ -1,4 +1,4 @@
-import { PASS_REFERENCE_PRICE_CZK } from "../lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "../lib/pass/creditPrice";
 import { expect, test } from "@playwright/test";
 import { createHmac } from "node:crypto";
 import { LOCALE_COOKIE } from "../lib/i18n/locales";
@@ -29,7 +29,7 @@ import {
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const PRICE = PASS_REFERENCE_PRICE_CZK;
+const PRICE = PASS_REFERENCE_PRICE_THB;
 const SECRET = process.env.STRIPE_WEBHOOK_SECRET ?? "";
 
 function signedEvent(sessionId: string, bookingId: string, amountMinor: number) {
@@ -41,7 +41,7 @@ function signedEvent(sessionId: string, bookingId: string, amountMinor: number) 
         id: sessionId,
         client_reference_id: bookingId,
         amount_total: amountMinor,
-        currency: "czk",
+        currency: "thb",
       },
     },
   });
@@ -75,7 +75,7 @@ test("a legacy online hold keeps its seats, and nothing awaits payment", async (
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 6, priceCzk: PRICE });
+  const game = await createScratchGame({ capacity: 6, priceThb: PRICE });
   try {
     await clearActiveBookings("runner");
     await signInAs(context, players.runner);
@@ -121,7 +121,7 @@ test("a legacy online hold keeps its seats, and nothing awaits payment", async (
 });
 
 test("the webhook confirms a booking, and a redelivery changes nothing", async ({ request }) => {
-  const game = await createScratchGame({ capacity: 6, priceCzk: PRICE });
+  const game = await createScratchGame({ capacity: 6, priceThb: PRICE });
   try {
     await clearActiveBookings("runner");
     const admin = serviceClient();
@@ -208,7 +208,7 @@ test("the webhook refuses an unsigned or wrongly-signed request", async ({ reque
 });
 
 test("an underpayment is flagged for a human, never seated", async ({ request }) => {
-  const game = await createScratchGame({ capacity: 6, priceCzk: PRICE });
+  const game = await createScratchGame({ capacity: 6, priceThb: PRICE });
   try {
     await clearActiveBookings("runner");
     const admin = serviceClient();
@@ -239,7 +239,7 @@ test("an underpayment is flagged for a human, never seated", async ({ request })
       .single();
     expect(after?.status, "an underpaid party is not confirmed").toBe("reserved");
     expect(after?.payment_attention_at).not.toBeNull();
-    expect(after?.payment_attention_reason).toContain(String(PASS_REFERENCE_PRICE_CZK));
+    expect(after?.payment_attention_reason).toContain(String(PASS_REFERENCE_PRICE_THB));
   } finally {
     await clearActiveBookings("runner");
     await destroyScratchGame(game.id);

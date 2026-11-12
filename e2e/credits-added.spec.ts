@@ -1,4 +1,4 @@
-import { PASS_REFERENCE_PRICE_CZK } from "../lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "../lib/pass/creditPrice";
 import { expect, test } from "@playwright/test";
 import { LOCALE_COOKIE } from "../lib/i18n/locales";
 import { players, signInAs, signOut } from "./helpers/session";
@@ -9,7 +9,7 @@ import { resetWallet, setWalletTo } from "./helpers/scaffold";
  *
  * THE SIBLING OF THE BOOKING CONFIRMATION, and tested for the two things that
  * make it one: it is a full stop rather than a receipt, and it counts in
- * CREDITS. A CZK figure creeping back onto this screen would be the credits
+ * CREDITS. A THB figure creeping back onto this screen would be the credits
  * ruling losing exactly where it is taught.
  *
  * THE COUNT IS THE WALLET, NOT THE PURCHASE, and that distinction is the
@@ -21,7 +21,7 @@ import { resetWallet, setWalletTo } from "./helpers/scaffold";
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const CREDIT_CZK = PASS_REFERENCE_PRICE_CZK;
+const CREDIT_THB = PASS_REFERENCE_PRICE_THB;
 
 test.describe("credits added", () => {
   test.afterEach(async () => {
@@ -34,7 +34,7 @@ test.describe("credits added", () => {
   }) => {
     // Arrange — a player who already holds credit, which is the case a
     // purchase-shaped implementation gets wrong.
-    await setWalletTo(players.creditPartial.id, 7 * CREDIT_CZK);
+    await setWalletTo(players.creditPartial.id, 7 * CREDIT_THB);
     await signInAs(context, players.creditPartial);
     await context.addCookies([
       { name: LOCALE_COOKIE, value: "en", domain: "localhost", path: "/" },
@@ -52,7 +52,7 @@ test.describe("credits added", () => {
 
   test("says it in credits and never in crowns", async ({ page, context }) => {
     // Arrange
-    await setWalletTo(players.creditPartial.id, 3 * CREDIT_CZK);
+    await setWalletTo(players.creditPartial.id, 3 * CREDIT_THB);
     await signInAs(context, players.creditPartial);
     await context.addCookies([
       { name: LOCALE_COOKIE, value: "en", domain: "localhost", path: "/" },
@@ -66,10 +66,10 @@ test.describe("credits added", () => {
     expect(text).toContain("3 credits");
     /*
      * THE ASSERTION INVERTS rather than disappearing: if a later round puts a
-     * crown figure back on this screen — "450 CZK of credit" — this fails and
+     * crown figure back on this screen — "450 THB of credit" — this fails and
      * names the ruling it broke.
      */
-    expect(text, "a CZK figure is back on the credits screen").not.toMatch(/CZK|Kč/);
+    expect(text, "a THB figure is back on the credits screen").not.toMatch(/THB|Kč/);
   });
 
   /*
@@ -79,7 +79,7 @@ test.describe("credits added", () => {
    */
   test("offers exactly one action, and it is the games list", async ({ page, context }) => {
     // Arrange
-    await setWalletTo(players.creditPartial.id, CREDIT_CZK);
+    await setWalletTo(players.creditPartial.id, CREDIT_THB);
     await signInAs(context, players.creditPartial);
     await context.addCookies([
       { name: LOCALE_COOKIE, value: "en", domain: "localhost", path: "/" },
@@ -109,11 +109,11 @@ test.describe("credits added", () => {
       { name: LOCALE_COOKIE, value: "cs", domain: "localhost", path: "/" },
     ]);
 
-    await setWalletTo(players.creditPartial.id, CREDIT_CZK);
+    await setWalletTo(players.creditPartial.id, CREDIT_THB);
     await page.goto("/pass/credits-added", { waitUntil: "networkidle" });
     await expect(page.getByTestId("credits-added-count")).toContainText("1 kredit");
 
-    await setWalletTo(players.creditPartial.id, 3 * CREDIT_CZK);
+    await setWalletTo(players.creditPartial.id, 3 * CREDIT_THB);
     await page.goto("/pass/credits-added", { waitUntil: "networkidle" });
     await expect(page.getByTestId("credits-added-count")).toContainText("3 kredity");
   });

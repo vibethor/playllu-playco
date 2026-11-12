@@ -422,10 +422,10 @@ begin
     set local request.jwt.claims = '{"role":"service_role"}';
 
     insert into public.venues (name) values ('notify probe') returning id into v_venue;
-    insert into public.games (venue, venue_id, starts_at, capacity, price_czk, status)
+    insert into public.games (venue, venue_id, starts_at, capacity, price_thb, status)
          values ('notify probe', v_venue, now() - interval '2 days', 12, 150, 'played')
       returning id into v_game;
-    insert into public.bookings (game_id, player_id, status, price_czk, payment_method)
+    insert into public.bookings (game_id, player_id, status, price_thb, payment_method)
          values (v_game, v_player, 'confirmed', 150, 'cash')
       returning id into v_booking;
 

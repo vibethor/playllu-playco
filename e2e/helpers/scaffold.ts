@@ -97,7 +97,7 @@ async function photoVenueId(admin: SupabaseClient): Promise<string> {
 export interface ScratchGame {
   id: string;
   capacity: number;
-  priceCzk: number;
+  priceThb: number;
   durationMinutes: number | null;
   /** The stored kick-off, so a spec can work out which day tab holds it. */
   startsAt: string;
@@ -112,7 +112,7 @@ export interface ScratchGame {
  */
 export async function createScratchGame({
   capacity = 12,
-  priceCzk = 200,
+  priceThb = 200,
   hoursFromNow = 24 * 30,
   startsAt: startsAtOverride,
   organizerName = "E2E Organizer",
@@ -127,7 +127,7 @@ export async function createScratchGame({
   amenities,
 }: {
   capacity?: number;
-  priceCzk?: number;
+  priceThb?: number;
   hoursFromNow?: number;
   /**
    * An exact kick-off instant, overriding `hoursFromNow`.
@@ -177,8 +177,8 @@ export async function createScratchGame({
    * THE PRICE IS STORED AS ASKED AGAIN; THE LENGTH IS WHAT THE SCAFFOLD STILL
    * HAS TO GUESS (round 36, item 2).
    *
-   * ~~`admin_create_game_v2` derives `price_czk` from the length and ignores
-   * what it is sent.~~ It stores what it is sent, so `priceCzk` is no longer
+   * ~~`admin_create_game_v2` derives `price_thb` from the length and ignores
+   * what it is sent.~~ It stores what it is sent, so `priceThb` is no longer
    * inert and the twenty specs that assert the number back now read their own
    * number.
    *
@@ -203,7 +203,7 @@ export async function createScratchGame({
   const resolvedDuration =
     durationMinutes !== undefined
       ? durationMinutes
-      : priceCzk === 150
+      : priceThb === 150
         ? 60
         : policy.game.standardMinutes;
 
@@ -230,7 +230,7 @@ export async function createScratchGame({
     p_venue_id: venueId,
     p_starts_at: startsAt,
     p_capacity: capacity,
-    p_price_czk: priceCzk,
+    p_price_thb: priceThb,
     p_organizer_name: organizerName,
     p_format: format,
     p_surface: surface,
@@ -250,14 +250,14 @@ export async function createScratchGame({
   /*
    * THE PRICE THE DATABASE ACTUALLY STORED — which, since round 36, is the one
    * that was asked for. Still returned rather than echoed blindly from the
-   * argument list: a spec that reads `game.priceCzk` must be reading what the
+   * argument list: a spec that reads `game.priceThb` must be reading what the
    * row holds, and the day those two diverge again this line is where it gets
    * fixed.
    */
   return {
     id: id as string,
     capacity,
-    priceCzk,
+    priceThb,
     durationMinutes: resolvedDuration ?? null,
     startsAt,
   };
@@ -298,18 +298,18 @@ export async function walletBalance(playerId: string): Promise<number> {
   const admin = serviceClient();
   const { data, error } = await admin
     .from("credit_ledger")
-    .select("delta_czk")
+    .select("delta_thb")
     .eq("player_id", playerId);
   if (error) throw new Error(`read wallet: ${error.message}`);
 
   return (data ?? []).reduce(
-    (sum: number, row: { delta_czk: number }) => sum + row.delta_czk,
+    (sum: number, row: { delta_thb: number }) => sum + row.delta_thb,
     0,
   );
 }
 
 /**
- * Moves a wallet to exactly `target` CZK through `grant_credit`.
+ * Moves a wallet to exactly `target` THB through `grant_credit`.
  *
  * Through the RPC rather than by inserting a ledger row: `credit_ledger` is
  * append-only by privilege and a spec that reaches around that is testing a
@@ -323,7 +323,7 @@ export async function setWalletTo(playerId: string, target: number): Promise<voi
   const organizer = await apiClientFor(players.organizer);
   const { error } = await organizer.rpc("grant_credit", {
     p_player_id: playerId,
-    p_delta_czk: delta,
+    p_delta_thb: delta,
     p_note: "e2e scaffold",
   });
   if (error) throw new Error(`grant_credit(${delta}): ${error.message}`);

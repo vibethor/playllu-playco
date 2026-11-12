@@ -91,7 +91,7 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin, country
    'a0000000-0000-0000-0000-0000000fb003'::uuid, false, null, null, null, null, null);
 
 -- A ledger row, so anonymization can be shown NOT to take the accounting with it.
-insert into public.credit_ledger (player_id, delta_czk, reason)
+insert into public.credit_ledger (player_id, delta_thb, reason)
 values ('bbbb0000-0000-0000-0000-0000000fb002'::uuid, 150, 'admin_grant');
 
 -- =============================================================================
@@ -308,7 +308,7 @@ select pg_temp.ok(
   'the player row is retained rather than deleted');
 
 select pg_temp.ok(
-  (select coalesce(sum(delta_czk), 0) from public.credit_ledger
+  (select coalesce(sum(delta_thb), 0) from public.credit_ledger
    where player_id = 'bbbb0000-0000-0000-0000-0000000fb002'::uuid) = 150,
   'the credit ledger is untouched and still keyed to the row');
 

@@ -3,11 +3,11 @@ import { ToastFromQuery } from "@/components/ToastFromQuery";
 import Link from "next/link";
 import { requireCurrentPlayer } from "@/lib/auth/session";
 import { getOwnBookingWithGame } from "@/lib/booking/queries";
-import { formatCzk, formatGameDateTime } from "@/lib/format";
-import { amountDueCzk } from "@/lib/payments/spd";
+import { formatThb, formatGameDateTime } from "@/lib/format";
+import { amountDueThb } from "@/lib/payments/spd";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 import { pluralise } from "@/lib/i18n/plural";
-import { creditsFromCzk } from "@/lib/admin/credits";
+import { creditsFromThb } from "@/lib/admin/credits";
 import { bestDiscountPercent, listPassTiers } from "@/lib/pass/queries";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -99,7 +99,7 @@ export default async function ConfirmationPage({
   const tiers = await listPassTiers();
   const isCredit = booking.payment_method === "credit";
   const isSeed = booking.payment_method === "seed_free";
-  const amountDue = amountDueCzk(booking.price_czk, booking.credit_applied_czk);
+  const amountDue = amountDueThb(booking.price_thb, booking.credit_applied_thb);
   const needsPayment = booking.status === "reserved" && amountDue > 0;
 
   return (
@@ -182,7 +182,7 @@ export default async function ConfirmationPage({
           </p>
         )}
 
-        {booking.credit_applied_czk > 0 && !isCredit && !isSeed && (
+        {booking.credit_applied_thb > 0 && !isCredit && !isSeed && (
           <div className="mt-6 flex items-baseline justify-between gap-3 border-b border-hairline pb-3">
             <span className="text-[12px] text-muted">
               {t.booking.creditApplied}
@@ -191,7 +191,7 @@ export default async function ConfirmationPage({
               CREDITS, NOT CROWNS (round 35's ruling). A mixed booking's credit
               half is whole seats by construction — `create_booking_internal`
               floors the balance into credits before it applies any — so this
-              reads "−2 credits" rather than "−300 CZK", which is the unit the
+              reads "−2 credits" rather than "−300 THB", which is the unit the
               player's own balance is in. The amount still owed below stays in
               crowns, because that is what a card is about to be charged.
             */}
@@ -203,7 +203,7 @@ export default async function ConfirmationPage({
                   few: t.games.addGuests.creditFew,
                   many: t.games.addGuests.creditMany,
                 },
-                creditsFromCzk(booking.credit_applied_czk),
+                creditsFromThb(booking.credit_applied_thb),
                 locale,
               )}
             </span>
@@ -220,7 +220,7 @@ export default async function ConfirmationPage({
                 data-testid="amount-due"
                 className="font-display text-[32px] leading-none text-volt"
               >
-                {formatCzk(amountDue)}
+                {formatThb(amountDue)}
               </span>
             </div>
 

@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { CancelBookingForm } from "@/components/CancelBookingForm";
 import { WaitlistButton } from "@/components/WaitlistButton";
-import { formatCzk, formatTime } from "@/lib/format";
+import { formatThb, formatTime } from "@/lib/format";
 import { claimBarState, type ClaimBarFacts } from "@/lib/games/claimBar";
 import { LeaveWaitlistControl } from "@/components/game/LeaveWaitlistControl";
 import { appCapabilities } from "@/lib/db/capabilities";
 import { refundCutoffHours } from "@/lib/policy/refundCutoff";
 import { creditsLabel } from "@/lib/pass/credits";
-import { PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/queries";
+import { PASS_REFERENCE_PRICE_THB } from "@/lib/pass/queries";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 
 /**
@@ -65,7 +65,7 @@ const INNER = "mx-auto flex w-full max-w-shell items-center gap-4 px-gutter py-3
 export async function ClaimBar({
   gameId,
   bookingId,
-  priceCzk,
+  priceThb,
   startsAt,
   refundable = true,
   facts,
@@ -73,7 +73,7 @@ export async function ClaimBar({
   gameId: string;
   /** The viewer's own booking, when they hold one — needed by cancel. */
   bookingId: string | null;
-  priceCzk: number;
+  priceThb: number;
   startsAt: string;
   /**
    * Whether cancelling now would still be credited (policy v2).
@@ -105,7 +105,7 @@ export async function ClaimBar({
    * player's own money in the other two. It never truncates (§2.13).
    */
   /*
-   * `150 CZK / 1 credit` — the price, loud, with the credit equivalence a step
+   * `150 THB / 1 credit` — the price, loud, with the credit equivalence a step
    * smaller beside it (layout law, 2026-08-10).
    *
    * THIS SENTENCE MOVED HERE FROM THE LIST CARD, and the move is the law's
@@ -115,7 +115,7 @@ export async function ClaimBar({
    * is the one moment the unit is worth explaining.
    *
    * THE SUFFIX RENDERS ONLY AT 150. A game at any other price shows the figure
-   * bare — 200 CZK is not "1.3 credits", and inventing that is exactly the
+   * bare — 200 THB is not "1.3 credits", and inventing that is exactly the
    * pro-rating the credits ruling says to stop and ask about. A strict
    * equality against the reference constant, never a range.
    */
@@ -133,8 +133,8 @@ export async function ClaimBar({
       data-testid="claim-bar-price"
       className="shrink-0 font-display text-[22px] leading-none text-bone"
     >
-      {formatCzk(priceCzk)}
-      {priceCzk === PASS_REFERENCE_PRICE_CZK && (
+      {formatThb(priceThb)}
+      {priceThb === PASS_REFERENCE_PRICE_THB && (
         <span data-testid="claim-bar-price-credit" className="ml-1 text-small font-normal text-muted">
           {`/ ${creditsLabel(1, locale, t)}`}
         </span>
@@ -187,7 +187,7 @@ export async function ClaimBar({
     case "holding-unpaid":
       left = (
         <span data-testid="claim-bar-due" className="shrink-0 text-body-lg font-bold text-warn">
-          {t.booking.barAmountDue.replace("{amount}", formatCzk(state.amountDueCzk))}
+          {t.booking.barAmountDue.replace("{amount}", formatThb(state.amountDueThb))}
         </span>
       );
       right = state.canCancel ? (

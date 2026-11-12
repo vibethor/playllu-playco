@@ -9,7 +9,7 @@ import type { StringsOverlay } from "@/lib/i18n/resolve";
  *
  * WHAT STAYS AS IT IS, in Czech as in every language:
  *   - The brand. "HRAJ FOTBAL" is already Czech and is a name, not a phrase.
- *   - Money. `formatCzk()` renders "200 CZK" everywhere; the amount a player
+ *   - Money. `formatThb()` renders "200 THB" everywhere; the amount a player
  *     reads here has to match the amount their banking app shows.
  *   - The payment vocabulary. VS is VS, a QR platba is a QR platba. These are
  *     the words on the Czech banking screen the player is about to open, and
@@ -809,7 +809,7 @@ export const cs: StringsOverlay = {
     close: "Zavřít",
     dismiss: "Zavřít oznámení",
     loading: "Načítání…",
-    // `czk` is NOT translated. `formatCzk()` renders "200 CZK" in every
+    // `thb` is NOT translated. `formatThb()` renders "200 THB" in every
     // language on purpose — see the header note.
   },
 

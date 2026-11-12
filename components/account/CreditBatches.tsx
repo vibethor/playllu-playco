@@ -17,7 +17,7 @@ import { creditsLabel } from "@/lib/pass/credits";
  * page in the same visual weight as the most.
  *
  * The games-equivalent is approximate and says so with "≈". Per-game pricing
- * varies — that is exactly why the wallet is denominated in CZK — so this is a
+ * varies — that is exactly why the wallet is denominated in THB — so this is a
  * mental model, not a promise.
  */
 /*
@@ -50,7 +50,7 @@ export async function CreditBatches({ batches }: { batches: CreditBatch[] }) {
             className="flex flex-wrap items-baseline justify-between gap-3 rounded-control bg-surface-raised px-3 py-2"
           >
             {/*
-              ~~"600 CZK left · expires 20 Oct", with "≈ 4 games" beside it.~~
+              ~~"600 THB left · expires 20 Oct", with "≈ 4 games" beside it.~~
               CREDITS ONLY (round 14, item 10).
 
               A crown figure here re-introduced the unit the credits ruling
@@ -60,7 +60,7 @@ export async function CreditBatches({ batches }: { batches: CreditBatch[] }) {
             */}
             <span className="text-small text-bone">
               {t.pass.batchesExpiring
-                .replace("{credits}", creditsLabel(gamesEquivalent(batch.remainingCzk), locale, t))
+                .replace("{credits}", creditsLabel(gamesEquivalent(batch.remainingThb), locale, t))
                 .replace("{date}", formatDate(batch.expiresAt))}
             </span>
           </li>

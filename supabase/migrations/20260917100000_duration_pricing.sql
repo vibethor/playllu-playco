@@ -3,7 +3,7 @@
 -- is a 90-minute seat.
 --
 -- ~~EVERY GAME COSTS 180.~~ That was round 35 v2's flat reprice and it lasted
--- two days. The owner's refinement: **60 minutes is 150 CZK, 90 minutes is
+-- two days. The owner's refinement: **60 minutes is 150 THB, 90 minutes is
 -- 180**, and a CREDIT buys one 90-minute seat. Sixty-minute games are
 -- online-only — no credit option anywhere — because a credit is not a unit of
 -- money that can be part-spent on a shorter game, it is one game of a
@@ -17,7 +17,7 @@
 -- be found in four places.
 --
 -- THE CREDIT NOMINAL STAYS 180 and is a DIFFERENT NUMBER that happens to match
--- the 90-minute price. `credit_seat_price_czk()` is what a credit is worth in
+-- the 90-minute price. `credit_seat_price_thb()` is what a credit is worth in
 -- the ledger; `price_for_duration(90)` is what a 90-minute game costs a card.
 -- They agree today and the product must not assume they always will — which is
 -- why this file keeps them as two functions rather than one.
@@ -64,7 +64,7 @@ comment on function public.price_for_duration(integer) is
 -- -----------------------------------------------------------------------------
 -- 2. How long a credit buys
 --
--- A SECOND FUNCTION, NOT A SECOND USE OF THE FIRST. `credit_seat_price_czk()`
+-- A SECOND FUNCTION, NOT A SECOND USE OF THE FIRST. `credit_seat_price_thb()`
 -- is the ledger nominal (180) and this is the length a credit is good for (90).
 -- They are different facts and the product must be able to move one without
 -- the other.
@@ -90,13 +90,13 @@ comment on function public.credit_seat_minutes() is
 -- -----------------------------------------------------------------------------
 
 update public.games
-   set price_czk = public.price_for_duration(duration_minutes)
- where price_czk is distinct from public.price_for_duration(duration_minutes);
+   set price_thb = public.price_for_duration(duration_minutes)
+ where price_thb is distinct from public.price_for_duration(duration_minutes);
 
 -- -----------------------------------------------------------------------------
 -- 4. THE WRITERS DERIVE THE PRICE, so no caller can create a disagreement
 --
--- `p_price_czk` stays on both signatures and is now IGNORED, which is
+-- `p_price_thb` stays on both signatures and is now IGNORED, which is
 -- deliberate: dropping a parameter changes the signature, and every caller —
 -- the admin form, the seed, the e2e scaffolding — would have to move in the
 -- same commit for no gain. The validation stays too, so a caller sending
@@ -114,7 +114,7 @@ do $$
 declare
   v_def text;
   v_old constant text :=
-    '    v_venue.name, v_venue.id, p_starts_at, p_capacity, p_price_czk,';
+    '    v_venue.name, v_venue.id, p_starts_at, p_capacity, p_price_thb,';
   v_new constant text :=
     '    -- ROUND 35 v5: the price comes from the length, never from the caller.'
     || chr(10) ||
@@ -141,11 +141,11 @@ end $$;
 do $$
 declare
   v_def text;
-  v_old constant text := '         price_czk  = p_price_czk,';
+  v_old constant text := '         price_thb  = p_price_thb,';
   v_new constant text :=
     '         -- ROUND 35 v5: from the row''s own length, never from the caller.'
     || chr(10) ||
-    '         price_czk  = public.price_for_duration(v_game.duration_minutes),';
+    '         price_thb  = public.price_for_duration(v_game.duration_minutes),';
 begin
   select pg_get_functiondef(p.oid) into v_def
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -176,7 +176,7 @@ end $$;
 do $$
 declare
   v_def text;
-  v_old constant text := '    v_credit_applied := case when v_game.price_czk > 0 then';
+  v_old constant text := '    v_credit_applied := case when v_game.price_thb > 0 then';
   v_new constant text :=
     '    -- ROUND 35 v5: A CREDIT IS A 90-MINUTE SEAT. A game of any other'
     || chr(10) ||
@@ -184,7 +184,7 @@ declare
     || chr(10) ||
     '    -- below comes back owing its whole price.'
     || chr(10) ||
-    '    v_credit_applied := case when v_game.price_czk > 0'
+    '    v_credit_applied := case when v_game.price_thb > 0'
     || chr(10) ||
     '      and coalesce(v_game.duration_minutes, 60) = public.credit_seat_minutes() then';
 begin
@@ -216,7 +216,7 @@ end $$;
 do $$
 declare
   v_def text;
-  v_old constant text := '  v_cost := public.credit_seat_price_czk() * p_guest_count;';
+  v_old constant text := '  v_cost := public.credit_seat_price_thb() * p_guest_count;';
   v_new constant text :=
     '  -- ROUND 35 v5: a credit is a 90-minute seat; anything else is online-only.'
     || chr(10) ||
@@ -231,7 +231,7 @@ declare
     '  end if;'
     || chr(10) ||
     chr(10) ||
-    '  v_cost := public.credit_seat_price_czk() * p_guest_count;';
+    '  v_cost := public.credit_seat_price_thb() * p_guest_count;';
 begin
   select pg_get_functiondef(p.oid) into v_def
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -302,7 +302,7 @@ as $$
        where n.nspname = 'public' and p.proname = 'cancel_guests')),
     'creditsAreSeats',   to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-       where n.nspname = 'public' and p.proname = 'credit_seat_price_czk')),
+       where n.nspname = 'public' and p.proname = 'credit_seat_price_thb')),
     'seatsTakenMany',    to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'game_seats_taken_many')),
@@ -340,7 +340,7 @@ begin
   end if;
 
   select count(*) into v_n from public.games
-   where price_czk is distinct from public.price_for_duration(duration_minutes);
+   where price_thb is distinct from public.price_for_duration(duration_minutes);
   if v_n > 0 then
     raise exception 'duration pricing: % game(s) disagree with their length', v_n;
   end if;

@@ -127,7 +127,7 @@ begin
     p_venue_id             => '11110000-0000-0000-0000-000000000f13',
     p_starts_at            => now() + interval '3 days',
     p_capacity             => 12,
-    p_price_czk            => 200,
+    p_price_thb            => 200,
     p_organizer_name       => 'Admin13',
     p_format               => '5v5',
     p_surface              => 'turf',
@@ -337,7 +337,7 @@ begin
     p_game_id              => v_game,
     p_venue_id             => '11110000-0000-0000-0000-000000000f13',
     p_starts_at            => now() + interval '6 days',
-    p_price_czk            => 250,
+    p_price_thb            => 250,
     p_organizer_name       => 'Someone Else',
     p_format               => '7v7',
     p_surface              => 'indoor',
@@ -349,7 +349,7 @@ begin
   );
 
   perform pg_temp.ok(
-    (pg_temp.gamerow(v_game)).price_czk = 250
+    (pg_temp.gamerow(v_game)).price_thb = 250
       and (pg_temp.gamerow(v_game)).format = '7v7'
       and (pg_temp.gamerow(v_game)).surface = 'indoor'
       and (pg_temp.gamerow(v_game)).duration_minutes = 120

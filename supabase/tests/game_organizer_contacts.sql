@@ -92,14 +92,14 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin) values
   ('bbbb0000-0000-0000-0000-0000000fe004'::uuid, 'OgCancelled', 'og-cancelled@test.invalid',
    'a0000000-0000-0000-0000-0000000fe004'::uuid, false);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status,
+insert into public.games (id, venue, starts_at, capacity, price_thb, status,
                           duration_minutes, allowed_skill_levels, subs_per_team, format) values
   ('cccc0000-0000-0000-0000-0000000fe001'::uuid, 'Og Published', now() + interval '3 days',
    12, 200, 'published', 90, array['advanced']::public.skill_level[], 2, '5v5'),
   ('cccc0000-0000-0000-0000-0000000fe002'::uuid, 'Og Draft', now() + interval '4 days',
    12, 200, 'draft', null, null, null, null);
 
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk) values
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb) values
   ('dddd0000-0000-0000-0000-0000000fe001'::uuid, 'cccc0000-0000-0000-0000-0000000fe001'::uuid,
    'bbbb0000-0000-0000-0000-0000000fe002'::uuid, 'confirmed', 'cash', 200),
   ('dddd0000-0000-0000-0000-0000000fe002'::uuid, 'cccc0000-0000-0000-0000-0000000fe001'::uuid,

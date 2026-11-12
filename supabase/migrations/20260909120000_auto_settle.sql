@@ -305,7 +305,7 @@ grant execute on function public.app_capabilities() to anon, authenticated, serv
 -- `scripts/apply-migration.mjs` COMMITS. On 2026-09-12 round 29's drill was
 -- applied to production and left behind a fake venue, two fake games, two
 -- bookings against a real player, a real "you were marked as a no-show"
--- notification in his bell, two games' worth of inflated stats, 150 CZK of
+-- notification in his bell, two games' worth of inflated stats, 150 THB of
 -- phantom money owed, and a game the nightly sweep would have reported as
 -- needing attention every night for ever.
 --

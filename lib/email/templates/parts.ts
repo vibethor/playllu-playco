@@ -1,6 +1,6 @@
 import type { EmailAttachment } from "@/lib/email/sendEmail";
 import {
-  formatCzk,
+  formatThb,
   formatDate,
   formatGameDate,
   formatGameDateTime,
@@ -45,7 +45,7 @@ export interface PaymentReceipt {
   orderId: string;
   paidAt: string;
   credits: number;
-  amountCzk: number;
+  amountThb: number;
   method: "card" | "transfer";
   /** When the Credits lapse (60 days from payment). */
   validUntil: string;
@@ -182,7 +182,7 @@ export function receipt(env: EmailEnv, paid: PaymentReceipt): EmailReceipt {
     title: r.title,
     rows: [
       { label: r.order, value: `${orderNumber(paid.orderId)} · ${stamp(env, paid.paidAt)}` },
-      { label: credits(env, paid.credits), value: formatCzk(paid.amountCzk) },
+      { label: credits(env, paid.credits), value: formatThb(paid.amountThb) },
       { label: r.validUntil, value: paid.usedForGame ? `${valid} · ${r.usedForGame}` : valid },
       { label: r.paidBy, value: method },
     ],

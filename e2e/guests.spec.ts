@@ -1,4 +1,4 @@
-import { PASS_REFERENCE_PRICE_CZK } from "../lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "../lib/pass/creditPrice";
 import { expect, test } from "@playwright/test";
 import { LOCALE_COOKIE } from "../lib/i18n/locales";
 import { players, serviceClient, signInAs } from "./helpers/session";
@@ -26,13 +26,13 @@ import {
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const PRICE = PASS_REFERENCE_PRICE_CZK;
+const PRICE = PASS_REFERENCE_PRICE_THB;
 
 test("a player brings two guests: one booking, one price, three seats", async ({
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: PRICE });
+  const game = await createScratchGame({ capacity: 8, priceThb: PRICE });
   try {
     await clearActiveBookings("runner");
     /*
@@ -70,13 +70,13 @@ test("a player brings two guests: one booking, one price, three seats", async ({
     const admin = serviceClient();
     const { data: bookings } = await admin
       .from("bookings")
-      .select("id, guest_count, price_czk, status")
+      .select("id, guest_count, price_thb, status")
       .eq("game_id", game.id)
       .in("status", ["reserved", "confirmed"]);
 
     expect(bookings).toHaveLength(1);
     expect(bookings![0].guest_count).toBe(2);
-    expect(bookings![0].price_czk).toBe(PRICE * 3);
+    expect(bookings![0].price_thb).toBe(PRICE * 3);
 
     const { data: seats } = await admin.rpc("game_seats_taken", { p_game_id: game.id });
     expect(seats).toBe(3);
@@ -90,7 +90,7 @@ test("the party renders as guests, last in the row and never with a photo", asyn
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: PRICE });
+  const game = await createScratchGame({ capacity: 8, priceThb: PRICE });
   try {
     await clearActiveBookings("runner");
     /*
@@ -176,7 +176,7 @@ test("credits are offered only when the wallet covers the whole party", async ({
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: PRICE });
+  const game = await createScratchGame({ capacity: 8, priceThb: PRICE });
   try {
     await clearActiveBookings("runner");
     /*
@@ -231,14 +231,14 @@ test("credits are offered only when the wallet covers the whole party", async ({
     const admin = serviceClient();
     const { data: booking } = await admin
       .from("bookings")
-      .select("status, payment_method, price_czk, credit_applied_czk, guest_count")
+      .select("status, payment_method, price_thb, credit_applied_thb, guest_count")
       .eq("game_id", game.id)
       .in("status", ["reserved", "confirmed"])
       .single();
 
     expect(booking?.guest_count).toBe(1);
-    expect(booking?.price_czk).toBe(PRICE * 2);
-    expect(booking?.credit_applied_czk).toBe(PRICE * 2);
+    expect(booking?.price_thb).toBe(PRICE * 2);
+    expect(booking?.credit_applied_thb).toBe(PRICE * 2);
     expect(booking?.payment_method).toBe("credit");
     expect(booking?.status).toBe("confirmed");
   } finally {
@@ -250,7 +250,7 @@ test("credits are offered only when the wallet covers the whole party", async ({
 
 test("the party control stops at the seats the pitch has left", async ({ page, context }) => {
   // Three seats total, so a lone player may bring at most two.
-  const game = await createScratchGame({ capacity: 3, priceCzk: PRICE });
+  const game = await createScratchGame({ capacity: 3, priceThb: PRICE });
   try {
     await clearActiveBookings("runner");
     /*
@@ -279,7 +279,7 @@ test("the party control stops at the seats the pitch has left", async ({ page, c
 });
 
 test("cancelling a party releases every one of its seats", async ({ page, context }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: PRICE });
+  const game = await createScratchGame({ capacity: 8, priceThb: PRICE });
   try {
     await clearActiveBookings("runner");
     /*

@@ -1,7 +1,7 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
-  minorUnitsToCzk,
+  minorUnitsToThb,
   parseCheckoutSession,
   SIGNATURE_TOLERANCE_SECONDS,
   verifyStripeSignature,
@@ -129,7 +129,7 @@ describe("parseCheckoutSession", () => {
           id: "cs_test_123",
           client_reference_id: "11111111-1111-1111-1111-111111111111",
           amount_total: 45000,
-          currency: "czk",
+          currency: "thb",
           ...over,
         },
       },
@@ -144,7 +144,7 @@ describe("parseCheckoutSession", () => {
       id: "cs_test_123",
       clientReferenceId: "11111111-1111-1111-1111-111111111111",
       amountTotal: 45000,
-      currency: "czk",
+      currency: "thb",
     });
   });
 
@@ -175,13 +175,13 @@ describe("parseCheckoutSession", () => {
   });
 });
 
-describe("minorUnitsToCzk", () => {
+describe("minorUnitsToThb", () => {
   it("converts haléře to koruny", () => {
-    expect(minorUnitsToCzk(15000)).toBe(150);
-    expect(minorUnitsToCzk(45000)).toBe(450);
+    expect(minorUnitsToThb(15000)).toBe(150);
+    expect(minorUnitsToThb(45000)).toBe(450);
   });
 
   it("rounds DOWN, so a payment one haléř short cannot read as exact", () => {
-    expect(minorUnitsToCzk(14999)).toBe(149);
+    expect(minorUnitsToThb(14999)).toBe(149);
   });
 });

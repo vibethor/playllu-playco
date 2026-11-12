@@ -2,11 +2,11 @@ import { getLocale, getStrings } from "@/lib/i18n/server";
 import { CreditBatches } from "@/components/account/CreditBatches";
 import type { CreditBatch } from "@/lib/pass/queries";
 import { creditsLabel } from "@/lib/pass/credits";
-import { PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/queries";
+import { PASS_REFERENCE_PRICE_THB } from "@/lib/pass/queries";
 
 export interface CreditBalanceProps {
-  /** `SUM(delta_czk)` over the player's ledger, computed server-side. */
-  balanceCzk: number;
+  /** `SUM(delta_thb)` over the player's ledger, computed server-side. */
+  balanceThb: number;
   /**
    * The expiring batches, rendered INSIDE this card (round 23, item 3).
    *
@@ -31,7 +31,7 @@ export interface CreditBalanceProps {
  * what makes `balance / 150` a fact rather than an estimate. Before that
  * ruling per-game prices could differ, so a credit count would have started
  * owing fractions of a game the moment two games cost differently; that is the
- * exact reasoning that put CZK on this card originally, and the fiat is what
+ * exact reasoning that put THB on this card originally, and the fiat is what
  * dissolved it.
  *
  * FLOORED, NEVER ROUNDED UP, and that survives the change. Telling someone
@@ -42,11 +42,11 @@ export interface CreditBalanceProps {
  * what a player reconciles against a bank transfer, and dropping it would make
  * a top-up impossible to check.
  */
-export async function CreditBalance({ balanceCzk, batches = [] }: CreditBalanceProps) {
+export async function CreditBalance({ balanceThb, batches = [] }: CreditBalanceProps) {
   const t = await getStrings();
   const locale = await getLocale();
-  const hasCredit = balanceCzk > 0;
-  const credits = Math.floor(Math.max(0, balanceCzk) / PASS_REFERENCE_PRICE_CZK);
+  const hasCredit = balanceThb > 0;
+  const credits = Math.floor(Math.max(0, balanceThb) / PASS_REFERENCE_PRICE_THB);
 
   return (
     /*
@@ -76,7 +76,7 @@ export async function CreditBalance({ balanceCzk, batches = [] }: CreditBalanceP
       </p>
 
       {/*
-        NO CZK FIGURE HERE ANY MORE.
+        NO THB FIGURE HERE ANY MORE.
 
         It was added as the number a player reconciles a bank transfer
         against, and that argument does not survive the wallet being credits:

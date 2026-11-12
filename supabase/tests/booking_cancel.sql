@@ -106,7 +106,7 @@ insert into public.players (id, nickname, email, auth_user_id, is_seed) values
 -- takes no credit at all — so every game a credit is spent on below says how
 -- long it is. The price follows from that, which is why none of these rows
 -- states one it chose.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('91110000-0000-0000-0000-000000000001', 'Unpaid Game',  now() + interval '7 days', 10, 200, 'published', 90),
   ('92220000-0000-0000-0000-000000000002', 'Paid Game',    now() + interval '8 days', 10, 200, 'published', 90),
   ('93330000-0000-0000-0000-000000000003', 'Past Game',    now() + interval '9 days', 10, 200, 'published', 90),
@@ -214,12 +214,12 @@ select pg_temp.act_as('a0000000-0000-0000-0000-0000000000a1');
 select pg_temp.ok(
   (select (public.cancel_booking(
     (select id from public.bookings where game_id = '92220000-0000-0000-0000-000000000002')
-  )).credit_issued_czk) = 200,
+  )).credit_issued_thb) = 200,
   'cancelling a CASH-PAID confirmed booking issues 200 credit — cash counts like QR');
 reset role;
 
 select pg_temp.ok(
-  (select delta_czk from public.credit_ledger
+  (select delta_thb from public.credit_ledger
     where booking_id = (select id from public.bookings
                          where game_id = '92220000-0000-0000-0000-000000000002')) = 200,
   'the ledger row is +200 with reason cancellation_credit');
@@ -232,14 +232,14 @@ select pg_temp.ok(
 
 -- --- reserved with partial credit applied: only the applied credit comes back
 --
--- ~~50 crowns against a 200 CZK game, one seat.~~ ONE CREDIT AND A PARTY OF
+-- ~~50 crowns against a 200 THB game, one seat.~~ ONE CREDIT AND A PARTY OF
 -- TWO, SINCE ROUND 35, and the reshape is forced rather than cosmetic: under
 -- the seat-denominated ruling a SINGLE seat can never be partly paid. It is
 -- either covered by a whole credit or it is not covered at all, so the state
 -- this test exists for — applied credit with money still owed — only exists
 -- on a party now. One credit pays the first seat; the second is owed at the
 -- game''s own 200. The point is unchanged.
-insert into public.credit_ledger (player_id, delta_czk, reason) values
+insert into public.credit_ledger (player_id, delta_thb, reason) values
   ('bbbb0000-0000-0000-0000-00000000000b', 180, 'admin_grant');
 
 select pg_temp.act_as('b0000000-0000-0000-0000-0000000000b1');
@@ -247,16 +247,16 @@ select public.create_booking('94440000-0000-0000-0000-000000000004', 'qr', null,
 select pg_temp.ok(
   (select (public.cancel_booking(
     (select id from public.bookings where game_id = '94440000-0000-0000-0000-000000000004')
-  )).credit_issued_czk) = 180,
+  )).credit_issued_thb) = 180,
   'cancelling a RESERVED booking with partial credit returns only the ONE '
   'CREDIT applied, not the 380 the party was priced at');
 reset role;
 
 select pg_temp.ok(
-  (select coalesce(sum(delta_czk), 0) from public.credit_ledger
+  (select coalesce(sum(delta_thb), 0) from public.credit_ledger
     where player_id = 'bbbb0000-0000-0000-0000-00000000000b') = 180,
   'player B''s balance is restored to exactly the credit they started with',
-  'balance=' || (select coalesce(sum(delta_czk), 0) from public.credit_ledger
+  'balance=' || (select coalesce(sum(delta_thb), 0) from public.credit_ledger
                   where player_id = 'bbbb0000-0000-0000-0000-00000000000b'));
 
 -- --- seed_free: nothing was ever applied, so nothing comes back --------------
@@ -265,7 +265,7 @@ select public.create_booking('96660000-0000-0000-0000-000000000006', 'cash');
 select pg_temp.ok(
   (select (public.cancel_booking(
     (select id from public.bookings where game_id = '96660000-0000-0000-0000-000000000006')
-  )).credit_issued_czk) = 0,
+  )).credit_issued_thb) = 0,
   'cancelling a seed_free booking issues 0 credit (no money was ever applied)');
 reset role;
 
@@ -341,7 +341,7 @@ reset role;
 -- =============================================================================
 
 select pg_temp.ok(
-  not exists (select 1 from public.credit_ledger group by player_id having sum(delta_czk) < 0),
+  not exists (select 1 from public.credit_ledger group by player_id having sum(delta_thb) < 0),
   'no player''s ledger sums below zero anywhere in this run');
 
 select seq, label, case when passed then 'PASS' else 'FAIL' end as result, detail

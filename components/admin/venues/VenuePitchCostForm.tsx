@@ -8,16 +8,16 @@ import {
   pitchCostInForce,
   type PitchCostPair,
 } from "@/lib/admin/venues/pitchCosts";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import type { PitchSeason } from "@/lib/types/database";
 import { strings } from "@/lib/strings";
 
 const INITIAL: PitchCostState = { status: "idle" };
 
 /** The form field each season posts as — what the action reads. */
-const FIELD_NAME: Record<PitchSeason, "summerCzk" | "winterCzk"> = {
-  summer: "summerCzk",
-  winter: "winterCzk",
+const FIELD_NAME: Record<PitchSeason, "summerThb" | "winterThb"> = {
+  summer: "summerThb",
+  winter: "winterThb",
 };
 
 /**
@@ -47,8 +47,8 @@ export function VenuePitchCostForm({
 }) {
   const [state, formAction] = useActionState(saveVenuePitchCostsAction, INITIAL);
   const [values, setValues] = useState<Record<PitchSeason, string>>({
-    summer: costs ? String(costs.summerCzk) : "",
-    winter: costs ? String(costs.winterCzk) : "",
+    summer: costs ? String(costs.summerThb) : "",
+    winter: costs ? String(costs.winterThb) : "",
   });
   const [editedSinceSave, setEditedSinceSave] = useState(false);
   const copy = strings.admin.pitch;
@@ -56,9 +56,9 @@ export function VenuePitchCostForm({
   const saved =
     state.status === "saved" &&
     !editedSinceSave &&
-    state.summerCzk !== undefined &&
-    state.winterCzk !== undefined
-      ? { summerCzk: state.summerCzk, winterCzk: state.winterCzk }
+    state.summerThb !== undefined &&
+    state.winterThb !== undefined
+      ? { summerThb: state.summerThb, winterThb: state.winterThb }
       : null;
   const invalid = state.status === "error" && !editedSinceSave ? (state.invalid ?? []) : [];
 
@@ -134,7 +134,7 @@ export function VenuePitchCostForm({
         <PendingButton label={copy.costSave} testId="venue-pitch-cost-save" />
         {saved && (
           <p role="status" data-testid="venue-pitch-cost-saved" className="m-0 text-small text-volt">
-            {copy.costSaved.replace("{amount}", formatCzk(pitchCostInForce(saved, season)))}
+            {copy.costSaved.replace("{amount}", formatThb(pitchCostInForce(saved, season)))}
           </p>
         )}
       </div>

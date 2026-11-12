@@ -224,7 +224,7 @@ test("non-admin calls to the admin RPCs are refused inside the function", async 
         p_payment_method: "cash",
       }),
       runner.rpc("mark_attendance", { p_booking_id: booking.id, p_attendance: "present" }),
-      runner.rpc("grant_credit", { p_player_id: players.runner.id, p_delta_czk: 10_000 }),
+      runner.rpc("grant_credit", { p_player_id: players.runner.id, p_delta_thb: 10_000 }),
       runner.rpc("merge_players", {
         p_shadow_id: players.shadowNoEmail.id,
         p_surviving_id: players.runner.id,
@@ -237,7 +237,7 @@ test("non-admin calls to the admin RPCs are refused inside the function", async 
       expect(attempt.error?.message).toMatch(/INSUFFICIENT_PERMISSION|permission denied/i);
     }
 
-    // Nothing moved. A self-granted 10,000 CZK wallet or a self-granted admin
+    // Nothing moved. A self-granted 10,000 THB wallet or a self-granted admin
     // flag would be the two worst outcomes in this product.
     const admin = serviceClient();
     const { data: player } = await admin
@@ -249,9 +249,9 @@ test("non-admin calls to the admin RPCs are refused inside the function", async 
 
     const { data: ledger } = await admin
       .from("credit_ledger")
-      .select("delta_czk")
+      .select("delta_thb")
       .eq("player_id", players.runner.id)
-      .eq("delta_czk", 10_000);
+      .eq("delta_thb", 10_000);
     expect(ledger ?? []).toHaveLength(0);
   } finally {
     await destroyScratchGame(game.id);
@@ -323,7 +323,7 @@ test("every action in the catalog writes its event row", async () => {
     await admin.rpc("confirm_booking", {
       p_booking_id: booking.id,
       p_confirmed_by: players.organizer.id,
-      p_received_amount_czk: game.priceCzk + 50,
+      p_received_amount_thb: game.priceThb + 50,
     });
     const afterPayment = await eventsFor();
     expect(afterPayment).toContain("payment_confirmed");

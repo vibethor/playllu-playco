@@ -60,8 +60,8 @@ begin
     create type public.cancel_guests_result as (
       booking_id        uuid,
       guests_remaining  integer,
-      credit_issued_czk integer,
-      forfeited_czk     integer,
+      credit_issued_thb integer,
+      forfeited_thb     integer,
       cancel_lead_hours numeric(6, 2)
     );
   end if;
@@ -85,15 +85,15 @@ end $$;
 -- WHAT A REMOVED GUEST IS WORTH is a PROPORTIONAL share of the booking, not
 -- the game's current price. A booking can have been assembled at two different
 -- prices — some seats at the original booking, some added later through
--- `settle_checkout_session`, which adds its own amount to `price_czk` — so the
+-- `settle_checkout_session`, which adds its own amount to `price_thb` — so the
 -- only figure that is certainly true of THIS booking is what it holds divided
 -- by the seats it holds. The remaining price is computed first and the refund
 -- is the difference, so refund + remainder is exactly the original: no rounding
 -- can invent or destroy a crown.
 --
--- A LATE REMOVAL CHANGES NEITHER `price_czk` NOR `credit_applied_czk`, which is
+-- A LATE REMOVAL CHANGES NEITHER `price_thb` NOR `credit_applied_thb`, which is
 -- again `cancel_booking`'s shape: the seat is freed, the money is kept, and the
--- event records `forfeited_czk` so a complaint can be answered later. Reducing
+-- event records `forfeited_thb` so a complaint can be answered later. Reducing
 -- the price without refunding would quietly forgive a debt on a `reserved` row.
 --
 -- THE REFUND IS UNEXPIRING, AND THIS IS A DECISION RATHER THAN AN OVERSIGHT.
@@ -184,9 +184,9 @@ begin
   v_lead_hours   := round(extract(epoch from (v_game.starts_at - now()))::numeric / 3600.0, 2);
 
   -- The remainder first, the share second: their sum is the original, exactly.
-  v_new_price   := round(v_booking.price_czk::numeric * (v_seats - p_count) / v_seats);
-  v_new_applied := round(v_booking.credit_applied_czk::numeric * (v_seats - p_count) / v_seats);
-  v_price_share := v_booking.price_czk - v_new_price;
+  v_new_price   := round(v_booking.price_thb::numeric * (v_seats - p_count) / v_seats);
+  v_new_applied := round(v_booking.credit_applied_thb::numeric * (v_seats - p_count) / v_seats);
+  v_price_share := v_booking.price_thb - v_new_price;
 
   if v_lead_hours >= v_cutoff_hours then
     -- Mirrors `cancel_booking`: a confirmed booking refunds what it is worth,
@@ -194,22 +194,22 @@ begin
     v_credit := case
                   when v_booking.status = 'confirmed'
                   then v_price_share
-                  else v_booking.credit_applied_czk - v_new_applied
+                  else v_booking.credit_applied_thb - v_new_applied
                 end;
 
     update public.bookings
        set guest_count        = guest_count - p_count,
-           price_czk          = v_new_price,
-           credit_applied_czk = v_new_applied
+           price_thb          = v_new_price,
+           credit_applied_thb = v_new_applied
      where id = p_booking_id;
   else
     v_forfeited := case
                      when v_booking.status = 'confirmed'
                      then v_price_share
-                     else v_booking.credit_applied_czk - v_new_applied
+                     else v_booking.credit_applied_thb - v_new_applied
                    end;
 
-    -- THE SEAT GOES, THE MONEY STAYS. Leaving `price_czk` alone is what keeps
+    -- THE SEAT GOES, THE MONEY STAYS. Leaving `price_thb` alone is what keeps
     -- the record of what was paid, which is the only thing that can answer a
     -- question about this booking afterwards.
     update public.bookings
@@ -218,16 +218,16 @@ begin
   end if;
 
   if v_credit > 0 then
-    insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+    insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
     values (v_booking.player_id, v_credit, 'cancellation_credit', p_booking_id);
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_issued', v_booking.player_id, v_booking.game_id, p_booking_id,
             jsonb_build_object(
-              'amount_czk', v_credit,
+              'amount_thb', v_credit,
               'reason', 'cancellation_credit',
               'guests_removed', p_count,
-              'returned_to_batches_czk', 0),
+              'returned_to_batches_thb', 0),
             v_game.city, v_game.brand);
   end if;
 
@@ -237,8 +237,8 @@ begin
             'removed', p_count,
             'remaining', v_booking.guest_count - p_count,
             'cancel_lead_hours', v_lead_hours,
-            'credit_issued_czk', v_credit,
-            'forfeited_czk', v_forfeited,
+            'credit_issued_thb', v_credit,
+            'forfeited_thb', v_forfeited,
             'cutoff_hours', v_cutoff_hours,
             'booking_status', v_booking.status),
           v_game.city, v_game.brand);

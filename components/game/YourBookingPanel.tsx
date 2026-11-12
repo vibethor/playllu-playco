@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { bookingBadge, type BadgeTone } from "@/lib/booking/badges";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import { getStrings } from "@/lib/i18n/server";
 import { shouldRenderQr } from "@/lib/payments/spd";
 import type { Database } from "@/lib/types/database";
@@ -35,7 +35,7 @@ const TONE_CLASS: Record<BadgeTone, string> = {
 export async function YourBookingPanel({ booking }: { booking: BookingRow }) {
   const t = await getStrings();
   const badge = bookingBadge(booking.status, booking.payment_method, t);
-  const amountDue = booking.price_czk - booking.credit_applied_czk;
+  const amountDue = booking.price_thb - booking.credit_applied_thb;
   // The same predicate the confirmation screen uses, so this never links to a
   // page that then decides there is no QR to render.
   const showQr = booking.status === "reserved" && shouldRenderQr(booking);
@@ -68,7 +68,7 @@ export async function YourBookingPanel({ booking }: { booking: BookingRow }) {
       </p>
 
       {booking.status === "reserved" && amountDue > 0 && (
-        <p className="mt-1 text-[13px] text-muted">{formatCzk(amountDue)}</p>
+        <p className="mt-1 text-[13px] text-muted">{formatThb(amountDue)}</p>
       )}
 
       {/*

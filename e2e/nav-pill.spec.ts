@@ -122,7 +122,7 @@ test("the pill and the claim bar stack rather than overlap on a game", async ({
   context,
 }) => {
   await signInAs(context, players.runner);
-  const game = await createScratchGame({ capacity: 6, priceCzk: 200, hoursFromNow: 48 });
+  const game = await createScratchGame({ capacity: 6, priceThb: 200, hoursFromNow: 48 });
 
   try {
     // A booking, so the claim bar is in a state that carries a control rather

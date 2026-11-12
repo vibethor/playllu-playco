@@ -10,7 +10,7 @@ import type { StringsOverlay } from "@/lib/i18n/resolve";
  * THE PAYMENT VOCABULARY STAYS CZECH, and that is the most important decision
  * in this file. A Russian-speaking player in Prague pays from a Czech bank
  * account: the screen they are about to open says "variabilní symbol" and
- * offers a "QR platba", and the amount is in CZK. Translating those terms into
+ * offers a "QR platba", and the amount is in THB. Translating those terms into
  * Russian would produce a screen that reads beautifully and does not match the
  * one it is instructing them to use — and a payment sent with the wrong
  * reference arrives unmatched, which is the one failure here that costs manual
@@ -645,9 +645,9 @@ export const ru: StringsOverlay = {
     topupLede: "Добавь кредит сейчас — он автоматически применится к следующей брони.",
     topupCta: "Получить абонемент",
     topupAmountLabel: "Сумма",
-    topupCustomLabel: "Или другая сумма (CZK)",
+    topupCustomLabel: "Или другая сумма (THB)",
     topupSubmit: "Показать QR для оплаты",
-    topupOutOfRange: "Выбери сумму от 50 до 2000 CZK.",
+    topupOutOfRange: "Выбери сумму от 50 до 2000 THB.",
     topupPendingTitle: "Ждём твой платёж",
     topupPendingBody:
       "Отсканируй код в банковском приложении. Кредиты придут, как только организатор подтвердит, что платёж пришёл.",
@@ -813,7 +813,7 @@ export const ru: StringsOverlay = {
     close: "Закрыть",
     dismiss: "Скрыть уведомление",
     loading: "Загрузка…",
-    // `czk` is NOT translated — see the header note on money.
+    // `thb` is NOT translated — see the header note on money.
   },
 
   /**

@@ -185,13 +185,13 @@ export function formatTime(value: Date | string | number, locale?: DateLocale): 
   }).format(toDate(value));
 }
 
-/** Money is rendered as whole crowns — the schema stores integer CZK. */
-export function formatCzk(amountCzk: number): string {
+/** Money is rendered as whole crowns — the schema stores integer THB. */
+export function formatThb(amountThb: number): string {
   /*
    * MONEY DOES NOT FOLLOW THE UI LANGUAGE, and that is CLAUDE.md's rule rather
    * than an oversight: the player is about to open a Czech banking app and the
    * figure has to match what it shows. `en-GB` grouping is what every previous
    * round rendered and what the QR payment line carries.
    */
-  return `${Math.round(amountCzk).toLocaleString(DATE_LOCALE.en)} CZK`;
+  return `${Math.round(amountThb).toLocaleString(DATE_LOCALE.en)} THB`;
 }

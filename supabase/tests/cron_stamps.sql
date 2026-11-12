@@ -79,7 +79,7 @@ insert into auth.users (id, email) values
 insert into public.players (id, nickname, email, auth_user_id) values
   ('aaaa0000-0000-0000-0000-00000000cd01', 'CronPlayer', 'c1@test.invalid', 'a0000000-0000-0000-0000-00000000cd01');
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('9b000000-0000-0000-0000-00000000000b', 'Cron Game', now() + interval '2 days', 10, 200, 'published');
 
 select pg_temp.act_as('a0000000-0000-0000-0000-00000000cd01');
@@ -189,7 +189,7 @@ select pg_temp.ok(
 -- a confirmed booking is never nudged
 -- =============================================================================
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('9e000000-0000-0000-0000-0000000000ee', 'Paid Game', now() + interval '2 days', 10, 200, 'published');
 
 select pg_temp.act_as('a0000000-0000-0000-0000-00000000cd01');
@@ -220,7 +220,7 @@ declare v_events_before integer; v_events_after integer;
         v_stamp_before timestamptz; v_stamp_after timestamptz;
         v_id uuid;
 begin
-  insert into public.games (id, venue, starts_at, capacity, price_czk, status)
+  insert into public.games (id, venue, starts_at, capacity, price_thb, status)
   values ('9f000000-0000-0000-0000-0000000000ef', 'Rollback Game', now() + interval '2 days', 10, 200, 'published');
 
   perform set_config('role', 'authenticated', true);

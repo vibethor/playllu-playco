@@ -80,7 +80,7 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin) values
   -- the assertion below is that it now RENDERS as a guest without a backfill.
   ('6eee0000-0000-0000-0000-00000000000e', 'GstShadowE', null, null, false);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('96660000-0000-0000-0000-000000000001', 'Guest Cap Six', now() + interval '7 days', 6, 150, 'published'),
   ('96660000-0000-0000-0000-000000000002', 'Guest Cap Two', now() + interval '8 days', 2, 150, 'published'),
   ('96660000-0000-0000-0000-000000000003', 'Guest Settled', now() + interval '9 days', 6, 150, 'published');
@@ -98,7 +98,7 @@ select pg_temp.act_as('60000000-0000-0000-0000-000000000061');
 
 select pg_temp.ok(
   (select (public.create_booking(
-     '96660000-0000-0000-0000-000000000001', 'cash', null, null, 2)).price_czk) = 450,
+     '96660000-0000-0000-0000-000000000001', 'cash', null, null, 2)).price_thb) = 450,
   'a party of three is priced at three times the game price, on one booking');
 
 reset role;
@@ -206,7 +206,7 @@ select pg_temp.ok(
 -- claiming the opposite. The point has always been that an oversize party is
 -- refused as OVERSIZE, so the game underneath it has to be big enough for
 -- capacity not to answer first.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('96660000-0000-0000-0000-000000000004', 'Guest Cap Twenty', now() + interval '10 days', 20, 150, 'published');
 
 select pg_temp.act_as('60000000-0000-0000-0000-000000000061');
@@ -268,7 +268,7 @@ select pg_temp.ok(
 -- the roster view: one row per seat
 -- =============================================================================
 
-insert into public.bookings (game_id, player_id, status, payment_method, price_czk, guest_count)
+insert into public.bookings (game_id, player_id, status, payment_method, price_thb, guest_count)
 values ('96660000-0000-0000-0000-000000000003', '6aaa0000-0000-0000-0000-00000000000a',
         'confirmed', 'cash', 450, 2),
        -- The pre-round-11 shadow, booked the way one always was.

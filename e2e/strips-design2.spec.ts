@@ -204,7 +204,7 @@ test("C8-C14-game-detail", async ({ page }) => {
   const game = await createScratchGame({
     hoursFromNow: 24 * 3,
     capacity: 12,
-    priceCzk: 250,
+    priceThb: 250,
     format: "6v6v6",
     subsPerTeam: 2,
     durationMinutes: 90,

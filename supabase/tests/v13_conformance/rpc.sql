@@ -155,7 +155,7 @@ create temp table _fx (game_id uuid, p1 uuid, p1_auth uuid, p2 uuid, p2_auth uui
 insert into _fx (game_id)
 select gen_random_uuid();
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, city, brand)
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, city, brand)
 select game_id, 'rpc-conformance pitch', now() + interval '14 days', 1, 150,
        'published', 'Praha', 'hrajfotbal'
 from _fx;
@@ -276,7 +276,7 @@ select set_config('request.jwt.claims', '', true);
 create temp table _before (ledger integer, roster integer, bookings integer) on commit drop;
 
 insert into _before
-select (select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger),
+select (select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger),
        (select count(*)::integer from public.game_roster_public
          where game_id = current_setting('rpc.game')::uuid),
        (select count(*)::integer from public.bookings
@@ -294,11 +294,11 @@ reset role;
 select set_config('request.jwt.claims', '', true);
 
 select pg_temp.ok(
-  (select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger)
+  (select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger)
     = (select ledger from _before),
   'a refused claim writes nothing to credit_ledger',
   'before=' || (select ledger from _before)::text
-  || ' after=' || (select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger)::text);
+  || ' after=' || (select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger)::text);
 
 select pg_temp.ok(
   (select count(*)::integer from public.game_roster_public
@@ -332,7 +332,7 @@ select pg_temp.ok(
 select pg_temp.ok(
   (select pg_get_function_identity_arguments(p.oid) from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
-    where n.nspname = 'public' and p.proname = 'create_topup') = 'p_amount_czk integer',
+    where n.nspname = 'public' and p.proname = 'create_topup') = 'p_amount_thb integer',
   'create_topup takes ONLY an amount — there is no player argument to forge');
 
 select pg_temp.ok(
@@ -345,12 +345,12 @@ select set_config('request.jwt.claims',
 
 select pg_temp.ok(
   pg_temp.why($q$select public.create_topup(49)$q$) = 'AMOUNT_OUT_OF_RANGE',
-  'a 49 CZK top-up is refused — below the 50 floor',
+  'a 49 THB top-up is refused — below the 50 floor',
   pg_temp.why($q$select public.create_topup(49)$q$));
 
 select pg_temp.ok(
   pg_temp.why($q$select public.create_topup(2001)$q$) = 'AMOUNT_OUT_OF_RANGE',
-  'a 2001 CZK top-up is refused — above the 2000 ceiling');
+  'a 2001 THB top-up is refused — above the 2000 ceiling');
 
 -- A legitimate one, kept for the assertions below.
 select set_config('rpc.topup_ordinary',
@@ -426,7 +426,7 @@ select set_config('request.jwt.claims', '', true);
 -- top-up, so the branch is skipped entirely for them; when a tier WAS chosen,
 -- the received amount must equal THAT tier's price. Not "some tier's price" —
 -- paying the 8-pass amount against a 5-pass request is a mispayment, and
--- crediting the 8-pass value would hand over 450 CZK on a coincidence.
+-- crediting the 8-pass value would hand over 450 THB on a coincidence.
 --
 -- Asserted on both halves, because each alone would produce a plausible bug:
 -- amount-only turns an ordinary 840 into a pass, and intent-only credits a
@@ -463,12 +463,12 @@ reset role;
 select set_config('request.jwt.claims', '', true);
 
 select pg_temp.ok(
-  (select delta_czk from public.credit_ledger
+  (select delta_thb from public.credit_ledger
     where reason = 'topup' and expires_at is not null
       and player_id = current_setting('rpc.p2_player')::uuid
     order by created_at desc limit 1) = 900,
   'a 5-pass paid at exactly 840 credits the tier value of 900',
-  (select coalesce((select delta_czk::text from public.credit_ledger
+  (select coalesce((select delta_thb::text from public.credit_ledger
      where reason = 'topup' and expires_at is not null
        and player_id = current_setting('rpc.p2_player')::uuid
      order by created_at desc limit 1), 'no row')));
@@ -499,13 +499,13 @@ select set_config('request.jwt.claims', '', true);
 -- the same `created_at`, so an ORDER BY could not tell them apart.
 select pg_temp.ok(
   (select count(*) from public.credit_ledger
-    where reason = 'topup' and delta_czk = 840
+    where reason = 'topup' and delta_thb = 840
       and player_id = current_setting('rpc.p2_player')::uuid) = 1
   and (select count(*) from public.credit_ledger
-    where reason = 'topup' and delta_czk = 900
+    where reason = 'topup' and delta_thb = 900
       and player_id = current_setting('rpc.p2_player')::uuid) = 1,
   'an ORDINARY 840 credits 840, never 900 — the amount alone is not enough',
-  (select coalesce(string_agg(delta_czk::text, ', '), 'no row') from public.credit_ledger
+  (select coalesce(string_agg(delta_thb::text, ', '), 'no row') from public.credit_ledger
      where reason = 'topup'
        and player_id = current_setting('rpc.p2_player')::uuid));
 

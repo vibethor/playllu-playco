@@ -21,20 +21,20 @@ export type BreakEvenOutlook =
 
 export type BreakEvenInput = Pick<
   GameEconomics,
-  "priceCzk" | "capacity" | "seatsTaken" | "unpaidSeats" | "pitchCostCzk" | "profitCzk"
+  "priceThb" | "capacity" | "seatsTaken" | "unpaidSeats" | "pitchCostThb" | "profitThb"
 >;
 
 export function breakEvenOutlook(game: BreakEvenInput): BreakEvenOutlook {
-  if (game.pitchCostCzk === null || game.profitCzk === null || game.priceCzk <= 0) {
+  if (game.pitchCostThb === null || game.profitThb === null || game.priceThb <= 0) {
     return { kind: "none" };
   }
 
   // Whole crowns: a pass seat's value carries decimals, and a seat is never
   // asked for over a fraction of one.
-  const down = -Math.round(game.profitCzk);
+  const down = -Math.round(game.profitThb);
   if (down <= 0) return { kind: "covered" };
 
-  const seats = Math.ceil(down / game.priceCzk);
+  const seats = Math.ceil(down / game.priceThb);
   const open = Math.max(0, game.capacity - game.seatsTaken);
   const canStillPay = open + Math.ceil(game.unpaidSeats);
   return { kind: "short", seats, reachable: seats <= canStillPay };

@@ -39,7 +39,7 @@ insert into public.players (id, nickname, email, phone, auth_user_id) values
   ('a0000000-0000-0000-0000-00000000000a', 'RosterPlayerA', 'player-a@test.invalid', '+420111111111', 'aaaaaaaa-0000-0000-0000-000000000001'),
   ('b0000000-0000-0000-0000-00000000000b', 'RosterPlayerB', 'player-b@test.invalid', '+420222222222', null);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('11110000-0000-0000-0000-000000000001', 'Draft Venue',     now() + interval '7 days', 12, 200, 'draft'),
   ('22220000-0000-0000-0000-000000000002', 'Published Venue', now() + interval '8 days', 12, 200, 'published'),
   ('33330000-0000-0000-0000-000000000003', 'Full Venue',      now() + interval '9 days', 12, 200, 'full'),
@@ -48,13 +48,13 @@ insert into public.games (id, venue, starts_at, capacity, price_czk, status) val
   ('66660000-0000-0000-0000-000000000006', 'Cancelled Venue', now() + interval '5 days', 12, 200, 'cancelled');
 
 -- One confirmed booking per game, all for player A.
-insert into public.bookings (game_id, player_id, status, payment_method, price_czk)
+insert into public.bookings (game_id, player_id, status, payment_method, price_thb)
 select g.id, 'a0000000-0000-0000-0000-00000000000a', 'confirmed', 'cash', 200
 from public.games g;
 
 -- On the published game, add a cancelled and an expired booking for player B:
 -- neither is a spot in the lineup and neither may appear in the roster.
-insert into public.bookings (game_id, player_id, status, payment_method, price_czk) values
+insert into public.bookings (game_id, player_id, status, payment_method, price_thb) values
   ('22220000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-00000000000b', 'cancelled', 'cash', 200);
 
 -- =============================================================================

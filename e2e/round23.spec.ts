@@ -38,7 +38,7 @@ test("the third tile counts players met, and a guest is not a person", async ({
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
 
   try {
     const admin = serviceClient();
@@ -85,7 +85,7 @@ test("the third tile counts players met, and a guest is not a person", async ({
     // AND NO MONEY IS ON IT. The composite has never carried a balance; this
     // is the assertion that keeps it that way.
     const body = (await page.locator("main").innerText()).toLowerCase();
-    expect(body, "the public profile names money").not.toContain("czk");
+    expect(body, "the public profile names money").not.toContain("thb");
     expect(body, "the public profile names credit").not.toContain("credit");
 
       } finally {
@@ -97,7 +97,7 @@ test("a no-show on either side removes that game from the count", async ({
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
 
   try {
     const admin = serviceClient();
@@ -318,7 +318,7 @@ test("dashboard is the first admin chip, and only it lights on /admin", async ({
  * ========================================================================== */
 
 test("no surface offers cash, in any language", async ({ page, context }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
 
   try {
     await signInAs(context, players.runner);
@@ -355,7 +355,7 @@ test("an existing cash booking is still settleable from the admin roster", async
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
 
   try {
     /*

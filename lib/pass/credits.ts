@@ -7,7 +7,7 @@ import { strings, type Strings } from "@/lib/strings";
  *
  * THE CREDITS RULING'S UNIT, rendered once so every surface agrees. One credit
  * is one game; the pass page, the wallet and the tier cards all count in
- * credits, and CZK sits beneath as the secondary figure rather than as the
+ * credits, and THB sits beneath as the secondary figure rather than as the
  * headline (ruling F).
  *
  * THE FORM COMES FROM `lib/i18n/plural.ts`, which is where the whole

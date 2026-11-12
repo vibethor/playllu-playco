@@ -60,7 +60,7 @@ test("a replaced venue photo shows on the admin row, the games list and the game
       p_venue_id: venueId,
       p_starts_at: startsAt,
       p_capacity: 12,
-      p_price_czk: 180,
+      p_price_thb: 180,
       p_organizer_name: "E2E Organizer",
       p_format: null,
       p_surface: null,

@@ -18,7 +18,7 @@
  *     player_claimed) come from ONE REAL SIGNUP at the gate, not from here.
  */
 
-import { priceForDurationCzk } from "../lib/games/price.ts";
+import { priceForDurationThb } from "../lib/games/price.ts";
 import { policy } from "../lib/policy.ts";
 
 export interface PlayerFixture {
@@ -38,7 +38,7 @@ export interface GameFixture {
   /** Hours from now at insert time. Positive = future. */
   startsInHours: number;
   capacity: number;
-  priceCzk: number;
+  priceThb: number;
   /** How long, which decides the price and whether a credit can buy it. */
   durationMinutes?: number;
   /**
@@ -135,7 +135,7 @@ export const games = {
     venue: "Praha 3 • Pražačka (draft)",
     startsInHours: 24 * 10,
     capacity: 12,
-    priceCzk: priceForDurationCzk(policy.game.standardMinutes),
+    priceThb: priceForDurationThb(policy.game.standardMinutes),
     format: "6v6",
     surface: "turf",
     subsPerTeam: 2,
@@ -145,7 +145,7 @@ export const games = {
     venue: "Praha 3 • Pražačka",
     startsInHours: 24 * 5,
     capacity: 12,
-    priceCzk: priceForDurationCzk(policy.game.standardMinutes),
+    priceThb: priceForDurationThb(policy.game.standardMinutes),
     format: "6v6",
     surface: "turf",
     subsPerTeam: 2,
@@ -155,7 +155,7 @@ export const games = {
     venue: "Praha 7 • Letná",
     startsInHours: 24 * 6,
     capacity: 2,
-    priceCzk: priceForDurationCzk(policy.game.standardMinutes),
+    priceThb: priceForDurationThb(policy.game.standardMinutes),
     format: "1v1",
     surface: "indoor",
     subsPerTeam: null,
@@ -165,7 +165,7 @@ export const games = {
     venue: "Praha 4 • Podolí",
     startsInHours: 24 * 3,
     capacity: 12,
-    priceCzk: priceForDurationCzk(policy.game.standardMinutes),
+    priceThb: priceForDurationThb(policy.game.standardMinutes),
     format: "6v6",
     surface: "grass",
     subsPerTeam: 1,
@@ -175,7 +175,7 @@ export const games = {
     venue: "Praha 8 • Libeň",
     startsInHours: 24 * 4,
     capacity: 12,
-    priceCzk: priceForDurationCzk(policy.game.standardMinutes),
+    priceThb: priceForDurationThb(policy.game.standardMinutes),
     format: "6v6",
     surface: "turf",
     subsPerTeam: null,
@@ -185,7 +185,7 @@ export const games = {
     venue: "Praha 10 • Strašnice",
     startsInHours: 24 * 7,
     capacity: 12,
-    priceCzk: priceForDurationCzk(policy.game.standardMinutes),
+    priceThb: priceForDurationThb(policy.game.standardMinutes),
     format: "6v6",
     surface: "turf",
     subsPerTeam: null,
@@ -196,7 +196,7 @@ export const games = {
     venue: "Praha 5 • Smíchov",
     startsInHours: 24 * 8,
     capacity: 12,
-    priceCzk: priceForDurationCzk(policy.game.standardMinutes),
+    priceThb: priceForDurationThb(policy.game.standardMinutes),
     format: "4v4v4",
     surface: "indoor",
     subsPerTeam: null,
@@ -207,7 +207,7 @@ export const games = {
     venue: "Praha 6 • Dejvice",
     startsInHours: 24 * 9,
     capacity: 12,
-    priceCzk: priceForDurationCzk(policy.game.standardMinutes),
+    priceThb: priceForDurationThb(policy.game.standardMinutes),
     format: "6v6",
     surface: "sand",
     subsPerTeam: null,
@@ -225,7 +225,7 @@ export const games = {
     venue: '<script>alert(1)</script> "Praha 2", a;b\\c',
     startsInHours: 24 * 11,
     capacity: 12,
-    priceCzk: priceForDurationCzk(policy.game.standardMinutes),
+    priceThb: priceForDurationThb(policy.game.standardMinutes),
     // The "organizer said nothing" case, kept deliberately. Required-and-null
     // rather than absent so adding a fourth optional field cannot skip it
     // silently — every game must state what it does not have.

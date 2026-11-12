@@ -13,9 +13,9 @@ import type { ConfirmResult } from "@/lib/types/database";
 export interface ConfirmPaymentState {
   status: "idle" | "confirmed" | "underpaid" | "error";
   /** Surplus turned into wallet credit. Present on an overpayment. */
-  creditIssuedCzk?: number;
+  creditIssuedThb?: number;
   /** How far short the payment fell. Present on an underpayment. */
-  shortfallCzk?: number;
+  shortfallThb?: number;
   /** True when the payment landed on an already-expired booking. */
   wasExpired?: boolean;
   message?: string;
@@ -30,7 +30,7 @@ export interface ConfirmPaymentState {
  * expired booking gets its spot back — the answers are, respectively: wallet
  * credit, the RPC's arithmetic, and never.
  *
- * `received_amount_czk` is OMITTED on the one-tap path, which is what tells
+ * `received_amount_thb` is OMITTED on the one-tap path, which is what tells
  * the RPC "confirm at the expected amount". Sending the expected amount
  * explicitly would look equivalent and is not: it would make the tap a claim
  * about what the bank reported, and this tap is not that claim.
@@ -61,7 +61,7 @@ export async function confirmPaymentAction(
   const { data, error } = await supabase.rpc("confirm_booking", {
     p_booking_id: bookingId,
     p_confirmed_by: admin.id,
-    p_received_amount_czk: receivedAmount,
+    p_received_amount_thb: receivedAmount,
   });
 
   if (error) {
@@ -71,7 +71,7 @@ export async function confirmPaymentAction(
     // the number the function actually compared.
     const shortfall = parseUnderpayment(error.message);
     if (shortfall !== null) {
-      return { status: "underpaid", shortfallCzk: shortfall };
+      return { status: "underpaid", shortfallThb: shortfall };
     }
     return { status: "error", message: toAdminErrorMessage(error.message) };
   }
@@ -85,7 +85,7 @@ export async function confirmPaymentAction(
 
   return {
     status: "confirmed",
-    creditIssuedCzk: result?.credit_issued_czk ?? 0,
+    creditIssuedThb: result?.credit_issued_thb ?? 0,
     // `expired` coming back from a confirm is the payment-after-expiry path:
     // credited in full, spot not reinstated, and the UI must not offer one.
     wasExpired: result?.status === "expired",
@@ -190,7 +190,7 @@ export async function deleteGameAction(
 export interface PitchCostState {
   status: "idle" | "saved" | "error";
   /** What the game's pitch cost is now — null when it has none. */
-  costCzk?: number | null;
+  costThb?: number | null;
   message?: string;
 }
 
@@ -216,18 +216,18 @@ export async function setPitchCostAction(
   const gameId = String(formData.get("gameId") ?? "");
   if (!gameId) return { status: "error", message: toAdminErrorMessage("GAME_NOT_FOUND") };
 
-  const input = parsePitchCostInput(formData.get("costCzk"));
+  const input = parsePitchCostInput(formData.get("costThb"));
   if (!input.ok) return { status: "error", message: strings.admin.pitchCostOutOfRange };
 
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.rpc("set_game_pitch_cost", {
     p_game_id: gameId,
-    p_cost_czk: input.costCzk,
+    p_cost_thb: input.costThb,
   });
 
   if (error) return { status: "error", message: toAdminErrorMessage(error.message) };
 
   revalidatePath(`/admin/games/${gameId}`);
   revalidatePath("/admin/games");
-  return { status: "saved", costCzk: data ?? null };
+  return { status: "saved", costThb: data ?? null };
 }

@@ -87,12 +87,12 @@ export const CHECKOUT_UI_MODE = "embedded_page";
  *
  *   LINK is Stripe's own saved-card wallet. It prompts for an email, remembers
  *   the card against a Stripe-side identity, and puts a second account
- *   relationship between this product and its player — for a 150 CZK football
+ *   relationship between this product and its player — for a 150 THB football
  *   booking that is a checkout step that buys nobody anything.
  *
  *   KLARNA is pay-later credit. Financing a pickup football game is not a
  *   thing this product will offer, and a "3 interest-free payments" option on
- *   a 150 CZK line is the kind of thing that reads as a mistake because it is
+ *   a 150 THB line is the kind of thing that reads as a mistake because it is
  *   one.
  *
  * PINNING HERE IS NECESSARY AND NOT SUFFICIENT. Passing `payment_method_types`
@@ -122,9 +122,9 @@ export const CHECKOUT_PAYMENT_METHOD_TYPES = ["card"] as const;
  */
 export const CHECKOUT_LINK_DISPLAY = "never" as const;
 
-/** CZK has a hundred haléřů and Stripe counts in the minor unit. */
-export function czkToMinorUnits(amountCzk: number): number {
-  return Math.round(amountCzk * 100);
+/** THB has a hundred haléřů and Stripe counts in the minor unit. */
+export function thbToMinorUnits(amountThb: number): number {
+  return Math.round(amountThb * 100);
 }
 
 export interface CheckoutLine {
@@ -132,7 +132,7 @@ export interface CheckoutLine {
   name: string;
   description?: string;
   /** The WHOLE amount, already multiplied out. Never a unit price × quantity. */
-  amountCzk: number;
+  amountThb: number;
 }
 
 export interface EmbeddedSessionInput {
@@ -186,7 +186,7 @@ const STRIPE_LOCALE: Record<Locale, Stripe.Checkout.SessionCreateParams.Locale> 
  * One Checkout Session, embedded.
  *
  * QUANTITY IS ALWAYS 1 AND THE AMOUNT IS THE WHOLE PRICE. A party of three is
- * one line of 450 CZK, not three lines of 150 — because a quantity is a field
+ * one line of 450 THB, not three lines of 150 — because a quantity is a field
  * Stripe lets the buyer edit on some surfaces, and the price of a booking is
  * not a thing the buyer gets to choose. This is the deletion of the
  * set-the-quantity-yourself instruction, expressed as a constraint rather than
@@ -298,8 +298,8 @@ export async function createEmbeddedSession(
       {
         quantity: 1,
         price_data: {
-          currency: "czk",
-          unit_amount: czkToMinorUnits(input.line.amountCzk),
+          currency: "thb",
+          unit_amount: thbToMinorUnits(input.line.amountThb),
           product_data: {
             name: input.line.name,
             ...(input.line.description ? { description: input.line.description } : {}),

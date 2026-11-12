@@ -3,7 +3,7 @@ import { StatCard } from "@/components/admin/StatCard";
 import { ChipLinks } from "@/components/admin/money/ChipLinks";
 import type { FinancialPeriod } from "@/lib/admin/financials";
 import { statsHref } from "@/lib/admin/money/statsHref";
-import { formatCzk, formatDate } from "@/lib/format";
+import { formatThb, formatDate } from "@/lib/format";
 import { ratio, type AdminStats } from "@/lib/stats/queries";
 import { STAT_WINDOWS, type StatWindow } from "@/lib/stats/window";
 import { strings } from "@/lib/strings";
@@ -37,12 +37,12 @@ export function OperationsSection({
   window: StatWindow;
   period: FinancialPeriod;
 }) {
-  const { range, fillRate, confirmedRevenueCzk, newReturning, cancellations } = stats;
+  const { range, fillRate, confirmedRevenueThb, newReturning, cancellations } = stats;
   const copy = strings.admin;
 
   const isEmpty =
     fillRate.capacity === 0 &&
-    confirmedRevenueCzk === 0 &&
+    confirmedRevenueThb === 0 &&
     newReturning.newPlayers + newReturning.returning === 0 &&
     cancellations.total === 0;
 
@@ -106,7 +106,7 @@ export function OperationsSection({
             testId="stat-revenue"
             className="md:col-span-3"
             label={copy.statRevenue}
-            value={formatCzk(confirmedRevenueCzk)}
+            value={formatThb(confirmedRevenueThb)}
             hint={copy.statRevenueHint}
           />
           <StatCard

@@ -61,11 +61,11 @@ insert into public.players (id, nickname, email, phone, auth_user_id, photo_path
   ('bbbb0000-0000-0000-0000-00000000f152', 'NoPhotoPlayer', 'roster-nophoto@test.invalid',
    '+420777000152', null, null);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('cccc0000-0000-0000-0000-00000000f151', 'Photo Pitch', now() + interval '3 days', 12, 200, 'published'),
   ('cccc0000-0000-0000-0000-00000000f152', 'Draft Pitch', now() + interval '3 days', 12, 200, 'draft');
 
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk) values
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb) values
   ('dddd0000-0000-0000-0000-00000000f151', 'cccc0000-0000-0000-0000-00000000f151',
    'aaaa0000-0000-0000-0000-00000000f151', 'confirmed', 'cash', 200),
   ('dddd0000-0000-0000-0000-00000000f152', 'cccc0000-0000-0000-0000-00000000f151',

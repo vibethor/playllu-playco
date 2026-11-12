@@ -11,7 +11,7 @@ import { profitTable, seatTotals, type PlayedGame } from "@/lib/admin/money/prof
 function economics(gameId: string, overrides: Partial<GameEconomics> = {}): GameEconomics {
   return {
     gameId,
-    priceCzk: 180,
+    priceThb: 180,
     capacity: 14,
     seatsTaken: 10,
     houseGuests: 0,
@@ -20,14 +20,14 @@ function economics(gameId: string, overrides: Partial<GameEconomics> = {}): Game
     passSeats: 0,
     creditSeats: 0,
     freeSeats: 0,
-    singleCzk: 1800,
-    passCzk: 0,
-    creditCzk: 0,
-    keptCzk: 0,
-    owedCzk: 0,
-    revenueCzk: 1800,
-    pitchCostCzk: 1200,
-    profitCzk: 600,
+    singleThb: 1800,
+    passThb: 0,
+    creditThb: 0,
+    keptThb: 0,
+    owedThb: 0,
+    revenueThb: 1800,
+    pitchCostThb: 1200,
+    profitThb: 600,
     breakEvenSeats: 7,
     ...overrides,
   };
@@ -57,9 +57,9 @@ describe("profitTable", () => {
     // Arrange
     const games = [game("g1"), game("g2"), game("g3")];
     const byGame = new Map([
-      ["g1", economics("g1", { revenueCzk: 1800, pitchCostCzk: 1200, profitCzk: 600 })],
-      ["g2", economics("g2", { revenueCzk: 900, pitchCostCzk: 1200, profitCzk: -300 })],
-      ["g3", economics("g3", { revenueCzk: 540, pitchCostCzk: null, profitCzk: null, breakEvenSeats: null })],
+      ["g1", economics("g1", { revenueThb: 1800, pitchCostThb: 1200, profitThb: 600 })],
+      ["g2", economics("g2", { revenueThb: 900, pitchCostThb: 1200, profitThb: -300 })],
+      ["g3", economics("g3", { revenueThb: 540, pitchCostThb: null, profitThb: null, breakEvenSeats: null })],
     ]);
 
     // Act
@@ -67,9 +67,9 @@ describe("profitTable", () => {
 
     // Assert
     expect(totals).toEqual({
-      revenueCzk: 3240,
-      pitchCostCzk: 2400,
-      profitCzk: 300,
+      revenueThb: 3240,
+      pitchCostThb: 2400,
+      profitThb: 300,
       costedGames: 2,
       brokeEven: 1,
       uncostedGames: 1,
@@ -78,7 +78,7 @@ describe("profitTable", () => {
 
   it("counts a game that made exactly its pitch cost as broken even", () => {
     // Arrange
-    const byGame = new Map([["g1", economics("g1", { revenueCzk: 1200, profitCzk: 0 })]]);
+    const byGame = new Map([["g1", economics("g1", { revenueThb: 1200, profitThb: 0 })]]);
 
     // Act
     const { totals } = profitTable([game("g1")], byGame);

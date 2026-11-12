@@ -86,7 +86,7 @@ describe("seatBar — break-even by money when the profit is known", () => {
   it("is not past break-even on cheaper pass seats that fill the line but not the pitch cost", () => {
     // Arrange — seven seats is the line at full price, but three are pass
     // seats worth less, so the game is still 90 short.
-    const game = { ...base, singleSeats: 4, passSeats: 3, breakEvenSeats: 7, profitCzk: -90 };
+    const game = { ...base, singleSeats: 4, passSeats: 3, breakEvenSeats: 7, profitThb: -90 };
 
     // Act
     const bar = seatBar(game);
@@ -96,6 +96,6 @@ describe("seatBar — break-even by money when the profit is known", () => {
   });
 
   it("is past break-even once the profit is zero or more", () => {
-    expect(seatBar({ ...base, singleSeats: 7, breakEvenSeats: 7, profitCzk: 0 }).pastBreakEven).toBe(true);
+    expect(seatBar({ ...base, singleSeats: 7, breakEvenSeats: 7, profitThb: 0 }).pastBreakEven).toBe(true);
   });
 });

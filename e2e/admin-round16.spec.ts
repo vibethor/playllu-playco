@@ -59,7 +59,7 @@ async function paidBookingOpenInAdmin(
   context: import("@playwright/test").BrowserContext,
   price: number,
 ) {
-  const game = await createScratchGame({ capacity: 6, priceCzk: price, hoursFromNow: 24 * 3 });
+  const game = await createScratchGame({ capacity: 6, priceThb: price, hoursFromNow: 24 * 3 });
   await clearActiveBookings("runner");
   await resetWallet(players.runner.id);
 
@@ -100,9 +100,9 @@ const seatsOn = async (gameId: string) =>
 const runnerBalance = async () => {
   const { data: ledger } = await serviceClient()
     .from("credit_ledger")
-    .select("delta_czk")
+    .select("delta_thb")
     .eq("player_id", players.runner.id);
-  return (ledger ?? []).reduce((sum, row) => sum + row.delta_czk, 0);
+  return (ledger ?? []).reduce((sum, row) => sum + row.delta_thb, 0);
 };
 
 test("an admin removes a player and, with the switch left off, no Credit comes back", async ({

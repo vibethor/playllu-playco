@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { partyAmountCzk, partySeats } from "@/lib/payments/partyAmount";
+import { partyAmountThb, partySeats } from "@/lib/payments/partyAmount";
 import { policy } from "@/lib/policy";
 
 /**
@@ -51,10 +51,10 @@ describe("partySeats", () => {
   });
 });
 
-describe("partyAmountCzk", () => {
+describe("partyAmountThb", () => {
   it("charges one seat at the game price for a lone booking", () => {
     // Arrange / Act
-    const amount = partyAmountCzk(150, 0);
+    const amount = partyAmountThb(150, 0);
 
     // Assert
     expect(amount).toBe(150);
@@ -62,10 +62,10 @@ describe("partyAmountCzk", () => {
 
   it("charges price × (1 + guests) at +2 — the round's named case", () => {
     // Arrange
-    const priceCzk = 150;
+    const priceThb = 150;
 
     // Act
-    const amount = partyAmountCzk(priceCzk, 2);
+    const amount = partyAmountThb(priceThb, 2);
 
     // Assert: three seats, one line, no quantity anywhere.
     expect(amount).toBe(450);
@@ -73,7 +73,7 @@ describe("partyAmountCzk", () => {
 
   it("multiplies out at a non-default price too", () => {
     // Arrange / Act
-    const amount = partyAmountCzk(180, 2);
+    const amount = partyAmountThb(180, 2);
 
     // Assert
     expect(amount).toBe(540);
@@ -86,10 +86,10 @@ describe("partyAmountCzk", () => {
      * take: the function cannot apply credit even if a caller wanted it to.
      */
     // Arrange / Act
-    const amount = partyAmountCzk(150, 1);
+    const amount = partyAmountThb(150, 1);
 
     // Assert
     expect(amount).toBe(300);
-    expect(partyAmountCzk.length).toBe(2);
+    expect(partyAmountThb.length).toBe(2);
   });
 });

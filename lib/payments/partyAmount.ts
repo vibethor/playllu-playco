@@ -4,7 +4,7 @@ import { policy } from "@/lib/policy";
  * What a party owes for one game (round 27, item 1).
  *
  * EXTRACTED SO IT CAN BE ASSERTED. The arithmetic was one inline expression in
- * `/payment/checkout` — `game.price_czk * seats` — which is correct and was
+ * `/payment/checkout` — `game.price_thb * seats` — which is correct and was
  * unreachable from a test, because reaching it needs a Stripe secret key. The
  * rule it encodes is the one the whole embedded-checkout item exists for, so
  * it gets a name and a spec rather than a comment.
@@ -13,7 +13,7 @@ import { policy } from "@/lib/policy";
  * `quantity: 1` and this number as the whole line, never a unit price and a
  * quantity — because a quantity is a field the buyer can edit on some Stripe
  * surfaces, and the price of a booking is not a thing the buyer chooses. A
- * party of three is one line of 450 CZK, not three lines of 150.
+ * party of three is one line of 450 THB, not three lines of 150.
  *
  * NO WALLET CREDIT IS SUBTRACTED HERE, deliberately (round 27, item 1, the
  * owner's rule). Choosing "Online payment" moves ZERO credit: the wallet is
@@ -37,6 +37,6 @@ export function partySeats(guests: number): number {
 }
 
 /** The whole party price: the per-seat price times the player plus guests. */
-export function partyAmountCzk(priceCzk: number, guests: number): number {
-  return priceCzk * partySeats(guests);
+export function partyAmountThb(priceThb: number, guests: number): number {
+  return priceThb * partySeats(guests);
 }

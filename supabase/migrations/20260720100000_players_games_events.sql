@@ -74,14 +74,14 @@ create table public.games (
   venue text not null,
   starts_at timestamptz not null,
   capacity integer not null,
-  price_czk integer not null,
+  price_thb integer not null,
   status public.game_status not null default 'draft',
   city text not null default 'prague',
   brand text not null default 'hrajfotbal',
   created_at timestamptz not null default now(),
 
   constraint games_capacity_positive check (capacity > 0),
-  constraint games_price_non_negative check (price_czk >= 0)
+  constraint games_price_non_negative check (price_thb >= 0)
 );
 
 create index games_starts_at_idx on public.games (starts_at);

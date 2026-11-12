@@ -2,12 +2,12 @@
 
 import { useActionState, useState } from "react";
 import { useLocale, useStrings } from "@/components/LocaleProvider";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import { addGuestsAction } from "@/app/game/[id]/add-guests/actions";
 import { GuestCountPicker } from "@/components/game/GuestCountPicker";
 import { ADD_GUESTS_INITIAL } from "@/lib/booking/addGuests";
 import { pluralise } from "@/lib/i18n/plural";
-import { PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "@/lib/pass/creditPrice";
 
 /**
  * ADD GUESTS TO A SPOT YOU HAVE ALREADY PAID FOR (round 27, item 2).
@@ -34,8 +34,8 @@ export function AddGuestsPanel({
   gameId,
   bookingId,
   canAdd,
-  priceCzk,
-  creditCzk,
+  priceThb,
+  creditThb,
   embeddedCheckout,
 }: {
   gameId: string;
@@ -43,9 +43,9 @@ export function AddGuestsPanel({
   /** How many further guests fit, from `can_add_guests()`. Always ≥ 1 here. */
   canAdd: number;
   /** Per-seat price, for the guest-only total. */
-  priceCzk: number;
+  priceThb: number;
   /** Wallet balance, read server-side from the ledger. */
-  creditCzk: number;
+  creditThb: number;
   /** Whether the online rail is live; the link rail cannot do this. */
   embeddedCheckout: boolean;
 }) {
@@ -67,7 +67,7 @@ export function AddGuestsPanel({
   /*
    * WHAT THE GUESTS COST IN CREDITS — ONE EACH, FLAT (round 35's ruling).
    *
-   * ~~`game.price_czk × guests`, shown in credits only when it divided
+   * ~~`game.price_thb × guests`, shown in credits only when it divided
    * cleanly.~~ Round 34 found the credit rail charging the game's price and
    * reported it as a ruling rather than a bug; the owner ruled that a credit
    * buys a SEAT, whatever the game charges a card. So the arithmetic is the
@@ -78,7 +78,7 @@ export function AddGuestsPanel({
    * really does charge the game's price — that half of the ruling did not move.
    * Two rails, two numbers, and the button each sits under says which.
    */
-  const creditCost = PASS_REFERENCE_PRICE_CZK * picked;
+  const creditCost = PASS_REFERENCE_PRICE_THB * picked;
 
   const creditsLabel = (n: number) =>
     pluralise(
@@ -91,8 +91,8 @@ export function AddGuestsPanel({
       locale,
     );
 
-  const cost = priceCzk * picked;
-  const affordable = creditCzk >= creditCost;
+  const cost = priceThb * picked;
+  const affordable = creditThb >= creditCost;
 
   const guestLabel =
     picked === 1
@@ -131,7 +131,7 @@ export function AddGuestsPanel({
         THE HEADLINE IS IN THE UNIT OF THE RAIL THE PLAYER CAN USE (round 34,
         item 2). Credits when the balance covers it, crowns when it does not and
         the online rail is what is left — because the number has to be one the
-        player can check against something they hold. "300 CZK" beside a credit
+        player can check against something they hold. "300 THB" beside a credit
         button asks them to divide by the seat price before they know whether they can
         afford it.
       */}
@@ -144,7 +144,7 @@ export function AddGuestsPanel({
               .replace("{credits}", creditsLabel(picked))
               .replace("{n}", guestLabel)
           : t.games.addGuests.cost
-              .replace("{amount}", formatCzk(cost))
+              .replace("{amount}", formatThb(cost))
               .replace("{n}", guestLabel)}
       </p>
 
@@ -183,7 +183,7 @@ export function AddGuestsPanel({
           ~~"{amount} left after", between Redeem credit and Pay online.~~
           REMOVED, NOT CONVERTED (round 35, the owner's word).
           
-          It was a CZK preview of a credit balance, which is the thing the
+          It was a THB preview of a credit balance, which is the thing the
           vocabulary law now forbids outright: a credit surface reads credits or
           it says nothing. Converting it to "2 credits left after" would have
           kept a running-total line nobody asked for between two buttons — the

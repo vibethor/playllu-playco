@@ -4,14 +4,14 @@ import { redirect } from "next/navigation";
 import { withToast } from "@/lib/ux/toast";
 import { bookingEmailContext } from "@/lib/cron/context";
 import { dispatchEmail } from "@/lib/email/dispatch";
-import { buildSpdString, amountDueCzk, paymentIban } from "@/lib/payments/spd";
+import { buildSpdString, amountDueThb, paymentIban } from "@/lib/payments/spd";
 import { createServerSupabaseClient, createServiceRoleSupabaseClient } from "@/lib/supabase/clients";
 import { getSessionUser } from "@/lib/auth/session";
 import { getOwnCreditBalance } from "@/lib/booking/queries";
 import { toBookingErrorCode, type BookingErrorCode } from "@/lib/booking/errors";
 import { buildResumeUrl } from "@/lib/booking/resume";
 import { policy } from "@/lib/policy";
-import { PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "@/lib/pass/creditPrice";
 import { acceptedTerms } from "@/lib/legal/terms";
 import { termsAgreementWording } from "@/lib/legal/consentWording";
 import { recordOwnConsent } from "@/lib/legal/recordConsent";
@@ -175,7 +175,7 @@ export async function createBookingAction(
     /*
      * SEATS, NOT THE GAME'S PRICE (round 35's ruling), and this was the THIRD
      * place the same question was asked. A credit buys a seat, flat — so a
-     * wallet holding four credits can pay for a party of four on a 180 CZK
+     * wallet holding four credits can pay for a party of four on a 180 THB
      * game, and the old arithmetic here refused it at 720 versus 600 while the
      * radio above it was correctly enabled and `create_booking` would have
      * accepted it. The player met "Not enough credit for that booking" on a
@@ -191,19 +191,19 @@ export async function createBookingAction(
      * be refused a seat that costs nothing.
      */
     const supabase = await createServerSupabaseClient();
-    const [balanceCzk, priceRow] = await Promise.all([
+    const [balanceThb, priceRow] = await Promise.all([
       getOwnCreditBalance(),
       supabase
         .from("games")
-        .select("price_czk")
+        .select("price_thb")
         .eq("id", gameId)
         .maybeSingle(),
     ]);
-    const priceCzk = priceRow.data?.price_czk ?? null;
+    const priceThb = priceRow.data?.price_thb ?? null;
 
     // ~~A CREDIT IS A 90-MINUTE SEAT~~ — a Credit pays any game since round 40.
-    const seatsCredit = PASS_REFERENCE_PRICE_CZK * (guests + 1);
-    if (priceCzk === null || (priceCzk > 0 && balanceCzk < seatsCredit)) {
+    const seatsCredit = PASS_REFERENCE_PRICE_THB * (guests + 1);
+    if (priceThb === null || (priceThb > 0 && balanceThb < seatsCredit)) {
       return { status: "error", code: "CREDIT_NEGATIVE_BLOCKED" };
     }
   }
@@ -378,7 +378,7 @@ async function dispatchBookingEmails(result: BookingResult): Promise<void> {
 
     const { data: booking } = await supabase
       .from("bookings")
-      .select("id, game_id, player_id, price_czk, credit_applied_czk, payment_code, guest_count")
+      .select("id, game_id, player_id, price_thb, credit_applied_thb, payment_code, guest_count")
       .eq("id", result.id)
       .maybeSingle();
     if (!booking) return;
@@ -394,7 +394,7 @@ async function dispatchBookingEmails(result: BookingResult): Promise<void> {
       withIcs: true,
     });
 
-    const due = amountDueCzk(booking.price_czk, booking.credit_applied_czk);
+    const due = amountDueThb(booking.price_thb, booking.credit_applied_thb);
     await dispatchEmail({
       event: "booking_created",
       to: player.email,
@@ -406,7 +406,7 @@ async function dispatchBookingEmails(result: BookingResult): Promise<void> {
           booking.payment_code && due > 0
             ? buildSpdString({
                 iban: paymentIban(),
-                amountCzk: due,
+                amountThb: due,
                 variableSymbol: booking.payment_code,
                 nickname: player.nickname,
               })

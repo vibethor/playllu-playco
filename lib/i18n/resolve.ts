@@ -15,7 +15,7 @@ import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/locales";
  * can never produce a blank screen or a raw key name in Czech; it produces
  * English until someone translates it. That is the right failure.
  *
- * MONEY IS NOT TRANSLATED. Amounts stay CZK, the QR stays a Czech SPD payment
+ * MONEY IS NOT TRANSLATED. Amounts stay THB, the QR stays a Czech SPD payment
  * string, and the variable symbol stays a variable symbol — in all four
  * languages. That is not an oversight: the player is going to open a Czech
  * banking app, and the words on this screen have to match the words on that

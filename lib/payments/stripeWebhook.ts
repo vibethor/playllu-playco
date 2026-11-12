@@ -89,7 +89,7 @@ export function verifyStripeSignature(
 export interface CheckoutSession {
   id: string;
   clientReferenceId: string | null;
-  /** Minor units, as Stripe sends them. Haléře for CZK. */
+  /** Minor units, as Stripe sends them. Haléře for THB. */
   amountTotal: number | null;
   currency: string | null;
 }
@@ -130,13 +130,13 @@ export function parseCheckoutSession(payload: string): CheckoutSession | null {
 }
 
 /**
- * Minor units to CZK.
+ * Minor units to THB.
  *
- * CZK HAS A HUNDRED HALÉŘŮ and Stripe sends the minor unit, so 150 CZK arrives
+ * THB HAS A HUNDRED HALÉŘŮ and Stripe sends the minor unit, so 150 THB arrives
  * as 15000. Rounding DOWN is deliberate: a fraction of a koruna that rounded up
  * would let a payment one haléř short read as exact, and the underpayment
  * check is the thing standing between an unpaid party and a seated one.
  */
-export function minorUnitsToCzk(amountTotal: number): number {
+export function minorUnitsToThb(amountTotal: number): number {
   return Math.floor(amountTotal / 100);
 }

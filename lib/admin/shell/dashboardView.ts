@@ -1,4 +1,4 @@
-import { DATE_LOCALE, DISPLAY_TIME_ZONE, formatCzk, formatDate } from "@/lib/format";
+import { DATE_LOCALE, DISPLAY_TIME_ZONE, formatThb, formatDate } from "@/lib/format";
 import { strings } from "@/lib/strings";
 
 /**
@@ -24,7 +24,7 @@ export interface TileFigures {
   upcomingSeats: { taken: number; capacity: number };
   totalPlayers: number;
   newPlayers7d: number;
-  revenueMonthCzk: number;
+  revenueMonthThb: number;
   window: DashboardWindow;
 }
 
@@ -39,13 +39,13 @@ export interface DashboardTile {
 }
 
 /**
- * `formatCzk`'s output with its currency split off — the figure and the unit
- * as two strings, so the tile can draw "CZK" smaller. Split on the LAST space
- * rather than by naming the currency, so `formatCzk` stays the only place that
+ * `formatThb`'s output with its currency split off — the figure and the unit
+ * as two strings, so the tile can draw "THB" smaller. Split on the LAST space
+ * rather than by naming the currency, so `formatThb` stays the only place that
  * spells it.
  */
-function money(amountCzk: number): { value: string; unit?: string } {
-  const formatted = formatCzk(amountCzk);
+function money(amountThb: number): { value: string; unit?: string } {
+  const formatted = formatThb(amountThb);
   const at = formatted.lastIndexOf(" ");
   if (at < 0) return { value: formatted };
   return { value: formatted.slice(0, at), unit: formatted.slice(at + 1) };
@@ -89,7 +89,7 @@ export function dashboardTiles(figures: TileFigures): DashboardTile[] {
     {
       testId: "tile-revenue",
       label: strings.admin.tileRevenue,
-      ...money(figures.revenueMonthCzk),
+      ...money(figures.revenueMonthThb),
       detail: copy.tileRevenueDetail.replace("{month}", pragueMonth(figures.window.monthFrom)),
       href: "/admin/stats",
     },

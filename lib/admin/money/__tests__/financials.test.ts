@@ -29,8 +29,8 @@ beforeEach(() => {
   holder.client = fakeServiceClient(tables);
 });
 
-function paidBooking(id: string, paidAt: string, priceCzk = 180) {
-  tables.bookings!.push({ id, game_id: "g1", price_czk: priceCzk, credit_applied_czk: 0, status: "confirmed", guest_count: 0 });
+function paidBooking(id: string, paidAt: string, priceThb = 180) {
+  tables.bookings!.push({ id, game_id: "g1", price_thb: priceThb, credit_applied_thb: 0, status: "confirmed", guest_count: 0 });
   tables.events!.push({ id: `ev-${id}`, event_type: "payment_confirmed", booking_id: id, created_at: paidAt });
 }
 
@@ -65,8 +65,8 @@ describe("getFinancialsAt — revenue", () => {
     const november = await getFinancialsAt("this_month", MID_NOVEMBER);
 
     // Assert
-    expect(november.revenueCzk).toBe(180);
-    expect(november.previousRevenueCzk).toBe(0);
+    expect(november.revenueThb).toBe(180);
+    expect(november.previousRevenueThb).toBe(0);
   });
 
   it("adds up every payment for all time, past the thousandth", async () => {
@@ -80,7 +80,7 @@ describe("getFinancialsAt — revenue", () => {
     const allTime = await getFinancialsAt("all_time", MID_NOVEMBER);
 
     // Assert
-    expect(allTime.revenueCzk).toBe(1500 * 180);
+    expect(allTime.revenueThb).toBe(1500 * 180);
   });
 
   it("compares last month against the month before it", async () => {
@@ -92,8 +92,8 @@ describe("getFinancialsAt — revenue", () => {
     const october = await getFinancialsAt("last_month", MID_NOVEMBER);
 
     // Assert
-    expect(october.revenueCzk).toBe(300);
-    expect(october.previousRevenueCzk).toBe(200);
+    expect(october.revenueThb).toBe(300);
+    expect(october.previousRevenueThb).toBe(200);
   });
 });
 
@@ -106,7 +106,7 @@ describe("getFinancialsAt — revenue by week", () => {
     const october = await getFinancialsAt("this_month", MID_OCTOBER);
 
     // Assert
-    expect(october.weeks.map((w) => w.revenueCzk)).toEqual([0, 180, 0, 0, 0]);
+    expect(october.weeks.map((w) => w.revenueThb)).toEqual([0, 180, 0, 0, 0]);
   });
 
   it("keeps 23:30 on the 28th in the fourth week after the clocks go back", async () => {
@@ -117,7 +117,7 @@ describe("getFinancialsAt — revenue by week", () => {
     const october = await getFinancialsAt("this_month", MID_OCTOBER);
 
     // Assert
-    expect(october.weeks.map((w) => w.revenueCzk)).toEqual([0, 0, 0, 180, 0]);
+    expect(october.weeks.map((w) => w.revenueThb)).toEqual([0, 0, 0, 180, 0]);
   });
 
   it("draws four weeks for a 28-day February", async () => {
@@ -129,7 +129,7 @@ describe("getFinancialsAt — revenue by week", () => {
 
     // Assert
     expect(february.weeks.map((w) => w.label)).toEqual(["W1", "W2", "W3", "W4"]);
-    expect(february.weeks[3]?.revenueCzk).toBe(180);
+    expect(february.weeks[3]?.revenueThb).toBe(180);
   });
 
   it("draws no chart for a month with nothing paid", async () => {
@@ -148,12 +148,12 @@ describe("getFinancialsAt — revenue by week", () => {
  * appeared on the day it was paid. A booking paid from Credits adds nothing:
  * that money arrived when the Credits were bought.
  */
-function passPurchase(id: string, at: string, czk: number, passGames: number | null = 5, status = "confirmed") {
+function passPurchase(id: string, at: string, thb: number, passGames: number | null = 5, status = "confirmed") {
   tables.credit_topups!.push({
     id,
     status,
-    amount_czk: czk,
-    received_amount_czk: status === "confirmed" ? czk : null,
+    amount_thb: thb,
+    received_amount_thb: status === "confirmed" ? thb : null,
     pass_games: passGames,
     confirmed_at: status === "confirmed" ? at : null,
   });
@@ -169,20 +169,20 @@ describe("getFinancialsAt — revenue is everything that arrived, split", () => 
     const f = await getFinancialsAt("this_month", MID_NOVEMBER);
 
     // Assert
-    expect(f.revenueCzk).toBe(1020);
-    expect(f.revenueSplit).toEqual({ gamesCzk: 180, passCzk: 840, topupCzk: 0 });
+    expect(f.revenueThb).toBe(1020);
+    expect(f.revenueSplit).toEqual({ gamesThb: 180, passThb: 840, topupThb: 0 });
   });
 
   it("does not count a game paid from Credits a second time", async () => {
     // Arrange — the pass bought the Credits; the booking spends them.
     passPurchase("t1", MID_NOVEMBER, 840);
-    tables.bookings!.push({ id: "b1", game_id: "g1", price_czk: 180, credit_applied_czk: 180, status: "confirmed", guest_count: 0 });
+    tables.bookings!.push({ id: "b1", game_id: "g1", price_thb: 180, credit_applied_thb: 180, status: "confirmed", guest_count: 0 });
 
     // Act
     const f = await getFinancialsAt("this_month", MID_NOVEMBER);
 
     // Assert
-    expect(f.revenueCzk).toBe(840);
+    expect(f.revenueThb).toBe(840);
   });
 
   it("keeps a Credit top-up that is not a pass as its own part", async () => {
@@ -193,18 +193,18 @@ describe("getFinancialsAt — revenue is everything that arrived, split", () => 
     const f = await getFinancialsAt("this_month", MID_NOVEMBER);
 
     // Assert
-    expect(f.revenueSplit).toEqual({ gamesCzk: 0, passCzk: 0, topupCzk: 500 });
+    expect(f.revenueSplit).toEqual({ gamesThb: 0, passThb: 0, topupThb: 500 });
   });
 
   it("counts a card payment for a game that filled first as a game payment", async () => {
     // Arrange — the money arrived; the player got a Credit instead of a seat.
-    tables.checkout_sessions!.push({ id: "cs1", status: "credited", amount_czk: 180, settled_at: MID_NOVEMBER });
+    tables.checkout_sessions!.push({ id: "cs1", status: "credited", amount_thb: 180, settled_at: MID_NOVEMBER });
 
     // Act
     const f = await getFinancialsAt("this_month", MID_NOVEMBER);
 
     // Assert
-    expect(f.revenueSplit.gamesCzk).toBe(180);
+    expect(f.revenueSplit.gamesThb).toBe(180);
   });
 
   it("does not count a pass purchase that was never paid", async () => {
@@ -216,7 +216,7 @@ describe("getFinancialsAt — revenue is everything that arrived, split", () => 
     const f = await getFinancialsAt("this_month", MID_NOVEMBER);
 
     // Assert
-    expect(f.revenueCzk).toBe(0);
+    expect(f.revenueThb).toBe(0);
   });
 
   it("compares with the month before on the same definition, and draws the pass in its week", async () => {
@@ -228,8 +228,8 @@ describe("getFinancialsAt — revenue is everything that arrived, split", () => 
     const f = await getFinancialsAt("this_month", MID_NOVEMBER);
 
     // Assert
-    expect(f.previousRevenueCzk).toBe(840);
-    expect(f.weeks.reduce((sum, week) => sum + week.revenueCzk, 0)).toBe(1296);
+    expect(f.previousRevenueThb).toBe(840);
+    expect(f.weeks.reduce((sum, week) => sum + week.revenueThb, 0)).toBe(1296);
   });
 });
 
@@ -270,7 +270,7 @@ describe("getFinancialsAt — the average per game", () => {
     for (let i = 0; i < 10; i += 1) paidBooking(`up${i}`, MID_NOVEMBER);
     holder.client = fakeServiceClient(tables, {
       game_economics: (args) =>
-        (args.p_game_ids as string[]).map((id) => ({ game_id: id, revenue_czk: id === "g1" ? 900 : 0 })),
+        (args.p_game_ids as string[]).map((id) => ({ game_id: id, revenue_thb: id === "g1" ? 900 : 0 })),
     });
 
     // Act
@@ -278,7 +278,7 @@ describe("getFinancialsAt — the average per game", () => {
 
     // Assert
     expect(f.gamesPlayed).toBe(1);
-    expect(f.avgPerGameCzk).toBe(900);
+    expect(f.avgPerGameThb).toBe(900);
   });
 
   it("is the mean over every settled game in the month", async () => {
@@ -289,7 +289,7 @@ describe("getFinancialsAt — the average per game", () => {
     const revenue: Record<string, number> = { g0: 5000, g1: 900, g2: 1500 };
     holder.client = fakeServiceClient(tables, {
       game_economics: (args) =>
-        (args.p_game_ids as string[]).map((id) => ({ game_id: id, revenue_czk: revenue[id] ?? 0 })),
+        (args.p_game_ids as string[]).map((id) => ({ game_id: id, revenue_thb: revenue[id] ?? 0 })),
     });
 
     // Act
@@ -297,7 +297,7 @@ describe("getFinancialsAt — the average per game", () => {
 
     // Assert
     expect(f.gamesPlayed).toBe(2);
-    expect(f.avgPerGameCzk).toBe(1200);
+    expect(f.avgPerGameThb).toBe(1200);
   });
 
   it("says nothing rather than guess when a game's own revenue cannot be read", async () => {
@@ -310,7 +310,7 @@ describe("getFinancialsAt — the average per game", () => {
 
     // Assert
     expect(f.gamesPlayed).toBe(1);
-    expect(f.avgPerGameCzk).toBeNull();
+    expect(f.avgPerGameThb).toBeNull();
   });
 });
 
@@ -319,15 +319,15 @@ describe("getFinancialsAt — the recent Credit ledger", () => {
     // Arrange
     tables.players!.push({ id: "p1", nickname: "Artem" });
     tables.credit_ledger!.push(
-      { id: "l1", player_id: "p1", delta_czk: 750, reason: "topup", created_at: "2026-11-02T10:00:00Z" },
-      { id: "l2", player_id: "p1", delta_czk: -180, reason: "pass_expiry", created_at: "2026-11-01T10:00:00Z" },
+      { id: "l1", player_id: "p1", delta_thb: 750, reason: "topup", created_at: "2026-11-02T10:00:00Z" },
+      { id: "l2", player_id: "p1", delta_thb: -180, reason: "pass_expiry", created_at: "2026-11-01T10:00:00Z" },
     );
 
     // Act
     const f = await getFinancialsAt("this_month", MID_NOVEMBER);
 
     // Assert
-    expect(f.transactions.map((t) => [t.who, t.what, t.amountCzk])).toEqual([
+    expect(f.transactions.map((t) => [t.who, t.what, t.amountThb])).toEqual([
       ["Artem", strings.admin.money.ledgerReason.topup, 750],
       ["Artem", strings.admin.money.ledgerReason.pass_expiry, -180],
     ]);

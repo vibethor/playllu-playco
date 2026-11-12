@@ -228,8 +228,8 @@ test("a game's roster export carries its bookings, VS first", async ({ page, con
     const lines = (await response.text()).slice(1).trimEnd().split("\r\n");
     // ~~attendance~~ — the column went with present / no-show (2026-11-09).
     expect(lines[0]).toBe(
-      "payment_code,nickname,skill_level,status,payment_method,price_czk," +
-        "credit_applied_czk,amount_due_czk,booked_by_admin,is_seed," +
+      "payment_code,nickname,skill_level,status,payment_method,price_thb," +
+        "credit_applied_thb,amount_due_thb,booked_by_admin,is_seed," +
         "booking_id",
     );
     expect(lines).toHaveLength(2);

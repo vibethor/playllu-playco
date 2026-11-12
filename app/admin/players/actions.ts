@@ -4,13 +4,13 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { toAdminErrorMessage } from "@/lib/admin/errors";
 import { strings } from "@/lib/strings";
-import { czkFromCredits } from "@/lib/admin/credits";
+import { thbFromCredits } from "@/lib/admin/credits";
 import { createServerSupabaseClient } from "@/lib/supabase/clients";
 
 export interface GrantCreditState {
   status: "idle" | "granted" | "error";
   /** The player's balance after the grant, straight from the RPC. */
-  balanceCzk?: number;
+  balanceThb?: number;
   message?: string;
 }
 
@@ -50,7 +50,7 @@ export async function grantCreditAction(
    * where they cannot be tampered with.
    */
   const credits = Number(String(formData.get("amount") ?? "").trim());
-  const amount = czkFromCredits(credits);
+  const amount = thbFromCredits(credits);
   /*
    * THE NOTE IS REQUIRED (round 7, item 9), and it is required HERE rather
    * than only in the form — the form's `required` attribute is skipped by
@@ -77,7 +77,7 @@ export async function grantCreditAction(
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.rpc("grant_credit", {
     p_player_id: playerId,
-    p_delta_czk: amount,
+    p_delta_thb: amount,
     p_reason: "admin_grant",
     p_unmatched_payment: unmatched,
     p_note: note,
@@ -86,7 +86,7 @@ export async function grantCreditAction(
   if (error) return { status: "error", message: toAdminErrorMessage(error.message) };
 
   revalidatePath("/admin/players");
-  return { status: "granted", balanceCzk: (data as number | null) ?? undefined };
+  return { status: "granted", balanceThb: (data as number | null) ?? undefined };
 }
 
 /**
@@ -121,7 +121,7 @@ export async function removeCreditAction(
   const playerId = String(formData.get("playerId") ?? "");
   // Whole CREDITS, converted once (round 31, item 3) — see the grant above.
   const credits = Number(String(formData.get("amount") ?? "").trim());
-  const amount = czkFromCredits(credits);
+  const amount = thbFromCredits(credits);
   const note = String(formData.get("note") ?? "").trim() || null;
 
   if (!playerId) return { status: "error", message: toAdminErrorMessage("PLAYER_NOT_FOUND") };
@@ -142,7 +142,7 @@ export async function removeCreditAction(
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.rpc("grant_credit", {
     p_player_id: playerId,
-    p_delta_czk: -amount,
+    p_delta_thb: -amount,
     p_reason: "adjustment",
     p_unmatched_payment: false,
     p_note: note,
@@ -152,7 +152,7 @@ export async function removeCreditAction(
 
   revalidatePath("/admin/players");
   revalidatePath(`/admin/players/${playerId}`);
-  return { status: "granted", balanceCzk: (data as number | null) ?? undefined };
+  return { status: "granted", balanceThb: (data as number | null) ?? undefined };
 }
 
 export interface AdminRightsState {

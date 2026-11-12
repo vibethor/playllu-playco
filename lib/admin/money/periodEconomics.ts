@@ -38,7 +38,7 @@ export async function getPeriodEconomics(bounds: PeriodBounds, now: number = Dat
   return {
     rows,
     totals,
-    mix: revenueMix(values, new Map(games.map((game) => [game.id, game.priceCzk]))),
+    mix: revenueMix(values, new Map(games.map((game) => [game.id, game.priceThb]))),
     seats: seatTotals(rows),
   };
 }

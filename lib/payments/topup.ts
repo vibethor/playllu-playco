@@ -22,5 +22,5 @@
  * rather than a derivation. A constant that is both wrong and unused is the
  * cheapest kind to remove and the easiest to miss.
  */
-export const TOPUP_MIN_CZK = 50;
-export const TOPUP_MAX_CZK = 2000;
+export const TOPUP_MIN_THB = 50;
+export const TOPUP_MAX_THB = 2000;

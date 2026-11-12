@@ -14,8 +14,8 @@ const SPLIT = {
   houseGuests: 1,
   unpaidSeats: 1,
   breakEvenSeats: 5,
-  priceCzk: 180,
-  profitCzk: -270,
+  priceThb: 180,
+  profitThb: -270,
 };
 
 describe("rowSeatBarInput", () => {
@@ -56,7 +56,7 @@ describe("rowSeatBarInput", () => {
       houseGuests: 1,
       unpaidSeats: 1,
       breakEvenSeats: 5,
-      profitCzk: -270,
+      profitThb: -270,
     });
   });
 });
@@ -75,7 +75,7 @@ describe("breakEvenNote", () => {
     const row: RowSeats = {
       capacity: 12,
       booked: 7,
-      economics: { ...SPLIT, breakEvenSeats: null, profitCzk: null },
+      economics: { ...SPLIT, breakEvenSeats: null, profitThb: null },
     };
 
     // Act + Assert
@@ -98,7 +98,7 @@ describe("breakEvenNote", () => {
     const row: RowSeats = {
       capacity: 12,
       booked: 8,
-      economics: { ...SPLIT, singleSeats: 3, passSeats: 2, creditSeats: 0, profitCzk: -60 },
+      economics: { ...SPLIT, singleSeats: 3, passSeats: 2, creditSeats: 0, profitThb: -60 },
     };
 
     // Act
@@ -110,7 +110,7 @@ describe("breakEvenNote", () => {
 
   it("is past break-even once the profit reaches zero", () => {
     // Arrange
-    const row: RowSeats = { capacity: 12, booked: 8, economics: { ...SPLIT, singleSeats: 3.5, profitCzk: 0 } };
+    const row: RowSeats = { capacity: 12, booked: 8, economics: { ...SPLIT, singleSeats: 3.5, profitThb: 0 } };
 
     // Act
     const note = breakEvenNote(row);

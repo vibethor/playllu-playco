@@ -4,7 +4,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { bookingBadge, type BadgeTone } from "@/lib/booking/badges";
 import type { BookingWithGame } from "@/lib/booking/queries";
 import { refundCutoffHours } from "@/lib/policy/refundCutoff";
-import { formatCzk, formatGameDateTime } from "@/lib/format";
+import { formatThb, formatGameDateTime } from "@/lib/format";
 import { shouldRenderQr } from "@/lib/payments/spd";
 import { getStrings } from "@/lib/i18n/server";
 
@@ -42,7 +42,7 @@ export async function BookingList({ rows }: BookingListProps) {
     <ul className="flex list-none flex-col gap-3 p-0" data-testid="booking-list">
       {rows.map(({ booking, game, canCancel: showCancel, refundable }) => {
         const badge = bookingBadge(booking.status, booking.payment_method, t);
-        const amountDue = booking.price_czk - booking.credit_applied_czk;
+        const amountDue = booking.price_thb - booking.credit_applied_thb;
         // Same predicate the confirmation screen uses, so the link never leads
         // to a page that decides there is no QR to show.
         const showQr = booking.status === "reserved" && shouldRenderQr(booking);
@@ -74,7 +74,7 @@ export async function BookingList({ rows }: BookingListProps) {
                 {formatGameDateTime(game.starts_at)}
               </span>
               {/*
-                ~~`Credit applied −150 CZK`~~ REMOVED (round 13, item 9).
+                ~~`Credit applied −150 THB`~~ REMOVED (round 13, item 9).
 
                 It answered a question nobody asks about a game they are ABOUT
                 to play. The row already carries the badge that says the
@@ -85,7 +85,7 @@ export async function BookingList({ rows }: BookingListProps) {
               */}
               {booking.status === "reserved" && amountDue > 0 && (
                 <span className="text-[12px] text-bone">
-                  {t.booking.amountDue} {formatCzk(amountDue)}
+                  {t.booking.amountDue} {formatThb(amountDue)}
                 </span>
               )}
             </div>

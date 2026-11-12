@@ -11,7 +11,7 @@
 --    is "return" on purpose: the build that predates this round calls it with
 --    one argument and keeps exactly the behaviour it had. The new dialog always
 --    says which. With the switch off, nothing is written to the ledger and the
---    `admin_booking_removed` event records `withheld_czk` — the amount a later
+--    `admin_booking_removed` event records `withheld_thb` — the amount a later
 --    complaint will ask about.
 --
 -- 2. WHEN THE CREDIT COMES BACK, IT COMES BACK BY ROUND 40'S RULES (the
@@ -91,9 +91,9 @@ begin
   -- What the booking is worth: money paid on a confirmed one, credit applied
   -- on a reservation. Returned in full or not at all.
   if v_booking.status = 'confirmed' then
-    v_due := v_booking.price_czk;
+    v_due := v_booking.price_thb;
   else
-    v_due := v_booking.credit_applied_czk;
+    v_due := v_booking.credit_applied_thb;
   end if;
   v_credit := case when p_return_credit then v_due else 0 end;
 
@@ -107,26 +107,26 @@ begin
     -- ROUND 40, as cancel_booking: every redemption back to its batch, never
     -- more than the booking is still worth.
     for v_redemption in
-      select cl.batch_id, -cl.delta_czk as amount_czk
+      select cl.batch_id, -cl.delta_thb as amount_thb
         from public.credit_ledger cl
        where cl.booking_id = p_booking_id
          and cl.reason = 'redemption'
          and cl.batch_id is not null
     loop
       exit when v_refunded >= v_credit;
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, batch_id)
-      values (v_booking.player_id, least(v_redemption.amount_czk, v_credit - v_refunded),
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, batch_id)
+      values (v_booking.player_id, least(v_redemption.amount_thb, v_credit - v_refunded),
               'cancellation_credit', p_booking_id, v_redemption.batch_id);
-      v_refunded := v_refunded + least(v_redemption.amount_czk, v_credit - v_refunded);
+      v_refunded := v_refunded + least(v_redemption.amount_thb, v_credit - v_refunded);
     end loop;
 
     -- ROUND 40: what was paid is a Credit bought on the day it was paid.
     v_paid := case when v_booking.status = 'confirmed'
-                   then greatest(v_booking.price_czk - v_booking.credit_applied_czk, 0)
+                   then greatest(v_booking.price_thb - v_booking.credit_applied_thb, 0)
                    else 0 end;
     v_paid := least(v_paid, v_credit - v_refunded);
     if v_paid > 0 then
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, expires_at)
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, expires_at)
       values (v_booking.player_id, v_paid, 'cancellation_credit', p_booking_id,
               public.booking_paid_at(p_booking_id)
                 + make_interval(days => public.credit_validity_days()));
@@ -136,17 +136,17 @@ begin
     -- round 40, which keeps the unexpiring terms it was bought under.
     v_unexpiring := v_credit - v_refunded - v_paid;
     if v_unexpiring > 0 then
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
       values (v_booking.player_id, v_unexpiring, 'cancellation_credit', p_booking_id);
     end if;
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_issued', v_booking.player_id, v_booking.game_id, p_booking_id,
             jsonb_build_object(
-              'amount_czk', v_credit,
+              'amount_thb', v_credit,
               'reason', 'admin_removed',
-              'returned_to_batches_czk', v_refunded,
-              'paid_credit_czk', v_paid),
+              'returned_to_batches_thb', v_refunded,
+              'paid_credit_thb', v_paid),
             v_game.city, v_game.brand);
   end if;
 
@@ -154,9 +154,9 @@ begin
   insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
   values ('admin_booking_removed', v_booking.player_id, v_booking.game_id, p_booking_id,
           jsonb_build_object(
-            'credit_issued_czk', v_credit,
+            'credit_issued_thb', v_credit,
             'credit_returned',   p_return_credit,
-            'withheld_czk',      v_due - v_credit),
+            'withheld_thb',      v_due - v_credit),
           v_game.city, v_game.brand);
 
   -- The seat is free again, so the fullness flag and the waitlist both matter.
@@ -174,7 +174,7 @@ comment on function public.admin_remove_booking(uuid, boolean) is
   'value back by round-40 rules (batches keep their expiry, money paid becomes '
   'a 60-day Credit); without it, nothing, and the event records what was '
   'withheld. Defaults to returning, so a one-argument caller keeps the old '
-  'behaviour. Returns the Credit issued in CZK.';
+  'behaviour. Returns the Credit issued in THB.';
 
 -- -----------------------------------------------------------------------------
 -- 3. app_capabilities() — every earlier flag probed, plus this file's one.
@@ -225,7 +225,7 @@ as $$
        where n.nspname = 'public' and p.proname = 'cancel_guests')),
     'creditsAreSeats',   to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-       where n.nspname = 'public' and p.proname = 'credit_seat_price_czk')),
+       where n.nspname = 'public' and p.proname = 'credit_seat_price_thb')),
     'seatsTakenMany',    to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'game_seats_taken_many')),

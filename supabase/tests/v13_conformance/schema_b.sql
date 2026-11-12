@@ -7,7 +7,7 @@
 --
 -- THE INVARIANT THIS SUITE EXISTS FOR:
 --
---     balance = SUM(delta_czk), with NO expiry predicate, everywhere.
+--     balance = SUM(delta_thb), with NO expiry predicate, everywhere.
 --
 -- It is worth a suite because the tempting bug is a *fix*. Expired credit stays
 -- spendable until the sweep writes its compensating row, which is a window in
@@ -23,7 +23,7 @@
 -- batch credit first, soonest expiry first, then the ordinary pool defined as
 -- `expires_at is null and batch_id is null` — that predicate exists to avoid
 -- double-counting rows already spent in the batch loop, and removing it would
--- be the bug. A probe that merely greps for `expires_at` near `sum(delta_czk)`
+-- be the bug. A probe that merely greps for `expires_at` near `sum(delta_thb)`
 -- would flag that correct code and teach the next reader to ignore it.
 --
 -- So the invariant is asserted BEHAVIOURALLY: write an already-expired credit
@@ -109,8 +109,8 @@ select pg_temp.ok(pg_temp.col('credit_ledger', 'batch_id') = 'nullable',
   'credit_ledger.batch_id exists and is nullable',
   pg_temp.col('credit_ledger', 'batch_id'));
 
-select pg_temp.ok(pg_temp.col('credit_ledger', 'delta_czk') = 'not null',
-  'credit_ledger.delta_czk is not null — every row moves money or does not exist');
+select pg_temp.ok(pg_temp.col('credit_ledger', 'delta_thb') = 'not null',
+  'credit_ledger.delta_thb is not null — every row moves money or does not exist');
 
 -- =============================================================================
 -- 2. Every pre-existing row reads as permanent, unbatched credit
@@ -156,7 +156,7 @@ select pg_temp.ok(
  * neat demonstration of why it was written. A suite that depends on data it did
  * not create is a suite that passes or fails by accident.
  */
-insert into public.credit_ledger (player_id, delta_czk, reason, note)
+insert into public.credit_ledger (player_id, delta_thb, reason, note)
 select p.id, 180, 'admin_grant', 'conformance fixture'
   from public.players p where p.auth_user_id is not null order by p.created_at limit 1;
 
@@ -179,7 +179,7 @@ select pg_temp.ok(
 create temp table _bal (stage text, amount integer) on commit drop;
 
 insert into _bal
-select 'before', coalesce(sum(delta_czk), 0)::integer
+select 'before', coalesce(sum(delta_thb), 0)::integer
 from public.credit_ledger where player_id = (select player_id from _fx);
 
 /*
@@ -193,17 +193,17 @@ from public.credit_ledger where player_id = (select player_id from _fx);
  * together is rejected, which is what makes "which row IS the batch"
  * unambiguous.
  */
-insert into public.credit_ledger (player_id, delta_czk, reason, expires_at)
+insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
 values ((select player_id from _fx), 500, 'topup', now() - interval '1 hour');
 
 insert into _bal
-select 'after_expired_credit', coalesce(sum(delta_czk), 0)::integer
+select 'after_expired_credit', coalesce(sum(delta_thb), 0)::integer
 from public.credit_ledger where player_id = (select player_id from _fx);
 
 select pg_temp.ok(
   (select amount from _bal where stage = 'after_expired_credit')
   - (select amount from _bal where stage = 'before') = 500,
-  'an EXPIRED credit still counts toward SUM(delta_czk) — no expiry predicate',
+  'an EXPIRED credit still counts toward SUM(delta_thb) — no expiry predicate',
   'before=' || (select amount from _bal where stage = 'before')::text
   || ' after=' || (select amount from _bal where stage = 'after_expired_credit')::text);
 
@@ -211,7 +211,7 @@ select pg_temp.ok(
 -- makes the assertion above meaningful rather than vacuous: if both numbers
 -- agreed, the probe would pass on a filtered reader too.
 select pg_temp.ok(
-  (select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger
+  (select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger
     where player_id = (select player_id from _fx)
       and (expires_at is null or expires_at > now()))
   <> (select amount from _bal where stage = 'after_expired_credit'),
@@ -224,7 +224,7 @@ select pg_temp.ok(
 -- the model is not obvious from the column names:
 --
 --   credit_ledger_batch_shape     expires_at IS NULL OR batch_id IS NULL
---   credit_ledger_batch_positive  expires_at IS NULL OR delta_czk > 0
+--   credit_ledger_batch_positive  expires_at IS NULL OR delta_thb > 0
 --
 -- Together they say: a batch is OPENED by a positive row carrying an expiry
 -- and no batch_id — the batch's identity is that row's own id — and every row
@@ -237,7 +237,7 @@ select pg_temp.ok(
 
 select pg_temp.ok(
   pg_temp.attempt($q$
-    insert into public.credit_ledger (player_id, delta_czk, reason, expires_at, batch_id)
+    insert into public.credit_ledger (player_id, delta_thb, reason, expires_at, batch_id)
     values ((select player_id from _fx), 250, 'topup', now() + interval '60 days',
             '2f1efd48-0000-4000-8000-0000000000b1')
   $q$) = 'check_violation',
@@ -245,14 +245,14 @@ select pg_temp.ok(
 
 select pg_temp.ok(
   pg_temp.attempt($q$
-    insert into public.credit_ledger (player_id, delta_czk, reason, expires_at)
+    insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
     values ((select player_id from _fx), -250, 'redemption', now() + interval '60 days')
   $q$) = 'check_violation',
   'a NEGATIVE row carrying an expiry is refused — a debt cannot expire');
 
 select pg_temp.ok(
   pg_temp.attempt($q$
-    insert into public.credit_ledger (player_id, delta_czk, reason)
+    insert into public.credit_ledger (player_id, delta_thb, reason)
     values ((select player_id from _fx), 0, 'adjustment')
   $q$) = 'check_violation',
   'a zero-delta row is refused — every row moves money or does not exist');
@@ -313,7 +313,7 @@ select pg_temp.ok(
 set local role anon;
 select pg_temp.ok(
   pg_temp.attempt(
-    $q$select count(_p::text) from (select delta_czk from public.credit_ledger) _p$q$
+    $q$select count(_p::text) from (select delta_thb from public.credit_ledger) _p$q$
   ) = 'denied',
   'an anonymous caller is DENIED the ledger outright, not merely shown nothing');
 reset role;
@@ -321,13 +321,13 @@ reset role;
 set local role authenticated;
 select pg_temp.ok(
   pg_temp.attempt(
-    $q$update public.credit_ledger set delta_czk = delta_czk + 1000$q$
+    $q$update public.credit_ledger set delta_thb = delta_thb + 1000$q$
   ) = 'denied',
   'an authenticated caller cannot rewrite its own balance');
 reset role;
 
 -- =============================================================================
--- 6. The ledger stays denominated in CZK
+-- 6. The ledger stays denominated in THB
 --
 -- Credits are a display over money, never a second currency. A `currency`
 -- column would be the first step toward two of them, and toward a balance that
@@ -336,7 +336,7 @@ reset role;
 
 select pg_temp.ok(
   pg_temp.col('credit_ledger', 'currency') = 'ABSENT',
-  'credit_ledger has no currency column — CZK is the only denomination');
+  'credit_ledger has no currency column — THB is the only denomination');
 
 select pg_temp.ok(
   (select count(*) from information_schema.columns
@@ -393,8 +393,8 @@ select pg_temp.ok(
   'anon cannot read credit_topups at all');
 
 select pg_temp.ok(
-  pg_temp.col('credit_topups', 'received_amount_czk') = 'nullable',
-  'credit_topups.received_amount_czk is nullable — unknown until confirmed');
+  pg_temp.col('credit_topups', 'received_amount_thb') = 'nullable',
+  'credit_topups.received_amount_thb is nullable — unknown until confirmed');
 
 select pg_temp.ok(
   pg_temp.col('credit_topups', 'confirmed_at') = 'nullable'
@@ -405,7 +405,7 @@ set local role authenticated;
 select pg_temp.ok(
   pg_temp.attempt($q$
     insert into public.credit_topups
-      (player_id, amount_czk, payment_code, status, city, brand, policy_version)
+      (player_id, amount_thb, payment_code, status, city, brand, policy_version)
     values ((select player_id from _fx), 900, 2700000001, 'confirmed',
             'Praha', 'hrajfotbal', 'v1')
   $q$) = 'denied',
@@ -481,7 +481,7 @@ select 'before_topup', count(*)::integer from public.credit_ledger
 where player_id = (select player_id from _fx);
 
 insert into public.credit_topups
-  (player_id, amount_czk, payment_code, status, city, brand, policy_version)
+  (player_id, amount_thb, payment_code, status, city, brand, policy_version)
 values ((select player_id from _fx), 900, public.next_topup_code(), 'pending',
         'Praha', 'hrajfotbal', 'v1');
 
@@ -521,12 +521,12 @@ select pg_temp.ok(
   (select array_agg(games order by games)::text from public.pass_tiers));
 
 select pg_temp.ok(
-  (select count(*) from public.pass_tiers where credited_czk <> games * public.credit_seat_price_czk()) = 0,
+  (select count(*) from public.pass_tiers where credited_thb <> games * public.credit_seat_price_thb()) = 0,
   'every tier credits games x the credit rate');
 
 select pg_temp.ok(
   pg_temp.chk('pass_tiers', 'pass_tiers_credited_rule')
-    = 'CHECK ((credited_czk = (games * credit_seat_price_czk())))',
+    = 'CHECK ((credited_thb = (games * credit_seat_price_thb())))',
   'the credit-rate peg is a CHECK, not a convention',
   pg_temp.chk('pass_tiers', 'pass_tiers_credited_rule'));
 
@@ -536,14 +536,14 @@ select pg_temp.ok(
 
 select pg_temp.ok(
   pg_temp.attempt($q$
-    insert into public.pass_tiers (games, price_czk, credited_czk, expires_months)
+    insert into public.pass_tiers (games, price_thb, credited_thb, expires_months)
     values (1, 150, 150, 1)
   $q$) = 'check_violation',
   'a 1-game tier is UNWRITABLE — deleted from the table, not filtered from the page');
 
 select pg_temp.ok(
   pg_temp.attempt($q$
-    insert into public.pass_tiers (games, price_czk, credited_czk, expires_months)
+    insert into public.pass_tiers (games, price_thb, credited_thb, expires_months)
     values (25, 4000, 3000, 2)
   $q$) = 'check_violation',
   'a tier priced above what it credits is refused — a pass is never a penalty');

@@ -2,19 +2,19 @@
 -- ROUND 35 — CREDITS ARE SEAT-DENOMINATED, FLAT.
 --
 -- THE RULING (owner, 2026-09-15, overruling row 277): **1 credit = 1 game = 1
--- seat, everywhere, regardless of the game's `price_czk`.** N seats cost
+-- seat, everywhere, regardless of the game's `price_thb`.** N seats cost
 -- exactly N credits, the ledger records −150 per credit-paid seat, and the
 -- price-based debit is removed from every credit path. Card payments keep
 -- charging the game's actual price.
 --
 -- WHAT WAS TRUE BEFORE, AND WHY IT WAS FOUND. Round 34 verified what the credit
--- rail actually debits and reported `game.price_czk × guests` — identical to
--- `150 × guests` on the 150 CZK game and not on the 180 and 200 CZK ones. The
+-- rail actually debits and reported `game.price_thb × guests` — identical to
+-- `150 × guests` on the 150 THB game and not on the 180 and 200 THB ones. The
 -- report named it a ruling rather than a bug and left it alone; this is the
 -- ruling.
 --
 -- THE DIFFERENCE IS ACCEPTED AND IS RECORDED HERE RATHER THAN HIDDEN: on a
--- legacy 200 CZK fixture a seat now costs one credit (150) by credit and 200 by
+-- legacy 200 THB fixture a seat now costs one credit (150) by credit and 200 by
 -- card. The owner has accepted that gap for the old games. It closes on its own
 -- as fixtures are priced at 150.
 --
@@ -31,7 +31,7 @@
 -- -----------------------------------------------------------------------------
 -- 1. What one credit is worth, as a function
 --
--- THE SQL TWIN OF `PASS_REFERENCE_PRICE_CZK`, and the reason it is a function
+-- THE SQL TWIN OF `PASS_REFERENCE_PRICE_THB`, and the reason it is a function
 -- rather than a literal repeated three times is round 33's lesson about the
 -- party ceiling: a number that lives in two places disagrees exactly once, in
 -- the window between a migration and the deploy that matches it, and during
@@ -43,17 +43,17 @@
 -- for a function call to learn something that has not changed since Phase 1.
 -- -----------------------------------------------------------------------------
 
-create or replace function public.credit_seat_price_czk()
+create or replace function public.credit_seat_price_thb()
 returns integer
 language sql
 immutable
 set search_path = ''
 as $$ select 150 $$;
 
-revoke execute on function public.credit_seat_price_czk() from public;
-grant execute on function public.credit_seat_price_czk() to anon, authenticated, service_role;
+revoke execute on function public.credit_seat_price_thb() from public;
+grant execute on function public.credit_seat_price_thb() to anon, authenticated, service_role;
 
-comment on function public.credit_seat_price_czk() is
+comment on function public.credit_seat_price_thb() is
   'What one credit buys: one seat, flat, whatever the game costs by card. The '
   'authority; lib/pass/creditPrice.ts mirrors it for display.';
 
@@ -68,10 +68,10 @@ comment on function public.credit_seat_price_czk() is
 -- arithmetically: floor the balance into credits, cap that at the seats being
 -- booked, and charge the REMAINING seats at the game's own price. A player with
 -- one credit booking a party of three pays one credit and two card seats, and
--- `price_czk` is the sum — so the row still says exactly what the booking is
+-- `price_thb` is the sum — so the row still says exactly what the booking is
 -- worth, which is what every refund path reads.
 --
--- A FREE GAME SPENDS NO CREDIT. `price_czk = 0` short-circuits to zero applied,
+-- A FREE GAME SPENDS NO CREDIT. `price_thb = 0` short-circuits to zero applied,
 -- because otherwise a wallet would be charged a credit for a seat the product
 -- is giving away — the one case where seat-denomination costs a player
 -- something for nothing.
@@ -97,12 +97,12 @@ declare
     '    -- the card price. Floor the balance into credits, cap at the seats\n'
     '    -- being booked, and charge what is left at the game''s own price. A\n'
     '    -- free game spends nothing.\n'
-    '    v_credit_applied := case when v_game.price_czk > 0 then\n'
-    '        least(v_seats, greatest(v_balance, 0) / public.credit_seat_price_czk())\n'
-    '          * public.credit_seat_price_czk()\n'
+    '    v_credit_applied := case when v_game.price_thb > 0 then\n'
+    '        least(v_seats, greatest(v_balance, 0) / public.credit_seat_price_thb())\n'
+    '          * public.credit_seat_price_thb()\n'
     '      else 0 end;\n'
     '    v_price          := v_credit_applied\n'
-    '      + (v_seats - v_credit_applied / public.credit_seat_price_czk()) * v_game.price_czk;\n'
+    '      + (v_seats - v_credit_applied / public.credit_seat_price_thb()) * v_game.price_thb;\n'
     '    v_amount_due     := v_price - v_credit_applied;';
 begin
   select pg_get_functiondef(p.oid) into v_def
@@ -113,7 +113,7 @@ begin
     raise exception 'credits are seats: create_booking_internal is missing';
   end if;
 
-  if position('credit_seat_price_czk' in v_def) > 0 then
+  if position('credit_seat_price_thb' in v_def) > 0 then
     raise notice 'credits are seats: create_booking_internal already applies credit by the seat';
   elsif position(v_old in v_def) = 0 then
     raise exception
@@ -131,9 +131,9 @@ end $$;
 do $$
 declare
   v_def text;
-  v_old constant text := 'v_cost := v_game.price_czk * p_guest_count;';
+  v_old constant text := 'v_cost := v_game.price_thb * p_guest_count;';
   v_new constant text :=
-    'v_cost := public.credit_seat_price_czk() * p_guest_count;  -- ROUND 35: flat per seat';
+    'v_cost := public.credit_seat_price_thb() * p_guest_count;  -- ROUND 35: flat per seat';
 begin
   select pg_get_functiondef(p.oid) into v_def
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -143,7 +143,7 @@ begin
     raise exception 'credits are seats: add_guests_with_credit is missing';
   end if;
 
-  if position('credit_seat_price_czk' in v_def) > 0 then
+  if position('credit_seat_price_thb' in v_def) > 0 then
     raise notice 'credits are seats: add_guests_with_credit already charges the flat rate';
   elsif position(v_old in v_def) = 0 then
     raise exception
@@ -160,7 +160,7 @@ end $$;
 -- applied yet. Its rules are unchanged from that file except for what a removed
 -- seat is worth.
 --
--- ~~A PROPORTIONAL SHARE OF THE WHOLE BOOKING.~~ Round 34 divided `price_czk`
+-- ~~A PROPORTIONAL SHARE OF THE WHOLE BOOKING.~~ Round 34 divided `price_thb`
 -- by the seats, which was the only honest figure while a credit seat and a card
 -- seat could cost different amounts of the SAME booking. Under the ruling they
 -- still can — a mixed booking holds credit seats at 150 and card seats at the
@@ -176,8 +176,8 @@ end $$;
 -- card payment. It is also the only order under which the owner's acceptance
 -- holds: two guests added with credit, one removed, +150 back.
 --
--- A LEGACY BOOKING WHOSE `credit_applied_czk` IS NOT A MULTIPLE OF 150 — every
--- credit booking made before this migration on a 180 or 200 CZK game — floors
+-- A LEGACY BOOKING WHOSE `credit_applied_thb` IS NOT A MULTIPLE OF 150 — every
+-- credit booking made before this migration on a 180 or 200 THB game — floors
 -- into whole credit seats and the remainder stays with the card side. It cannot
 -- refund more than was taken, which is the only invariant that matters here.
 -- -----------------------------------------------------------------------------
@@ -191,8 +191,8 @@ begin
     create type public.cancel_guests_result as (
       booking_id        uuid,
       guests_remaining  integer,
-      credit_issued_czk integer,
-      forfeited_czk     integer,
+      credit_issued_thb integer,
+      forfeited_thb     integer,
       cancel_lead_hours numeric(6, 2)
     );
   end if;
@@ -268,18 +268,18 @@ begin
   end if;
 
   v_cutoff_hours := public.cancellation_refund_cutoff_hours();
-  v_seat_credit  := public.credit_seat_price_czk();
+  v_seat_credit  := public.credit_seat_price_thb();
   v_seats        := 1 + v_booking.guest_count;
   v_lead_hours   := round(extract(epoch from (v_game.starts_at - now()))::numeric / 3600.0, 2);
 
   -- How this booking was paid for, seat by seat.
-  v_credit_seats := v_booking.credit_applied_czk / v_seat_credit;
+  v_credit_seats := v_booking.credit_applied_thb / v_seat_credit;
   if v_credit_seats > v_seats then v_credit_seats := v_seats; end if;
 
   v_from_credit := least(p_count, v_credit_seats);
   v_from_card   := p_count - v_from_credit;
   v_card_seats  := v_seats - v_credit_seats;
-  v_card_total  := v_booking.price_czk - v_booking.credit_applied_czk;
+  v_card_total  := v_booking.price_thb - v_booking.credit_applied_thb;
 
   if v_card_seats > 0 and v_from_card > 0 then
     v_card_share := round(v_card_total::numeric * v_from_card / v_card_seats);
@@ -303,8 +303,8 @@ begin
 
     update public.bookings
        set guest_count        = guest_count - p_count,
-           price_czk          = price_czk - v_worth,
-           credit_applied_czk = credit_applied_czk - v_from_credit * v_seat_credit
+           price_thb          = price_thb - v_worth,
+           credit_applied_thb = credit_applied_thb - v_from_credit * v_seat_credit
      where id = p_booking_id;
   else
     v_forfeited := case
@@ -329,17 +329,17 @@ begin
      * booking, never which seat it bought — so it lands in the ordinary
      * unexpiring pool, which is never worse for the player.
      */
-    insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+    insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
     values (v_booking.player_id, v_credit, 'cancellation_credit', p_booking_id);
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_issued', v_booking.player_id, v_booking.game_id, p_booking_id,
             jsonb_build_object(
-              'amount_czk', v_credit,
+              'amount_thb', v_credit,
               'reason', 'cancellation_credit',
               'guests_removed', p_count,
               'seats_from_credit', v_from_credit,
-              'returned_to_batches_czk', 0),
+              'returned_to_batches_thb', 0),
             v_game.city, v_game.brand);
   end if;
 
@@ -351,8 +351,8 @@ begin
             'seats_from_credit', v_from_credit,
             'seats_from_card', v_from_card,
             'cancel_lead_hours', v_lead_hours,
-            'credit_issued_czk', v_credit,
-            'forfeited_czk', v_forfeited,
+            'credit_issued_thb', v_credit,
+            'forfeited_thb', v_forfeited,
             'cutoff_hours', v_cutoff_hours,
             'booking_status', v_booking.status),
           v_game.city, v_game.brand);
@@ -543,27 +543,27 @@ do $$
 declare
   v_caps jsonb;
 begin
-  if public.credit_seat_price_czk() <> 150 then
-    raise exception 'credits are seats: the seat price is %', public.credit_seat_price_czk();
+  if public.credit_seat_price_thb() <> 150 then
+    raise exception 'credits are seats: the seat price is %', public.credit_seat_price_thb();
   end if;
 
   for v_caps in
     select 1 where (select prosrc from pg_proc p join pg_namespace n on n.oid = p.pronamespace
                      where n.nspname = 'public' and p.proname = 'create_booking_internal')
-                   not like '%credit_seat_price_czk%'
+                   not like '%credit_seat_price_thb%'
   loop
     raise exception 'credits are seats: create_booking_internal still prices credit by the game';
   end loop;
 
   if (select prosrc from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'add_guests_with_credit')
-     not like '%credit_seat_price_czk%' then
+     not like '%credit_seat_price_thb%' then
     raise exception 'credits are seats: add_guests_with_credit still prices credit by the game';
   end if;
 
   if (select prosrc from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'cancel_guests')
-     not like '%credit_seat_price_czk%' then
+     not like '%credit_seat_price_thb%' then
     raise exception 'credits are seats: cancel_guests still refunds proportionally';
   end if;
 

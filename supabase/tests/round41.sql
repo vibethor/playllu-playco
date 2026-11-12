@@ -69,7 +69,7 @@ values
   ('4e410000-0000-0000-0000-000000000001', 'R41One', 'r41-1@test.invalid', '41410000-0000-0000-0000-000000000001', 'CZ'),
   ('4e410000-0000-0000-0000-000000000002', 'R41Two', 'r41-2@test.invalid', '41410000-0000-0000-0000-000000000002', 'CZ');
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('94141000-0000-0000-0000-0000000000a1', 'R41 First',  now() + interval '3 days', 12, 180, 'published', 90),
   ('94141000-0000-0000-0000-0000000000a2', 'R41 Second', now() + interval '4 days', 12, 180, 'published', 90);
 

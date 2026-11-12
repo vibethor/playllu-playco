@@ -5,7 +5,7 @@
 
 alter table public.pass_tiers drop constraint pass_tiers_minimum_games;
 
-insert into public.pass_tiers (games, price_czk, credited_czk, expires_months)
+insert into public.pass_tiers (games, price_thb, credited_thb, expires_months)
 values (1, 150, 150, null)
 on conflict (games) do nothing;
 

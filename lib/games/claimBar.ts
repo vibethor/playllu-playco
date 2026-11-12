@@ -32,7 +32,7 @@ export interface ClaimBarFacts {
   /** Nothing is owed on that booking — credit, seed, or a confirmed payment. */
   bookingPaid: boolean;
   /** Price less credit applied. May be zero or negative; both mean paid. */
-  amountDueCzk: number;
+  amountDueThb: number;
   /** Whether the cancel affordance should be offered (mirrors `cancel_booking`). */
   canCancel: boolean;
   onWaitlist: boolean;
@@ -46,7 +46,7 @@ export type ClaimBarState =
   | { kind: "cancelled" }
   | { kind: "started" }
   | { kind: "holding-paid"; canCancel: boolean }
-  | { kind: "holding-unpaid"; amountDueCzk: number; canCancel: boolean }
+  | { kind: "holding-unpaid"; amountDueThb: number; canCancel: boolean }
   | { kind: "waitlisted"; position: number | null }
   | { kind: "full" }
   | { kind: "open-signed-in" }
@@ -79,14 +79,14 @@ export function claimBarState(f: ClaimBarFacts): ClaimBarState {
      * booking part-settled to exactly zero is paid in every sense the reader
      * cares about; and over-credit leaves the figure negative, which is the
      * ledger's business and not the player's. All three must read `Paid`,
-     * because `0 CZK due` is a sentence no bar should print.
+     * because `0 THB due` is a sentence no bar should print.
      */
-    if (f.bookingPaid || f.amountDueCzk <= 0) {
+    if (f.bookingPaid || f.amountDueThb <= 0) {
       return { kind: "holding-paid", canCancel: f.canCancel };
     }
     return {
       kind: "holding-unpaid",
-      amountDueCzk: f.amountDueCzk,
+      amountDueThb: f.amountDueThb,
       canCancel: f.canCancel,
     };
   }

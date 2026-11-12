@@ -120,7 +120,7 @@ test("the card over the photo — scrim, outline and inert cue", async ({
 
   // Soon enough to lead the board, far enough out that no policy sweep
   // touches it.
-  const game = await createScratchGame({ capacity: 12, priceCzk: 150, hoursFromNow: 48 });
+  const game = await createScratchGame({ capacity: 12, priceThb: 150, hoursFromNow: 48 });
 
   try {
   await page.goto("/games", { waitUntil: "networkidle" });

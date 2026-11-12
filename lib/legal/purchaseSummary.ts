@@ -1,4 +1,4 @@
-import { formatCzk, formatDate } from "@/lib/format";
+import { formatThb, formatDate } from "@/lib/format";
 import { fillTemplate } from "@/lib/i18n/template";
 import type { Locale } from "@/lib/i18n/locales";
 import { pluralise } from "@/lib/i18n/plural";
@@ -36,7 +36,7 @@ export function creditsValidUntil(paidAt: Date): Date {
 
 export interface CreditPurchase {
   credits: number;
-  amountCzk: number;
+  amountThb: number;
   /** A pass's name; absent for a single game, which is just "1 Kredit". */
   packageName?: string;
   paidAt: Date;
@@ -52,7 +52,7 @@ export function creditPurchaseSummary(
   const count = creditCount(purchase.credits, locale, t);
   return fillTemplate(t.purchase.creditSummary, {
     credits: purchase.packageName ? `${purchase.packageName} – ${count}` : count,
-    amount: formatCzk(purchase.amountCzk),
+    amount: formatThb(purchase.amountThb),
     days: String(policy.credits.validityDays),
     date: formatDate(creditsValidUntil(purchase.paidAt), locale),
     terms: `[${t.purchase.termsLinkLabel}](${purchase.termsUrl})`,

@@ -49,7 +49,7 @@ export async function InfoCard({
     GameRow,
     | "venue"
     | "starts_at"
-    | "price_czk"
+    | "price_thb"
     | "format"
     | "surface"
     | "subs_per_team"

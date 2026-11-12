@@ -58,7 +58,7 @@ test.beforeAll(async () => {
 test("beyond the cutoff, a cancellation still credits in full", async () => {
   // Arrange — a paid spot on a game comfortably outside the window.
   await setWalletTo(players.creditRich.id, 0);
-  const game = await createScratchGame({ capacity: 6, priceCzk: 200, hoursFromNow: 48 });
+  const game = await createScratchGame({ capacity: 6, priceThb: 200, hoursFromNow: 48 });
 
   try {
     const player = await apiClientFor(players.creditRich);
@@ -80,8 +80,8 @@ test("beyond the cutoff, a cancellation still credits in full", async () => {
 
     // Assert
     expect(error).toBeNull();
-    expect(result!.credit_issued_czk).toBe(game.priceCzk);
-    expect(await walletBalance(players.creditRich.id)).toBe(before + game.priceCzk);
+    expect(result!.credit_issued_thb).toBe(game.priceThb);
+    expect(await walletBalance(players.creditRich.id)).toBe(before + game.priceThb);
   } finally {
     await destroyScratchGame(game.id);
     await setWalletTo(players.creditRich.id, 0);
@@ -103,7 +103,7 @@ test("inside the cutoff, the spot is freed and nothing is credited", async () =>
    * CLAUDE.md records for `bookings` and this suite hit again on `venues`.
    */
   await setWalletTo(players.creditRich.id, 0);
-  const game = await createScratchGame({ capacity: 6, priceCzk: 200, hoursFromNow: 48 });
+  const game = await createScratchGame({ capacity: 6, priceThb: 200, hoursFromNow: 48 });
 
   try {
     const player = await apiClientFor(players.creditRich);
@@ -132,7 +132,7 @@ test("inside the cutoff, the spot is freed and nothing is credited", async () =>
     // Assert — cancelled, and the money stayed where it was.
     expect(error).toBeNull();
     expect(result!.status).toBe("cancelled");
-    expect(result!.credit_issued_czk).toBe(0);
+    expect(result!.credit_issued_thb).toBe(0);
     expect(Number(result!.cancel_lead_hours)).toBeLessThan(CUTOFF);
     expect(await walletBalance(players.creditRich.id)).toBe(before);
 
@@ -151,8 +151,8 @@ test("inside the cutoff, the spot is freed and nothing is credited", async () =>
       .select("metadata")
       .eq("booking_id", booking!.id)
       .eq("event_type", "booking_cancelled");
-    expect(events![0].metadata.forfeited_czk).toBe(game.priceCzk);
-    expect(events![0].metadata.credit_issued_czk).toBe(0);
+    expect(events![0].metadata.forfeited_thb).toBe(game.priceThb);
+    expect(events![0].metadata.credit_issued_thb).toBe(0);
   } finally {
     await destroyScratchGame(game.id);
     await setWalletTo(players.creditRich.id, 0);
@@ -170,7 +170,7 @@ test("the cancel dialog warns before taking the credit, and still offers the can
    * moment a player is deciding — worse than having no dialog at all.
    */
   await setWalletTo(players.creditRich.id, 0);
-  const game = await createScratchGame({ capacity: 6, priceCzk: 200, hoursFromNow: 48 });
+  const game = await createScratchGame({ capacity: 6, priceThb: 200, hoursFromNow: 48 });
 
   try {
     const player = await apiClientFor(players.creditRich);
@@ -221,7 +221,7 @@ test("the cancel dialog warns before taking the credit, and still offers the can
 
 test("after kickoff a cancellation is refused, unchanged from v1", async () => {
   // Arrange
-  const game = await createScratchGame({ capacity: 6, priceCzk: 200, hoursFromNow: 48 });
+  const game = await createScratchGame({ capacity: 6, priceThb: 200, hoursFromNow: 48 });
 
   try {
     const player = await apiClientFor(players.creditRich);
@@ -278,7 +278,7 @@ test("every screen that names the cutoff names the one the database enforces", a
     { name: LOCALE_COOKIE, value: "en", domain: "localhost", path: "/" },
   ]);
 
-  const game = await createScratchGame({ capacity: 6, priceCzk: 200, hoursFromNow: 48 });
+  const game = await createScratchGame({ capacity: 6, priceThb: 200, hoursFromNow: 48 });
 
   /*
    * SCOPED TO THE ELEMENTS THAT CARRY THE SENTENCE, not to the page. Scanning

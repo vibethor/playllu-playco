@@ -9,7 +9,7 @@ import { embeddedCheckoutEnabled } from "@/lib/payments/embeddedCheckout";
 import { getSessionUser } from "@/lib/auth/session";
 import { cancellationReassurance } from "@/lib/booking/reassurance";
 import { readResumeIntent } from "@/lib/booking/resume";
-import { formatCzk, formatGameDateTime } from "@/lib/format";
+import { formatThb, formatGameDateTime } from "@/lib/format";
 import { getGameById } from "@/lib/games/queries";
 import { refundCutoffHours } from "@/lib/policy/refundCutoff";
 import { getLocale, getStrings } from "@/lib/i18n/server";
@@ -117,7 +117,7 @@ export default async function BookPage({ params, searchParams }: BookPageProps) 
           {formatGameDateTime(game.starts_at)}
         </span>
         <span className="text-[13px] text-muted">
-          {formatCzk(game.price_czk)}
+          {formatThb(game.price_thb)}
         </span>
       </div>
 
@@ -131,8 +131,8 @@ export default async function BookPage({ params, searchParams }: BookPageProps) 
         */}
         <PaymentMethodChoice
           gameId={game.id}
-          priceCzk={game.price_czk}
-          creditCzk={await getOwnCreditBalance()}
+          priceThb={game.price_thb}
+          creditThb={await getOwnCreditBalance()}
           /*
             SEATS, INCLUDING THE ONE THIS PLAYER IS ABOUT TO TAKE.
             `spotsLeft` is `capacity - bookedCount`, and since round 11

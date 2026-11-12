@@ -7,7 +7,7 @@ import { createScratchGame, destroyScratchGame, setWalletTo, walletBalance } fro
  * ROUND 40 — a Credit pays for a game of any length.
  *
  * ~~Round 35 v5: a credit buys a 90-minute seat; a 60-minute game is
- * online-only.~~ The owner removed the 150 CZK hour and the lawyer's terms make
+ * online-only.~~ The owner removed the 150 THB hour and the lawyer's terms make
  * every booking a Credit (Obchodní podmínky 5.1), so the short game is the
  * subject here precisely because it is the one that used to refuse.
  */
@@ -28,7 +28,7 @@ test("a 60-minute game offers Redeem credit and books on one Credit", async ({
   page,
   context,
 }) => {
-  const short = await createScratchGame({ durationMinutes: 60, priceCzk: 180, hoursFromNow: 24 * 5 });
+  const short = await createScratchGame({ durationMinutes: 60, priceThb: 180, hoursFromNow: 24 * 5 });
   try {
     await setWalletTo(players.creditRich.id, 3 * 180);
     await asPlayer(context, "creditRich");
@@ -52,7 +52,7 @@ test("a 60-minute game offers Redeem credit and books on one Credit", async ({
 });
 
 test("the add-guests credit rail takes a 60-minute game too", async () => {
-  const short = await createScratchGame({ durationMinutes: 60, priceCzk: 180, hoursFromNow: 24 * 3 });
+  const short = await createScratchGame({ durationMinutes: 60, priceThb: 180, hoursFromNow: 24 * 3 });
   const admin = serviceClient();
   try {
     await setWalletTo(players.creditRich.id, 3 * 180);

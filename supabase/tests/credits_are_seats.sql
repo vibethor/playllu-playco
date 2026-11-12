@@ -1,5 +1,5 @@
 -- =============================================================================
--- ROUND 35 v2 — credits are seat-denominated, drilled on a 200 CZK fixture.
+-- ROUND 35 v2 — credits are seat-denominated, drilled on a 200 THB fixture.
 --
 -- Run:  node supabase/tests/run.mjs credits_are_seats
 -- =============================================================================
@@ -82,13 +82,13 @@ insert into public.players (id, nickname, email, auth_user_id) values
 -- takes no credit at all — so every game a credit is spent on below says how
 -- long it is. The price follows from that, which is why none of these rows
 -- states one it chose.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('9fff0000-0000-0000-0000-0000000000f1', 'Seat Credit 200', now() + interval '30 hours', 20, 200, 'published', 90),
   ('9fff0000-0000-0000-0000-0000000000f2', 'Seat Credit Mixed', now() + interval '31 hours', 20, 200, 'published', 90),
   ('9fff0000-0000-0000-0000-0000000000f3', 'Seat Credit Free', now() + interval '32 hours', 20, 0, 'published', 90);
 
 create function pg_temp.bal(p uuid) returns integer language sql security definer as $$
-  select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger where player_id = p
+  select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger where player_id = p
 $$;
 
 create function pg_temp.bk(p_game uuid, p_player uuid) returns public.bookings
@@ -99,10 +99,10 @@ language sql security definer as $$
 $$;
 
 -- =============================================================================
--- THE RULING — one seat is one credit on a 180 CZK game
+-- THE RULING — one seat is one credit on a 180 THB game
 -- =============================================================================
 
-insert into public.credit_ledger (player_id, delta_czk, reason)
+insert into public.credit_ledger (player_id, delta_thb, reason)
 values ('6fff0000-0000-0000-0000-0000000000f1', 720, 'admin_grant');
 
 select pg_temp.act_as('60000000-0000-0000-0000-0000000000f1');
@@ -111,7 +111,7 @@ reset role;
 
 select pg_temp.ok(
   pg_temp.bal('6fff0000-0000-0000-0000-0000000000f1') = 540,
-  'ONE SEAT ON A 200 CZK GAME DEBITS 180 — one credit, not the game price',
+  'ONE SEAT ON A 200 THB GAME DEBITS 180 — one credit, not the game price',
   pg_temp.bal('6fff0000-0000-0000-0000-0000000000f1')::text);
 
 select pg_temp.ok(
@@ -127,20 +127,20 @@ select pg_temp.ok(
 
 select pg_temp.ok(
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f1',
-              '6fff0000-0000-0000-0000-0000000000f1')).price_czk = 180,
-  'and price_czk is what the booking is WORTH — 180, the credit it cost, not '
+              '6fff0000-0000-0000-0000-0000000000f1')).price_thb = 180,
+  'and price_thb is what the booking is WORTH — 180, the credit it cost, not '
   'the 200 a card would have paid',
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f1',
-              '6fff0000-0000-0000-0000-0000000000f1')).price_czk::text);
+              '6fff0000-0000-0000-0000-0000000000f1')).price_thb::text);
 
 select pg_temp.ok(
   (select count(*) from public.credit_ledger
     where player_id = '6fff0000-0000-0000-0000-0000000000f1'
-      and reason = 'redemption' and delta_czk = -180) = 1,
+      and reason = 'redemption' and delta_thb = -180) = 1,
   'the ledger records −180, exactly one credit');
 
 -- =============================================================================
--- ADD GUESTS — two guests cost two credits, on the same 180 CZK game
+-- ADD GUESTS — two guests cost two credits, on the same 180 THB game
 -- =============================================================================
 
 select pg_temp.act_as('60000000-0000-0000-0000-0000000000f1');
@@ -156,10 +156,10 @@ select pg_temp.ok(
 
 select pg_temp.ok(
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f1',
-              '6fff0000-0000-0000-0000-0000000000f1')).price_czk = 540,
+              '6fff0000-0000-0000-0000-0000000000f1')).price_thb = 540,
   'the booking is now worth three credits',
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f1',
-              '6fff0000-0000-0000-0000-0000000000f1')).price_czk::text);
+              '6fff0000-0000-0000-0000-0000000000f1')).price_thb::text);
 
 -- =============================================================================
 -- AND ONE OF THOSE GUESTS COMES BACK AS EXACTLY ONE CREDIT
@@ -169,7 +169,7 @@ select pg_temp.act_as('60000000-0000-0000-0000-0000000000f1');
 select pg_temp.ok(
   (public.cancel_guests(
      (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f1',
-                 '6fff0000-0000-0000-0000-0000000000f1')).id, 1)).credit_issued_czk = 180,
+                 '6fff0000-0000-0000-0000-0000000000f1')).id, 1)).credit_issued_thb = 180,
   'REMOVING ONE CREDIT-PAID GUEST RETURNS +180 — exactly one credit');
 reset role;
 
@@ -180,10 +180,10 @@ select pg_temp.ok(
 
 select pg_temp.ok(
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f1',
-              '6fff0000-0000-0000-0000-0000000000f1')).credit_applied_czk = 360,
+              '6fff0000-0000-0000-0000-0000000000f1')).credit_applied_thb = 360,
   'the booking still holds two credits'' worth',
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f1',
-              '6fff0000-0000-0000-0000-0000000000f1')).credit_applied_czk::text);
+              '6fff0000-0000-0000-0000-0000000000f1')).credit_applied_thb::text);
 
 select pg_temp.ok(
   (select count(*) from public.events
@@ -194,10 +194,10 @@ select pg_temp.ok(
   'and the event says the seat came off the credit side');
 
 -- =============================================================================
--- A MIXED BOOKING — one credit, two card seats, on a 180 CZK game
+-- A MIXED BOOKING — one credit, two card seats, on a 180 THB game
 -- =============================================================================
 
-insert into public.credit_ledger (player_id, delta_czk, reason)
+insert into public.credit_ledger (player_id, delta_thb, reason)
 values ('6fff0000-0000-0000-0000-0000000000f2', 180, 'admin_grant');
 
 select pg_temp.act_as('60000000-0000-0000-0000-0000000000f2');
@@ -206,17 +206,17 @@ reset role;
 
 select pg_temp.ok(
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f2',
-              '6fff0000-0000-0000-0000-0000000000f2')).credit_applied_czk = 180,
+              '6fff0000-0000-0000-0000-0000000000f2')).credit_applied_thb = 180,
   'one credit covers ONE seat and no more — never a slice of the other two',
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f2',
-              '6fff0000-0000-0000-0000-0000000000f2')).credit_applied_czk::text);
+              '6fff0000-0000-0000-0000-0000000000f2')).credit_applied_thb::text);
 
 select pg_temp.ok(
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f2',
-              '6fff0000-0000-0000-0000-0000000000f2')).price_czk = 180 + 2 * 200,
+              '6fff0000-0000-0000-0000-0000000000f2')).price_thb = 180 + 2 * 200,
   'and the price is one credit seat plus two CARD seats at the game''s own price',
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f2',
-              '6fff0000-0000-0000-0000-0000000000f2')).price_czk::text);
+              '6fff0000-0000-0000-0000-0000000000f2')).price_thb::text);
 
 select pg_temp.ok(
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f2',
@@ -228,31 +228,31 @@ select pg_temp.act_as('60000000-0000-0000-0000-0000000000f2');
 select pg_temp.ok(
   (public.cancel_guests(
      (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f2',
-                 '6fff0000-0000-0000-0000-0000000000f2')).id, 1)).credit_issued_czk = 180,
+                 '6fff0000-0000-0000-0000-0000000000f2')).id, 1)).credit_issued_thb = 180,
   'removing one guest from a mixed booking returns the CREDIT seat first — one '
   'whole credit, not a share of a card payment');
 reset role;
 
 select pg_temp.ok(
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f2',
-              '6fff0000-0000-0000-0000-0000000000f2')).credit_applied_czk = 0,
+              '6fff0000-0000-0000-0000-0000000000f2')).credit_applied_thb = 0,
   'the credit side is emptied',
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f2',
-              '6fff0000-0000-0000-0000-0000000000f2')).credit_applied_czk::text);
+              '6fff0000-0000-0000-0000-0000000000f2')).credit_applied_thb::text);
 
 select pg_temp.ok(
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f2',
-              '6fff0000-0000-0000-0000-0000000000f2')).price_czk = 2 * 200,
+              '6fff0000-0000-0000-0000-0000000000f2')).price_thb = 2 * 200,
   'and what is left is two card seats',
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f2',
-              '6fff0000-0000-0000-0000-0000000000f2')).price_czk::text);
+              '6fff0000-0000-0000-0000-0000000000f2')).price_thb::text);
 
 -- =============================================================================
 -- A FREE GAME SPENDS NO CREDIT — the one case seat-denomination could cost a
 -- player something for nothing
 -- =============================================================================
 
-insert into public.credit_ledger (player_id, delta_czk, reason)
+insert into public.credit_ledger (player_id, delta_thb, reason)
 values ('6fff0000-0000-0000-0000-0000000000f3', 360, 'admin_grant');
 
 select pg_temp.act_as('60000000-0000-0000-0000-0000000000f3');
@@ -274,14 +274,14 @@ reset role;
 
 select pg_temp.ok(
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f1',
-              '6fff0000-0000-0000-0000-0000000000f4')).price_czk = 2 * 200,
+              '6fff0000-0000-0000-0000-0000000000f4')).price_thb = 2 * 200,
   'WITHOUT CREDIT NOTHING CHANGES — two seats at the game''s own 200',
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f1',
-              '6fff0000-0000-0000-0000-0000000000f4')).price_czk::text);
+              '6fff0000-0000-0000-0000-0000000000f4')).price_thb::text);
 
 select pg_temp.ok(
   (pg_temp.bk('9fff0000-0000-0000-0000-0000000000f1',
-              '6fff0000-0000-0000-0000-0000000000f4')).credit_applied_czk = 0,
+              '6fff0000-0000-0000-0000-0000000000f4')).credit_applied_thb = 0,
   'and no credit was applied');
 
 -- =============================================================================

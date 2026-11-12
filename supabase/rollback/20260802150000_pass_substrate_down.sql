@@ -6,7 +6,7 @@
 --
 -- DROPPING `expires_at` AND `batch_id` DOES NOT CHANGE ANY BALANCE, which is
 -- the one reassuring property of the ratified substrate: balance is
--- SUM(delta_czk) and every row keeps its delta. What is lost is which credit
+-- SUM(delta_thb) and every row keeps its delta. What is lost is which credit
 -- came from which batch — after this, a pass remainder is simply ordinary
 -- unexpiring credit, and the player keeps it. That errs in the player's
 -- favour, which is the right direction for a rollback of a money feature.

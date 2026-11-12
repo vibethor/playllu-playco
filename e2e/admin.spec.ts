@@ -37,7 +37,7 @@ test.beforeEach(async () => {
    * and confirms instantly, which is correct behaviour and the wrong starting
    * position for an assertion about confirming a payment by hand.
    *
-   * A fresh seed gives RealRunner a 200 CZK balance, which is exactly the price
+   * A fresh seed gives RealRunner a 200 THB balance, which is exactly the price
    * of a scratch game. Every other spec file already normalises the wallet it
    * depends on; this one did not, so it passed only when an earlier run had
    * happened to leave the balance at zero — and failed on a freshly seeded
@@ -592,7 +592,7 @@ test("the stats page reports a hand-computed window", async ({ page, context }) 
     expect(after.sold - baseline.sold).toBe(2);
     // Revenue: two payments confirmed at 200, and cancelling does NOT retract
     // the payment_confirmed event — the money did arrive.
-    expect(after.revenue - baseline.revenue).toBe(2 * first.priceCzk);
+    expect(after.revenue - baseline.revenue).toBe(2 * first.priceThb);
     // Cancellations: one, and it issued credit.
     expect(after.cancellations - baseline.cancellations).toBe(1);
     expect(after.cancelledWithCredit - baseline.cancelledWithCredit).toBe(1);
@@ -644,7 +644,7 @@ async function readStats(page: import("@playwright/test").Page) {
   return {
     sold: Number(fillMatch?.[1] ?? 0),
     capacity: Number(fillMatch?.[2] ?? 0),
-    revenue: Number((revenue.match(/([\d,\s]+)\s*CZK/)?.[1] ?? "0").replace(/[,\s]/g, "")),
+    revenue: Number((revenue.match(/([\d,\s]+)\s*THB/)?.[1] ?? "0").replace(/[,\s]/g, "")),
     cancellations: Number(cancels.match(/\d+/)?.[0] ?? 0),
     cancelledWithCredit: Number(cancelDetail.match(/(\d+)\s*with credit/)?.[1] ?? 0),
   };

@@ -1,4 +1,4 @@
-import { PASS_REFERENCE_PRICE_CZK } from "../lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "../lib/pass/creditPrice";
 import { expect, test } from "@playwright/test";
 import { createScratchGame, destroyScratchGame, gamePathOf, setWalletTo } from "./helpers/scaffold.ts";
 import { anonClient, apiClientFor, players, serviceClient, signInAs } from "./helpers/session.ts";
@@ -929,7 +929,7 @@ test("a card carries venue, time, format, surface, bar and spots — no price, n
 
     /*
      * THE PRICE IS ON THE CARD AGAIN, reversing v1.2 §5.5 — it came off for
-     * distinguishing nothing, and it is back because `180 CZK / 1 credit` is
+     * distinguishing nothing, and it is back because `180 THB / 1 credit` is
      * how a reader learns what a credit is worth, on the surface where they
      * decide whether a pass is worth buying.
      *
@@ -942,7 +942,7 @@ test("a card carries venue, time, format, surface, bar and spots — no price, n
     // leaked value could not hide behind another row's — which makes it the
     // strongest case for asserting the absence.
     await expect(row.getByTestId("card-price")).toHaveCount(0);
-    await expect(row).not.toContainText(String(game.priceCzk));
+    await expect(row).not.toContainText(String(game.priceThb));
     // What the card carries instead: the dotted count line.
     await expect(row.getByTestId("row-spots")).toBeVisible();
     await expect(row.getByTestId("card-players-count")).toHaveCount(0);
@@ -965,7 +965,7 @@ test("a card carries venue, time, format, surface, bar and spots — no price, n
     await row.click();
     await page.waitForURL(`**${await gamePathOf(game.id)}`);
     await expect(page.getByTestId("game-subs")).toContainText("2");
-    await expect(page.locator("body")).toContainText(String(game.priceCzk));
+    await expect(page.locator("body")).toContainText(String(game.priceThb));
   } finally {
     await destroyScratchGame(game.id);
   }
@@ -1184,7 +1184,7 @@ test("booking and cancelling each raise their toast on the page that follows", a
      * page and there is no next page of ours to carry a toast onto, so the
      * credit path is the one this claim can be made about at all.
      */
-    await setWalletTo(players.runner.id, game.priceCzk);
+    await setWalletTo(players.runner.id, game.priceThb);
 
     // --- created -----------------------------------------------------------
     await page.goto(`/game/${game.id}/book`);
@@ -1475,9 +1475,9 @@ test("a venue's own photo backs its games on the list and the detail alike", asy
 test("the claim bar shows the credit equivalence at the rate, and not at any other price", async ({
   page,
 }) => {
-  const flat = await createScratchGame({ hoursFromNow: 24 * 5, priceCzk: PASS_REFERENCE_PRICE_CZK });
+  const flat = await createScratchGame({ hoursFromNow: 24 * 5, priceThb: PASS_REFERENCE_PRICE_THB });
   /*
-     * A LENGTH WHOSE PRICE IS NOT ONE CREDIT. ~~A 200 CZK game.~~ The price is
+     * A LENGTH WHOSE PRICE IS NOT ONE CREDIT. ~~A 200 THB game.~~ The price is
      * not a thing a caller picks any more, so the way to get a game that is not
      * exactly one credit is to ask for the SIXTY-minute one — which is 150, and
      * which a credit cannot buy at all.
@@ -1488,14 +1488,14 @@ test("the claim bar shows the credit equivalence at the rate, and not at any oth
     await page.goto(`/game/${flat.id}`);
     const bar = page.getByTestId("claim-bar");
     await expect(bar.getByTestId("claim-bar-price")).toContainText(
-      String(PASS_REFERENCE_PRICE_CZK),
+      String(PASS_REFERENCE_PRICE_THB),
     );
     await expect(bar.getByTestId("claim-bar-price-credit")).toContainText("1");
 
     // 200 is not one credit, and the bar declines to guess what it is —
     // inventing that ratio is the pro-rating the credits ruling stops on.
     await page.goto(`/game/${other.id}`);
-    await expect(bar.getByTestId("claim-bar-price")).toContainText(String(other.priceCzk));
+    await expect(bar.getByTestId("claim-bar-price")).toContainText(String(other.priceThb));
     await expect(bar.getByTestId("claim-bar-price-credit")).toHaveCount(0);
   } finally {
     await destroyScratchGame(flat.id);

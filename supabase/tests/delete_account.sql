@@ -73,7 +73,7 @@ returns uuid language sql security definer as $$
 $$;
 
 create function pg_temp.balance(p uuid) returns integer language sql security definer as $$
-  select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger where player_id = p
+  select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger where player_id = p
 $$;
 
 -- Every refund row this player received, newest last.
@@ -100,14 +100,14 @@ values
   ('4ddd0000-0000-0000-0000-000000000003', 'DelAdmin', 'del-3@test.invalid', null,            '41000000-0000-0000-0000-000000000003', true,  'CZ', null, false),
   ('4ddd0000-0000-0000-0000-000000000004', 'DelOther', 'del-4@test.invalid', null,            '41000000-0000-0000-0000-000000000004', false, 'CZ', null, false);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('94100000-0000-0000-0000-0000000000a1', 'Del Future', now() + interval '3 days', 12, 180, 'published', 90),
   ('94100000-0000-0000-0000-0000000000a2', 'Del Past',   now() - interval '3 days', 12, 180, 'played',    90);
 
--- Credits: a batch of two (one gets spent) and 90 CZK of old unexpiring pool.
-insert into public.credit_ledger (player_id, delta_czk, reason, expires_at)
+-- Credits: a batch of two (one gets spent) and 90 THB of old unexpiring pool.
+insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
 values ('4ddd0000-0000-0000-0000-000000000001', 360, 'topup', now() + interval '60 days');
-insert into public.credit_ledger (player_id, delta_czk, reason)
+insert into public.credit_ledger (player_id, delta_thb, reason)
 values ('4ddd0000-0000-0000-0000-000000000001', 90, 'cancellation_credit');
 
 select pg_temp.act_as('41000000-0000-0000-0000-000000000001');
@@ -115,7 +115,7 @@ select public.create_booking('94100000-0000-0000-0000-0000000000a1', 'cash', nul
 reset role;
 
 -- A past booking, which is history and must survive.
-insert into public.bookings (game_id, player_id, status, payment_method, price_czk, credit_applied_czk)
+insert into public.bookings (game_id, player_id, status, payment_method, price_thb, credit_applied_thb)
 values ('94100000-0000-0000-0000-0000000000a2', '4ddd0000-0000-0000-0000-000000000001', 'confirmed', 'qr', 180, 0);
 
 -- =============================================================================

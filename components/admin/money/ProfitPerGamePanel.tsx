@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Panel } from "@/components/admin/ui/Panel";
-import { SignedCzk } from "@/components/admin/ui/Money";
+import { SignedThb } from "@/components/admin/ui/Money";
 import { SeatBar, SeatLegend } from "@/components/admin/ui/SeatBar";
 import { countLabel } from "@/lib/admin/money/countLabel";
 import type { ProfitRow, ProfitTotals } from "@/lib/admin/money/profitPerGame";
 import { formatSeats, type SeatBarInput } from "@/lib/admin/seatBar";
-import { formatCzk, formatDate } from "@/lib/format";
+import { formatThb, formatDate } from "@/lib/format";
 import { strings } from "@/lib/strings";
 
 /**
@@ -76,21 +76,21 @@ function GameRow({ row }: { row: ProfitRow }) {
       </td>
       <td role="cell" className={`order-4 ${NUMBER_CELL} text-bone`}>
         <StackLabel>{copy.colRevenue}</StackLabel>
-        {formatCzk(economics.revenueCzk)}
+        {formatThb(economics.revenueThb)}
       </td>
       <td role="cell" className={`order-5 ${NUMBER_CELL} text-bone`}>
         <StackLabel>{copy.colPitch}</StackLabel>
-        {economics.pitchCostCzk === null ? DASH : formatCzk(economics.pitchCostCzk)}
+        {economics.pitchCostThb === null ? DASH : formatThb(economics.pitchCostThb)}
       </td>
       <td
         role="cell"
         data-testid="money-profit"
         className="order-2 col-span-2 self-start text-right font-semibold md:table-cell md:whitespace-nowrap md:px-3 md:py-3 md:align-middle"
       >
-        {economics.profitCzk === null ? (
+        {economics.profitThb === null ? (
           <span className="text-muted">{DASH}</span>
         ) : (
-          <SignedCzk amount={economics.profitCzk} />
+          <SignedThb amount={economics.profitThb} />
         )}
       </td>
       <td role="cell" className={`order-6 ${NUMBER_CELL} text-bone md:pl-3 md:pr-0`}>
@@ -119,10 +119,10 @@ export function ProfitPerGamePanel({
       ) : (
         <>
           <dl data-testid="money-profit-totals" className="m-0 grid grid-cols-2 gap-3 md:grid-cols-4">
-            <Total label={copy.totalRevenue}>{formatCzk(totals.revenueCzk)}</Total>
-            <Total label={copy.totalPitch}>{formatCzk(totals.pitchCostCzk)}</Total>
+            <Total label={copy.totalRevenue}>{formatThb(totals.revenueThb)}</Total>
+            <Total label={copy.totalPitch}>{formatThb(totals.pitchCostThb)}</Total>
             <Total label={copy.totalProfit}>
-              <SignedCzk amount={totals.profitCzk} testId="money-total-profit" />
+              <SignedThb amount={totals.profitThb} testId="money-total-profit" />
             </Total>
             <Total label={copy.brokeEven}>
               {copy.brokeEvenValue

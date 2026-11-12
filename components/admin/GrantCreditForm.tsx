@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { grantCreditAction, type GrantCreditState } from "@/app/admin/players/actions";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import { adminWallet } from "@/lib/admin/credits";
 import { strings } from "@/lib/strings";
 import { chipPrimary, chipVolt, fieldInput, fieldLabel } from "@/components/admin/players/controlStyles";
@@ -95,16 +95,16 @@ export function GrantCreditForm({ playerId }: { playerId: string }) {
             division to check their own grant. The exact crowns still appear
             when the balance does not divide cleanly — see `adminWallet`.
           */}
-          {state.balanceCzk !== undefined && (
+          {state.balanceThb !== undefined && (
             <>
               {" — "}
-              {adminWallet(state.balanceCzk).credits} credits
-              {adminWallet(state.balanceCzk).remainderCzk !== null && (
+              {adminWallet(state.balanceThb).credits} credits
+              {adminWallet(state.balanceThb).remainderThb !== null && (
                 <span className="text-muted">
                   {" "}
-                  ({strings.admin.walletExactCzk.replace(
-                    "{czk}",
-                    formatCzk(adminWallet(state.balanceCzk).remainderCzk!),
+                  ({strings.admin.walletExactThb.replace(
+                    "{thb}",
+                    formatThb(adminWallet(state.balanceThb).remainderThb!),
                   )})
                 </span>
               )}

@@ -2,13 +2,13 @@
  * Czech SPD 1.0 ("QR platba") payment string.
  *
  * Format:
- *   SPD*1.0*ACC:<IBAN>*AM:<amount>.00*CC:CZK*X-VS:<VS>*MSG:<nickname>
+ *   SPD*1.0*ACC:<IBAN>*AM:<amount>.00*CC:THB*X-VS:<VS>*MSG:<nickname>
  *
  * This is the product's core payment mechanism. A malformed string means a
  * player's money goes nowhere — or, in the worst case, somewhere else. Treat
  * every change here as a payments change.
  *
- * Payments stay Czech regardless of UI language: CZK, QR platba, and a
+ * Payments stay Czech regardless of UI language: THB, QR platba, and a
  * variable symbol as the reconciliation key.
  */
 
@@ -20,7 +20,7 @@ export interface SpdPaymentInput {
   /** Payee IBAN, from the PAYMENT_IBAN environment variable. */
   iban: string;
   /** Whole crowns. Rendered with two decimal places per the SPD grammar. */
-  amountCzk: number;
+  amountThb: number;
   /** Variable symbol — the reconciliation key the bank echoes back. */
   variableSymbol: number | string;
   /** Player nickname, used as the payment message. Sanitized before framing. */
@@ -60,8 +60,8 @@ export function sanitizeSpdMessage(nickname: string): string {
 }
 
 /** Formats whole crowns as the SPD amount grammar requires. */
-export function formatSpdAmount(amountCzk: number): string {
-  return `${Math.round(amountCzk)}.00`;
+export function formatSpdAmount(amountThb: number): string {
+  return `${Math.round(amountThb)}.00`;
 }
 
 /**
@@ -73,21 +73,21 @@ export function formatSpdAmount(amountCzk: number): string {
  */
 export function buildSpdString({
   iban,
-  amountCzk,
+  amountThb,
   variableSymbol,
   nickname,
 }: SpdPaymentInput): string {
   if (!iban) throw new Error("PAYMENT_IBAN is not configured");
-  if (!Number.isFinite(amountCzk) || amountCzk <= 0) {
-    throw new Error(`SPD amount must be positive, got ${amountCzk}`);
+  if (!Number.isFinite(amountThb) || amountThb <= 0) {
+    throw new Error(`SPD amount must be positive, got ${amountThb}`);
   }
 
   const fields = [
     "SPD",
     "1.0",
     `ACC:${iban}`,
-    `AM:${formatSpdAmount(amountCzk)}`,
-    "CC:CZK",
+    `AM:${formatSpdAmount(amountThb)}`,
+    "CC:THB",
     `X-VS:${variableSymbol}`,
     `MSG:${sanitizeSpdMessage(nickname)}`,
   ];
@@ -101,8 +101,8 @@ export function buildSpdString({
  * Both figures are read off the persisted booking, so this cannot disagree
  * with what `create_booking` decided.
  */
-export function amountDueCzk(priceCzk: number, creditAppliedCzk: number): number {
-  return Math.max(0, priceCzk - creditAppliedCzk);
+export function amountDueThb(priceThb: number, creditAppliedThb: number): number {
+  return Math.max(0, priceThb - creditAppliedThb);
 }
 
 /**
@@ -114,13 +114,13 @@ export function amountDueCzk(priceCzk: number, creditAppliedCzk: number): number
 export function shouldRenderQr(booking: {
   payment_method: string;
   payment_code: number | null;
-  price_czk: number;
-  credit_applied_czk: number;
+  price_thb: number;
+  credit_applied_thb: number;
 }): boolean {
   return (
     booking.payment_method === "qr" &&
     booking.payment_code !== null &&
-    amountDueCzk(booking.price_czk, booking.credit_applied_czk) > 0
+    amountDueThb(booking.price_thb, booking.credit_applied_thb) > 0
   );
 }
 

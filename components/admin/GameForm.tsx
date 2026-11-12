@@ -16,7 +16,7 @@ import {
 } from "@/lib/admin/gameForm";
 import { LanguagePill } from "@/components/game/LanguagePill";
 import { gameLanguageOf, type GameLanguage } from "@/lib/games/language";
-import { priceForDurationCzk } from "@/lib/games/price";
+import { priceForDurationThb } from "@/lib/games/price";
 import { phoneAfterOrganizerChange } from "@/lib/admin/organizerPhone";
 import { strings } from "@/lib/strings";
 import type { Database, GameSurface, SkillLevel } from "@/lib/types/database";
@@ -108,7 +108,7 @@ export function GameForm({
     venue_id: string | null;
     starts_at: string;
     capacity: number;
-    price_czk: number;
+    price_thb: number;
     format: string | null;
     surface: GameSurface | null;
     notes: string | null;
@@ -171,8 +171,8 @@ export function GameForm({
   /*
    * THE PREFILL IS 150, NOT 200 (round 16, item 20).
    *
-   * `PASS_REFERENCE_PRICE_CZK` rather than a literal: the credits ruling makes
-   * one credit one game at 150 CZK, and the whole product divides balances by
+   * `PASS_REFERENCE_PRICE_THB` rather than a literal: the credits ruling makes
+   * one credit one game at 150 THB, and the whole product divides balances by
    * that number. A form that proposes 200 was quietly inviting an organizer to
    * create games a credit does not cover — which is the one price at which the
    * wallet arithmetic stops meaning anything.
@@ -240,11 +240,11 @@ export function GameForm({
    * proposes the 60-minute price rather than nothing.
    */
   const prefillForDuration = (minutes: string) =>
-    String(priceForDurationCzk(minutes.trim() === "" ? null : Number(minutes)));
+    String(priceForDurationThb(minutes.trim() === "" ? null : Number(minutes)));
 
-  const [priceCzk, setPriceCzk] = useState(
-    game?.price_czk != null
-      ? String(game.price_czk)
+  const [priceThb, setPriceThb] = useState(
+    game?.price_thb != null
+      ? String(game.price_thb)
       : prefillForDuration(game?.duration_minutes != null ? String(game.duration_minutes) : ""),
   );
 
@@ -259,7 +259,7 @@ export function GameForm({
    */
   const onDurationChange = (minutes: string) => {
     setDurationMinutes(minutes);
-    setPriceCzk(prefillForDuration(minutes));
+    setPriceThb(prefillForDuration(minutes));
   };
 
   const [subsPerTeam, setSubsPerTeam] = useState(
@@ -367,22 +367,22 @@ export function GameForm({
             </div>
 
             <div className="min-w-0">
-              <label className={LABEL} htmlFor="priceCzk">
+              <label className={LABEL} htmlFor="priceThb">
                 {strings.admin.priceLabel}
               </label>
               <input
-                id="priceCzk"
-                name="priceCzk"
+                id="priceThb"
+                name="priceThb"
                 type="number"
                 min={1}
                 step={1}
-                data-testid="price-czk"
+                data-testid="price-thb"
                 className={FIELD}
-                value={priceCzk}
-                onChange={(event) => setPriceCzk(event.target.value)}
+                value={priceThb}
+                onChange={(event) => setPriceThb(event.target.value)}
               />
               <p className={HINT}>{strings.admin.priceDerivedHint}</p>
-              {errors.priceCzk && <p className={ERROR}>{errors.priceCzk}</p>}
+              {errors.priceThb && <p className={ERROR}>{errors.priceThb}</p>}
             </div>
 
             <div className="min-w-0">

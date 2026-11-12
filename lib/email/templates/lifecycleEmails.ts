@@ -1,4 +1,4 @@
-import { formatCzk, formatTime } from "@/lib/format";
+import { formatThb, formatTime } from "@/lib/format";
 import { policy } from "@/lib/policy";
 import { renderEmail, type RenderedEmail } from "./layout";
 import {
@@ -14,13 +14,13 @@ import {
 } from "./parts";
 
 export interface NudgeEmailProps extends GameFacts {
-  amountDueCzk: number;
+  amountDueThb: number;
 }
 
 /** "Pay now or lose your spot" — the morning sweep, on a full game. */
 export function nudgeEmail(props: NudgeEmailProps, env: EmailEnv): RenderedEmail {
   const e = env.t.emails;
-  const amount = formatCzk(props.amountDueCzk);
+  const amount = formatThb(props.amountDueThb);
   // The deadline is the post-nudge grace, which is exactly what `mark_nudged`
   // writes into `expires_at` and what the expiry sweep later acts on.
   const values = {

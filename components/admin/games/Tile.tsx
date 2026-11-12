@@ -6,7 +6,7 @@
  * exactly "3/12" and "0" — the card's label beside them would break both.
  *
  * The figure shrinks with the viewport below `md`: two tiles a row at 390px
- * leave about 130px for "−1,200 CZK", which the 34px display face overflows.
+ * leave about 130px for "−1,200 THB", which the 34px display face overflows.
  */
 export function Tile({
   label,

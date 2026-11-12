@@ -1,9 +1,9 @@
-import { SignedCzk } from "@/components/admin/ui/Money";
+import { SignedThb } from "@/components/admin/ui/Money";
 import { Tile, TileRow } from "@/components/admin/games/Tile";
 import type { GamesSummary } from "@/lib/admin/games/summary";
 import type { GameTab } from "@/lib/admin/games/tabs";
 import { formatSeats } from "@/lib/admin/seatBar";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import { strings } from "@/lib/strings";
 
 const hub = strings.admin.gamesHub;
@@ -54,13 +54,13 @@ export function GamesTiles({ tab, summary }: { tab: GameTab; summary: GamesSumma
         <>
           <Tile
             label={hub.tileRevenue}
-            value={formatCzk(money.revenueCzk)}
-            detail={hub.tilePitchCosts.replace("{cost}", formatCzk(money.pitchCostCzk))}
+            value={formatThb(money.revenueThb)}
+            detail={hub.tilePitchCosts.replace("{cost}", formatThb(money.pitchCostThb))}
             testId="games-tile-revenue"
           />
           <Tile
             label={hub.profit}
-            value={<SignedCzk amount={money.profitCzk} />}
+            value={<SignedThb amount={money.profitThb} />}
             detail={hub.tileInProfit
               .replace("{n}", String(money.coveredGames))
               .replace("{total}", String(money.costedGames))}

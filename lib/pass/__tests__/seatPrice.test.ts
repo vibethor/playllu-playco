@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import { cs } from "@/lib/i18n/cs";
 import { ru } from "@/lib/i18n/ru";
 import { uk } from "@/lib/i18n/uk";
-import { PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/creditPrice";
-import { priceForDurationCzk } from "@/lib/games/price";
+import { PASS_REFERENCE_PRICE_THB } from "@/lib/pass/creditPrice";
+import { priceForDurationThb } from "@/lib/games/price";
 import { strings } from "@/lib/strings";
 
 /**
@@ -26,8 +26,8 @@ import { strings } from "@/lib/strings";
  * WHAT IT LOOKS FOR, AND WHY IT IS NOT JUST `/150/`. A bare 150 is a legitimate
  * number — `PitchBackground` draws with it, a timeout could be it. What is
  * banned is 150 standing in for MONEY, so the scan pairs the number with a
- * money word on the same line. That catches `priceCzk: 150`, `= 150`, `150 CZK`
- * and `credited_czk = games * 150`, and leaves a canvas radius alone.
+ * money word on the same line. That catches `priceThb: 150`, `= 150`, `150 THB`
+ * and `credited_thb = games * 150`, and leaves a canvas radius alone.
  *
  * THE STRING TABLES ARE SCANNED WHOLE, because in copy any 150 is a price.
  */
@@ -49,7 +49,7 @@ const NOT_MONEY = [
   /*
    * COPY IS SCANNED BY THE WALK BELOW, NOT BY THIS ONE. `lib/strings.ts` is a
    * table of sentences, and the sentence that has to name both prices is the
-   * ADMIN'S hint — "60 minutes is 150 CZK, 90 is 180" — which is the product
+   * ADMIN'S hint — "60 minutes is 150 THB, 90 is 180" — which is the product
    * explaining its own mapping to the person who sets a duration. The
    * string-table walk knows `admin` is exempt and a player-facing string is
    * not; this file-level scan cannot tell them apart, and running a cruder rule
@@ -60,7 +60,7 @@ const NOT_MONEY = [
 
 /** Either price doing the job of a price, on one line. */
 const HARDCODED_PRICE =
-  /(czk|price|credit|amount|balance|tier|cost|paid|delta)[^\n]{0,40}\b(150|180)\b|\b(150|180)\b[^\n]{0,40}(czk|kč|price|credit)/i;
+  /(thb|price|credit|amount|balance|tier|cost|paid|delta)[^\n]{0,40}\b(150|180)\b|\b(150|180)\b[^\n]{0,40}(thb|kč|price|credit)/i;
 
 function walk(dir: string): string[] {
   const out: string[] = [];
@@ -86,10 +86,10 @@ describe("the seat price", () => {
      * game's price is whatever they left in that box, so nothing downstream may
      * read this function to find out what a game costs.
      */
-    expect(PASS_REFERENCE_PRICE_CZK).toBe(180);
+    expect(PASS_REFERENCE_PRICE_THB).toBe(180);
     // ~~60 minutes prefilled 150~~ — gone in round 40: a game is one Credit.
-    expect(priceForDurationCzk(60)).toBe(180);
-    expect(priceForDurationCzk(90)).toBe(180);
+    expect(priceForDurationThb(60)).toBe(180);
+    expect(priceForDurationThb(90)).toBe(180);
   });
 
   it("PREFILLS A FIELD THE ORGANIZER CAN TYPE IN, rather than deciding for them", () => {
@@ -107,19 +107,19 @@ describe("the seat price", () => {
      * because the prefill happens to equal the typed value on a default form.
      */
     const form = readFileSync("components/admin/GameForm.tsx", "utf8");
-    const priceInput = form.slice(form.indexOf('id="priceCzk"'));
+    const priceInput = form.slice(form.indexOf('id="priceThb"'));
     const inputTag = priceInput.slice(0, priceInput.indexOf("/>"));
 
     expect(inputTag, "the price input is read-only again").not.toContain("readOnly");
-    expect(inputTag, "the price input is not wired to state").toContain("value={priceCzk}");
+    expect(inputTag, "the price input is not wired to state").toContain("value={priceThb}");
     expect(inputTag, "the price input cannot be typed in").toContain("onChange");
     expect(form, "changing the duration no longer refills the price").toContain(
-      "setPriceCzk(prefillForDuration(minutes))",
+      "setPriceThb(prefillForDuration(minutes))",
     );
 
     const validator = readFileSync("lib/admin/gameForm.ts", "utf8");
     expect(validator, "the price is not validated as a positive whole number").toContain(
-      "!Number.isInteger(priceCzk) || priceCzk < 1",
+      "!Number.isInteger(priceThb) || priceThb < 1",
     );
   });
 
@@ -147,7 +147,7 @@ describe("the seat price", () => {
         if (typeof value === "string") {
           /*
            * COPY IS ALLOWED TO NAME THE PRICES — the admin's own hint says
-           * "60 minutes is 150 CZK, 90 is 180", which is the product explaining
+           * "60 minutes is 150 THB, 90 is 180", which is the product explaining
            * its mapping to the person who sets it. `admin` is exempt from this
            * walk already; a PLAYER-facing string quoting a price is the thing
            * that goes stale, and that is what this catches.

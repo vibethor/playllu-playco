@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SignedCzk } from "@/components/admin/ui/Money";
+import { SignedThb } from "@/components/admin/ui/Money";
 import { SeatBar } from "@/components/admin/ui/SeatBar";
 import { BreakEvenLine } from "@/components/admin/games/BreakEvenLine";
 import { StatusChip } from "@/components/admin/games/StatusChip";
@@ -7,7 +7,7 @@ import type { GameEconomics } from "@/lib/admin/economics";
 import { breakEvenOutlook } from "@/lib/admin/games/breakEven";
 import type { GameTab } from "@/lib/admin/games/tabs";
 import type { AdminGameRow } from "@/lib/admin/queries";
-import { formatCzk, formatGameDateTime } from "@/lib/format";
+import { formatThb, formatGameDateTime } from "@/lib/format";
 import { strings } from "@/lib/strings";
 
 const hub = strings.admin.gamesHub;
@@ -46,14 +46,14 @@ export function GameRow({
   /** The recorded cancel reason, on the Cancelled tab. */
   reason: string | null;
 }) {
-  const showProfit = tab === "played" && economics !== null && economics.profitCzk !== null;
+  const showProfit = tab === "played" && economics !== null && economics.profitThb !== null;
   const lines = [
     tab === "upcoming" && economics && (
       <BreakEvenLine key="break-even" outlook={breakEvenOutlook(economics)} />
     ),
     showProfit && (
       <span key="profit" className="text-muted">
-        {hub.profit} <SignedCzk amount={economics.profitCzk ?? 0} testId="admin-game-profit" className="font-semibold" />
+        {hub.profit} <SignedThb amount={economics.profitThb ?? 0} testId="admin-game-profit" className="font-semibold" />
       </span>
     ),
     tab !== "cancelled" && game.unpaidCount > 0 && (
@@ -111,7 +111,7 @@ export function GameRow({
           {/* `venue` is admin-supplied free text; JSX escapes it. */}
           <span className="block truncate text-body font-semibold text-white">{game.venue}</span>
           <span className="mt-[1px] block truncate text-[12px] tabular-nums text-muted">
-            {formatGameDateTime(game.starts_at)} · {formatCzk(game.price_czk)}
+            {formatGameDateTime(game.starts_at)} · {formatThb(game.price_thb)}
           </span>
         </span>
 

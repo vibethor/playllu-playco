@@ -891,7 +891,7 @@ export const strings = {
      */
     signInToClaim: "Sign in to claim",
     barPaid: "Paid",
-    // {amount} is a formatted CZK figure — `formatCzk`, never interpolated by
+    // {amount} is a formatted THB figure — `formatThb`, never interpolated by
     // hand, because it is the one number here a player checks against a bank.
     barAmountDue: "{amount} due",
     barKickedOffAt: "Kicked off {time}",
@@ -1043,7 +1043,7 @@ export const strings = {
      * wording is worth keeping next to it.
      *
      * A CONDITION, NEVER A FIGURE. It says the wallet is short, not by how
-     * much — no "you are 50 CZK short". A shortfall in crowns re-introduces
+     * much — no "you are 50 THB short". A shortfall in crowns re-introduces
      * the unit the credits ruling removed, on the one screen whose job is to
      * teach that a game is one credit.
      *
@@ -1099,7 +1099,7 @@ export const strings = {
      * Inside the refund cutoff the spot is still released — cancelling stays
      * open to kickoff — but nothing is credited. A confirmation dialog that
      * went on saying "what you paid goes back as wallet credit" while taking
-     * 200 CZK would be the product lying at the exact moment a player is
+     * 200 THB would be the product lying at the exact moment a player is
      * deciding, which is worse than having no dialog at all.
      *
      * IT STILL ENCOURAGES THE CANCELLATION. Freeing the spot is worth more to
@@ -1356,9 +1356,9 @@ export const strings = {
      */
     topupCta: "Get a game pass",
     topupAmountLabel: "Amount",
-    topupCustomLabel: "Or another amount (CZK)",
+    topupCustomLabel: "Or another amount (THB)",
     topupSubmit: "Get the payment QR",
-    topupOutOfRange: "Choose an amount between 50 and 2000 CZK.",
+    topupOutOfRange: "Choose an amount between 50 and 2000 THB.",
     topupPendingTitle: "Waiting for your payment",
     topupPendingBody:
       "Scan the code in your banking app. Your credits arrive once the organizer confirms the payment landed.",
@@ -1747,10 +1747,10 @@ export const strings = {
     startsAtLabel: "Kick-off",
     capacityLabel: "Capacity",
     capacityHint: "Cannot go below the players already booked.",
-    priceLabel: "Price (CZK)",
+    priceLabel: "Price (THB)",
     /* Round 35 v5, item 2 — the price is not a choice any more. */
     priceDerivedHint:
-      "Whole CZK. The duration prefills it — 60 minutes 150, 90 minutes 180 — and changing the duration refills the box. Type over it freely.",
+      "Whole THB. The duration prefills it — 60 minutes 150, 90 minutes 180 — and changing the duration refills the box. Type over it freely.",
     priceHint: "Future bookings only.",
     formatLabel: "Format (optional)",
     formatHint: "Like 6v6, or 6v6v6 for a three-way.",
@@ -1874,7 +1874,7 @@ export const strings = {
     capacityInvalid: "Capacity must be a whole number of at least 1.",
     capacityBelowBooked:
       "Capacity cannot go below the players already booked. Cancel a booking first.",
-    priceInvalid: "Price must be a whole number of CZK, 1 or more.",
+    priceInvalid: "Price must be a whole number of THB, 1 or more.",
     formatInvalid: "Format looks like 6v6, or 6v6v6 — two or three numbers with a v between them.",
     /* --- pitch name (migration 41, round 9). Admin copy is English only. --- */
     pitchNameLabel: "Pitch name",
@@ -2060,7 +2060,7 @@ export const strings = {
     playersTitle: "Players",
     playersEmpty: "No players yet.",
     /*
-     * ~~"Wallet", with a CZK figure beside it.~~ The admin players list counts
+     * ~~"Wallet", with a THB figure beside it.~~ The admin players list counts
      * CREDITS now (round 14, item 9) and renders them through `creditsLabel`,
      * so this label has no call site left. Kept as a struck-through note
      * rather than deleted, because "why does the admin see crowns where the
@@ -2118,7 +2118,7 @@ export const strings = {
     removeCreditNote: "Why (required)",
     removeCreditBalance: "Balance now: {balance}",
     /* Shown only when a balance does not divide into whole credits. */
-    walletExactCzk: "exactly {czk}",
+    walletExactThb: "exactly {thb}",
     removeCreditConfirm: "Yes, remove it",
     removeCreditDone: "Removed. Balance is now {balance}.",
     removeCreditDoneBare: "Removed.",
@@ -2189,7 +2189,7 @@ export const strings = {
     amountDueLabel: "Due",
     markPaid: "✓ Paid",
     amountDiffers: "Amount differs",
-    receivedLabel: "Received (CZK)",
+    receivedLabel: "Received (THB)",
     confirmReceived: "Confirm this amount",
     paymentConfirmed: "Payment confirmed",
     // Overpayment: the surplus becomes wallet credit. Money never leaves.
@@ -2346,7 +2346,7 @@ export const strings = {
       pitchCostByHand: "Set by hand",
       pitchCostFromVenue: "From the venue",
       pitchCostNone: "No pitch cost — the game has no venue.",
-      pitchCostLabel: "Correct this game's pitch cost (CZK)",
+      pitchCostLabel: "Correct this game's pitch cost (THB)",
       pitchCostHint: "Whole crowns. Leave it empty to go back to the venue's price for the season.",
       pitchCostSave: "Save cost",
       pitchCostSaved: "Pitch cost saved",
@@ -2563,7 +2563,7 @@ export const strings = {
       },
       /** Beside the one of a venue's two prices that new games take. */
       inForce: "Now",
-      currency: "CZK",
+      currency: "THB",
       costSave: "Save pitch cost",
       costSaved: "Saved. A game created here now costs {amount}; games already created keep theirs.",
       /** The one season switch, at the top of the page. */
@@ -2678,7 +2678,7 @@ export const strings = {
    *
    * MONEY STAYS CZECH IN EVERY LANGUAGE: `Variabilní symbol` and `QR platba`
    * are what the player's Czech banking app says, so they are not translated.
-   * CREDITS NEVER WEAR CROWNS — the only CZK on any email is money that really
+   * CREDITS NEVER WEAR CROWNS — the only THB on any email is money that really
    * moved, on a receipt.
    */
   emails: {
@@ -3052,7 +3052,7 @@ export const strings = {
     batchesTitle: "Your credit",
     /*
      * CREDITS, NOT CROWNS (round 14, item 10). These read
-     * "600 CZK left · expires 20 Oct" — the exact shape the credits ruling
+     * "600 THB left · expires 20 Oct" — the exact shape the credits ruling
      * removed everywhere else, surviving on the profile overview because the
      * batch list was written before it. `{credits}` is `creditsLabel`, so the
      * plural is CLDR's in all three languages.
@@ -3151,7 +3151,7 @@ export const strings = {
     // The toast's own dismiss, distinct from a dialog's Close.
     dismiss: "Dismiss",
     loading: "Loading…",
-    czk: "CZK",
+    thb: "THB",
   },
 } as const;
 

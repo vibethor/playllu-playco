@@ -31,9 +31,9 @@ create type public.booking_result as (
   status public.booking_status,
   payment_method public.payment_method,
   payment_code bigint,
-  price_czk integer,
-  credit_applied_czk integer,
-  amount_due_czk integer
+  price_thb integer,
+  credit_applied_thb integer,
+  amount_due_thb integer
 );
 
 -- -----------------------------------------------------------------------------
@@ -217,7 +217,7 @@ begin
     raise exception 'CAPACITY_FULL';
   end if;
 
-  v_price := v_game.price_czk;
+  v_price := v_game.price_thb;
 
   -- --- derive the payment method -------------------------------------------
   -- Precedence: is_seed -> seed_free; full balance -> credit; else the
@@ -233,7 +233,7 @@ begin
   else
     -- Balance re-read under the PLAYER lock. This is the line that makes
     -- double-spend impossible across two concurrent bookings by one player.
-    select coalesce(sum(cl.delta_czk), 0) into v_balance
+    select coalesce(sum(cl.delta_thb), 0) into v_balance
       from public.credit_ledger cl
      where cl.player_id = p_player_id;
 
@@ -243,7 +243,7 @@ begin
     -- Explicit non-negativity guard. `least()` above already guarantees it,
     -- but the invariant is stated rather than implied: if a future edit
     -- changes the arithmetic, this raises instead of silently writing a
-    -- redemption that drives SUM(delta_czk) below zero.
+    -- redemption that drives SUM(delta_thb) below zero.
     if v_balance - v_credit_applied < 0 then
       raise exception 'CREDIT_NEGATIVE_BLOCKED';
     end if;
@@ -273,7 +273,7 @@ begin
 
   insert into public.bookings (
     game_id, player_id, status, payment_method, payment_code,
-    price_czk, credit_applied_czk, is_seed, booked_by_admin
+    price_thb, credit_applied_thb, is_seed, booked_by_admin
   ) values (
     p_game_id, p_player_id, v_status, v_method, v_payment_code,
     v_price, v_credit_applied, v_player.is_seed, p_booked_by_admin
@@ -282,12 +282,12 @@ begin
   -- --- ledger ---------------------------------------------------------------
 
   if v_credit_applied > 0 then
-    insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+    insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
     values (p_player_id, -v_credit_applied, 'redemption', v_booking_id);
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_redeemed', p_player_id, p_game_id, v_booking_id,
-            jsonb_build_object('amount_czk', v_credit_applied), v_game.city, v_game.brand);
+            jsonb_build_object('amount_thb', v_credit_applied), v_game.city, v_game.brand);
   end if;
 
   -- --- events (same transaction as the state change, always) ----------------
@@ -296,16 +296,16 @@ begin
   values ('booking_created', p_player_id, p_game_id, v_booking_id,
           jsonb_build_object(
             'payment_method', v_method,
-            'price_czk', v_price,
-            'credit_applied_czk', v_credit_applied,
-            'amount_due_czk', v_amount_due,
+            'price_thb', v_price,
+            'credit_applied_thb', v_credit_applied,
+            'amount_due_thb', v_amount_due,
             'booked_by_admin', p_booked_by_admin),
           v_game.city, v_game.brand);
 
   if v_status = 'confirmed' then
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('payment_confirmed', p_player_id, p_game_id, v_booking_id,
-            jsonb_build_object('method', v_method, 'amount_czk', 0),
+            jsonb_build_object('method', v_method, 'amount_thb', 0),
             v_game.city, v_game.brand);
   end if;
 

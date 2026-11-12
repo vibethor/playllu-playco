@@ -39,7 +39,7 @@ comment on column public.credit_ledger.note is
 -- -----------------------------------------------------------------------------
 create or replace function public.grant_credit(
   p_player_id         uuid,
-  p_delta_czk         integer,
+  p_delta_thb         integer,
   /*
    * THE DEFAULTS ARE PART OF THE SIGNATURE AND MUST BE RESTATED. Postgres
    * refuses `create or replace` that drops a parameter default — "cannot
@@ -64,7 +64,7 @@ begin
       using detail = 'grant_credit requires an admin session or service role';
   end if;
 
-  if p_delta_czk is null or p_delta_czk = 0 then
+  if p_delta_thb is null or p_delta_thb = 0 then
     raise exception 'INVALID_CREDIT_DELTA';
   end if;
 
@@ -88,7 +88,7 @@ begin
   -- concurrent negative adjustments could each see a sufficient balance.
   perform pg_advisory_xact_lock(hashtextextended(p_player_id::text, 0));
 
-  select coalesce(sum(l.delta_czk), 0) into v_balance
+  select coalesce(sum(l.delta_thb), 0) into v_balance
     from public.credit_ledger l
    where l.player_id = p_player_id;
 
@@ -97,19 +97,19 @@ begin
   -- THIS IS THE "FLOOR AT ZERO" the admin remove-credit control relies on, and
   -- it lives here rather than in the form: a floor enforced by a disabled
   -- button is not a floor.
-  if v_balance + p_delta_czk < 0 then
+  if v_balance + p_delta_thb < 0 then
     raise exception 'CREDIT_NEGATIVE_BLOCKED'
-      using detail = 'balance ' || v_balance::text || ' cannot absorb ' || p_delta_czk::text;
+      using detail = 'balance ' || v_balance::text || ' cannot absorb ' || p_delta_thb::text;
   end if;
 
   -- THE NOTE TRAVELS WITH THE MONEY (round 28, item 5b).
-  insert into public.credit_ledger (player_id, delta_czk, reason, note)
-  values (p_player_id, p_delta_czk, p_reason, nullif(btrim(coalesce(p_note, '')), ''));
+  insert into public.credit_ledger (player_id, delta_thb, reason, note)
+  values (p_player_id, p_delta_thb, p_reason, nullif(btrim(coalesce(p_note, '')), ''));
 
   insert into public.events (event_type, player_id, metadata, city, brand)
   values ('credit_issued', p_player_id,
           jsonb_build_object(
-            'amount_czk', p_delta_czk,
+            'amount_thb', p_delta_thb,
             'reason', p_reason::text,
             'note', p_note,
             'granted_by', public.current_player_id(),
@@ -126,13 +126,13 @@ begin
     insert into public.events (event_type, player_id, metadata, city, brand)
     values ('payment_unmatched', p_player_id,
             jsonb_build_object(
-              'amount_czk', p_delta_czk,
+              'amount_thb', p_delta_thb,
               'note', p_note,
               'resolved_by', public.current_player_id()),
             'prague', 'hrajfotbal');
   end if;
 
-  return v_balance + p_delta_czk;
+  return v_balance + p_delta_thb;
 end;
 $$;
 
@@ -182,7 +182,7 @@ grant execute on function public.app_capabilities() to anon, authenticated, serv
 -- `scripts/apply-migration.mjs` COMMITS. On 2026-09-12 round 29's drill was
 -- applied to production and left behind a fake venue, two fake games, two
 -- bookings against a real player, a real "you were marked as a no-show"
--- notification in his bell, two games' worth of inflated stats, 150 CZK of
+-- notification in his bell, two games' worth of inflated stats, 150 THB of
 -- phantom money owed, and a game the nightly sweep would have reported as
 -- needing attention every night for ever.
 --

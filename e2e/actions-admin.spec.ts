@@ -101,7 +101,7 @@ test("an admin takes Credits back, with a note, after arming the button", async 
   const organizer = await apiClientFor(players.organizer);
   const granted = await organizer.rpc("grant_credit", {
     p_player_id: account.playerId,
-    p_delta_czk: 540,
+    p_delta_thb: 540,
     p_reason: "admin_grant",
     p_unmatched_payment: false,
     p_note: "round 41 e2e",
@@ -122,7 +122,7 @@ test("an admin takes Credits back, with a note, after arming the button", async 
       .from("credit_ledger")
       .select("id")
       .eq("player_id", account.playerId!)
-      .lt("delta_czk", 0);
+      .lt("delta_thb", 0);
     expect(armed, "arming the button removed Credits").toEqual([]);
     await page.getByTestId("remove-credit-submit").click();
 
@@ -130,10 +130,10 @@ test("an admin takes Credits back, with a note, after arming the button", async 
     await expect(page.getByTestId("remove-credit-done")).toBeVisible();
     const { data: ledger } = await serviceClient()
       .from("credit_ledger")
-      .select("delta_czk, note")
+      .select("delta_thb, note")
       .eq("player_id", account.playerId!)
-      .lt("delta_czk", 0);
-    expect(ledger).toEqual([{ delta_czk: -180, note: "Taken back by e2e" }]);
+      .lt("delta_thb", 0);
+    expect(ledger).toEqual([{ delta_thb: -180, note: "Taken back by e2e" }]);
   } finally {
     await removeAccount(account);
   }

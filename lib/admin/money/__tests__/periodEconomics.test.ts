@@ -19,7 +19,7 @@ const NOVEMBER = { from: "2026-10-31T23:00:00.000Z", to: "2026-11-30T23:00:00.00
 function economicsRow(gameId: string): GameEconomicsRow {
   return {
     game_id: gameId,
-    price_czk: 180,
+    price_thb: 180,
     capacity: 14,
     seats_taken: 8,
     house_guests: 0,
@@ -28,14 +28,14 @@ function economicsRow(gameId: string): GameEconomicsRow {
     pass_seats: 0,
     credit_seats: 0,
     free_seats: 0,
-    single_czk: 1440,
-    pass_czk: 0,
-    credit_czk: 0,
-    kept_czk: 0,
-    owed_czk: 0,
-    revenue_czk: 1440,
-    pitch_cost_czk: 1200,
-    profit_czk: 240,
+    single_thb: 1440,
+    pass_thb: 0,
+    credit_thb: 0,
+    kept_thb: 0,
+    owed_thb: 0,
+    revenue_thb: 1440,
+    pitch_cost_thb: 1200,
+    profit_thb: 240,
     break_even_seats: 7,
   };
 }
@@ -49,11 +49,11 @@ let client: FakeServiceClient;
 beforeEach(() => {
   tables = {
     games: [
-      { id: "played", status: "played", starts_at: "2026-11-04T18:00:00.000Z", venue: "Strahov", price_czk: 180 },
-      { id: "settled", status: "settled", starts_at: "2026-11-11T18:00:00.000Z", venue: "Letná", price_czk: 180 },
-      { id: "on-sale", status: "published", starts_at: "2026-11-20T18:00:00.000Z", venue: "Strahov", price_czk: 180 },
-      { id: "called-off", status: "cancelled", starts_at: "2026-11-06T18:00:00.000Z", venue: "Strahov", price_czk: 180 },
-      { id: "october", status: "settled", starts_at: "2026-10-31T22:30:00.000Z", venue: "Strahov", price_czk: 180 },
+      { id: "played", status: "played", starts_at: "2026-11-04T18:00:00.000Z", venue: "Strahov", price_thb: 180 },
+      { id: "settled", status: "settled", starts_at: "2026-11-11T18:00:00.000Z", venue: "Letná", price_thb: 180 },
+      { id: "on-sale", status: "published", starts_at: "2026-11-20T18:00:00.000Z", venue: "Strahov", price_thb: 180 },
+      { id: "called-off", status: "cancelled", starts_at: "2026-11-06T18:00:00.000Z", venue: "Strahov", price_thb: 180 },
+      { id: "october", status: "settled", starts_at: "2026-10-31T22:30:00.000Z", venue: "Strahov", price_thb: 180 },
     ],
   };
   client = fakeServiceClient(tables, {
@@ -66,7 +66,7 @@ beforeEach(() => {
 describe("getPeriodEconomics", () => {
   it("includes the evening's game before the morning sweep marks it played", async () => {
     // Arrange — production's #10 on 2026-11-08: kicked off at 17:00, still "full".
-    tables.games!.push({ id: "tonight", status: "full", starts_at: "2026-11-15T10:00:00.000Z", venue: "Strahov", price_czk: 180 });
+    tables.games!.push({ id: "tonight", status: "full", starts_at: "2026-11-15T10:00:00.000Z", venue: "Strahov", price_thb: 180 });
 
     // Act
     const period = await getPeriodEconomics(NOVEMBER, NOW);

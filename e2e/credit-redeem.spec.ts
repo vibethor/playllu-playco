@@ -1,4 +1,4 @@
-import { PASS_REFERENCE_PRICE_CZK } from "../lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "../lib/pass/creditPrice";
 import { expect, test } from "@playwright/test";
 import { LOCALE_COOKIE } from "../lib/i18n/locales";
 import { players, serviceClient, signInAs } from "./helpers/session";
@@ -25,13 +25,13 @@ import {
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const PRICE = PASS_REFERENCE_PRICE_CZK;
+const PRICE = PASS_REFERENCE_PRICE_THB;
 
 test("a player with a covering balance redeems credit and is confirmed", async ({
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: PRICE });
+  const game = await createScratchGame({ capacity: 8, priceThb: PRICE });
   try {
     await clearActiveBookings("runner");
     await setWalletTo(players.runner.id, PRICE);
@@ -54,14 +54,14 @@ test("a player with a covering balance redeems credit and is confirmed", async (
     const admin = serviceClient();
     const { data: booking } = await admin
       .from("bookings")
-      .select("status, payment_method, price_czk, credit_applied_czk, payment_pending_at")
+      .select("status, payment_method, price_thb, credit_applied_thb, payment_pending_at")
       .eq("game_id", game.id)
       .in("status", ["reserved", "confirmed"])
       .single();
 
     expect(booking?.payment_method, "the RPC derives credit").toBe("credit");
     expect(booking?.status, "a fully covered booking is confirmed at once").toBe("confirmed");
-    expect(booking?.credit_applied_czk).toBe(PRICE);
+    expect(booking?.credit_applied_thb).toBe(PRICE);
     expect(
       booking?.payment_pending_at,
       "a credit booking is never on the online-payment clock",
@@ -81,11 +81,11 @@ test("a player with a covering balance redeems credit and is confirmed", async (
       .single();
     const { data: ledger } = await admin
       .from("credit_ledger")
-      .select("delta_czk")
+      .select("delta_thb")
       .eq("booking_id", bookingRow!.id)
-      .lt("delta_czk", 0);
+      .lt("delta_thb", 0);
     expect(ledger, "one redemption for this booking, not zero and not two").toHaveLength(1);
-    expect(ledger![0].delta_czk).toBe(-PRICE);
+    expect(ledger![0].delta_thb).toBe(-PRICE);
   } finally {
     await clearActiveBookings("runner");
     await resetWallet(players.runner.id);
@@ -94,7 +94,7 @@ test("a player with a covering balance redeems credit and is confirmed", async (
 });
 
 test("a party paid entirely in credit spends one credit per seat", async ({ page, context }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: PRICE });
+  const game = await createScratchGame({ capacity: 8, priceThb: PRICE });
   try {
     await clearActiveBookings("runner");
     await setWalletTo(players.runner.id, PRICE * 3);
@@ -114,14 +114,14 @@ test("a party paid entirely in credit spends one credit per seat", async ({ page
     const admin = serviceClient();
     const { data: booking } = await admin
       .from("bookings")
-      .select("status, payment_method, price_czk, credit_applied_czk, guest_count")
+      .select("status, payment_method, price_thb, credit_applied_thb, guest_count")
       .eq("game_id", game.id)
       .in("status", ["reserved", "confirmed"])
       .single();
 
     expect(booking?.guest_count).toBe(2);
-    expect(booking?.price_czk).toBe(PRICE * 3);
-    expect(booking?.credit_applied_czk).toBe(PRICE * 3);
+    expect(booking?.price_thb).toBe(PRICE * 3);
+    expect(booking?.credit_applied_thb).toBe(PRICE * 3);
     expect(booking?.payment_method).toBe("credit");
     expect(booking?.status).toBe("confirmed");
   } finally {

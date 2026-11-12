@@ -1,4 +1,4 @@
-import { PASS_REFERENCE_PRICE_CZK } from "../lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "../lib/pass/creditPrice";
 import { expect, test } from "@playwright/test";
 import { apiClientFor, players, serviceClient, signInAs } from "./helpers/session.ts";
 import { setWalletTo, walletBalance } from "./helpers/scaffold.ts";
@@ -28,7 +28,7 @@ test("a top-up is requested, shows a QR, and is not money until confirmed", asyn
   context,
 }) => {
   const runner = await apiClientFor(players.runner);
-  const { data: topup, error } = await runner.rpc("create_topup", { p_amount_czk: 2 * PASS_REFERENCE_PRICE_CZK });
+  const { data: topup, error } = await runner.rpc("create_topup", { p_amount_thb: 2 * PASS_REFERENCE_PRICE_THB });
   expect(error).toBeNull();
   expect(topup.status).toBe("pending");
 
@@ -69,18 +69,18 @@ test("a top-up is requested, shows a QR, and is not money until confirmed", asyn
  */
 test("a confirmed top-up credits what actually arrived", async () => {
   const runner = await apiClientFor(players.runner);
-  const { data: topup } = await runner.rpc("create_topup", { p_amount_czk: 2 * PASS_REFERENCE_PRICE_CZK });
+  const { data: topup } = await runner.rpc("create_topup", { p_amount_thb: 2 * PASS_REFERENCE_PRICE_THB });
 
   const service = serviceClient();
   const { error } = await service.rpc("confirm_topup", {
     p_topup_id: topup.id,
     p_confirmed_by: players.organizer.id,
-    p_received_amount_czk: 2 * PASS_REFERENCE_PRICE_CZK,
+    p_received_amount_thb: 2 * PASS_REFERENCE_PRICE_THB,
   });
   expect(error).toBeNull();
 
   await expect(async () => {
-    expect(await walletBalance(players.runner.id)).toBe(2 * PASS_REFERENCE_PRICE_CZK);
+    expect(await walletBalance(players.runner.id)).toBe(2 * PASS_REFERENCE_PRICE_THB);
   }).toPass();
 
   // ...and THIS top-up is the one that moved: asserted on its own row rather
@@ -89,17 +89,17 @@ test("a confirmed top-up credits what actually arrived", async () => {
   const admin = serviceClient();
   const { data: confirmedTopup } = await admin
     .from("credit_topups")
-    .select("status, received_amount_czk, confirmed_at")
+    .select("status, received_amount_thb, confirmed_at")
     .eq("id", topup.id)
     .maybeSingle();
   expect(confirmedTopup?.status).toBe("confirmed");
-  expect(confirmedTopup?.received_amount_czk).toBe(2 * PASS_REFERENCE_PRICE_CZK);
+  expect(confirmedTopup?.received_amount_thb).toBe(2 * PASS_REFERENCE_PRICE_THB);
   expect(confirmedTopup?.confirmed_at).not.toBeNull();
 });
 
 test("a second confirmation is refused and the balance does not move", async () => {
   const runner = await apiClientFor(players.runner);
-  const { data: topup } = await runner.rpc("create_topup", { p_amount_czk: 200 });
+  const { data: topup } = await runner.rpc("create_topup", { p_amount_thb: 200 });
 
   const organizer = await apiClientFor(players.organizer);
   const first = await organizer.rpc("confirm_topup", { p_topup_id: topup.id });
@@ -114,7 +114,7 @@ test("a second confirmation is refused and the balance does not move", async () 
 
 test("the payer cannot confirm their own top-up", async () => {
   const runner = await apiClientFor(players.runner);
-  const { data: topup } = await runner.rpc("create_topup", { p_amount_czk: 150 });
+  const { data: topup } = await runner.rpc("create_topup", { p_amount_thb: 150 });
 
   const { error } = await runner.rpc("confirm_topup", { p_topup_id: topup.id });
   expect(error?.message ?? "").toContain("INSUFFICIENT_PERMISSION");
@@ -122,7 +122,7 @@ test("the payer cannot confirm their own top-up", async () => {
 
 test("topped-up credit spends on the next booking", async ({ page, context }) => {
   const runner = await apiClientFor(players.runner);
-  const { data: topup } = await runner.rpc("create_topup", { p_amount_czk: 2000 });
+  const { data: topup } = await runner.rpc("create_topup", { p_amount_thb: 2000 });
 
   const organizer = await apiClientFor(players.organizer);
   await organizer.rpc("confirm_topup", { p_topup_id: topup.id });
@@ -131,7 +131,7 @@ test("topped-up credit spends on the next booking", async ({ page, context }) =>
   // which is the point of writing it to the same ledger.
   await signInAs(context, players.runner);
   await page.goto("/account");
-  // `formatCzk` groups thousands for the display locale — "2,000 CZK", not
+  // `formatThb` groups thousands for the display locale — "2,000 THB", not
   // "2000". Asserting the raw digits would be asserting a formatter bug.
   // The wallet counts CREDITS and prints no crown figure: 2,000 floors to
   // whatever the rate divides into it — 11 at 180. Written as the arithmetic
@@ -139,9 +139,9 @@ test("topped-up credit spends on the next booking", async ({ page, context }) =>
   // crowns are asserted against the ledger by `walletBalance` elsewhere; this
   // screen's job is to say how many games that is.
   await expect(page.getByTestId("credit-balance")).toContainText(
-    String(Math.floor(2000 / PASS_REFERENCE_PRICE_CZK)),
+    String(Math.floor(2000 / PASS_REFERENCE_PRICE_THB)),
   );
-  await expect(page.getByTestId("credit-balance-czk")).toHaveCount(0);
+  await expect(page.getByTestId("credit-balance-thb")).toHaveCount(0);
 });
 
 test("the account page shows a photo slot and the security controls", async ({
@@ -219,7 +219,7 @@ test("the account page shows a photo slot and the security controls", async ({
 
 test("another player's top-up is not readable", async () => {
   const runner = await apiClientFor(players.runner);
-  const { data: topup } = await runner.rpc("create_topup", { p_amount_czk: 150 });
+  const { data: topup } = await runner.rpc("create_topup", { p_amount_thb: 150 });
 
   const other = await apiClientFor(players.creditRich);
   const { data } = await other.from("credit_topups").select("id").eq("id", topup.id);

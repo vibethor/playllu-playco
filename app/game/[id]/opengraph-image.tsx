@@ -24,7 +24,7 @@ export default async function GameOpenGraphImage({
       venue: strings.meta.title,
       startsAt: new Date().toISOString(),
       spotsLeft: 0,
-      priceCzk: 0,
+      priceThb: 0,
       isFull: true,
     });
   }
@@ -35,7 +35,7 @@ export default async function GameOpenGraphImage({
     venue: game.venue,
     startsAt: game.starts_at,
     spotsLeft,
-    priceCzk: game.price_czk,
+    priceThb: game.price_thb,
     isFull: spotsLeft === 0,
   });
 }

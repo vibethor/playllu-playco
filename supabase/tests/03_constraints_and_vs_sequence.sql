@@ -62,7 +62,7 @@ insert into auth.users (id, email) values
 insert into public.players (id, nickname, email, auth_user_id) values
   ('a0000000-0000-0000-0000-00000000000a', 'TestPlayerA', 'player-a@test.invalid', 'aaaaaaaa-0000-0000-0000-000000000001');
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('22220000-0000-0000-0000-000000000002', 'Published Venue', now() + interval '8 days', 12, 200, 'published');
 
 -- =============================================================================
@@ -90,21 +90,21 @@ select pg_temp.ok(
 -- active row while still permitting a rebook after cancellation.
 -- =============================================================================
 
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk) values
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb) values
   ('bbbb0000-0000-0000-0000-0000000000a1', '22220000-0000-0000-0000-000000000002',
    'a0000000-0000-0000-0000-00000000000a', 'reserved', 'cash', 200);
 
 select pg_temp.ok(
-  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_czk)
+  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_thb)
                    values ('22220000-0000-0000-0000-000000000002',
                            'a0000000-0000-0000-0000-00000000000a', 'reserved', 'cash', 200) returning 1$q$) = 'error:23505',
   'a second RESERVED booking for the same (game, player) is rejected',
-  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_czk)
+  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_thb)
                    values ('22220000-0000-0000-0000-000000000002',
                            'a0000000-0000-0000-0000-00000000000a', 'reserved', 'cash', 200) returning 1$q$));
 
 select pg_temp.ok(
-  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_czk)
+  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_thb)
                    values ('22220000-0000-0000-0000-000000000002',
                            'a0000000-0000-0000-0000-00000000000a', 'confirmed', 'cash', 200) returning 1$q$) = 'error:23505',
   'a CONFIRMED booking alongside a RESERVED one for the same pair is also rejected');
@@ -115,7 +115,7 @@ update public.bookings set status = 'cancelled'
   where id = 'bbbb0000-0000-0000-0000-0000000000a1';
 
 select pg_temp.ok(
-  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_czk)
+  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_thb)
                    values ('22220000-0000-0000-0000-000000000002',
                            'a0000000-0000-0000-0000-00000000000a', 'reserved', 'cash', 200) returning 1$q$) = 'rows:1',
   'rebooking succeeds once the previous booking is cancelled');
@@ -171,20 +171,20 @@ select pg_temp.ok(
 -- partial unique index would fire first and the assertion would pass on a
 -- unique violation rather than on the payment_code CHECK it is meant to test.
 -- Asserting the exact SQLSTATE (23514) rather than "any error" pins that down.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('88880000-0000-0000-0000-000000000008', 'QR Check Venue', now() + interval '11 days', 12, 200, 'published');
 
 select pg_temp.ok(
-  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_czk, payment_code)
+  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_thb, payment_code)
                    values ('88880000-0000-0000-0000-000000000008',
                            'a0000000-0000-0000-0000-00000000000a', 'reserved', 'cash', 200, 2699999999) returning 1$q$) = 'error:23514',
   'a non-QR booking carrying a payment_code is rejected by the CHECK',
-  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_czk, payment_code)
+  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_thb, payment_code)
                    values ('88880000-0000-0000-0000-000000000008',
                            'a0000000-0000-0000-0000-00000000000a', 'reserved', 'cash', 200, 2699999999) returning 1$q$));
 
 select pg_temp.ok(
-  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_czk, payment_code)
+  pg_temp.probe($q$insert into public.bookings (game_id, player_id, status, payment_method, price_thb, payment_code)
                    values ('88880000-0000-0000-0000-000000000008',
                            'a0000000-0000-0000-0000-00000000000a', 'reserved', 'qr', 200, 2699999999) returning 1$q$) = 'rows:1',
   'the same booking as QR, carrying the same payment_code, is accepted');

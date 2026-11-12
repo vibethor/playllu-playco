@@ -41,7 +41,7 @@ const CREATED = {
   venueMapQuery: `Check Venue A ${STAMP}, Praha`,
   startsAtIso: new Date(STAMP + 9 * 24 * 3600_000).toISOString(),
   capacity: "18",
-  priceCzk: "333",
+  priceThb: "333",
   format: "9v9",
   surface: "sand",
   notes: "Gate code 4417, park on the north side.",
@@ -56,7 +56,7 @@ const EDITED = {
   venueName: `Check Venue B ${STAMP}`,
   startsAtIso: new Date(STAMP + 11 * 24 * 3600_000).toISOString(),
   capacity: "22",
-  priceCzk: "444",
+  priceThb: "444",
   format: "11v11",
   surface: "indoor",
   notes: "Moved to the indoor hall — bring flat shoes.",
@@ -100,7 +100,7 @@ describe("admin game form", () => {
         newVenueMapQuery: CREATED.venueMapQuery,
         startsAtIso: CREATED.startsAtIso,
         capacity: CREATED.capacity,
-        priceCzk: CREATED.priceCzk,
+        priceThb: CREATED.priceThb,
         format: CREATED.format,
         surface: CREATED.surface,
         notes: CREATED.notes,
@@ -129,7 +129,7 @@ describe("admin game form", () => {
       p_venue_id: venueId as string,
       p_starts_at: values.startsAt,
       p_capacity: values.capacity,
-      p_price_czk: values.priceCzk,
+      p_price_thb: values.priceThb,
       p_organizer_name: values.organizerName,
       p_format: values.format,
       p_surface: values.surface,
@@ -149,7 +149,7 @@ describe("admin game form", () => {
     expect(row!.venue_id).toBe(venueId);
     expect(Date.parse(row!.starts_at)).toBe(Date.parse(CREATED.startsAtIso));
     expect(row!.capacity).toBe(Number(CREATED.capacity));
-    expect(row!.price_czk).toBe(Number(CREATED.priceCzk));
+    expect(row!.price_thb).toBe(Number(CREATED.priceThb));
     expect(row!.format).toBe(CREATED.format);
     expect(row!.surface).toBe(CREATED.surface);
     expect(row!.notes).toBe(CREATED.notes);
@@ -188,7 +188,7 @@ describe("admin game form", () => {
         newVenueName: EDITED.venueName,
         startsAtIso: EDITED.startsAtIso,
         capacity: EDITED.capacity,
-        priceCzk: EDITED.priceCzk,
+        priceThb: EDITED.priceThb,
         format: EDITED.format,
         surface: EDITED.surface,
         notes: EDITED.notes,
@@ -217,7 +217,7 @@ describe("admin game form", () => {
       p_game_id: gameId!,
       p_venue_id: venueId as string,
       p_starts_at: values.startsAt,
-      p_price_czk: values.priceCzk,
+      p_price_thb: values.priceThb,
       p_organizer_name: values.organizerName,
       p_format: values.format,
       p_surface: values.surface,
@@ -242,7 +242,7 @@ describe("admin game form", () => {
     expect(row!.venue_id).toBe(venueId);
     expect(Date.parse(row!.starts_at)).toBe(Date.parse(EDITED.startsAtIso));
     expect(row!.capacity).toBe(Number(EDITED.capacity));
-    expect(row!.price_czk).toBe(Number(EDITED.priceCzk));
+    expect(row!.price_thb).toBe(Number(EDITED.priceThb));
     expect(row!.format).toBe(EDITED.format);
     expect(row!.surface).toBe(EDITED.surface);
     expect(row!.notes).toBe(EDITED.notes);
@@ -260,7 +260,7 @@ describe("admin game form", () => {
     // No value survived from the create — an edit that silently kept one would
     // be the reported bug in miniature.
     expect(row!.capacity).not.toBe(Number(CREATED.capacity));
-    expect(row!.price_czk).not.toBe(Number(CREATED.priceCzk));
+    expect(row!.price_thb).not.toBe(Number(CREATED.priceThb));
 
     // Editing is not a status transition.
     expect(row!.status).toBe("draft");

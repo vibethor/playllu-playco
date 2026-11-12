@@ -66,19 +66,19 @@ insert into public.players (id, nickname, email, auth_user_id) values
   ('a0000000-0000-0000-0000-00000000000a', 'TestPlayerA', 'player-a@test.invalid', 'aaaaaaaa-0000-0000-0000-000000000001'),
   ('b0000000-0000-0000-0000-00000000000b', 'TestPlayerB', 'player-b@test.invalid', 'bbbbbbbb-0000-0000-0000-000000000002');
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('22220000-0000-0000-0000-000000000002', 'Published Venue', now() + interval '8 days', 12, 200, 'published');
 
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk) values
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb) values
   ('bbbb0000-0000-0000-0000-0000000000a1', '22220000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-00000000000a', 'confirmed', 'cash', 200),
   ('bbbb0000-0000-0000-0000-0000000000b1', '22220000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-00000000000b', 'confirmed', 'cash', 200);
 
-insert into public.credit_ledger (id, player_id, delta_czk, reason) values
+insert into public.credit_ledger (id, player_id, delta_thb, reason) values
   ('ccc00000-0000-0000-0000-0000000000a1', 'a0000000-0000-0000-0000-00000000000a', 150, 'admin_grant'),
   ('ccc00000-0000-0000-0000-0000000000b1', 'b0000000-0000-0000-0000-00000000000b', 250, 'admin_grant');
 
 -- Two distinct games so the waitlist unique constraint is not in play here.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('77770000-0000-0000-0000-000000000007', 'Waitlist Venue', now() + interval '10 days', 1, 200, 'full');
 
 insert into public.waitlist (game_id, player_id) values
@@ -118,9 +118,9 @@ select pg_temp.ok(
   'the booking player A reads is their own; player B''s is invisible');
 
 select pg_temp.ok((select count(*) from public.credit_ledger) = 1
-                  and (select sum(delta_czk) from public.credit_ledger) = 150,
+                  and (select sum(delta_thb) from public.credit_ledger) = 150,
   'player A reads only their own ledger rows (balance 150, not 400)',
-  'sum=' || coalesce((select sum(delta_czk) from public.credit_ledger)::text, 'null'));
+  'sum=' || coalesce((select sum(delta_thb) from public.credit_ledger)::text, 'null'));
 
 select pg_temp.ok((select count(*) from public.waitlist) = 1,
   'player A reads only their own waitlist entry',
@@ -129,7 +129,7 @@ select pg_temp.ok((select count(*) from public.waitlist) = 1,
 -- --- no client writes anywhere ----------------------------------------------
 
 select pg_temp.ok(
-  pg_temp.probe($q$insert into public.bookings (game_id, player_id, payment_method, price_czk)
+  pg_temp.probe($q$insert into public.bookings (game_id, player_id, payment_method, price_thb)
                    values ('22220000-0000-0000-0000-000000000002',
                            'a0000000-0000-0000-0000-00000000000a', 'cash', 200) returning 1$q$) = 'denied',
   'player A cannot INSERT a booking directly (must go through the RPC)');
@@ -142,12 +142,12 @@ select pg_temp.ok(
 -- The wallet's whole integrity rests on the ledger being append-only by
 -- privilege rather than by convention.
 select pg_temp.ok(
-  pg_temp.probe($q$insert into public.credit_ledger (player_id, delta_czk, reason)
+  pg_temp.probe($q$insert into public.credit_ledger (player_id, delta_thb, reason)
                    values ('a0000000-0000-0000-0000-00000000000a', 9999, 'admin_grant') returning 1$q$) = 'denied',
   'player A cannot mint themselves credit (no INSERT on credit_ledger)');
 
 select pg_temp.ok(
-  pg_temp.probe($q$update public.credit_ledger set delta_czk = 9999
+  pg_temp.probe($q$update public.credit_ledger set delta_thb = 9999
                    where id = 'ccc00000-0000-0000-0000-0000000000a1' returning 1$q$) = 'denied',
   'credit_ledger UPDATE is revoked (append-only)');
 

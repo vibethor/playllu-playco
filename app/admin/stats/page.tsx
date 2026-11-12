@@ -10,7 +10,7 @@ import { WeeklyRevenuePanel } from "@/components/admin/money/WeeklyRevenuePanel"
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { appCapabilities } from "@/lib/db/capabilities";
-import { formatCzk, formatDate } from "@/lib/format";
+import { formatThb, formatDate } from "@/lib/format";
 import { getAdminStats } from "@/lib/stats/queries";
 import { readStatWindow } from "@/lib/stats/window";
 import { strings } from "@/lib/strings";
@@ -101,8 +101,8 @@ export default async function FinancialsPage({
    * or a silent "+100%" are both lies about a first month.
    */
   const delta =
-    f.previousRevenueCzk !== null && f.previousRevenueCzk > 0
-      ? Math.round(((f.revenueCzk - f.previousRevenueCzk) / f.previousRevenueCzk) * 100)
+    f.previousRevenueThb !== null && f.previousRevenueThb > 0
+      ? Math.round(((f.revenueThb - f.previousRevenueThb) / f.previousRevenueThb) * 100)
       : null;
 
   const hasWeeks = f.weeks.length > 0;
@@ -137,7 +137,7 @@ export default async function FinancialsPage({
         <StatCard
           testId="financials-revenue"
           label={strings.admin.revenueLabel}
-          value={formatCzk(f.revenueCzk)}
+          value={formatThb(f.revenueThb)}
           detail={
             delta === null ? undefined : (
               <span data-testid="revenue-delta">
@@ -152,13 +152,13 @@ export default async function FinancialsPage({
           hint={strings.admin.money.revenueHint}
         />
         <RevenueSplitCard split={f.revenueSplit} />
-        {/* A dash rather than 0 when nothing was played. "0 CZK average" reads
+        {/* A dash rather than 0 when nothing was played. "0 THB average" reads
             as a business problem; "—" reads as an empty window. */}
         <StatCard
           testId="financials-average"
           tone="white"
           label={strings.admin.avgPerGameLabel}
-          value={f.avgPerGameCzk === null ? "—" : formatCzk(f.avgPerGameCzk)}
+          value={f.avgPerGameThb === null ? "—" : formatThb(f.avgPerGameThb)}
           hint={strings.admin.money.avgHint}
         />
         <StatCard

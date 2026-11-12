@@ -92,17 +92,17 @@ test("a wallet cannot be spent twice by two simultaneous bookings", async () => 
     const admin = serviceClient();
     const { data: rows } = await admin
       .from("bookings")
-      .select("game_id,credit_applied_czk,status")
+      .select("game_id,credit_applied_thb,status")
       .in("game_id", [gameA.id, gameB.id])
       .eq("player_id", players.creditRich.id);
 
     const applied = (rows ?? []).reduce(
-      (sum: number, row: { credit_applied_czk: number }) => sum + row.credit_applied_czk,
+      (sum: number, row: { credit_applied_thb: number }) => sum + row.credit_applied_thb,
       0,
     );
 
     // At most once. Both bookings may exist — that is fine and expected; what
-    // must not happen is the same 200 CZK paying for both of them.
+    // must not happen is the same 200 THB paying for both of them.
     expect(applied).toBeLessThanOrEqual(credit);
 
     // The ledger is the authority, and it may never go negative: a negative
@@ -120,7 +120,7 @@ test("a wallet cannot be spent twice by two simultaneous bookings", async () => 
 test("the ledger stays non-negative under a burst of concurrent bookings", async () => {
   // Same invariant, more pressure: five games, one wallet with enough for two.
   const games = await Promise.all(
-    Array.from({ length: 5 }, () => createScratchGame({ priceCzk: 100 })),
+    Array.from({ length: 5 }, () => createScratchGame({ priceThb: 100 })),
   );
 
   try {
@@ -138,7 +138,7 @@ test("the ledger stays non-negative under a burst of concurrent bookings", async
     const admin = serviceClient();
     const { data: rows } = await admin
       .from("bookings")
-      .select("credit_applied_czk")
+      .select("credit_applied_thb")
       .in(
         "game_id",
         games.map((g) => g.id),
@@ -146,7 +146,7 @@ test("the ledger stays non-negative under a burst of concurrent bookings", async
       .eq("player_id", players.creditRich.id);
 
     const applied = (rows ?? []).reduce(
-      (sum: number, row: { credit_applied_czk: number }) => sum + row.credit_applied_czk,
+      (sum: number, row: { credit_applied_thb: number }) => sum + row.credit_applied_thb,
       0,
     );
     expect(applied).toBeLessThanOrEqual(200);

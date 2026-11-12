@@ -4,7 +4,7 @@ import { parsePitchCostInput } from "@/lib/admin/games/pitchCost";
 /**
  * The game page's pitch-cost correction (round 42, the admin rebuild). An
  * empty box puts the game back on its venue's price; a number is the cost
- * typed by hand. The ceiling is the database's (`pitch_cost_max_czk()`), not
+ * typed by hand. The ceiling is the database's (`pitch_cost_max_thb()`), not
  * repeated here — `set_game_pitch_cost` refuses past it by name.
  */
 describe("parsePitchCostInput", () => {
@@ -17,9 +17,9 @@ describe("parsePitchCostInput", () => {
 
     // Assert
     expect(parsed).toEqual([
-      { ok: true, costCzk: null },
-      { ok: true, costCzk: null },
-      { ok: true, costCzk: null },
+      { ok: true, costThb: null },
+      { ok: true, costThb: null },
+      { ok: true, costThb: null },
     ]);
   });
 
@@ -32,8 +32,8 @@ describe("parsePitchCostInput", () => {
 
     // Assert
     expect(parsed).toEqual([
-      { ok: true, costCzk: 950 },
-      { ok: true, costCzk: 0 },
+      { ok: true, costThb: 950 },
+      { ok: true, costThb: 0 },
     ]);
   });
 

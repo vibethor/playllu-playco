@@ -130,7 +130,7 @@ export async function cancelGameAction(
   return {
     status: "cancelled",
     bookingsCancelled: Number(cancelledCount ?? 0),
-    creditsIssued: recipients.filter((r) => r.creditCzk > 0).length,
+    creditsIssued: recipients.filter((r) => r.creditThb > 0).length,
     waitlistCleared: waitlistBefore ?? 0,
     noticesSent: summary.notices,
     receiptsSent: summary.receipts,

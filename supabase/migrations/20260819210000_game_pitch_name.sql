@@ -107,7 +107,7 @@ create function public.admin_create_game_v2(
   p_venue_id             uuid,
   p_starts_at            timestamptz,
   p_capacity             integer,
-  p_price_czk            integer,
+  p_price_thb            integer,
   p_organizer_name       text,
   p_format               text default null,
   p_surface              text default null,
@@ -143,7 +143,7 @@ begin
   if p_capacity is null or p_capacity < 1 then
     raise exception 'INVALID_CAPACITY';
   end if;
-  if p_price_czk is null or p_price_czk < 0 then
+  if p_price_thb is null or p_price_thb < 0 then
     raise exception 'INVALID_PRICE';
   end if;
   if p_organizer_name is null or btrim(p_organizer_name) = '' then
@@ -153,12 +153,12 @@ begin
   perform public.assert_game_shape(p_duration_minutes, p_subs_per_team);
 
   insert into public.games (
-    venue, venue_id, starts_at, capacity, price_czk,
+    venue, venue_id, starts_at, capacity, price_thb,
     format, surface, notes, city, brand,
     duration_minutes, allowed_skill_levels, subs_per_team, pitch_name
   )
   values (
-    v_venue.name, v_venue.id, p_starts_at, p_capacity, p_price_czk,
+    v_venue.name, v_venue.id, p_starts_at, p_capacity, p_price_thb,
     nullif(btrim(coalesce(p_format, '')), ''),
     nullif(btrim(coalesce(p_surface, '')), ''),
     nullif(btrim(coalesce(p_notes, '')), ''),
@@ -200,7 +200,7 @@ create function public.admin_update_game_v2(
   p_game_id              uuid,
   p_venue_id             uuid,
   p_starts_at            timestamptz,
-  p_price_czk            integer,
+  p_price_thb            integer,
   p_organizer_name       text,
   p_format               text default null,
   p_surface              text default null,
@@ -245,7 +245,7 @@ begin
   if p_starts_at is null then
     raise exception 'INVALID_STARTS_AT';
   end if;
-  if p_price_czk is null or p_price_czk < 0 then
+  if p_price_thb is null or p_price_thb < 0 then
     raise exception 'INVALID_PRICE';
   end if;
   if p_organizer_name is null or btrim(p_organizer_name) = '' then
@@ -258,7 +258,7 @@ begin
      set venue                = v_venue.name,
          venue_id             = v_venue.id,
          starts_at            = p_starts_at,
-         price_czk            = p_price_czk,
+         price_thb            = p_price_thb,
          format               = nullif(btrim(coalesce(p_format, '')), ''),
          surface              = nullif(btrim(coalesce(p_surface, '')), ''),
          notes                = nullif(btrim(coalesce(p_notes, '')), ''),

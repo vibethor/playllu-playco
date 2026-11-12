@@ -8,7 +8,7 @@
 --
 -- WHAT DOES NOT CHANGE, stated first because it is what the suite re-proves:
 --
---   * Balance is SUM(delta_czk). No reader filters on `expires_at`.
+--   * Balance is SUM(delta_thb). No reader filters on `expires_at`.
 --   * The ledger never goes negative, per player or per batch.
 --   * The player advisory lock is still taken before the balance is read, and
 --     it is still what makes double-spend impossible across two concurrent
@@ -32,7 +32,7 @@
 -- which is the opposite of what they bought.
 --
 -- ALREADY-EXPIRED BATCHES ARE STILL SPENT FROM, and that is deliberate rather
--- than an oversight. They still count toward `SUM(delta_czk)` until the sweep
+-- than an oversight. They still count toward `SUM(delta_thb)` until the sweep
 -- runs, so skipping them would leave a player with a balance the booking path
 -- refuses to use — money visible on the account page that cannot buy a game.
 -- The ruling accepted this window explicitly; it is bounded by the cron
@@ -44,7 +44,7 @@
 create function public.apply_credit(
   p_player_id  uuid,
   p_booking_id uuid,
-  p_wanted_czk integer
+  p_wanted_thb integer
 )
 returns integer
 language plpgsql
@@ -52,7 +52,7 @@ security definer
 set search_path = ''
 as $$
 declare
-  v_need    integer := greatest(0, coalesce(p_wanted_czk, 0));
+  v_need    integer := greatest(0, coalesce(p_wanted_thb, 0));
   v_applied integer := 0;
   v_take    integer;
   v_batch   record;
@@ -67,11 +67,11 @@ begin
     select * from public.credit_batches(p_player_id)
   loop
     exit when v_need = 0;
-    continue when v_batch.remaining_czk <= 0;
+    continue when v_batch.remaining_thb <= 0;
 
-    v_take := least(v_need, v_batch.remaining_czk);
+    v_take := least(v_need, v_batch.remaining_thb);
 
-    insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, batch_id)
+    insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, batch_id)
     values (p_player_id, -v_take, 'redemption', p_booking_id, v_batch.batch_id);
 
     v_applied := v_applied + v_take;
@@ -82,7 +82,7 @@ begin
   -- to one. This is the pre-Phase-20a world, and it is still most of the
   -- ledger.
   if v_need > 0 then
-    select coalesce(sum(cl.delta_czk), 0)::integer into v_pool
+    select coalesce(sum(cl.delta_thb), 0)::integer into v_pool
       from public.credit_ledger cl
      where cl.player_id = p_player_id
        and cl.expires_at is null
@@ -90,7 +90,7 @@ begin
 
     v_take := least(v_need, greatest(v_pool, 0));
     if v_take > 0 then
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
       values (p_player_id, -v_take, 'redemption', p_booking_id);
       v_applied := v_applied + v_take;
     end if;
@@ -203,7 +203,7 @@ begin
     raise exception 'CAPACITY_FULL';
   end if;
 
-  v_price := v_game.price_czk;
+  v_price := v_game.price_thb;
 
   -- --- derive the payment method -------------------------------------------
   -- Precedence: is_seed -> seed_free; full balance -> credit; else the
@@ -219,7 +219,7 @@ begin
   else
     -- Balance re-read under the PLAYER lock. This is the line that makes
     -- double-spend impossible across two concurrent bookings by one player.
-    select coalesce(sum(cl.delta_czk), 0) into v_balance
+    select coalesce(sum(cl.delta_thb), 0) into v_balance
       from public.credit_ledger cl
      where cl.player_id = p_player_id;
 
@@ -229,7 +229,7 @@ begin
     -- Explicit non-negativity guard. `least()` above already guarantees it,
     -- but the invariant is stated rather than implied: if a future edit
     -- changes the arithmetic, this raises instead of silently writing a
-    -- redemption that drives SUM(delta_czk) below zero.
+    -- redemption that drives SUM(delta_thb) below zero.
     if v_balance - v_credit_applied < 0 then
       raise exception 'CREDIT_NEGATIVE_BLOCKED';
     end if;
@@ -259,7 +259,7 @@ begin
 
   insert into public.bookings (
     game_id, player_id, status, payment_method, payment_code,
-    price_czk, credit_applied_czk, is_seed, booked_by_admin
+    price_thb, credit_applied_thb, is_seed, booked_by_admin
   ) values (
     p_game_id, p_player_id, v_status, v_method, v_payment_code,
     v_price, v_credit_applied, v_player.is_seed, p_booked_by_admin
@@ -289,7 +289,7 @@ begin
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_redeemed', p_player_id, p_game_id, v_booking_id,
-            jsonb_build_object('amount_czk', v_credit_applied), v_game.city, v_game.brand);
+            jsonb_build_object('amount_thb', v_credit_applied), v_game.city, v_game.brand);
   end if;
 
   -- --- events (same transaction as the state change, always) ----------------
@@ -298,16 +298,16 @@ begin
   values ('booking_created', p_player_id, p_game_id, v_booking_id,
           jsonb_build_object(
             'payment_method', v_method,
-            'price_czk', v_price,
-            'credit_applied_czk', v_credit_applied,
-            'amount_due_czk', v_amount_due,
+            'price_thb', v_price,
+            'credit_applied_thb', v_credit_applied,
+            'amount_due_thb', v_amount_due,
             'booked_by_admin', p_booked_by_admin),
           v_game.city, v_game.brand);
 
   if v_status = 'confirmed' then
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('payment_confirmed', p_player_id, p_game_id, v_booking_id,
-            jsonb_build_object('method', v_method, 'amount_czk', 0),
+            jsonb_build_object('method', v_method, 'amount_thb', 0),
             v_game.city, v_game.brand);
   end if;
 
@@ -413,9 +413,9 @@ begin
 
   -- --- credit for money ACTUALLY APPLIED (unchanged) --------------------------
   if v_booking.status = 'confirmed' then
-    v_credit := v_booking.price_czk;
+    v_credit := v_booking.price_thb;
   else
-    v_credit := v_booking.credit_applied_czk;
+    v_credit := v_booking.credit_applied_thb;
   end if;
 
   update public.bookings
@@ -428,17 +428,17 @@ begin
     -- from, carrying that batch's original expiry. A spend that crossed two
     -- batches refunds to both, in the amounts it took from each.
     for v_redemption in
-      select cl.batch_id, -cl.delta_czk as amount_czk, b.expires_at
+      select cl.batch_id, -cl.delta_thb as amount_thb, b.expires_at
         from public.credit_ledger cl
         join public.credit_ledger b on b.id = cl.batch_id
        where cl.booking_id = p_booking_id
          and cl.reason = 'redemption'
          and cl.batch_id is not null
     loop
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, batch_id)
-      values (v_booking.player_id, v_redemption.amount_czk, 'cancellation_credit',
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, batch_id)
+      values (v_booking.player_id, v_redemption.amount_thb, 'cancellation_credit',
               p_booking_id, v_redemption.batch_id);
-      v_refunded := v_refunded + v_redemption.amount_czk;
+      v_refunded := v_refunded + v_redemption.amount_thb;
     end loop;
 
     -- Whatever is left is credit that came from the ordinary pool, plus the
@@ -446,16 +446,16 @@ begin
     -- unexpiring, which is Phase 1 behaviour unchanged.
     v_unexpiring := v_credit - v_refunded;
     if v_unexpiring > 0 then
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
       values (v_booking.player_id, v_unexpiring, 'cancellation_credit', p_booking_id);
     end if;
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_issued', v_booking.player_id, v_booking.game_id, p_booking_id,
             jsonb_build_object(
-              'amount_czk', v_credit,
+              'amount_thb', v_credit,
               'reason', 'cancellation_credit',
-              'returned_to_batches_czk', v_refunded),
+              'returned_to_batches_thb', v_refunded),
             v_game.city, v_game.brand);
   end if;
 
@@ -463,7 +463,7 @@ begin
   values ('booking_cancelled', v_booking.player_id, v_booking.game_id, p_booking_id,
           jsonb_build_object(
             'cancel_lead_hours', v_lead_hours,
-            'credit_issued_czk', v_credit,
+            'credit_issued_thb', v_credit,
             'previous_status', v_booking.status),
           v_game.city, v_game.brand);
 
@@ -488,7 +488,7 @@ end $$;
 -- name, so the failure lands at runtime on the existing top-up form, not here.
 --
 -- Verified rather than assumed: with both defined, `create_topup(300)` and
--- `create_topup(p_amount_czk => 300)` both raised. Hence a distinct name.
+-- `create_topup(p_amount_thb => 300)` both raised. Hence a distinct name.
 --
 -- A pass is a top-up with a KNOWN amount, so the amount is taken from the tier
 -- rather than from the caller. That is what stops a crafted call requesting the
@@ -519,20 +519,20 @@ begin
   -- The same 50–2000 bounds the ordinary path enforces. A tier priced outside
   -- them would be a tier nobody could pay for, and the check belongs where the
   -- row is written rather than only in the table's constraints.
-  if v_tier.price_czk < 50 or v_tier.price_czk > 2000 then
+  if v_tier.price_thb < 50 or v_tier.price_thb > 2000 then
     raise exception 'AMOUNT_OUT_OF_RANGE'
-      using detail = 'top-ups are between 50 and 2000 CZK';
+      using detail = 'top-ups are between 50 and 2000 THB';
   end if;
 
-  insert into public.credit_topups (player_id, amount_czk, payment_code, pass_games)
-  values (v_player_id, v_tier.price_czk, public.next_topup_code(), v_tier.games)
+  insert into public.credit_topups (player_id, amount_thb, payment_code, pass_games)
+  values (v_player_id, v_tier.price_thb, public.next_topup_code(), v_tier.games)
   returning * into v_row;
 
   insert into public.events (event_type, player_id, metadata, city, brand, policy_version)
   values ('topup_requested', v_player_id,
           jsonb_build_object(
             'topup_id', v_row.id,
-            'amount_czk', v_row.amount_czk,
+            'amount_thb', v_row.amount_thb,
             'payment_code', v_row.payment_code,
             'pass_games', v_tier.games),
           v_row.city, v_row.brand, v_row.policy_version);
@@ -566,14 +566,14 @@ comment on function public.create_pass_topup(integer) is
 --
 -- That distinction is not academic. Free entry admits any amount from 50 to
 -- 2000, so someone typing 700 into the ordinary top-up form is entirely
--- plausible — and under amount-only keying they would receive 750 CZK carrying
+-- plausible — and under amount-only keying they would receive 750 THB carrying
 -- a one-month expiry they never agreed to. An unasked bonus is not a kindness
 -- when it converts permanent credit into expiring credit: the player meant 700
--- CZK that keeps.
+-- THB that keeps.
 --
 -- Both halves of the exact-figure rule survive intact. A player who sends 690
 -- against a 700 pass has made a top-up, and is credited 690 with no expiry —
--- telling them otherwise would either give away 60 CZK or silently swallow
+-- telling them otherwise would either give away 60 THB or silently swallow
 -- 690. A player who sends 700 against a 700 pass gets the pass they chose.
 --
 -- `credit_topups.pass_games` is what carries the intent, written by
@@ -584,7 +584,7 @@ comment on function public.create_pass_topup(integer) is
 create or replace function public.confirm_topup(
   p_topup_id            uuid,
   p_confirmed_by        uuid default null,
-  p_received_amount_czk integer default null
+  p_received_amount_thb integer default null
 )
 returns public.topup_result
 language plpgsql
@@ -621,7 +621,7 @@ begin
   end if;
 
   -- Null received amount means "credit what was asked for" — the one-tap path.
-  v_received := coalesce(p_received_amount_czk, v_topup.amount_czk);
+  v_received := coalesce(p_received_amount_thb, v_topup.amount_thb);
   if v_received <= 0 then
     raise exception 'AMOUNT_OUT_OF_RANGE' using detail = 'received amount must be positive';
   end if;
@@ -638,14 +638,14 @@ begin
    * When a tier WAS chosen, the received amount must equal that tier's price
    * exactly. Not "some tier's price": paying the 8-pass amount against a
    * 5-pass request is a mispayment, and crediting the 8-pass value would hand
-   * over 450 CZK nobody asked for on the strength of a coincidence.
+   * over 450 THB nobody asked for on the strength of a coincidence.
    */
   if v_topup.pass_games is not null then
     select * into v_tier from public.pass_tiers where games = v_topup.pass_games;
 
-    if found and v_received = v_tier.price_czk then
+    if found and v_received = v_tier.price_thb then
       v_is_pass  := true;
-      v_credited := v_tier.credited_czk;
+      v_credited := v_tier.credited_thb;
       if v_tier.expires_months is not null then
         v_expires_at := now() + make_interval(months => v_tier.expires_months);
       end if;
@@ -656,16 +656,16 @@ begin
 
   update public.credit_topups
      set status = 'confirmed',
-         received_amount_czk = v_received,
+         received_amount_thb = v_received,
          confirmed_by = v_actor,
          confirmed_at = now()
    where id = p_topup_id;
 
   -- A batch row when the pass expires; an ordinary unexpiring row otherwise.
-  insert into public.credit_ledger (player_id, delta_czk, reason, expires_at)
+  insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
   values (v_topup.player_id, v_credited, 'topup', v_expires_at);
 
-  select coalesce(sum(cl.delta_czk), 0) into v_balance
+  select coalesce(sum(cl.delta_thb), 0) into v_balance
     from public.credit_ledger cl
    where cl.player_id = v_topup.player_id;
 
@@ -675,8 +675,8 @@ begin
   values ('topup_confirmed', v_topup.player_id,
           jsonb_build_object(
             'topup_id', v_topup.id,
-            'received_czk', v_received,
-            'credited_czk', v_credited,
+            'received_thb', v_received,
+            'credited_thb', v_credited,
             'expires_at', v_expires_at,
             -- The tier that was HONOURED, not merely the one requested. A
             -- mispaid pass records null here and reads, correctly, as an
@@ -693,7 +693,7 @@ end $$;
 --
 -- Writes a COMPENSATING NEGATIVE ROW per expired remainder, rather than any
 -- reader filtering on `expires_at`. That is the whole reason balance can stay
--- SUM(delta_czk).
+-- SUM(delta_thb).
 --
 -- IDEMPOTENT, like every other cron-driven function here: once the remainder
 -- is zero there is nothing to write, so a double run is a no-op. That is
@@ -719,23 +719,23 @@ begin
       b.id as batch_id,
       b.player_id,
       b.expires_at,
-      (b.delta_czk + coalesce((
-        select sum(m.delta_czk) from public.credit_ledger m where m.batch_id = b.id
-      ), 0))::integer as remaining_czk
+      (b.delta_thb + coalesce((
+        select sum(m.delta_thb) from public.credit_ledger m where m.batch_id = b.id
+      ), 0))::integer as remaining_thb
     from public.credit_ledger b
     where b.expires_at is not null
       and b.expires_at <= now()
   loop
-    continue when v_row.remaining_czk <= 0;
+    continue when v_row.remaining_thb <= 0;
 
-    insert into public.credit_ledger (player_id, delta_czk, reason, batch_id)
-    values (v_row.player_id, -v_row.remaining_czk, 'pass_expiry', v_row.batch_id);
+    insert into public.credit_ledger (player_id, delta_thb, reason, batch_id)
+    values (v_row.player_id, -v_row.remaining_thb, 'pass_expiry', v_row.batch_id);
 
     insert into public.events (event_type, player_id, metadata)
     values ('credit_expired', v_row.player_id,
             jsonb_build_object(
               'batch_id', v_row.batch_id,
-              'expired_czk', v_row.remaining_czk,
+              'expired_thb', v_row.remaining_thb,
               'expired_at', v_row.expires_at));
 
     v_expired := v_expired + 1;
@@ -749,7 +749,7 @@ grant execute on function public.expire_credit_batches() to service_role;
 
 comment on function public.expire_credit_batches() is
   'Writes a compensating negative row per expired batch remainder, so balance '
-  'stays SUM(delta_czk). Idempotent: once a remainder is zero there is nothing '
+  'stays SUM(delta_thb). Idempotent: once a remainder is zero there is nothing '
   'left to write.';
 
 -- =============================================================================
@@ -764,7 +764,7 @@ create function public.batches_expiring_soon(p_days integer default 3)
 returns table (
   batch_id uuid,
   player_id uuid,
-  remaining_czk integer,
+  remaining_thb integer,
   expires_at timestamptz
 )
 language plpgsql
@@ -779,8 +779,8 @@ begin
   return query
   with due as (
     select b.id, b.player_id, b.expires_at,
-           (b.delta_czk + coalesce((
-             select sum(m.delta_czk) from public.credit_ledger m where m.batch_id = b.id
+           (b.delta_thb + coalesce((
+             select sum(m.delta_thb) from public.credit_ledger m where m.batch_id = b.id
            ), 0))::integer as remaining
       from public.credit_ledger b
      where b.expires_at is not null
@@ -789,7 +789,7 @@ begin
        and b.expires_at <= now() + make_interval(days => p_days)
   ),
   worth_telling as (
-    -- Nothing left in the batch is nothing to warn about. Emailing "your 0 CZK
+    -- Nothing left in the batch is nothing to warn about. Emailing "your 0 THB
     -- expires on Friday" is worse than silence.
     select * from due where remaining > 0
   ),

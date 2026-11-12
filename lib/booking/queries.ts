@@ -121,7 +121,7 @@ export async function listOwnBookings(): Promise<BookingWithGame[]> {
 }
 
 /**
- * Wallet balance as `SUM(delta_czk)` over the player's own ledger rows.
+ * Wallet balance as `SUM(delta_thb)` over the player's own ledger rows.
  *
  * Computed server-side from the ledger, which is the authority. The ledger is
  * append-only by privilege, so summing it is always correct; a balance cached
@@ -130,10 +130,10 @@ export async function listOwnBookings(): Promise<BookingWithGame[]> {
 export async function getOwnCreditBalance(): Promise<number> {
   const supabase = await createServerSupabaseClient();
 
-  const { data, error } = await supabase.from("credit_ledger").select("delta_czk");
+  const { data, error } = await supabase.from("credit_ledger").select("delta_thb");
   if (error || !data) return 0;
 
-  return data.reduce((sum, row) => sum + row.delta_czk, 0);
+  return data.reduce((sum, row) => sum + row.delta_thb, 0);
 }
 
 /**

@@ -1,4 +1,4 @@
-import { creditsFromCzk } from "@/lib/admin/credits";
+import { creditsFromThb } from "@/lib/admin/credits";
 import type { PlayerScopeFields } from "@/lib/admin/playerScope";
 import type { DirectoryPlayer, PlayerKind } from "@/lib/admin/players/types";
 
@@ -54,7 +54,7 @@ const COUNTED_RULES: Record<Exclude<PlayerSegment, "shadow" | "not-counted">, (p
   "came-back": (p) => p.gamesPlayed >= CAME_BACK_GAMES,
   "never-booked": (p) => p.bookingCount === 0,
   // A whole Credit: a smaller balance buys no seat (CLAUDE.md, round 35).
-  "has-credit": (p) => creditsFromCzk(p.balanceCzk) >= 1,
+  "has-credit": (p) => creditsFromThb(p.balanceThb) >= 1,
   "unfinished-checkout": (p) => p.unfinishedCheckoutAt !== null,
   "opted-in": (p) => p.marketingOptIn,
 };
@@ -119,7 +119,7 @@ export function playerKpis(players: DirectoryPlayer[]): PlayerKpis {
     cameBack,
     cameBackPercent: percentOf(cameBack, played),
     withCredit: withCredit.length,
-    creditsHeld: withCredit.reduce((sum, p) => sum + creditsFromCzk(p.balanceCzk), 0),
+    creditsHeld: withCredit.reduce((sum, p) => sum + creditsFromThb(p.balanceThb), 0),
     optedIn: counted.filter(COUNTED_RULES["opted-in"]).length,
   };
 }

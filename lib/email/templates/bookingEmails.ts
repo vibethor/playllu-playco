@@ -1,5 +1,5 @@
 import type { EmailAttachment } from "@/lib/email/sendEmail";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import { renderEmail, type RenderedEmail } from "./layout";
 import {
   bookingSmallPrint,
@@ -76,7 +76,7 @@ export function bookingConfirmedEmail(props: BookingConfirmedProps, env: EmailEn
 }
 
 export interface SpotHeldProps extends GameFacts {
-  amountDueCzk: number;
+  amountDueThb: number;
   variableSymbol: number;
   spdString: string;
   ics?: EmailAttachment;
@@ -93,7 +93,7 @@ export interface SpotHeldProps extends GameFacts {
  */
 export function spotHeldEmail(props: SpotHeldProps, env: EmailEnv): RenderedEmail {
   const e = env.t.emails;
-  const amount = formatCzk(props.amountDueCzk);
+  const amount = formatThb(props.amountDueThb);
   const values = {
     when: when(env, props.startsAt),
     venue: props.venue,

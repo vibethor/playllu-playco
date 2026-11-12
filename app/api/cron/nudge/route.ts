@@ -56,7 +56,7 @@ export async function GET(request: Request) {
 
     const { data: bookings } = await supabase
       .from("bookings")
-      .select("id, game_id, player_id, price_czk, credit_applied_czk")
+      .select("id, game_id, player_id, price_thb, credit_applied_thb")
       .eq("game_id", game.id)
       .eq("status", "reserved")
       .is("nudge_sent_at", null);

@@ -1,6 +1,6 @@
-import { creditsFromCzk } from "@/lib/admin/credits";
+import { creditsFromThb } from "@/lib/admin/credits";
 import { buildIcsEvent, icsFilename } from "@/lib/calendar/ics";
-import { amountDueCzk } from "@/lib/payments/spd";
+import { amountDueThb } from "@/lib/payments/spd";
 import { siteUrl } from "@/lib/site";
 import { createServiceRoleSupabaseClient } from "@/lib/supabase/clients";
 import { venueMapsHref } from "@/lib/venues/mapsHref";
@@ -57,14 +57,14 @@ export async function gameEmailExtras(gameId: string): Promise<GameExtras> {
 }
 
 export async function bookingEmailContext(
-  booking: Pick<BookingRow, "price_czk" | "credit_applied_czk"> &
+  booking: Pick<BookingRow, "price_thb" | "credit_applied_thb"> &
     Partial<Pick<BookingRow, "guest_count">>,
   game: Pick<GameRow, "id" | "venue" | "starts_at">,
   player: { nickname: string },
   options: { withIcs?: boolean } = {},
 ): Promise<DispatchContext> {
   const [base, extras] = await Promise.all([siteUrl(), gameEmailExtras(game.id)]);
-  const credited = creditsFromCzk(booking.credit_applied_czk ?? 0);
+  const credited = creditsFromThb(booking.credit_applied_thb ?? 0);
   const gameUrl = `${base}${extras.path ?? `/game/${game.id}`}`;
 
   return {
@@ -78,7 +78,7 @@ export async function bookingEmailContext(
     mapsUrl: extras.mapsUrl,
     places: 1 + (booking.guest_count ?? 0),
     creditsPaid: credited > 0 ? credited : null,
-    amountDueCzk: amountDueCzk(booking.price_czk, booking.credit_applied_czk),
+    amountDueThb: amountDueThb(booking.price_thb, booking.credit_applied_thb),
     ics: options.withIcs
       ? {
           filename: icsFilename(game.venue),

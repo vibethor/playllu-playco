@@ -95,7 +95,7 @@ export async function cancelBookingAction(
   // is worth, and a second opinion in TypeScript is a second answer waiting to
   // disagree.
   const result = cancelResult as unknown as Partial<CancelResult> | null;
-  const credited = Number(result?.credit_issued_czk ?? 0);
+  const credited = Number(result?.credit_issued_thb ?? 0);
   await dispatchCancellationEmail(bookingId, credited, Number(result?.cancel_lead_hours ?? 0));
 
   // A cancellation releases a spot, and `cancel_booking` emits `spot_released`
@@ -152,7 +152,7 @@ export async function cancelBookingAction(
  */
 async function dispatchCancellationEmail(
   bookingId: string,
-  creditCzk: number,
+  creditThb: number,
   leadHours: number,
 ): Promise<void> {
   try {
@@ -160,7 +160,7 @@ async function dispatchCancellationEmail(
 
     const { data: booking } = await service
       .from("bookings")
-      .select("id, game_id, player_id, price_czk, credit_applied_czk, guest_count")
+      .select("id, game_id, player_id, price_thb, credit_applied_thb, guest_count")
       .eq("id", bookingId)
       .maybeSingle();
     if (!booking) return;
@@ -180,15 +180,15 @@ async function dispatchCancellationEmail(
      */
     const cutoff = await refundCutoffHours();
     const outcome =
-      creditCzk > 0
+      creditThb > 0
         ? "credited"
-        : booking.credit_applied_czk > 0 && leadHours < cutoff
+        : booking.credit_applied_thb > 0 && leadHours < cutoff
           ? "late"
           : "unpaid";
     await dispatchEmail({
       event: "booking_cancelled",
       to: player.email,
-      context: { ...context, creditCzk, cancelOutcome: outcome },
+      context: { ...context, creditThb, cancelOutcome: outcome },
     });
   } catch (error) {
     console.error("cancellation email dispatch failed", error);

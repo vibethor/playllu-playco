@@ -59,7 +59,7 @@ end $$;
 
 create function pg_temp.credited(p_booking uuid)
 returns integer language sql as $$
-  select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger
+  select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger
    where booking_id = p_booking and reason = 'cancellation_credit'
 $$;
 
@@ -77,32 +77,32 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin) values
   ('4e430000-0000-0000-0000-000000000004', 'R42RLate',  'r42r-4@test.invalid', '42430000-0000-0000-0000-000000000004', false),
   ('4e430000-0000-0000-0000-000000000005', 'R42ROld',   'r42r-5@test.invalid', '42430000-0000-0000-0000-000000000005', false);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('94243000-0000-0000-0000-0000000000a1', 'R42R Pitch', now() + interval '2 hours', 12, 180, 'published', 90);
 
 -- A booking paid by card (the old QR rail stands in: confirmed, no credit).
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk, credit_applied_czk) values
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb, credit_applied_thb) values
   ('4bb43000-0000-0000-0000-0000000000b2', '94243000-0000-0000-0000-0000000000a1',
    '4e430000-0000-0000-0000-000000000002', 'confirmed', 'qr', 180, 0);
 
 -- A booking paid with a Credit from a batch that expires in ten days.
-insert into public.credit_ledger (id, player_id, delta_czk, reason, expires_at) values
+insert into public.credit_ledger (id, player_id, delta_thb, reason, expires_at) values
   ('4b430000-0000-0000-0000-0000000000c3', '4e430000-0000-0000-0000-000000000003',
    180, 'topup', now() + interval '10 days');
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk, credit_applied_czk) values
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb, credit_applied_thb) values
   ('4bb43000-0000-0000-0000-0000000000b3', '94243000-0000-0000-0000-0000000000a1',
    '4e430000-0000-0000-0000-000000000003', 'confirmed', 'credit', 180, 180);
-insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, batch_id) values
+insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, batch_id) values
   ('4e430000-0000-0000-0000-000000000003', -180, 'redemption',
    '4bb43000-0000-0000-0000-0000000000b3', '4b430000-0000-0000-0000-0000000000c3');
 
 -- The late text: a paid booking the admin removes WITHOUT returning anything.
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk, credit_applied_czk) values
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb, credit_applied_thb) values
   ('4bb43000-0000-0000-0000-0000000000b4', '94243000-0000-0000-0000-0000000000a1',
    '4e430000-0000-0000-0000-000000000004', 'confirmed', 'qr', 180, 0);
 
 -- A caller that says nothing about the Credit — the build before this round.
-insert into public.bookings (id, game_id, player_id, status, payment_method, price_czk, credit_applied_czk) values
+insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb, credit_applied_thb) values
   ('4bb43000-0000-0000-0000-0000000000b5', '94243000-0000-0000-0000-0000000000a1',
    '4e430000-0000-0000-0000-000000000005', 'confirmed', 'qr', 180, 0);
 
@@ -134,8 +134,8 @@ select pg_temp.ok(
   'no Credit is written for it', pg_temp.credited('4bb43000-0000-0000-0000-0000000000b4')::text);
 select pg_temp.ok(
   (select (metadata ->> 'credit_returned')::boolean = false
-          and (metadata ->> 'withheld_czk')::integer = 180
-          and (metadata ->> 'credit_issued_czk')::integer = 0
+          and (metadata ->> 'withheld_thb')::integer = 180
+          and (metadata ->> 'credit_issued_thb')::integer = 0
      from public.events
     where event_type = 'admin_booking_removed'
       and booking_id = '4bb43000-0000-0000-0000-0000000000b4'),
@@ -155,7 +155,7 @@ select pg_temp.ok_probe(
 reset role;
 
 select pg_temp.ok(
-  (select count(*) = 1 and sum(delta_czk) = 180
+  (select count(*) = 1 and sum(delta_thb) = 180
           and bool_and(expires_at is not null
                        and expires_at::date = (public.booking_paid_at('4bb43000-0000-0000-0000-0000000000b2')
                                                + make_interval(days => public.credit_validity_days()))::date)
@@ -163,13 +163,13 @@ select pg_temp.ok(
     where booking_id = '4bb43000-0000-0000-0000-0000000000b2' and reason = 'cancellation_credit'),
   'a card payment comes back as a Credit valid 60 days from the payment, not as unexpiring money');
 select pg_temp.ok(
-  (select count(*) = 1 and sum(delta_czk) = 180
+  (select count(*) = 1 and sum(delta_thb) = 180
           and bool_and(batch_id = '4b430000-0000-0000-0000-0000000000c3')
      from public.credit_ledger
     where booking_id = '4bb43000-0000-0000-0000-0000000000b3' and reason = 'cancellation_credit'),
   'a spent Credit goes back to the batch it came from, keeping that batch''s expiry');
 select pg_temp.ok(
-  (select (metadata ->> 'credit_returned')::boolean and (metadata ->> 'credit_issued_czk')::integer = 180
+  (select (metadata ->> 'credit_returned')::boolean and (metadata ->> 'credit_issued_thb')::integer = 180
      from public.events
     where event_type = 'admin_booking_removed'
       and booking_id = '4bb43000-0000-0000-0000-0000000000b2'),

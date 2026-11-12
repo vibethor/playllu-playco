@@ -262,13 +262,13 @@ export interface AdminBookingRow {
   paymentMethod: Database["public"]["Tables"]["bookings"]["Row"]["payment_method"];
   /** The variable symbol. Null for anything that is not a QR booking. */
   paymentCode: number | null;
-  priceCzk: number;
-  creditAppliedCzk: number;
+  priceThb: number;
+  creditAppliedThb: number;
   /** What the player still owes — what ✓ Paid confirms at. */
-  amountDueCzk: number;
+  amountDueThb: number;
   /**
    * Party guests on this booking (round 11). The admin roster shows them
-   * beside the name that brought them; `priceCzk` above is already the whole
+   * beside the name that brought them; `priceThb` above is already the whole
    * party's, so nothing else on this row needs to know.
    */
   guestCount: number;
@@ -316,9 +316,9 @@ export async function listGameBookings(gameId: string): Promise<AdminBookingRow[
     status: booking.status,
     paymentMethod: booking.payment_method,
     paymentCode: booking.payment_code,
-    priceCzk: booking.price_czk,
-    creditAppliedCzk: booking.credit_applied_czk,
-    amountDueCzk: Math.max(0, booking.price_czk - booking.credit_applied_czk),
+    priceThb: booking.price_thb,
+    creditAppliedThb: booking.credit_applied_thb,
+    amountDueThb: Math.max(0, booking.price_thb - booking.credit_applied_thb),
     guestCount: booking.guest_count,
     isSeed: booking.is_seed,
     bookedByAdmin: booking.booked_by_admin,
@@ -373,8 +373,8 @@ export interface AdminPlayerRow {
   isShadow: boolean;
   isSeed: boolean;
   isAdmin: boolean;
-  /** `SUM(delta_czk)` over the whole ledger — the wallet, computed here. */
-  balanceCzk: number;
+  /** `SUM(delta_thb)` over the whole ledger — the wallet, computed here. */
+  balanceThb: number;
   bookingCount: number;
   /**
    * The permanent signup-order number (round 33, item 2).
@@ -409,13 +409,13 @@ export async function listPlayers(): Promise<AdminPlayerRow[]> {
 
   const [{ data: players }, { data: ledger }, { data: bookings }] = await Promise.all([
     service.from("players").select("*").order("nickname", { ascending: true }),
-    service.from("credit_ledger").select("player_id, delta_czk"),
+    service.from("credit_ledger").select("player_id, delta_thb"),
     service.from("bookings").select("player_id"),
   ]);
 
   const balances = new Map<string, number>();
   for (const row of ledger ?? []) {
-    balances.set(row.player_id, (balances.get(row.player_id) ?? 0) + row.delta_czk);
+    balances.set(row.player_id, (balances.get(row.player_id) ?? 0) + row.delta_thb);
   }
 
   const counts = new Map<string, number>();
@@ -431,7 +431,7 @@ export async function listPlayers(): Promise<AdminPlayerRow[]> {
     isShadow: player.auth_user_id === null,
     isSeed: player.is_seed,
     isAdmin: player.is_admin,
-    balanceCzk: balances.get(player.id) ?? 0,
+    balanceThb: balances.get(player.id) ?? 0,
     bookingCount: counts.get(player.id) ?? 0,
     playerNumber: player.player_number ?? null,
     photoPath: player.photo_path ?? null,
@@ -602,8 +602,8 @@ export interface AdminPlayerGameRow {
   venue: string;
   startsAt: string;
   status: Database["public"]["Tables"]["bookings"]["Row"]["status"];
-  priceCzk: number;
-  creditAppliedCzk: number;
+  priceThb: number;
+  creditAppliedThb: number;
   /**
    * Past its final whistle, and kicked off but not yet over — decided here,
    * where the clock is read once per request, rather than during render
@@ -615,7 +615,7 @@ export interface AdminPlayerGameRow {
 
 export interface AdminPlayerDetail {
   player: Database["public"]["Tables"]["players"]["Row"];
-  balanceCzk: number;
+  balanceThb: number;
   /**
    * Games PLAYED, not bookings made.
    *
@@ -649,14 +649,14 @@ export async function getAdminPlayer(playerId: string): Promise<AdminPlayerDetai
   if (error || !player) return null;
 
   const [{ data: ledger }, { data: bookings }] = await Promise.all([
-    service.from("credit_ledger").select("delta_czk").eq("player_id", playerId),
+    service.from("credit_ledger").select("delta_thb").eq("player_id", playerId),
     service
       .from("bookings")
-      .select("id, game_id, status, price_czk, credit_applied_czk")
+      .select("id, game_id, status, price_thb, credit_applied_thb")
       .eq("player_id", playerId),
   ]);
 
-  const balanceCzk = (ledger ?? []).reduce((sum, row) => sum + row.delta_czk, 0);
+  const balanceThb = (ledger ?? []).reduce((sum, row) => sum + row.delta_thb, 0);
 
   const gameIds = [...new Set((bookings ?? []).map((b) => b.game_id))];
   const { data: games } = gameIds.length
@@ -675,8 +675,8 @@ export async function getAdminPlayer(playerId: string): Promise<AdminPlayerDetai
         venue: game?.venue ?? "—",
         startsAt: game?.starts_at ?? "",
         status: booking.status,
-        priceCzk: booking.price_czk,
-        creditAppliedCzk: booking.credit_applied_czk,
+        priceThb: booking.price_thb,
+        creditAppliedThb: booking.credit_applied_thb,
         finished: game ? hasFinished(game.starts_at, game.duration_minutes, now) : false,
         live: game ? isInProgress(game.starts_at, game.duration_minutes, now) : false,
       };
@@ -685,7 +685,7 @@ export async function getAdminPlayer(playerId: string): Promise<AdminPlayerDetai
 
   return {
     player,
-    balanceCzk,
+    balanceThb,
     // A held booking on a finished game, as `lib/booking/history.ts` counts
     // it (2026-11-09: attendance is gone, and so is the no-show count).
     gamesPlayed: rows.filter(
@@ -719,7 +719,7 @@ export interface PaymentAttentionRow {
   venue: string;
   startsAt: string;
   nickname: string;
-  amountOwedCzk: number;
+  amountOwedThb: number;
   seats: number;
   reason: string;
   flaggedAt: string;
@@ -737,7 +737,7 @@ export async function listPaymentsNeedingAttention(): Promise<PaymentAttentionRo
      * halves erases it and every field below becomes an error object. Worth a
      * long line.
      */
-    .select("id, game_id, player_id, price_czk, credit_applied_czk, guest_count, payment_attention_at, payment_attention_reason, stripe_session_id")
+    .select("id, game_id, player_id, price_thb, credit_applied_thb, guest_count, payment_attention_at, payment_attention_reason, stripe_session_id")
     .not("payment_attention_at", "is", null)
     .order("payment_attention_at", { ascending: false })
     .limit(50);
@@ -763,7 +763,7 @@ export async function listPaymentsNeedingAttention(): Promise<PaymentAttentionRo
     venue: gameById.get(row.game_id)?.venue ?? "",
     startsAt: gameById.get(row.game_id)?.starts_at ?? "",
     nickname: nickById.get(row.player_id) ?? "",
-    amountOwedCzk: Math.max(0, row.price_czk - row.credit_applied_czk),
+    amountOwedThb: Math.max(0, row.price_thb - row.credit_applied_thb),
     seats: 1 + row.guest_count,
     reason: row.payment_attention_reason ?? "",
     flaggedAt: row.payment_attention_at ?? "",

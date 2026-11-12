@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { LOCALE_COOKIE } from "../lib/i18n/locales";
-import { PASS_REFERENCE_PRICE_CZK } from "../lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "../lib/pass/creditPrice";
 import { apiClientFor, players, serviceClient, signInAs } from "./helpers/session";
 import {
   createScratchGame,
@@ -33,8 +33,8 @@ async function asPlayer(
 // THE RULING — one seat is one credit, whatever the card price is
 // =============================================================================
 
-test("redeeming a credit on a 180 CZK game debits exactly 150", async ({ page, context }) => {
-  const game = await createScratchGame({ capacity: 12, priceCzk: 180, hoursFromNow: 24 * 14 });
+test("redeeming a credit on a 180 THB game debits exactly 150", async ({ page, context }) => {
+  const game = await createScratchGame({ capacity: 12, priceThb: 180, hoursFromNow: 24 * 14 });
   try {
     await setWalletTo(players.runner.id, 600);
     await asPlayer(context, "runner");
@@ -43,7 +43,7 @@ test("redeeming a credit on a 180 CZK game debits exactly 150", async ({ page, c
 
     /*
      * THE OPTION IS OFFERED, which is half the ruling. Before it, the gate was
-     * `balance >= price × seats` — 600 crowns could not "cover" a 180 CZK game
+     * `balance >= price × seats` — 600 crowns could not "cover" a 180 THB game
      * plus nothing, so it could, but a party of four at 720 would have been
      * refused a wallet that holds four credits.
      */
@@ -55,8 +55,8 @@ test("redeeming a credit on a 180 CZK game debits exactly 150", async ({ page, c
 
     expect(
       await walletBalance(players.runner.id),
-      "a seat on a 180 CZK game cost something other than one credit",
-    ).toBe(600 - PASS_REFERENCE_PRICE_CZK);
+      "a seat on a 180 THB game cost something other than one credit",
+    ).toBe(600 - PASS_REFERENCE_PRICE_THB);
   } finally {
     await destroyScratchGame(game.id);
   }
@@ -71,9 +71,9 @@ test("a party of four is offered credit when the wallet holds four credits, not 
    * credits is 600. A wallet holding exactly four credits could pay for this
    * party under the ruling and was refused by the old arithmetic.
    */
-  const game = await createScratchGame({ capacity: 12, priceCzk: 180, hoursFromNow: 24 * 13 });
+  const game = await createScratchGame({ capacity: 12, priceThb: 180, hoursFromNow: 24 * 13 });
   try {
-    await setWalletTo(players.runner.id, 4 * PASS_REFERENCE_PRICE_CZK);
+    await setWalletTo(players.runner.id, 4 * PASS_REFERENCE_PRICE_THB);
     await asPlayer(context, "runner");
 
     await page.goto(`/game/${game.id}/book`, { waitUntil: "networkidle" });
@@ -95,10 +95,10 @@ test("two guests added with credit cost two credits, and removing one returns on
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 12, priceCzk: 180, hoursFromNow: 24 * 12 });
+  const game = await createScratchGame({ capacity: 12, priceThb: 180, hoursFromNow: 24 * 12 });
   const admin = serviceClient();
   try {
-    await setWalletTo(players.runner.id, 5 * PASS_REFERENCE_PRICE_CZK);
+    await setWalletTo(players.runner.id, 5 * PASS_REFERENCE_PRICE_THB);
     const client = await apiClientFor(players.runner);
     const made = await client.rpc("create_booking", {
       p_game_id: game.id,
@@ -108,7 +108,7 @@ test("two guests added with credit cost two credits, and removing one returns on
     const bookingId = (made.data as { id: string }).id;
 
     // One credit for the seat.
-    expect(await walletBalance(players.runner.id)).toBe(4 * PASS_REFERENCE_PRICE_CZK);
+    expect(await walletBalance(players.runner.id)).toBe(4 * PASS_REFERENCE_PRICE_THB);
 
     await asPlayer(context, "runner");
     await page.goto(`/game/${game.id}`, { waitUntil: "networkidle" });
@@ -122,8 +122,8 @@ test("two guests added with credit cost two credits, and removing one returns on
 
     expect(
       await walletBalance(players.runner.id),
-      "two guests on a 180 CZK game cost something other than two credits",
-    ).toBe(2 * PASS_REFERENCE_PRICE_CZK);
+      "two guests on a 180 THB game cost something other than two credits",
+    ).toBe(2 * PASS_REFERENCE_PRICE_THB);
 
     // ...and one of them comes back as exactly one credit.
     await page.goto(`/game/${game.id}`, { waitUntil: "networkidle" });
@@ -132,17 +132,17 @@ test("two guests added with credit cost two credits, and removing one returns on
     await page.getByTestId("cancel-guests-submit").click();
     await page.waitForURL(/\?removed=1/);
 
-    expect(await walletBalance(players.runner.id)).toBe(3 * PASS_REFERENCE_PRICE_CZK);
+    expect(await walletBalance(players.runner.id)).toBe(3 * PASS_REFERENCE_PRICE_THB);
 
     const { data: row } = await admin
       .from("bookings")
-      .select("guest_count, credit_applied_czk, price_czk")
+      .select("guest_count, credit_applied_thb, price_thb")
       .eq("id", bookingId)
       .single();
     expect(row as Record<string, number>).toMatchObject({
       guest_count: 1,
-      credit_applied_czk: 2 * PASS_REFERENCE_PRICE_CZK,
-      price_czk: 2 * PASS_REFERENCE_PRICE_CZK,
+      credit_applied_thb: 2 * PASS_REFERENCE_PRICE_THB,
+      price_thb: 2 * PASS_REFERENCE_PRICE_THB,
     });
   } finally {
     await destroyScratchGame(game.id);
@@ -163,7 +163,7 @@ test("a booking with two guests reads 3 taken in the admin list AND the capacity
    * game would have read 1/12 on every one of them while the player-facing
    * page said 9 spots left.
    */
-  const game = await createScratchGame({ capacity: 12, priceCzk: 150, hoursFromNow: 24 * 11 });
+  const game = await createScratchGame({ capacity: 12, priceThb: 150, hoursFromNow: 24 * 11 });
   try {
     const client = await apiClientFor(players.runner);
     const made = await client.rpc("create_booking", {

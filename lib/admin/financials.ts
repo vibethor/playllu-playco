@@ -20,7 +20,7 @@ export type { WeekBar } from "@/lib/admin/money/periods";
  * month-over-month delta, a four-bar week chart and a transaction list; each
  * one below is computed from `bookings`, `credit_ledger` and `games` as they
  * exist today. Where the frame implies a figure this schema cannot produce,
- * the field is absent rather than estimated — see `previousRevenueCzk`.
+ * the field is absent rather than estimated — see `previousRevenueThb`.
  *
  * SERVICE ROLE, AND ONLY FOR READS. Every function here is a SELECT. The
  * elevated client is used because these are cross-player aggregates that RLS
@@ -56,7 +56,7 @@ export interface Transaction {
   /** What happened, already resolved to a sentence. */
   what: string;
   /** Positive for money in, negative for money out. */
-  amountCzk: number;
+  amountThb: number;
   at: string;
 }
 
@@ -64,7 +64,7 @@ export interface Financials {
   period: FinancialPeriod;
   bounds: PeriodBounds;
   /** Everything that arrived — games, Game Passes, top-ups (2026-11-08). */
-  revenueCzk: number;
+  revenueThb: number;
   /** The same money, by what it paid for. */
   revenueSplit: RevenueSplit;
   /**
@@ -75,7 +75,7 @@ export interface Financials {
    * feature: there is no period before all of them. The page renders no delta
    * when this is null instead of printing a zero that reads as "flat".
    */
-  previousRevenueCzk: number | null;
+  previousRevenueThb: number | null;
   /**
    * Games that KICKED OFF in the period, cancelled ones aside — not
    * `status = settled`, which the nightly sweep reaches the next morning
@@ -89,10 +89,10 @@ export interface Financials {
    * that divided money paid UP FRONT for games still ahead by the games
    * already finished.
    */
-  avgPerGameCzk: number | null;
+  avgPerGameThb: number | null;
   weeks: WeekBar[];
   /*
-   * ~~outstandingCzk / unpaidSpots~~ — removed 2026-11-08, the owner: "it is
+   * ~~outstandingThb / unpaidSpots~~ — removed 2026-11-08, the owner: "it is
    * redundant. everyone pays up front." Unpaid seats still show on each
    * game's page.
    */
@@ -139,12 +139,12 @@ async function averagePerPlayedGame(gameIds: readonly string[]): Promise<number 
   for (const ids of chunk(gameIds)) {
     const { data, error } = await service.rpc("game_economics", { p_game_ids: ids });
     if (error) throw new Error(`game_economics failed: ${error.message}`, { cause: error });
-    for (const row of data ?? []) total += Number(row.revenue_czk);
+    for (const row of data ?? []) total += Number(row.revenue_thb);
   }
   return Math.round(total / gameIds.length);
 }
 
-function weeklyRevenue(bounds: PeriodBounds, entries: readonly { at: string; czk: number }[]): WeekBar[] {
+function weeklyRevenue(bounds: PeriodBounds, entries: readonly { at: string; thb: number }[]): WeekBar[] {
   if (!bounds.from || !bounds.to) return [];
   return bucketByWeek(entries, { from: bounds.from, to: bounds.to });
 }
@@ -160,7 +160,7 @@ async function recentTransactions(limit: number): Promise<Transaction[]> {
   const service = createServiceRoleSupabaseClient();
   const { data } = await service
     .from("credit_ledger")
-    .select("id,delta_czk,reason,created_at,players(nickname)")
+    .select("id,delta_thb,reason,created_at,players(nickname)")
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -177,7 +177,7 @@ async function recentTransactions(limit: number): Promise<Transaction[]> {
       id: row.id,
       who: player?.nickname ?? "—",
       what: reasons[row.reason] ?? row.reason,
-      amountCzk: row.delta_czk,
+      amountThb: row.delta_thb,
       at: row.created_at,
     };
   });
@@ -225,16 +225,16 @@ export async function getFinancialsAt(
     recentTransactions(8),
   ]);
 
-  const avgPerGameCzk = options.economics ? await averagePerPlayedGame(played.map((game) => game.id)) : null;
+  const avgPerGameThb = options.economics ? await averagePerPlayedGame(played.map((game) => game.id)) : null;
 
   return {
     period,
     bounds,
-    revenueCzk: revenue.totalCzk,
-    revenueSplit: { gamesCzk: revenue.gamesCzk, passCzk: revenue.passCzk, topupCzk: revenue.topupCzk },
-    previousRevenueCzk: previous === null ? null : previous.totalCzk,
+    revenueThb: revenue.totalThb,
+    revenueSplit: { gamesThb: revenue.gamesThb, passThb: revenue.passThb, topupThb: revenue.topupThb },
+    previousRevenueThb: previous === null ? null : previous.totalThb,
     gamesPlayed: played.length,
-    avgPerGameCzk,
+    avgPerGameThb,
     weeks: weeklyRevenue(bounds, revenue.entries),
     transactions,
   };

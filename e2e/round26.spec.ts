@@ -21,10 +21,10 @@ import { createScratchGame, destroyScratchGame, setWalletTo } from "./helpers/sc
 test.use({ viewport: { width: 390, height: 844 } });
 
 /** The webhook's call, exactly. */
-async function settle(stripeSessionId: string, amountCzk: number) {
+async function settle(stripeSessionId: string, amountThb: number) {
   const { data, error } = await serviceClient().rpc("settle_checkout_session", {
     p_stripe_session_id: stripeSessionId,
-    p_amount_czk: amountCzk,
+    p_amount_thb: amountThb,
   });
   expect(error, `settle_checkout_session: ${error?.message}`).toBeNull();
   return data as string;
@@ -35,7 +35,7 @@ async function openCheckout(
   who: (typeof players)[keyof typeof players],
   gameId: string,
   sessionId: string,
-  amountCzk: number,
+  amountThb: number,
   guests = 0,
 ) {
   const client = await apiClientFor(who);
@@ -43,7 +43,7 @@ async function openCheckout(
     p_game_id: gameId,
     p_guest_count: guests,
     p_stripe_session_id: sessionId,
-    p_amount_czk: amountCzk,
+    p_amount_thb: amountThb,
   });
   expect(error, `open_checkout: ${error?.message}`).toBeNull();
 }
@@ -63,7 +63,7 @@ test("an open checkout takes no seat, makes no booking and names nobody", async 
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
 
   try {
     await openCheckout(players.runner, game.id, `cs_${RUN}_shopper`, 150);
@@ -102,7 +102,7 @@ test("the webhook creates a paid booking, and the player is named on the roster"
   page,
   context,
 }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
 
   try {
     await openCheckout(players.runner, game.id, `cs_${RUN}_paid`, 150);
@@ -110,19 +110,19 @@ test("the webhook creates a paid booking, and the player is named on the roster"
 
     const { data } = await serviceClient()
       .from("bookings")
-      .select("status, payment_method, price_czk, guest_count, stripe_session_id")
+      .select("status, payment_method, price_thb, guest_count, stripe_session_id")
       .eq("game_id", game.id)
       .single();
     const booking = data as {
       status: string;
-      price_czk: number;
+      price_thb: number;
       stripe_session_id: string | null;
     };
 
     // CONFIRMED ON ARRIVAL. There is no reserved-then-confirmed dance any
     // more: the money came first, so the booking is born paid.
     expect(booking.status).toBe("confirmed");
-    expect(booking.price_czk).toBe(150);
+    expect(booking.price_thb).toBe(150);
     expect(booking.stripe_session_id).toBe(`cs_${RUN}_paid`);
     expect(await seatsTaken(game.id)).toBe(1);
 
@@ -148,7 +148,7 @@ test("the webhook creates a paid booking, and the player is named on the roster"
 });
 
 test("a party pays for every seat and takes every seat", async () => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
 
   try {
     // Three seats at 150 — the amount `/payment/checkout` computes server-side,
@@ -160,11 +160,11 @@ test("a party pays for every seat and takes every seat", async () => {
 
     const { data } = await serviceClient()
       .from("bookings")
-      .select("guest_count, price_czk")
+      .select("guest_count, price_thb")
       .eq("game_id", game.id)
       .single();
     expect((data as { guest_count: number }).guest_count).toBe(2);
-    expect((data as { price_czk: number }).price_czk).toBe(450);
+    expect((data as { price_thb: number }).price_thb).toBe(450);
   } finally {
     await destroyScratchGame(game.id);
   }
@@ -175,7 +175,7 @@ test("a party pays for every seat and takes every seat", async () => {
  * ========================================================================== */
 
 test("the game filling names every other checkout for active expiry", async () => {
-  const game = await createScratchGame({ capacity: 1, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 1, priceThb: 150 });
 
   try {
     await openCheckout(players.runner, game.id, `cs_${RUN}_first`, 150);
@@ -204,7 +204,7 @@ test("the game filling names every other checkout for active expiry", async () =
 });
 
 test("a payment that lands after the game filled is credited in full, not seated", async () => {
-  const game = await createScratchGame({ capacity: 1, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 1, priceThb: 150 });
 
   try {
     const admin = serviceClient();
@@ -236,10 +236,10 @@ test("a payment that lands after the game filled is credited in full, not seated
     // THE MONEY IS THEIRS, IN FULL — refund-in-kind, the only refund path.
     const { data: ledger } = await admin
       .from("credit_ledger")
-      .select("delta_czk")
+      .select("delta_thb")
       .eq("player_id", players.creditRich.id);
-    const balance = ((ledger ?? []) as { delta_czk: number }[]).reduce(
-      (sum, row) => sum + row.delta_czk,
+    const balance = ((ledger ?? []) as { delta_thb: number }[]).reduce(
+      (sum, row) => sum + row.delta_thb,
       0,
     );
     expect(balance, "the loser of the race was not credited in full").toBe(150);
@@ -271,7 +271,7 @@ test("a payment that lands after the game filled is credited in full, not seated
 });
 
 test("a credit redemption filling the game dooms the open checkouts too", async () => {
-  const game = await createScratchGame({ capacity: 1, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 1, priceThb: 150 });
 
   try {
     await openCheckout(players.runner, game.id, `cs_${RUN}_rail2`, 150);
@@ -302,7 +302,7 @@ test("a credit redemption filling the game dooms the open checkouts too", async 
  * ========================================================================== */
 
 test("nothing renders an awaiting-payment state any more", async ({ page, context }) => {
-  const game = await createScratchGame({ capacity: 8, priceCzk: 150 });
+  const game = await createScratchGame({ capacity: 8, priceThb: 150 });
 
   try {
     await openCheckout(players.runner, game.id, `cs_${RUN}_gone`, 150);

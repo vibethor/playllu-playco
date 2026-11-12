@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { OG_MARK_DATA_URI } from "@/lib/og/mark";
 import { COLORS, OG_SIZE } from "@/lib/og/theme";
-import { formatCzk, formatGameDateTime } from "@/lib/format";
+import { formatThb, formatGameDateTime } from "@/lib/format";
 import { pluralise } from "@/lib/i18n/plural";
 import { strings } from "@/lib/strings";
 
@@ -18,7 +18,7 @@ export interface ShareImageProps {
   venue: string;
   startsAt: string;
   spotsLeft: number;
-  priceCzk: number;
+  priceThb: number;
   isFull?: boolean;
 }
 
@@ -34,7 +34,7 @@ export function renderShareImage({
   venue,
   startsAt,
   spotsLeft,
-  priceCzk,
+  priceThb,
   isFull = false,
 }: ShareImageProps): ImageResponse {
   return new ImageResponse(
@@ -155,7 +155,7 @@ export function renderShareImage({
                 )}
           </div>
           <div style={{ color: COLORS.muted, fontSize: 34 }}>
-            {formatCzk(priceCzk)}
+            {formatThb(priceThb)}
           </div>
         </div>
       </div>

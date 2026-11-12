@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import {
-  minorUnitsToCzk,
+  minorUnitsToThb,
   parseCheckoutSession,
   verifyStripeSignature,
 } from "@/lib/payments/stripeWebhook";
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
    * act on a stale answer, and neither read would be under the lock the
    * settling function then takes.
    */
-  const amountCzk = minorUnitsToCzk(session.amountTotal);
+  const amountThb = minorUnitsToThb(session.amountTotal);
 
   /*
    * PAY FIRST: A BOOKING SESSION IS SETTLED BY CREATING THE BOOKING
@@ -122,7 +122,7 @@ export async function POST(request: Request) {
    */
   const settled = await supabase.rpc("settle_checkout_session", {
     p_stripe_session_id: session.id,
-    p_amount_czk: amountCzk,
+    p_amount_thb: amountThb,
   });
 
   if (!settled.error && typeof settled.data === "string" && settled.data !== "unknown") {
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
       // the player was told; this line is what a person greps for.
       console.error("stripe webhook: game full at payment, credited in full", {
         session: session.id,
-        amountCzk,
+        amountThb,
       });
     }
 
@@ -156,7 +156,7 @@ export async function POST(request: Request) {
       outcome: settled.data,
       sessionId: session.id,
       reference: session.clientReferenceId,
-      amountCzk,
+      amountThb,
     });
     return NextResponse.json({ ok: true, outcome: settled.data });
   }
@@ -164,7 +164,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabase.rpc("confirm_online_purchase", {
     p_reference: session.clientReferenceId,
     p_session_id: session.id,
-    p_amount_czk: amountCzk,
+    p_amount_thb: amountThb,
   });
 
   if (error) {
@@ -200,7 +200,7 @@ export async function POST(request: Request) {
     outcome,
     sessionId: session.id,
     reference: session.clientReferenceId,
-    amountCzk,
+    amountThb,
   });
   return NextResponse.json({ ok: true, outcome });
 }

@@ -1,4 +1,4 @@
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 
 /**
  * A crown amount that can be a loss (round 42, the admin rebuild): profit on a
@@ -6,7 +6,7 @@ import { formatCzk } from "@/lib/format";
  * money, danger when it lost, muted at exactly zero — and a real minus sign,
  * because a hyphen before a number reads as a dash.
  */
-export function SignedCzk({
+export function SignedThb({
   amount,
   className = "",
   testId,
@@ -21,7 +21,7 @@ export function SignedCzk({
   return (
     <span data-testid={testId} data-amount={rounded} className={`tabular-nums ${tone} ${className}`}>
       {sign}
-      {formatCzk(Math.abs(rounded))}
+      {formatThb(Math.abs(rounded))}
     </span>
   );
 }

@@ -57,7 +57,7 @@ export interface AdminDashboard {
   upcomingSeats: { taken: number; capacity: number };
   totalPlayers: number;
   newPlayers7d: number;
-  revenueMonthCzk: number;
+  revenueMonthThb: number;
   /** The bounds the figures above were computed against, for their labels. */
   window: DashboardWindow;
   rows: DashboardGameRow[];
@@ -83,7 +83,7 @@ const WEEK_MS = 7 * 86_400_000;
  * PostgREST's 1000 rows.
  */
 async function revenueInMonth(from: string, to: string): Promise<number> {
-  return (await revenueBetween({ from, to })).totalCzk;
+  return (await revenueBetween({ from, to })).totalThb;
 }
 
 export async function getAdminDashboard({
@@ -185,7 +185,7 @@ export async function getAdminDashboard({
     },
     totalPlayers: players.count ?? 0,
     newPlayers7d: recent.count ?? 0,
-    revenueMonthCzk: revenue,
+    revenueMonthThb: revenue,
     window: { weekFrom, monthFrom: month.from, monthTo: month.to },
     recentSignups: (signups.data ?? []).map((p) => ({
       id: p.id,

@@ -34,7 +34,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 test("the online option redirects to a stamped payment link", async ({ page, context }) => {
   test.skip(!BOOKING_URL, "NEXT_PUBLIC_STRIPE_PAYMENT_URL is not set");
 
-  const game = await createScratchGame({ priceCzk: 150, hoursFromNow: 52 });
+  const game = await createScratchGame({ priceThb: 150, hoursFromNow: 52 });
   try {
     await setWalletTo(players.runner.id, 0);
     await signInAs(context, players.runner);

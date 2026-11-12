@@ -26,8 +26,8 @@ export interface DirectoryPlayer {
   country: string | null;
   skillLevel: SkillLevel | null;
   marketingOptIn: boolean;
-  /** `SUM(credit_ledger.delta_czk)` — the ledger is the authority. */
-  balanceCzk: number;
+  /** `SUM(credit_ledger.delta_thb)` — the ledger is the authority. */
+  balanceThb: number;
   /** Every booking row, whatever became of it — the figure the list has always shown. */
   bookingCount: number;
   /** Distinct games played: kicked off, not cancelled out of, not a no-show. */

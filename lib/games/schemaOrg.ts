@@ -98,10 +98,10 @@ export function gameEventSchema({
       "@type": "Offer",
       url,
       // Payment is Czech regardless of the language the page is read in — the
-      // QR is an SPD string in CZK. The currency here is a fact about the
+      // QR is an SPD string in THB. The currency here is a fact about the
       // money, not about the locale.
-      price: game.price_czk,
-      priceCurrency: "CZK",
+      price: game.price_thb,
+      priceCurrency: "THB",
       availability: spotsLeft > 0 ? IN_STOCK : SOLD_OUT,
       validFrom: new Date(game.created_at).toISOString(),
     },

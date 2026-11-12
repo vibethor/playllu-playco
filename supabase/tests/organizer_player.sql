@@ -84,7 +84,7 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin, photo_p
 insert into public.players (id, nickname, email) values
   ('4e420000-0000-0000-0000-000000000004', 'R42Guest', 'r42-guest@test.invalid');
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('94242000-0000-0000-0000-0000000000a1', 'R42 Published', now() + interval '3 days', 12, 180, 'published', 90),
   ('94242000-0000-0000-0000-0000000000a2', 'R42 Draft',     now() + interval '4 days', 12, 180, 'draft',     90);
 

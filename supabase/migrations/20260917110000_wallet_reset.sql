@@ -4,7 +4,7 @@
 -- WHY AGAIN. Round 35 v2 did this two days ago and it was true when it ran.
 -- Between then and now the owner exercised the product — two admin grants noted
 -- "TEST" and "asdasda", some bookings, some cancellations — leaving 1,620 and
--- 2,520 CZK in two wallets. The pre-launch ruling has not changed: this is test
+-- 2,520 THB in two wallets. The pre-launch ruling has not changed: this is test
 -- data, and item 2 asks for the reset again rather than assuming the last one
 -- still holds.
 --
@@ -19,7 +19,7 @@
 -- ledger telling a story about money that never moved, and append-only is a
 -- property worth having about REAL history, which none of this is.
 --
--- `bookings.credit_applied_czk` GOES WITH IT, and it has to: the column is a
+-- `bookings.credit_applied_thb` GOES WITH IT, and it has to: the column is a
 -- claim that ledger rows exist, and leaving it set against an empty ledger
 -- makes the admin's outstanding figure under-report by exactly the amount it
 -- claims was paid. A `reserved` booking therefore owes its full price again,
@@ -37,8 +37,8 @@
 delete from public.credit_ledger;
 
 update public.bookings
-   set credit_applied_czk = 0
- where credit_applied_czk <> 0;
+   set credit_applied_thb = 0
+ where credit_applied_thb <> 0;
 
 do $$
 declare
@@ -49,7 +49,7 @@ begin
     raise exception 'wallet reset: % ledger row(s) survived', v_n;
   end if;
 
-  select count(*) into v_n from public.bookings where credit_applied_czk <> 0;
+  select count(*) into v_n from public.bookings where credit_applied_thb <> 0;
   if v_n > 0 then
     raise exception 'wallet reset: % booking(s) still claim applied credit', v_n;
   end if;

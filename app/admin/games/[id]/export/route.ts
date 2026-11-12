@@ -11,7 +11,7 @@ import { getAdminGame, listGameBookings, type AdminBookingRow } from "@/lib/admi
  * `listGameBookings` sorts them — VS order, which is the order the bank shows
  * incoming payments in.
  *
- * `amount_due_czk` is what is actually outstanding after wallet credit, which
+ * `amount_due_thb` is what is actually outstanding after wallet credit, which
  * is the number the bank statement will show. Price alone would be wrong for
  * every booking that spent credit, and those are the ones most likely to be
  * queried.
@@ -29,9 +29,9 @@ const COLUMNS: CsvColumn<AdminBookingRow>[] = [
   { header: "skill_level", value: (b) => b.skillLevel ?? "" },
   { header: "status", value: (b) => b.status },
   { header: "payment_method", value: (b) => b.paymentMethod },
-  { header: "price_czk", value: (b) => b.priceCzk },
-  { header: "credit_applied_czk", value: (b) => b.creditAppliedCzk },
-  { header: "amount_due_czk", value: (b) => b.amountDueCzk },
+  { header: "price_thb", value: (b) => b.priceThb },
+  { header: "credit_applied_thb", value: (b) => b.creditAppliedThb },
+  { header: "amount_due_thb", value: (b) => b.amountDueThb },
   { header: "booked_by_admin", value: (b) => b.bookedByAdmin },
   { header: "is_seed", value: (b) => b.isSeed },
   { header: "booking_id", value: (b) => b.id },

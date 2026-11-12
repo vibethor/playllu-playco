@@ -83,9 +83,9 @@ describe("sortPlayers", () => {
   it("sorts by Credit balance and by when the account was made", () => {
     // Arrange
     const players = [
-      aPlayer({ nickname: "Mid", balanceCzk: 360, createdAt: "2026-10-01T10:00:00Z" }),
-      aPlayer({ nickname: "Rich", balanceCzk: 900, createdAt: "2026-08-01T10:00:00Z" }),
-      aPlayer({ nickname: "Empty", balanceCzk: 0, createdAt: "2026-11-01T10:00:00Z" }),
+      aPlayer({ nickname: "Mid", balanceThb: 360, createdAt: "2026-10-01T10:00:00Z" }),
+      aPlayer({ nickname: "Rich", balanceThb: 900, createdAt: "2026-08-01T10:00:00Z" }),
+      aPlayer({ nickname: "Empty", balanceThb: 0, createdAt: "2026-11-01T10:00:00Z" }),
     ];
 
     // Act

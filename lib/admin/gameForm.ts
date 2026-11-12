@@ -105,7 +105,7 @@ export interface GameFormValues {
   newVenueMapQuery: string | null;
   startsAt: string;
   capacity: number;
-  priceCzk: number;
+  priceThb: number;
   format: string | null;
   surface: GameSurface | null;
   /** Round 18 item 2. Always resolved — see `gameLanguageOf`. */
@@ -196,9 +196,9 @@ export function parseGameForm(form: FormData): GameFormResult {
    * line. Refusing it here names the field instead, which is the difference
    * between an organizer fixing a typo and a player meeting a 500 at checkout.
    */
-  const priceCzk = Number(text(form, "priceCzk"));
-  if (!Number.isInteger(priceCzk) || priceCzk < 1) {
-    fieldErrors.priceCzk = strings.admin.priceInvalid;
+  const priceThb = Number(text(form, "priceThb"));
+  if (!Number.isInteger(priceThb) || priceThb < 1) {
+    fieldErrors.priceThb = strings.admin.priceInvalid;
   }
 
   // --- optional detail --------------------------------------------------------
@@ -357,7 +357,7 @@ export function parseGameForm(form: FormData): GameFormResult {
       newVenueMapQuery: newVenueMapQuery || null,
       startsAt: startsAtIso,
       capacity,
-      priceCzk,
+      priceThb,
       format: format || null,
       surface,
       language,

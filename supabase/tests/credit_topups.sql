@@ -75,7 +75,7 @@ end $$;
 
 create function pg_temp.balance(p_player uuid)
 returns integer language sql as $$
-  select coalesce(sum(delta_czk), 0)::integer
+  select coalesce(sum(delta_thb), 0)::integer
   from public.credit_ledger where player_id = p_player;
 $$;
 
@@ -114,7 +114,7 @@ select pg_temp.ok(
 select pg_temp.ok(
   (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'public' and p.proname = 'create_topup'
-     and pg_get_function_identity_arguments(p.oid) = 'p_amount_czk integer') = 1,
+     and pg_get_function_identity_arguments(p.oid) = 'p_amount_thb integer') = 1,
   'create_topup takes an amount and nothing else');
 
 select pg_temp.act_as('a0000000-0000-0000-0000-0000000fc002'::uuid);
@@ -131,9 +131,9 @@ select pg_temp.ok(pg_temp.call($q$select public.create_topup(null)$q$)
   = 'raise:AMOUNT_OUT_OF_RANGE', 'a null amount is refused rather than defaulted');
 
 -- The boundaries themselves are legal.
-select pg_temp.ok(pg_temp.call($q$select (public.create_topup(50)).amount_czk$q$) = '50',
+select pg_temp.ok(pg_temp.call($q$select (public.create_topup(50)).amount_thb$q$) = '50',
   'the minimum itself is accepted');
-select pg_temp.ok(pg_temp.call($q$select (public.create_topup(2000)).amount_czk$q$) = '2000',
+select pg_temp.ok(pg_temp.call($q$select (public.create_topup(2000)).amount_thb$q$) = '2000',
   'the maximum itself is accepted');
 
 select pg_temp.ok(
@@ -190,7 +190,7 @@ select pg_temp.ok(
 select pg_temp.act_as('a0000000-0000-0000-0000-0000000fc002'::uuid);
 
 select pg_temp.ok_do(
-  $q$insert into public.credit_topups (player_id, amount_czk, payment_code)
+  $q$insert into public.credit_topups (player_id, amount_thb, payment_code)
      values ('bbbb0000-0000-0000-0000-0000000fc002'::uuid, 5000, 2700009999)$q$,
   'denied',
   'a player cannot insert a top-up directly, bypassing the bounds');
@@ -219,7 +219,7 @@ reset role;
 
 set local role anon;
 select pg_temp.ok_call(
-  $q$select count(_p::text) from (select amount_czk from public.credit_topups) _p$q$,
+  $q$select count(_p::text) from (select amount_thb from public.credit_topups) _p$q$,
   'denied',
   'anon is refused the table outright');
 reset role;
@@ -229,7 +229,7 @@ reset role;
 -- =============================================================================
 
 -- A named row to work against for the rest of the suite.
-insert into public.credit_topups (id, player_id, amount_czk, payment_code)
+insert into public.credit_topups (id, player_id, amount_thb, payment_code)
 values ('ccc00000-0000-0000-0000-0000000fc001'::uuid,
         'bbbb0000-0000-0000-0000-0000000fc002'::uuid, 300, 2700001111);
 
@@ -262,7 +262,7 @@ select pg_temp.ok_call(
 
 -- The happy path: no received amount means the amount asked for.
 select pg_temp.ok_call(
-  $q$select (public.confirm_topup('ccc00000-0000-0000-0000-0000000fc001'::uuid)).credited_czk$q$,
+  $q$select (public.confirm_topup('ccc00000-0000-0000-0000-0000000fc001'::uuid)).credited_thb$q$,
   '300',
   'a null received amount credits the amount the player asked for');
 reset role;
@@ -274,7 +274,7 @@ select pg_temp.ok(
 select pg_temp.ok(
   (select count(*) from public.credit_ledger
    where player_id = 'bbbb0000-0000-0000-0000-0000000fc002'::uuid
-     and delta_czk = 300 and reason = 'topup') = 1,
+     and delta_thb = 300 and reason = 'topup') = 1,
   'the ledger row reads topup, not admin_grant — a payment is not a gift');
 
 select pg_temp.ok(
@@ -316,13 +316,13 @@ select pg_temp.ok(
 -- the received amount is what is credited
 -- =============================================================================
 
-insert into public.credit_topups (id, player_id, amount_czk, payment_code)
+insert into public.credit_topups (id, player_id, amount_thb, payment_code)
 values ('ccc00000-0000-0000-0000-0000000fc002'::uuid,
         'bbbb0000-0000-0000-0000-0000000fc002'::uuid, 300, 2700002222);
 
 select pg_temp.act_as('a0000000-0000-0000-0000-0000000fc001'::uuid);
 select pg_temp.ok_call(
-  $q$select (public.confirm_topup('ccc00000-0000-0000-0000-0000000fc002'::uuid, null, 250)).credited_czk$q$,
+  $q$select (public.confirm_topup('ccc00000-0000-0000-0000-0000000fc002'::uuid, null, 250)).credited_thb$q$,
   '250',
   'a short payment credits what arrived — a top-up has no price to be short of');
 reset role;
@@ -332,21 +332,21 @@ select pg_temp.ok(
   'the balance reflects the received amount, not the requested one');
 
 select pg_temp.ok(
-  (select received_amount_czk from public.credit_topups
+  (select received_amount_thb from public.credit_topups
    where id = 'ccc00000-0000-0000-0000-0000000fc002'::uuid) = 250
-  and (select amount_czk from public.credit_topups
+  and (select amount_thb from public.credit_topups
    where id = 'ccc00000-0000-0000-0000-0000000fc002'::uuid) = 300,
   'the requested amount is kept as a record of intent alongside what arrived');
 
 -- Over the asked-for amount is credited in full as well. There is no
 -- overpayment rule here, because there was nothing to overpay.
-insert into public.credit_topups (id, player_id, amount_czk, payment_code)
+insert into public.credit_topups (id, player_id, amount_thb, payment_code)
 values ('ccc00000-0000-0000-0000-0000000fc003'::uuid,
         'bbbb0000-0000-0000-0000-0000000fc002'::uuid, 150, 2700003333);
 
 select pg_temp.act_as('a0000000-0000-0000-0000-0000000fc001'::uuid);
 select pg_temp.ok_call(
-  $q$select (public.confirm_topup('ccc00000-0000-0000-0000-0000000fc003'::uuid, null, 500)).credited_czk$q$,
+  $q$select (public.confirm_topup('ccc00000-0000-0000-0000-0000000fc003'::uuid, null, 500)).credited_thb$q$,
   '500',
   'more than asked for is credited in full, with no split into a separate grant');
 
@@ -357,7 +357,7 @@ select pg_temp.ok_call(
 -- and nothing else on this table, by design, so a bare insert here would abort
 -- the transaction rather than fail an assertion.
 reset role;
-insert into public.credit_topups (id, player_id, amount_czk, payment_code)
+insert into public.credit_topups (id, player_id, amount_thb, payment_code)
 values ('ccc00000-0000-0000-0000-0000000fc004'::uuid,
         'bbbb0000-0000-0000-0000-0000000fc002'::uuid, 150, 2700004444);
 select pg_temp.act_as('a0000000-0000-0000-0000-0000000fc001'::uuid);
@@ -381,13 +381,13 @@ select pg_temp.ok(
 -- the returned balance is the real one
 -- =============================================================================
 
-insert into public.credit_topups (id, player_id, amount_czk, payment_code)
+insert into public.credit_topups (id, player_id, amount_thb, payment_code)
 values ('ccc00000-0000-0000-0000-0000000fc005'::uuid,
         'bbbb0000-0000-0000-0000-0000000fc003'::uuid, 200, 2700005555);
 
 select pg_temp.act_as('a0000000-0000-0000-0000-0000000fc001'::uuid);
 select pg_temp.ok_call(
-  $q$select (public.confirm_topup('ccc00000-0000-0000-0000-0000000fc005'::uuid)).balance_czk$q$,
+  $q$select (public.confirm_topup('ccc00000-0000-0000-0000-0000000fc005'::uuid)).balance_thb$q$,
   '200',
   'the returned balance is the wallet total, ready for the receipt email');
 reset role;
@@ -403,13 +403,13 @@ select pg_temp.ok(
 -- service_role may confirm, because a bank poller is not a person
 -- =============================================================================
 
-insert into public.credit_topups (id, player_id, amount_czk, payment_code)
+insert into public.credit_topups (id, player_id, amount_thb, payment_code)
 values ('ccc00000-0000-0000-0000-0000000fc006'::uuid,
         'bbbb0000-0000-0000-0000-0000000fc003'::uuid, 100, 2700006666);
 
 set local role service_role;
 select pg_temp.ok_call(
-  $q$select (public.confirm_topup('ccc00000-0000-0000-0000-0000000fc006'::uuid)).credited_czk$q$,
+  $q$select (public.confirm_topup('ccc00000-0000-0000-0000-0000000fc006'::uuid)).credited_thb$q$,
   '100',
   'service_role can confirm — the automation seam a future bank poller uses');
 reset role;

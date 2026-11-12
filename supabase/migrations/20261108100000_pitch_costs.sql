@@ -58,14 +58,14 @@
 -- 0. The ceiling on a typed cost — one place, so the CHECKs and the RPCs agree.
 -- -----------------------------------------------------------------------------
 
-create or replace function public.pitch_cost_max_czk()
+create or replace function public.pitch_cost_max_thb()
 returns integer
 language sql
 immutable
 set search_path = ''
 as $$ select 100000 $$;
 
-comment on function public.pitch_cost_max_czk() is
+comment on function public.pitch_cost_max_thb() is
   'The highest pitch cost an admin may type (round 42) — a typo guard, not a price.';
 
 -- -----------------------------------------------------------------------------
@@ -74,12 +74,12 @@ comment on function public.pitch_cost_max_czk() is
 
 create table if not exists public.venue_pitch_costs (
   venue_id    uuid primary key references public.venues (id) on delete cascade,
-  summer_czk  integer not null default 800,
-  winter_czk  integer not null default 1200,
+  summer_thb  integer not null default 800,
+  winter_thb  integer not null default 1200,
   updated_at  timestamptz not null default now(),
   constraint venue_pitch_costs_range check (
-    summer_czk between 0 and public.pitch_cost_max_czk()
-    and winter_czk between 0 and public.pitch_cost_max_czk())
+    summer_thb between 0 and public.pitch_cost_max_thb()
+    and winter_thb between 0 and public.pitch_cost_max_thb())
 );
 
 comment on table public.venue_pitch_costs is
@@ -159,7 +159,7 @@ stable
 security definer
 set search_path = ''
 as $$
-  select case public.pitch_season() when 'summer' then c.summer_czk else c.winter_czk end
+  select case public.pitch_season() when 'summer' then c.summer_thb else c.winter_thb end
     from public.venue_pitch_costs c
    where c.venue_id = p_venue_id
 $$;
@@ -175,10 +175,10 @@ comment on function public.venue_pitch_cost_now(uuid) is
 
 create table if not exists public.game_pitch_costs (
   game_id      uuid primary key references public.games (id) on delete cascade,
-  cost_czk     integer not null,
+  cost_thb     integer not null,
   set_by_hand  boolean not null default false,
   updated_at   timestamptz not null default now(),
-  constraint game_pitch_costs_range check (cost_czk between 0 and public.pitch_cost_max_czk())
+  constraint game_pitch_costs_range check (cost_thb between 0 and public.pitch_cost_max_thb())
 );
 
 comment on table public.game_pitch_costs is
@@ -211,7 +211,7 @@ begin
 
   v_cost := public.venue_pitch_cost_now(new.venue_id);
   if v_cost is not null then
-    insert into public.game_pitch_costs (game_id, cost_czk) values (new.id, v_cost)
+    insert into public.game_pitch_costs (game_id, cost_thb) values (new.id, v_cost)
     on conflict (game_id) do nothing;
   end if;
   return new;
@@ -230,7 +230,7 @@ create trigger games_pitch_cost_on_venue_change
   for each row execute function public.game_pitch_cost_follow_venue();
 
 -- Backfill: every game with a venue, at the current season's price.
-insert into public.game_pitch_costs (game_id, cost_czk)
+insert into public.game_pitch_costs (game_id, cost_thb)
 select g.id, public.venue_pitch_cost_now(g.venue_id)
   from public.games g
  where g.venue_id is not null
@@ -242,7 +242,7 @@ on conflict (game_id) do nothing;
 -- -----------------------------------------------------------------------------
 
 create or replace function public.set_venue_pitch_costs(
-  p_venue_id uuid, p_summer_czk integer, p_winter_czk integer)
+  p_venue_id uuid, p_summer_thb integer, p_winter_thb integer)
 returns jsonb
 language plpgsql
 security definer
@@ -253,25 +253,25 @@ begin
     raise exception 'INSUFFICIENT_PERMISSION' using detail = 'admin only';
   end if;
 
-  if p_summer_czk is null or p_winter_czk is null
-     or p_summer_czk not between 0 and public.pitch_cost_max_czk()
-     or p_winter_czk not between 0 and public.pitch_cost_max_czk() then
+  if p_summer_thb is null or p_winter_thb is null
+     or p_summer_thb not between 0 and public.pitch_cost_max_thb()
+     or p_winter_thb not between 0 and public.pitch_cost_max_thb() then
     raise exception 'PITCH_COST_OUT_OF_RANGE'
-      using detail = 'between 0 and ' || public.pitch_cost_max_czk()::text || ' CZK';
+      using detail = 'between 0 and ' || public.pitch_cost_max_thb()::text || ' THB';
   end if;
 
   if not exists (select 1 from public.venues v where v.id = p_venue_id) then
     raise exception 'VENUE_NOT_FOUND';
   end if;
 
-  insert into public.venue_pitch_costs (venue_id, summer_czk, winter_czk, updated_at)
-  values (p_venue_id, p_summer_czk, p_winter_czk, now())
+  insert into public.venue_pitch_costs (venue_id, summer_thb, winter_thb, updated_at)
+  values (p_venue_id, p_summer_thb, p_winter_thb, now())
   on conflict (venue_id) do update
-     set summer_czk = excluded.summer_czk,
-         winter_czk = excluded.winter_czk,
+     set summer_thb = excluded.summer_thb,
+         winter_thb = excluded.winter_thb,
          updated_at = now();
 
-  return jsonb_build_object('summer_czk', p_summer_czk, 'winter_czk', p_winter_czk);
+  return jsonb_build_object('summer_thb', p_summer_thb, 'winter_thb', p_winter_thb);
 end $$;
 
 revoke execute on function public.set_venue_pitch_costs(uuid, integer, integer) from public, anon;
@@ -313,7 +313,7 @@ comment on function public.set_pitch_season(text) is
   'Admin-only. Switches every venue to its summer or winter pitch cost for games '
   'created from now on (round 42).';
 
-create or replace function public.set_game_pitch_cost(p_game_id uuid, p_cost_czk integer)
+create or replace function public.set_game_pitch_cost(p_game_id uuid, p_cost_thb integer)
 returns integer
 language plpgsql
 security definer
@@ -327,9 +327,9 @@ begin
     raise exception 'INSUFFICIENT_PERMISSION' using detail = 'admin only';
   end if;
 
-  if p_cost_czk is not null and p_cost_czk not between 0 and public.pitch_cost_max_czk() then
+  if p_cost_thb is not null and p_cost_thb not between 0 and public.pitch_cost_max_thb() then
     raise exception 'PITCH_COST_OUT_OF_RANGE'
-      using detail = 'between 0 and ' || public.pitch_cost_max_czk()::text || ' CZK';
+      using detail = 'between 0 and ' || public.pitch_cost_max_thb()::text || ' THB';
   end if;
 
   select g.venue_id into v_venue from public.games g where g.id = p_game_id;
@@ -339,23 +339,23 @@ begin
 
   -- An empty correction puts the game back on its venue's price for the
   -- season — or on none, for a game with no venue.
-  if p_cost_czk is null then
+  if p_cost_thb is null then
     delete from public.game_pitch_costs c where c.game_id = p_game_id;
     v_cost := public.venue_pitch_cost_now(v_venue);
     if v_cost is not null then
-      insert into public.game_pitch_costs (game_id, cost_czk) values (p_game_id, v_cost);
+      insert into public.game_pitch_costs (game_id, cost_thb) values (p_game_id, v_cost);
     end if;
     return v_cost;
   end if;
 
-  insert into public.game_pitch_costs (game_id, cost_czk, set_by_hand, updated_at)
-  values (p_game_id, p_cost_czk, true, now())
+  insert into public.game_pitch_costs (game_id, cost_thb, set_by_hand, updated_at)
+  values (p_game_id, p_cost_thb, true, now())
   on conflict (game_id) do update
-     set cost_czk = excluded.cost_czk,
+     set cost_thb = excluded.cost_thb,
          set_by_hand = true,
          updated_at = now();
 
-  return p_cost_czk;
+  return p_cost_thb;
 end $$;
 
 revoke execute on function public.set_game_pitch_cost(uuid, integer) from public, anon;
@@ -381,11 +381,11 @@ returns table (
   credit_seats  numeric,
   free_seats    numeric,
   unpaid_seats  numeric,
-  single_czk    numeric,
-  pass_czk      numeric,
-  credit_czk    numeric,
-  kept_czk      numeric,
-  owed_czk      integer
+  single_thb    numeric,
+  pass_thb      numeric,
+  credit_thb    numeric,
+  kept_thb      numeric,
+  owed_thb      integer
 )
 language plpgsql
 stable
@@ -394,7 +394,7 @@ set search_path = ''
 as $$
 #variable_conflict use_column
 declare
-  v_seat_price numeric := public.credit_seat_price_czk();
+  v_seat_price numeric := public.credit_seat_price_thb();
 begin
   if not (public.is_admin_caller() or public.is_service_role()) then
     raise exception 'INSUFFICIENT_PERMISSION' using detail = 'admin only';
@@ -403,33 +403,33 @@ begin
   return query
   with b as (
     select bk.id, bk.game_id, bk.player_id, bk.status, bk.payment_method,
-           bk.price_czk, bk.credit_applied_czk, bk.guest_count
+           bk.price_thb, bk.credit_applied_thb, bk.guest_count
       from public.bookings bk
      where bk.game_id = any(coalesce(p_game_ids, array[]::uuid[]))
        and bk.status in ('reserved', 'confirmed', 'cancelled')
   ),
-  -- What a cancelled booking kept: `forfeited_czk` on a player's late
-  -- cancellation, `withheld_czk` on an admin removal that returned nothing.
+  -- What a cancelled booking kept: `forfeited_thb` on a player's late
+  -- cancellation, `withheld_thb` on an admin removal that returned nothing.
   kept as (
     select e.booking_id,
-           max(greatest(coalesce((e.metadata ->> 'forfeited_czk')::numeric, 0),
-                        coalesce((e.metadata ->> 'withheld_czk')::numeric, 0))) as face
+           max(greatest(coalesce((e.metadata ->> 'forfeited_thb')::numeric, 0),
+                        coalesce((e.metadata ->> 'withheld_thb')::numeric, 0))) as face
       from public.events e
      where e.booking_id in (select b.id from b where b.status = 'cancelled')
        and e.event_type in ('booking_cancelled', 'admin_booking_removed')
      group by e.booking_id
   ),
   red as (
-    select l.booking_id, l.player_id, l.batch_id, (-l.delta_czk)::numeric as face
+    select l.booking_id, l.player_id, l.batch_id, (-l.delta_thb)::numeric as face
       from public.credit_ledger l
      where l.booking_id in (select b.id from b)
        and l.reason = 'redemption'
-       and l.delta_czk < 0
+       and l.delta_thb < 0
   ),
   -- Every inflow a redemption could have drawn on: the batches named, and the
   -- unexpiring pool of every player who drew on it.
   inflow as (
-    select s.id, s.player_id, s.delta_czk::numeric as face,
+    select s.id, s.player_id, s.delta_thb::numeric as face,
            (s.expires_at is null) as in_pool,
            case
              when s.reason = 'topup' and t.pass_games is not null then 'pass'
@@ -440,13 +440,13 @@ begin
            end as kind,
            case
              when s.reason = 'topup' and t.id is not null
-               then coalesce(t.received_amount_czk, t.amount_czk)::numeric
+               then coalesce(t.received_amount_thb, t.amount_thb)::numeric
              when s.reason in ('admin_grant', 'adjustment') and not paid.recorded then 0
-             else s.delta_czk::numeric
+             else s.delta_thb::numeric
            end as paid
       from public.credit_ledger s
       left join lateral (
-        select t.id, t.pass_games, t.received_amount_czk, t.amount_czk
+        select t.id, t.pass_games, t.received_amount_thb, t.amount_thb
           from public.credit_topups t
          where s.reason = 'topup'
            and t.player_id = s.player_id
@@ -462,10 +462,10 @@ begin
              and e.event_type = 'payment_unmatched'
              and e.player_id = s.player_id
              and e.created_at = s.created_at
-             and e.metadata ->> 'amount_czk' = s.delta_czk::text
+             and e.metadata ->> 'amount_thb' = s.delta_thb::text
         ) as recorded
       ) paid
-     where s.delta_czk > 0
+     where s.delta_thb > 0
        and s.batch_id is null
        and (s.id in (select red.batch_id from red where red.batch_id is not null)
             or (s.expires_at is null
@@ -521,13 +521,13 @@ begin
   basis as (
     select b.*,
            case when b.status = 'cancelled'
-                then least(coalesce(k.face, 0), b.credit_applied_czk)
-                else b.credit_applied_czk end::numeric as credit_face,
+                then least(coalesce(k.face, 0), b.credit_applied_thb)
+                else b.credit_applied_thb end::numeric as credit_face,
            case
              when b.status = 'cancelled'
-               then greatest(coalesce(k.face, 0) - b.credit_applied_czk, 0)
+               then greatest(coalesce(k.face, 0) - b.credit_applied_thb, 0)
              when b.status = 'confirmed' and b.payment_method <> 'seed_free'
-               then greatest(b.price_czk - b.credit_applied_czk, 0)
+               then greatest(b.price_thb - b.credit_applied_thb, 0)
              else 0
            end::numeric as cash,
            sp.face as r_face, sp.pass_face as r_pass_face, sp.pass_value as r_pass_value,
@@ -573,7 +573,7 @@ begin
          round(case when v.status = 'cancelled'
                     then v.cash + v.c_pass_value + v.c_credit_value else 0 end, 2),
          case when v.status = 'reserved'
-              then greatest(v.price_czk - v.credit_applied_czk, 0) else 0 end
+              then greatest(v.price_thb - v.credit_applied_thb, 0) else 0 end
     from valued v;
 end $$;
 
@@ -589,7 +589,7 @@ comment on function public.booking_seat_values(uuid[]) is
 create or replace function public.game_economics(p_game_ids uuid[])
 returns table (
   game_id           uuid,
-  price_czk         integer,
+  price_thb         integer,
   capacity          integer,
   seats_taken       integer,
   house_guests      integer,
@@ -598,14 +598,14 @@ returns table (
   pass_seats        numeric,
   credit_seats      numeric,
   free_seats        numeric,
-  single_czk        numeric,
-  pass_czk          numeric,
-  credit_czk        numeric,
-  kept_czk          numeric,
-  owed_czk          integer,
-  revenue_czk       numeric,
-  pitch_cost_czk    integer,
-  profit_czk        numeric,
+  single_thb        numeric,
+  pass_thb          numeric,
+  credit_thb        numeric,
+  kept_thb          numeric,
+  owed_thb          integer,
+  revenue_thb       numeric,
+  pitch_cost_thb    integer,
+  profit_thb        numeric,
   break_even_seats  integer
 )
 language plpgsql
@@ -625,36 +625,36 @@ begin
            sum(s.unpaid_seats) as unpaid_seats,
            sum(s.single_seats) as single_seats, sum(s.pass_seats) as pass_seats,
            sum(s.credit_seats) as credit_seats, sum(s.free_seats) as free_seats,
-           sum(s.single_czk) as single_czk, sum(s.pass_czk) as pass_czk,
-           sum(s.credit_czk) as credit_czk, sum(s.kept_czk) as kept_czk,
-           sum(s.owed_czk)::integer as owed_czk
+           sum(s.single_thb) as single_thb, sum(s.pass_thb) as pass_thb,
+           sum(s.credit_thb) as credit_thb, sum(s.kept_thb) as kept_thb,
+           sum(s.owed_thb)::integer as owed_thb
       from public.booking_seat_values(p_game_ids) s
      group by s.game_id
   ),
   r as (
-    select g.id, g.price_czk, g.capacity, coalesce(g.guest_count, 0) as house_guests,
+    select g.id, g.price_thb, g.capacity, coalesce(g.guest_count, 0) as house_guests,
            coalesce(st.seats_taken, 0) as seats_taken,
            coalesce(v.unpaid_seats, 0) as unpaid_seats,
            coalesce(v.single_seats, 0) as single_seats, coalesce(v.pass_seats, 0) as pass_seats,
            coalesce(v.credit_seats, 0) as credit_seats, coalesce(v.free_seats, 0) as free_seats,
-           coalesce(v.single_czk, 0) as single_czk, coalesce(v.pass_czk, 0) as pass_czk,
-           coalesce(v.credit_czk, 0) as credit_czk, coalesce(v.kept_czk, 0) as kept_czk,
-           coalesce(v.owed_czk, 0) as owed_czk,
-           c.cost_czk
+           coalesce(v.single_thb, 0) as single_thb, coalesce(v.pass_thb, 0) as pass_thb,
+           coalesce(v.credit_thb, 0) as credit_thb, coalesce(v.kept_thb, 0) as kept_thb,
+           coalesce(v.owed_thb, 0) as owed_thb,
+           c.cost_thb
       from public.games g
       left join public.game_seats_taken_many(p_game_ids) st on st.game_id = g.id
       left join v on v.game_id = g.id
       left join public.game_pitch_costs c on c.game_id = g.id
      where g.id = any(coalesce(p_game_ids, array[]::uuid[]))
   )
-  select r.id, r.price_czk, r.capacity, r.seats_taken, r.house_guests, r.unpaid_seats,
+  select r.id, r.price_thb, r.capacity, r.seats_taken, r.house_guests, r.unpaid_seats,
          r.single_seats, r.pass_seats, r.credit_seats, r.free_seats,
-         r.single_czk, r.pass_czk, r.credit_czk, r.kept_czk, r.owed_czk,
-         r.single_czk + r.pass_czk + r.credit_czk + r.kept_czk,
-         r.cost_czk,
-         r.single_czk + r.pass_czk + r.credit_czk + r.kept_czk - r.cost_czk,
-         case when r.cost_czk is not null and r.price_czk > 0
-              then ceil(r.cost_czk::numeric / r.price_czk)::integer end
+         r.single_thb, r.pass_thb, r.credit_thb, r.kept_thb, r.owed_thb,
+         r.single_thb + r.pass_thb + r.credit_thb + r.kept_thb,
+         r.cost_thb,
+         r.single_thb + r.pass_thb + r.credit_thb + r.kept_thb - r.cost_thb,
+         case when r.cost_thb is not null and r.price_thb > 0
+              then ceil(r.cost_thb::numeric / r.price_thb)::integer end
     from r;
 end $$;
 
@@ -715,7 +715,7 @@ as $$
        where n.nspname = 'public' and p.proname = 'cancel_guests')),
     'creditsAreSeats',   to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-       where n.nspname = 'public' and p.proname = 'credit_seat_price_czk')),
+       where n.nspname = 'public' and p.proname = 'credit_seat_price_thb')),
     'seatsTakenMany',    to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'game_seats_taken_many')),

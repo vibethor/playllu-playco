@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { LOCALE_COOKIE } from "../lib/i18n/locales";
-import { czkToMinorUnits } from "../lib/payments/embeddedCheckout";
+import { thbToMinorUnits } from "../lib/payments/embeddedCheckout";
 import { apiClientFor, players, serviceClient, signInAs } from "./helpers/session";
 
 /**
@@ -8,7 +8,7 @@ import { apiClientFor, players, serviceClient, signInAs } from "./helpers/sessio
  *
  * THE OUTAGE THIS EXISTS TO PREVENT A REPEAT OF. The 15- and 20-game passes
  * could not be bought on production while 5, 8 and 12 could. `credit_topups`
- * capped `amount_czk` at 2000 CZK and round 35 v2 had priced those two tiers at
+ * capped `amount_thb` at 2000 THB and round 35 v2 had priced those two tiers at
  * 2241 and 2772, so the split was exactly the ceiling. Every tile rendered, every
  * price was right, and the button answered "Something went wrong."
  *
@@ -33,14 +33,14 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 interface Tier {
   games: number;
-  price_czk: number;
-  credited_czk: number;
+  price_thb: number;
+  credited_thb: number;
 }
 
 async function liveTiers(): Promise<Tier[]> {
   const { data, error } = await serviceClient()
     .from("pass_tiers")
-    .select("games, price_czk, credited_czk")
+    .select("games, price_thb, credited_thb")
     .order("games");
   if (error) throw new Error(`pass_tiers: ${error.message}`);
   return (data ?? []) as Tier[];
@@ -64,29 +64,29 @@ test("EVERY tier in the table can actually be purchased", async () => {
 
       expect(
         error?.message ?? null,
-        `the ${tier.games}-game pass at ${tier.price_czk} CZK could not be purchased`,
+        `the ${tier.games}-game pass at ${tier.price_thb} THB could not be purchased`,
       ).toBeNull();
 
-      const row = data as { id: string; amount_czk: number; pass_games: number } | null;
+      const row = data as { id: string; amount_thb: number; pass_games: number } | null;
       expect(row, `the ${tier.games}-game pass returned no row`).not.toBeNull();
       created.push(row!.id);
 
       // It is charged its OWN price — the bug's neighbour, where a tier sells
       // at another tier's amount.
       expect(
-        row!.amount_czk,
-        `the ${tier.games}-game pass was charged ${row!.amount_czk}, not ${tier.price_czk}`,
-      ).toBe(tier.price_czk);
+        row!.amount_thb,
+        `the ${tier.games}-game pass was charged ${row!.amount_thb}, not ${tier.price_thb}`,
+      ).toBe(tier.price_thb);
       expect(row!.pass_games).toBe(tier.games);
 
       /*
        * AND THE AMOUNT IS ONE STRIPE WOULD ACCEPT. This is the closest this
        * environment gets to session creation: `createEmbeddedSession` puts
-       * `czkToMinorUnits(amountCzk)` into `unit_amount`, and Stripe requires a
+       * `thbToMinorUnits(amountThb)` into `unit_amount`, and Stripe requires a
        * positive integer. A tier priced at 22.41 would pass every check above
        * and fail at the card.
        */
-      const minor = czkToMinorUnits(row!.amount_czk);
+      const minor = thbToMinorUnits(row!.amount_thb);
       expect(Number.isInteger(minor), `${tier.games}: unit_amount is not an integer`).toBe(true);
       expect(minor, `${tier.games}: unit_amount is not positive`).toBeGreaterThan(0);
     }
@@ -115,7 +115,7 @@ test("every tier the table holds is on the page, with its own price", async ({ p
   // Assert
   await expect(page.getByTestId("pass-tier")).toHaveCount(tiers.length);
   /*
-   * DIGITS ONLY. The page prints "1,296 CZK" and Czech prints "1 296 Kč" with a
+   * DIGITS ONLY. The page prints "1,296 THB" and Czech prints "1 296 Kč" with a
    * non-breaking space, so a search for "1296" finds neither. Stripping every
    * separator — commas, ordinary spaces, NBSP and the narrow NBSP the Czech
    * locale uses — compares the NUMBER rather than its typography, which is the
@@ -129,7 +129,7 @@ test("every tier the table holds is on the page, with its own price", async ({ p
     ).toHaveCount(1);
     expect(
       body.replace(/ | |\s/g, ""),
-      `the ${tier.games}-game tier does not show its price ${tier.price_czk}`,
-    ).toContain(String(tier.price_czk));
+      `the ${tier.games}-game tier does not show its price ${tier.price_thb}`,
+    ).toContain(String(tier.price_thb));
   }
 });

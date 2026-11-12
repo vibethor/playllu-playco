@@ -50,7 +50,7 @@ end $$;
 
 create function pg_temp.balance(p_player uuid)
 returns integer language sql as $$
-  select coalesce(sum(delta_czk), 0)::integer from public.credit_ledger where player_id = p_player;
+  select coalesce(sum(delta_thb), 0)::integer from public.credit_ledger where player_id = p_player;
 $$;
 
 -- --- fixtures ----------------------------------------------------------------
@@ -67,7 +67,7 @@ insert into public.players (id, nickname, email, auth_user_id, is_admin) values
 insert into public.players (id, nickname, email, auth_user_id) values
   ('cccc0000-0000-0000-0000-00000000c221', 'ShadowOne', null, null);
 
-insert into public.games (id, venue, starts_at, capacity, price_czk, status) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status) values
   ('66660000-0000-0000-0000-00000000e221', 'Merge Pitch',  now() + interval '6 days', 10, 200, 'published'),
   ('66660000-0000-0000-0000-00000000e222', 'Second Pitch', now() + interval '7 days', 10, 200, 'published');
 
@@ -195,7 +195,7 @@ reset role;
 -- =============================================================================
 
 -- The shadow has a booking, a waitlist row, credit and events of its own.
-insert into public.bookings (id, game_id, player_id, payment_method, status, price_czk) values
+insert into public.bookings (id, game_id, player_id, payment_method, status, price_thb) values
   ('55550000-0000-0000-0000-00000000e221', '66660000-0000-0000-0000-00000000e221',
    'cccc0000-0000-0000-0000-00000000c221', 'cash', 'confirmed', 200);
 
@@ -279,7 +279,7 @@ reset role;
 
 -- Both identities active on the same game: refused with a sentence rather than
 -- surfacing as the one-active-booking-per-game constraint.
-insert into public.bookings (id, game_id, player_id, payment_method, status, price_czk) values
+insert into public.bookings (id, game_id, player_id, payment_method, status, price_thb) values
   ('55550000-0000-0000-0000-00000000e222', '66660000-0000-0000-0000-00000000e222',
    'dddd0000-0000-0000-0000-00000000d221', 'cash', 'reserved', 200),
   ('55550000-0000-0000-0000-00000000e223', '66660000-0000-0000-0000-00000000e222',

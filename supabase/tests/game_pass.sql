@@ -73,17 +73,17 @@ begin
     json_build_object('role', 'service_role')::text, true);
 end $$;
 
-/** Balance, THE ONLY WAY IT IS EVER COMPUTED: SUM(delta_czk). */
+/** Balance, THE ONLY WAY IT IS EVER COMPUTED: SUM(delta_thb). */
 create function pg_temp.balance(p_player uuid)
 returns integer language sql security definer as $$
-  select coalesce(sum(delta_czk), 0)::integer
+  select coalesce(sum(delta_thb), 0)::integer
     from public.credit_ledger where player_id = p_player;
 $$;
 
 /** What is left in a batch, from the product's own function. */
 create function pg_temp.remaining(p_player uuid, p_batch uuid)
 returns integer language sql security definer as $$
-  select remaining_czk from public.credit_batches(p_player) where batch_id = p_batch;
+  select remaining_thb from public.credit_batches(p_player) where batch_id = p_batch;
 $$;
 
 /** How many batches a player holds. */
@@ -95,7 +95,7 @@ $$;
 /** The smallest remainder across a player's batches — the per-batch floor. */
 create function pg_temp.min_remaining(p_player uuid)
 returns integer language sql security definer as $$
-  select coalesce(min(remaining_czk), 0)::integer from public.credit_batches(p_player);
+  select coalesce(min(remaining_thb), 0)::integer from public.credit_batches(p_player);
 $$;
 
 /** The single batch a player holds, when a fixture made exactly one. */
@@ -127,14 +127,14 @@ $$;
 /** Ordinary, never-expiring credit. */
 create function pg_temp.grant_plain(p_player uuid, p_amount integer)
 returns void language sql security definer as $$
-  insert into public.credit_ledger (player_id, delta_czk, reason)
+  insert into public.credit_ledger (player_id, delta_thb, reason)
   values (p_player, p_amount, 'admin_grant');
 $$;
 
 /** Grants a batch directly, for the fixtures that need a specific expiry. */
 create function pg_temp.grant_batch(p_player uuid, p_amount integer, p_expires timestamptz)
 returns uuid language sql security definer as $$
-  insert into public.credit_ledger (player_id, delta_czk, reason, expires_at)
+  insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
   values (p_player, p_amount, 'topup', p_expires)
   returning id;
 $$;
@@ -159,7 +159,7 @@ insert into public.venues (id, name) values
 -- takes no credit at all — so every game a credit is spent on below says how
 -- long it is. The price follows from that, which is why none of these rows
 -- states one it chose.
-insert into public.games (id, venue, venue_id, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, venue_id, starts_at, capacity, price_thb, status, duration_minutes) values
   ('dddd0000-0000-0000-0000-0000000020a1', 'Pass Pitch', '11110000-0000-0000-0000-0000000020a1',
    now() + interval '5 days', 10, 180, 'published', 90),
   ('dddd0000-0000-0000-0000-0000000020a2', 'Pass Pitch', '11110000-0000-0000-0000-0000000020a1',
@@ -176,7 +176,7 @@ select pg_temp.ok(
   'five tiers ship — the pass starts at five games (migration 36)');
 
 select pg_temp.ok(
-  (select bool_and(credited_czk = games * public.credit_seat_price_czk()) from public.pass_tiers),
+  (select bool_and(credited_thb = games * public.credit_seat_price_thb()) from public.pass_tiers),
   'credited value is always games x the credit rate — the CHECK, restated as an assertion');
 
 -- THE 1-GAME TIER IS GONE, and the assertion is that it cannot come back: the
@@ -193,11 +193,11 @@ select pg_temp.ok(
 do $$
 begin
   /*
-   * `credited_czk` MUST SATISFY THE CREDIT-RATE PEG or the insert is refused by
+   * `credited_thb` MUST SATISFY THE CREDIT-RATE PEG or the insert is refused by
    * the WRONG constraint and this assertion stops being about the minimum.
    * Round 35 v2 moved the rate, so the fixture moved with it.
    */
-  insert into public.pass_tiers (games, price_czk, credited_czk, expires_months)
+  insert into public.pass_tiers (games, price_thb, credited_thb, expires_months)
   values (1, 150, 1 * 180, null);
 
   perform pg_temp.ok(false,
@@ -208,12 +208,12 @@ exception when check_violation then
 end $$;
 
 select pg_temp.ok(
-  (select price_czk = 840 and credited_czk = 900 and expires_months = 1
+  (select price_thb = 840 and credited_thb = 900 and expires_months = 1
      from public.pass_tiers where games = 5),
   'the 5-pass: 840 buys 900, expiring in a month');
 
 select pg_temp.ok(
-  (select count(distinct price_czk) = count(*) from public.pass_tiers),
+  (select count(distinct price_thb) = count(*) from public.pass_tiers),
   'every tier price is distinct — the exact-price match depends on it');
 
 select set_config('role', 'anon', true);
@@ -236,7 +236,7 @@ begin
   v_topup := public.create_pass_topup(5);
 
   perform pg_temp.ok(
-    v_topup.amount_czk = 840 and v_topup.pass_games = 5,
+    v_topup.amount_thb = 840 and v_topup.pass_games = 5,
     'a pass request is priced from the TIER, not from anything the caller sent');
 
   perform pg_temp.ok(
@@ -271,13 +271,13 @@ begin
   v_result := public.confirm_topup(v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 840);
 
   perform pg_temp.ok(
-    v_result.credited_czk = 900,
+    v_result.credited_thb = 900,
     'an exact 840 credits the 5-pass VALUE of 900 — the one exception to credited-equals-received',
-    v_result.credited_czk::text);
+    v_result.credited_thb::text);
 
   perform pg_temp.ok(
     pg_temp.balance('bbbb0000-0000-0000-0000-0000000020a2') = 900,
-    'and the balance is still SUM(delta_czk)');
+    'and the balance is still SUM(delta_thb)');
 
   v_batch := pg_temp.only_batch('bbbb0000-0000-0000-0000-0000000020a2');
   perform pg_temp.ok(
@@ -291,8 +291,8 @@ begin
 
   -- ALL THREE NUMBERS on the event, because they differ (§4.2).
   perform pg_temp.ok(
-    (select metadata ->> 'received_czk' = '840'
-        and metadata ->> 'credited_czk' = '900'
+    (select metadata ->> 'received_thb' = '840'
+        and metadata ->> 'credited_thb' = '900'
         and metadata ->> 'expires_at' is not null
        from public.events
       where event_type = 'topup_confirmed'
@@ -330,14 +330,14 @@ begin
   v_result := public.confirm_topup(v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 840);
 
   perform pg_temp.ok(
-    v_result.credited_czk = 840,
-    'an ordinary 840 credits 840 — never 900. The player meant 840 CZK that keeps',
-    v_result.credited_czk::text);
+    v_result.credited_thb = 840,
+    'an ordinary 840 credits 840 — never 900. The player meant 840 THB that keeps',
+    v_result.credited_thb::text);
 
   perform pg_temp.ok(
     exists (select 1 from public.credit_ledger
              where player_id = 'bbbb0000-0000-0000-0000-0000000020a2'
-               and reason = 'topup' and delta_czk = 840
+               and reason = 'topup' and delta_thb = 840
                and expires_at = now() + interval '60 days'),
     'and it is valid sixty days like every Credit — ~~NO expiry~~ ended in round 40');
 end $$;
@@ -346,7 +346,7 @@ reset role;
 
 -- A pass paid at ANOTHER tier's price is a mispayment, not a purchase of that
 -- other tier. Crediting the 8-pass value on the strength of a coincidence would hand over
--- 450 CZK nobody asked for.
+-- 450 THB nobody asked for.
 do $$
 declare
   v_topup public.credit_topups;
@@ -362,14 +362,14 @@ begin
     v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 1296);  -- the 8-pass price
 
   perform pg_temp.ok(
-    v_result.credited_czk = 1296,
+    v_result.credited_thb = 1296,
     'a 5-pass paid at the 8-pass price credits what arrived, not the 8-pass value',
-    v_result.credited_czk::text);
+    v_result.credited_thb::text);
 
   perform pg_temp.ok(
     exists (select 1 from public.credit_ledger
              where player_id = 'bbbb0000-0000-0000-0000-0000000020a2'
-               and reason = 'topup' and delta_czk = 1296
+               and reason = 'topup' and delta_thb = 1296
                and expires_at = now() + interval '60 days'),
     'and it is a top-up, valid sixty days like every Credit since round 40');
 end $$;
@@ -392,7 +392,7 @@ begin
   v_result := public.confirm_topup(v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 840);
 
   perform pg_temp.ok(
-    v_result.credited_czk = 900,
+    v_result.credited_thb = 900,
     'a CHOSEN 5-pass paid at exactly 840 still credits 900');
 
   perform pg_temp.ok(
@@ -418,14 +418,14 @@ begin
   v_result := public.confirm_topup(v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 690);
 
   perform pg_temp.ok(
-    v_result.credited_czk = 690,
+    v_result.credited_thb = 690,
     'a near miss credits exactly what arrived — not the pass value, and not nothing',
-    v_result.credited_czk::text);
+    v_result.credited_thb::text);
 
   perform pg_temp.ok(
     exists (select 1 from public.credit_ledger
              where player_id = 'cccc0000-0000-0000-0000-0000000020a3'
-               and reason = 'topup' and delta_czk = 690
+               and reason = 'topup' and delta_thb = 690
                and expires_at = now() + interval '60 days'),
     'and it is a top-up — valid sixty days since round 40, when top-ups began to expire');
 end $$;
@@ -462,7 +462,7 @@ begin
   v_result := public.create_booking('dddd0000-0000-0000-0000-0000000020a1', 'cash');
 
   perform pg_temp.ok(
-    v_result.credit_applied_czk = 180 and v_result.status = 'confirmed',
+    v_result.credit_applied_thb = 180 and v_result.status = 'confirmed',
     'the whole seat came out of the wallet');
 
   perform pg_temp.ok(
@@ -476,7 +476,7 @@ begin
 
   -- The ordinary pool is untouched while any batch has anything in it.
   perform pg_temp.ok(
-    (select coalesce(sum(delta_czk), 0) = 500
+    (select coalesce(sum(delta_thb), 0) = 500
        from public.credit_ledger
       where player_id = 'cccc0000-0000-0000-0000-0000000020a3'
         and expires_at is null and batch_id is null),
@@ -484,7 +484,7 @@ begin
 
   perform pg_temp.ok(
     pg_temp.balance('cccc0000-0000-0000-0000-0000000020a3') = 720,
-    'and balance is still SUM(delta_czk), down by exactly the price');
+    'and balance is still SUM(delta_thb), down by exactly the price');
 end $$;
 
 -- =============================================================================
@@ -556,7 +556,7 @@ begin
   perform pg_temp.ok(
     exists (select 1 from public.credit_ledger
              where player_id = 'cccc0000-0000-0000-0000-0000000020a3'
-               and reason = 'cancellation_credit' and delta_czk = 180
+               and reason = 'cancellation_credit' and delta_thb = 180
                and expires_at is not null),
     'and since round 40 the paid price comes back as a Credit that expires — '
     'sixty days from the payment, not unexpiring');
@@ -587,7 +587,7 @@ begin
 
   perform pg_temp.ok(
     pg_temp.balance('cccc0000-0000-0000-0000-0000000020a3') = 0,
-    'and closes it with a COMPENSATING NEGATIVE ROW — balance is still SUM(delta_czk), never a filtered query');
+    'and closes it with a COMPENSATING NEGATIVE ROW — balance is still SUM(delta_thb), never a filtered query');
 
   perform pg_temp.ok(
     (select count(*) = 1 from public.credit_ledger
@@ -648,7 +648,7 @@ begin
   select count(*) into v_count from public.batches_expiring_soon(3);
   perform pg_temp.ok(
     v_count = 0,
-    'a fully spent batch raises no heads-up — "your 0 CZK expires on Friday" is worse than silence');
+    'a fully spent batch raises no heads-up — "your 0 THB expires on Friday" is worse than silence');
 end $$;
 
 reset role;
@@ -669,7 +669,7 @@ declare
 begin
   perform pg_temp.reset_wallet('cccc0000-0000-0000-0000-0000000020a3');
 
-  -- 40 CZK, in a batch, against a 180 game.
+  -- 40 THB, in a batch, against a 180 game.
   perform pg_temp.grant_batch('cccc0000-0000-0000-0000-0000000020a3', 40, now() + interval '10 days');
 
   perform pg_temp.act_as('c0000000-0000-0000-0000-0000000020a3');
@@ -684,7 +684,7 @@ begin
    * player keeps value they would otherwise have spent on a fraction of a game.
    */
   perform pg_temp.ok(
-    v_result.credit_applied_czk = 0 and v_result.amount_due_czk = 180,
+    v_result.credit_applied_thb = 0 and v_result.amount_due_thb = 180,
     'a sub-credit batch balance buys nothing and the whole price is owed');
 
   perform pg_temp.ok(
@@ -722,13 +722,13 @@ begin
   v_second := public.create_booking('dddd0000-0000-0000-0000-0000000020a2', 'cash');
 
   perform pg_temp.ok(
-    v_first.credit_applied_czk = 180,
+    v_first.credit_applied_thb = 180,
     'the first booking spends the batch');
 
   perform pg_temp.ok(
-    v_second.credit_applied_czk = 0 and v_second.amount_due_czk = 180,
+    v_second.credit_applied_thb = 0 and v_second.amount_due_thb = 180,
     'the second spends NOTHING — the same credit cannot buy two games',
-    v_second.credit_applied_czk::text);
+    v_second.credit_applied_thb::text);
 
   perform pg_temp.ok(
     pg_temp.balance('cccc0000-0000-0000-0000-0000000020a3') = 0,

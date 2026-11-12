@@ -3,7 +3,7 @@ import Link from "next/link";
 import { WaitlistConvert } from "@/components/WaitlistConvert";
 import { WaitlistStatus } from "@/components/game/WaitlistStatus";
 import { requireCurrentPlayer } from "@/lib/auth/session";
-import { formatCzk, formatGameDateTime } from "@/lib/format";
+import { formatThb, formatGameDateTime } from "@/lib/format";
 import { getGameById } from "@/lib/games/queries";
 import { isOnWaitlist } from "@/lib/booking/waitlistConvert";
 import { getStrings } from "@/lib/i18n/server";
@@ -66,7 +66,7 @@ export default async function WaitlistConvertPage({
           {formatGameDateTime(game.starts_at)}
         </span>
         <span className="text-[13px] text-muted">
-          {formatCzk(game.price_czk)}
+          {formatThb(game.price_thb)}
         </span>
       </div>
 

@@ -22,7 +22,7 @@ const OPEN: ClaimBarFacts = {
   hasStarted: false,
   holdsSpot: false,
   bookingPaid: false,
-  amountDueCzk: 0,
+  amountDueThb: 0,
   canCancel: false,
   onWaitlist: false,
   waitlistPosition: null,
@@ -81,9 +81,9 @@ describe("claimBarState", () => {
   it("shows what is due to a holder who has not paid", () => {
     expect(
       claimBarState(
-        facts({ signedIn: true, holdsSpot: true, amountDueCzk: 150, canCancel: true }),
+        facts({ signedIn: true, holdsSpot: true, amountDueThb: 150, canCancel: true }),
       ),
-    ).toEqual({ kind: "holding-unpaid", amountDueCzk: 150, canCancel: true });
+    ).toEqual({ kind: "holding-unpaid", amountDueThb: 150, canCancel: true });
   });
 
   it("says kicked off, with no button, once the game has started", () => {
@@ -168,23 +168,23 @@ describe("claimBarState", () => {
       // game's price is. `bookingPaid` is the authority; the amount is display.
       expect(
         claimBarState(
-          facts({ holdsSpot: true, bookingPaid: true, amountDueCzk: 200, signedIn: true }),
+          facts({ holdsSpot: true, bookingPaid: true, amountDueThb: 200, signedIn: true }),
         ),
       ).toMatchObject({ kind: "holding-paid" });
     });
 
-    it("treats a zero balance due as paid, so no bar ever says 0 CZK due", () => {
+    it("treats a zero balance due as paid, so no bar ever says 0 THB due", () => {
       // A cash booking part-settled to exactly zero is paid in every sense the
-      // reader cares about, and `0 CZK due` is a sentence no bar should print.
+      // reader cares about, and `0 THB due` is a sentence no bar should print.
       expect(
-        claimBarState(facts({ holdsSpot: true, amountDueCzk: 0, signedIn: true })),
+        claimBarState(facts({ holdsSpot: true, amountDueThb: 0, signedIn: true })),
       ).toMatchObject({ kind: "holding-paid" });
     });
 
     it("never reports a negative amount due", () => {
       // Over-credit is possible in the ledger and is not the player's problem.
       expect(
-        claimBarState(facts({ holdsSpot: true, amountDueCzk: -50, signedIn: true })),
+        claimBarState(facts({ holdsSpot: true, amountDueThb: -50, signedIn: true })),
       ).toMatchObject({ kind: "holding-paid" });
     });
   });

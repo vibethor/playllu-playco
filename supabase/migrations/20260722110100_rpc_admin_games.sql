@@ -21,9 +21,9 @@
 -- would mean maintaining it twice.
 --
 -- PRICE EDITS APPLY FORWARD ONLY, and that is a property of the schema rather
--- than a rule enforced here: `bookings.price_czk` is written at booking time,
+-- than a rule enforced here: `bookings.price_thb` is written at booking time,
 -- so a game repriced today cannot change what an existing booking owes. This
--- function updates `games.price_czk` and touches no booking.
+-- function updates `games.price_thb` and touches no booking.
 --
 -- Rollback: supabase/rollback/20260722110100_rpc_admin_games_down.sql
 -- =============================================================================
@@ -78,7 +78,7 @@ create function public.admin_create_game(
   p_venue_id  uuid,
   p_starts_at timestamptz,
   p_capacity  integer,
-  p_price_czk integer,
+  p_price_thb integer,
   p_format    text default null,
   p_surface   text default null,
   p_notes     text default null
@@ -108,7 +108,7 @@ begin
   if p_capacity is null or p_capacity < 1 then
     raise exception 'INVALID_CAPACITY';
   end if;
-  if p_price_czk is null or p_price_czk < 0 then
+  if p_price_thb is null or p_price_thb < 0 then
     raise exception 'INVALID_PRICE';
   end if;
 
@@ -117,10 +117,10 @@ begin
   -- game starts as: creation and publication are separate admin actions, and
   -- nothing auto-publishes.
   insert into public.games (
-    venue, venue_id, starts_at, capacity, price_czk, format, surface, notes, city, brand
+    venue, venue_id, starts_at, capacity, price_thb, format, surface, notes, city, brand
   )
   values (
-    v_venue.name, v_venue.id, p_starts_at, p_capacity, p_price_czk,
+    v_venue.name, v_venue.id, p_starts_at, p_capacity, p_price_thb,
     nullif(btrim(coalesce(p_format, '')), ''),
     nullif(btrim(coalesce(p_surface, '')), ''),
     nullif(btrim(coalesce(p_notes, '')), ''),
@@ -140,7 +140,7 @@ create function public.admin_update_game(
   p_game_id   uuid,
   p_venue_id  uuid,
   p_starts_at timestamptz,
-  p_price_czk integer,
+  p_price_thb integer,
   p_format    text default null,
   p_surface   text default null,
   p_notes     text default null
@@ -182,7 +182,7 @@ begin
   if p_starts_at is null then
     raise exception 'INVALID_STARTS_AT';
   end if;
-  if p_price_czk is null or p_price_czk < 0 then
+  if p_price_thb is null or p_price_thb < 0 then
     raise exception 'INVALID_PRICE';
   end if;
 
@@ -190,7 +190,7 @@ begin
      set venue      = v_venue.name,
          venue_id   = v_venue.id,
          starts_at  = p_starts_at,
-         price_czk  = p_price_czk,
+         price_thb  = p_price_thb,
          format     = nullif(btrim(coalesce(p_format, '')), ''),
          surface    = nullif(btrim(coalesce(p_surface, '')), ''),
          notes      = nullif(btrim(coalesce(p_notes, '')), '')

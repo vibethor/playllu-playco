@@ -31,11 +31,11 @@ const value = (over: Partial<BookingSeatValue> & { booking_id: string }): Bookin
   credit_seats: 0,
   free_seats: 0,
   unpaid_seats: 0,
-  single_czk: 0,
-  pass_czk: 0,
-  credit_czk: 0,
-  kept_czk: 0,
-  owed_czk: 0,
+  single_thb: 0,
+  pass_thb: 0,
+  credit_thb: 0,
+  kept_thb: 0,
+  owed_thb: 0,
   ...over,
 });
 

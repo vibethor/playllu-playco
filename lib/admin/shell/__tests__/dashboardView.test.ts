@@ -12,7 +12,7 @@ const FIGURES: TileFigures = {
   upcomingSeats: { taken: 21, capacity: 48 },
   totalPlayers: 37,
   newPlayers7d: 3,
-  revenueMonthCzk: 12_340,
+  revenueMonthThb: 12_340,
   window: {
     weekFrom: "2026-11-01T12:00:00.000Z",
     monthFrom: "2026-10-31T23:00:00.000Z",
@@ -71,12 +71,12 @@ describe("dashboardTiles", () => {
     expect(revenue.detail).toBe("Confirmed in November 2026");
   });
 
-  it("prints revenue as formatCzk does, with the currency set apart so it fits a half tile", () => {
+  it("prints revenue as formatThb does, with the currency set apart so it fits a half tile", () => {
     // Act
     const revenue = tile("tile-revenue");
 
     // Assert
-    expect(`${revenue.value} ${revenue.unit}`).toBe("12,340 CZK");
+    expect(`${revenue.value} ${revenue.unit}`).toBe("12,340 THB");
     expect(revenue.value).toBe("12,340");
   });
 

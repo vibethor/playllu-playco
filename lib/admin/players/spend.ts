@@ -12,21 +12,21 @@ import type { BookingSeatValue } from "@/lib/types/database";
  */
 
 export interface PlayerSpend {
-  singleCzk: number;
-  passCzk: number;
-  creditCzk: number;
-  keptCzk: number;
-  totalCzk: number;
+  singleThb: number;
+  passThb: number;
+  creditThb: number;
+  keptThb: number;
+  totalThb: number;
 }
 
 export function playerSpend(values: BookingSeatValue[], playerId: string): PlayerSpend {
   const own = values.filter((row) => row.player_id === playerId);
   const sum = (pick: (row: BookingSeatValue) => number) => Math.round(own.reduce((total, row) => total + pick(row), 0));
 
-  const singleCzk = sum((row) => row.single_czk);
-  const passCzk = sum((row) => row.pass_czk);
-  const creditCzk = sum((row) => row.credit_czk);
-  const keptCzk = sum((row) => row.kept_czk);
+  const singleThb = sum((row) => row.single_thb);
+  const passThb = sum((row) => row.pass_thb);
+  const creditThb = sum((row) => row.credit_thb);
+  const keptThb = sum((row) => row.kept_thb);
 
-  return { singleCzk, passCzk, creditCzk, keptCzk, totalCzk: singleCzk + passCzk + creditCzk + keptCzk };
+  return { singleThb, passThb, creditThb, keptThb, totalThb: singleThb + passThb + creditThb + keptThb };
 }

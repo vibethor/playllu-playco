@@ -46,7 +46,7 @@ const paid: PaymentReceipt = {
   orderId: "cs_live_a1b2c3d4e5f6g7h8",
   paidAt: "2026-07-20T12:03:00.000Z",
   credits: 1,
-  amountCzk: 180,
+  amountThb: 180,
   method: "card",
   validUntil: "2026-09-18T12:03:00.000Z",
   usedForGame: true,
@@ -61,14 +61,14 @@ function all(locale: Locale, venue = game.venue): { name: string; email: Rendere
     { name: "booking-confirmed", email: bookingConfirmedEmail({ ...g, places: 1, creditsPaid: 1, ics }, e) },
     {
       name: "booking-confirmed+receipt",
-      email: bookingConfirmedEmail({ ...g, places: 3, creditsPaid: 3, ics, receipt: { ...paid, credits: 3, amountCzk: 540 } }, e),
+      email: bookingConfirmedEmail({ ...g, places: 3, creditsPaid: 3, ics, receipt: { ...paid, credits: 3, amountThb: 540 } }, e),
     },
     { name: "guests-added", email: bookingConfirmedEmail({ ...g, kind: "guests", places: 3, creditsPaid: 2 }, e) },
     {
       name: "spot-held",
-      email: spotHeldEmail({ ...g, amountDueCzk: 180, variableSymbol: 2600000042, spdString: "SPD*1.0*AM:180.00", ics }, e),
+      email: spotHeldEmail({ ...g, amountDueThb: 180, variableSymbol: 2600000042, spdString: "SPD*1.0*AM:180.00", ics }, e),
     },
-    { name: "nudge", email: nudgeEmail({ ...g, amountDueCzk: 180 }, e) },
+    { name: "nudge", email: nudgeEmail({ ...g, amountDueThb: 180 }, e) },
     { name: "expiry", email: expiryEmail(g, e) },
     { name: "reminder", email: reminderEmail({ ...g, places: 2 }, e) },
     { name: "waitlist", email: waitlistSpotOpenEmail({ ...g, convertUrl: `${BASE_URL}/game/abc/waitlist/convert` }, e) },
@@ -76,7 +76,7 @@ function all(locale: Locale, venue = game.venue): { name: string; email: Rendere
     { name: "cancel-late", email: cancellationCreditEmail({ ...g, creditsReturned: 0, outcome: "late" }, e) },
     { name: "cancel-unpaid", email: cancellationCreditEmail({ ...g, creditsReturned: 0, outcome: "unpaid" }, e) },
     { name: "game-cancelled", email: gameCancelledEmail({ ...g, creditsReturned: 2, reason: venue }, e) },
-    { name: "credits-purchased", email: creditsPurchasedEmail({ paid: { ...paid, credits: 5, amountCzk: 810, usedForGame: false }, balanceCredits: 6 }, e) },
+    { name: "credits-purchased", email: creditsPurchasedEmail({ paid: { ...paid, credits: 5, amountThb: 810, usedForGame: false }, balanceCredits: 6 }, e) },
     { name: "credits-game-full", email: creditsPurchasedEmail({ paid: { ...paid, usedForGame: false }, gameFull: true }, e) },
     { name: "credits-expiring", email: creditsExpiringEmail({ credits: 2, expiresAt: "2026-09-18T12:03:00.000Z" }, e) },
   ];
@@ -150,7 +150,7 @@ describe("Credits never wear crowns", () => {
 
     // Assert
     for (const { name, email } of emails) {
-      expect(email.text, `${name} prices something in CZK`).not.toContain("CZK");
+      expect(email.text, `${name} prices something in THB`).not.toContain("THB");
     }
   });
 
@@ -188,7 +188,7 @@ describe("the booking confirmation — the approved template", () => {
 
     // Assert
     expect(email.text).toContain("HF-E5F6G7H8");
-    expect(email.text).toContain("180 CZK");
+    expect(email.text).toContain("180 THB");
     expect(email.text).toContain(paid.terms!.wording);
     expect(email.attachments?.map((a) => a.filename)).toContain("Hraj-Fotbal-obchodni-podminky.pdf");
     const pdf = email.attachments?.find((a) => a.filename.endsWith(".pdf"));
@@ -228,7 +228,7 @@ describe("the payment request", () => {
 describe("windows come from policy, not from copy", () => {
   it("fills the nudge's grace from lib/policy.ts", () => {
     // Act
-    const email = nudgeEmail({ ...game, amountDueCzk: 180 }, env("en"));
+    const email = nudgeEmail({ ...game, amountDueThb: 180 }, env("en"));
 
     // Assert
     expect(email.text).toContain(`${policy.expiry.graceHoursAfterNudge} hours`);

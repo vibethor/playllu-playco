@@ -21,7 +21,7 @@ import { isOnWaitlist, waitlistPosition } from "@/lib/booking/waitlistConvert";
 import { readResumeIntent } from "@/lib/booking/resume";
 import { runJoinWaitlist } from "./waitlist/actions";
 import { getCurrentPlayer, getSessionUser } from "@/lib/auth/session";
-import { formatCzk, formatGameDateTime } from "@/lib/format";
+import { formatThb, formatGameDateTime } from "@/lib/format";
 import { gameEndsAt } from "@/lib/games/duration";
 import { gameLanguageOf } from "@/lib/games/language";
 import {
@@ -94,8 +94,8 @@ export async function generateMetadata({ params }: GamePageProps): Promise<Metad
     game.capacity,
     await getLocale(),
     t,
-  )} · ${formatCzk(
-    game.price_czk,
+  )} · ${formatThb(
+    game.price_thb,
   )}`;
 
   // Round 41: the short link, once the game has a number.
@@ -548,8 +548,8 @@ export default async function GameDetailPage({ params, searchParams }: GamePageP
           gameId={game.id}
           bookingId={ownBooking.booking.id}
           canAdd={canAddGuests}
-          priceCzk={game.price_czk}
-          creditCzk={addGuestsCredit}
+          priceThb={game.price_thb}
+          creditThb={addGuestsCredit}
           embeddedCheckout={embeddedCheckoutEnabled()}
         />
       )}
@@ -644,7 +644,7 @@ export default async function GameDetailPage({ params, searchParams }: GamePageP
         /* Policy v2, decided in the query layer off the same `now` as
            `canCancel` — see lib/booking/queries.ts. */
         refundable={ownBooking?.refundable ?? true}
-        priceCzk={game.price_czk}
+        priceThb={game.price_thb}
         startsAt={game.starts_at}
         facts={{
           isCancelled,
@@ -660,8 +660,8 @@ export default async function GameDetailPage({ params, searchParams }: GamePageP
                 ownBooking.booking.payment_method,
               ).tone === "paid"
             : false,
-          amountDueCzk: ownBooking
-            ? ownBooking.booking.price_czk - ownBooking.booking.credit_applied_czk
+          amountDueThb: ownBooking
+            ? ownBooking.booking.price_thb - ownBooking.booking.credit_applied_thb
             : 0,
           canCancel: ownBooking?.canCancel ?? false,
           onWaitlist: alreadyOnList,

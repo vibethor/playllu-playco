@@ -33,7 +33,7 @@ test.describe("Layout law strips", () => {
     ]);
 
     // Priced at the flat 150 so the claim bar shows the suffix the law names.
-    const game = await createScratchGame({ hoursFromNow: 6, capacity: 12, priceCzk: 150 });
+    const game = await createScratchGame({ hoursFromNow: 6, capacity: 12, priceThb: 150 });
 
     try {
       // Two bookings, so the avatar row has something to draw.

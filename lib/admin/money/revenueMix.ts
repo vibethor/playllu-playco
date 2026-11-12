@@ -17,7 +17,7 @@ import type { BookingSeatValue } from "@/lib/types/database";
  */
 export interface MixLine {
   seats: number;
-  czk: number;
+  thb: number;
 }
 
 export interface RevenueMix {
@@ -25,52 +25,52 @@ export interface RevenueMix {
   pass: MixLine;
   credit: MixLine;
   /** Money kept from cancellations that returned nothing, and how many did. */
-  kept: { czk: number; cancellations: number };
+  kept: { thb: number; cancellations: number };
   /** Seats that brought no money: admin gifts, seed bookings. */
   freeSeats: number;
-  totalCzk: number;
-  avgSingleCzk: number | null;
-  avgPassCzk: number | null;
+  totalThb: number;
+  avgSingleThb: number | null;
+  avgPassThb: number | null;
   /** How much less a pass seat brought than a single one, on average. */
-  passGapPerSeatCzk: number | null;
+  passGapPerSeatThb: number | null;
   /** What the pass seats would have brought at their games' price, less what they did. */
-  passGapTotalCzk: number;
+  passGapTotalThb: number;
 }
 
 function perSeat(line: MixLine): number | null {
-  return line.seats > 0 ? line.czk / line.seats : null;
+  return line.seats > 0 ? line.thb / line.seats : null;
 }
 
 export function revenueMix(
   values: readonly BookingSeatValue[],
   priceByGame: ReadonlyMap<string, number>,
 ): RevenueMix {
-  const single: MixLine = { seats: 0, czk: 0 };
-  const pass: MixLine = { seats: 0, czk: 0 };
-  const credit: MixLine = { seats: 0, czk: 0 };
-  const kept = { czk: 0, cancellations: 0 };
+  const single: MixLine = { seats: 0, thb: 0 };
+  const pass: MixLine = { seats: 0, thb: 0 };
+  const credit: MixLine = { seats: 0, thb: 0 };
+  const kept = { thb: 0, cancellations: 0 };
   let freeSeats = 0;
-  let passGapTotalCzk = 0;
+  let passGapTotalThb = 0;
 
   for (const value of values) {
     single.seats += value.single_seats;
-    single.czk += value.single_czk;
+    single.thb += value.single_thb;
     pass.seats += value.pass_seats;
-    pass.czk += value.pass_czk;
+    pass.thb += value.pass_thb;
     credit.seats += value.credit_seats;
-    credit.czk += value.credit_czk;
+    credit.thb += value.credit_thb;
     freeSeats += value.free_seats;
-    if (value.kept_czk > 0) {
-      kept.czk += value.kept_czk;
+    if (value.kept_thb > 0) {
+      kept.thb += value.kept_thb;
       kept.cancellations += 1;
     }
     if (value.pass_seats > 0) {
-      passGapTotalCzk += value.pass_seats * (priceByGame.get(value.game_id) ?? 0) - value.pass_czk;
+      passGapTotalThb += value.pass_seats * (priceByGame.get(value.game_id) ?? 0) - value.pass_thb;
     }
   }
 
-  const avgSingleCzk = perSeat(single);
-  const avgPassCzk = perSeat(pass);
+  const avgSingleThb = perSeat(single);
+  const avgPassThb = perSeat(pass);
 
   return {
     single,
@@ -78,10 +78,10 @@ export function revenueMix(
     credit,
     kept,
     freeSeats,
-    totalCzk: single.czk + pass.czk + credit.czk + kept.czk,
-    avgSingleCzk,
-    avgPassCzk,
-    passGapPerSeatCzk: avgSingleCzk !== null && avgPassCzk !== null ? avgSingleCzk - avgPassCzk : null,
-    passGapTotalCzk,
+    totalThb: single.thb + pass.thb + credit.thb + kept.thb,
+    avgSingleThb,
+    avgPassThb,
+    passGapPerSeatThb: avgSingleThb !== null && avgPassThb !== null ? avgSingleThb - avgPassThb : null,
+    passGapTotalThb,
   };
 }

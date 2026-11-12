@@ -2,7 +2,7 @@
 -- Migration 7 — confirm_booking, expire_booking, and the game transitions
 --
 -- confirm_booking is the SINGLE AUTOMATION SEAM. It takes confirmed_by and
--- received_amount_czk and is deliberately indifferent to whether the caller is
+-- received_amount_thb and is deliberately indifferent to whether the caller is
 -- a human tapping "✓ Paid" in the admin panel or a future Fio bank poller. The
 -- admin UI omits the amount (confirm at the expected value); a bank poller
 -- passes what the bank actually reported. Getting this boundary right now means
@@ -14,7 +14,7 @@
 -- NEGATIVE ledger delta, so concurrent bookings cannot overspend a wallet.
 -- Every ledger write in this migration is POSITIVE (overpayment credit,
 -- cancellation credit, returned credit on expiry). A positive delta cannot
--- drive SUM(delta_czk) below zero, so no re-read needs protecting. A concurrent
+-- drive SUM(delta_thb) below zero, so no re-read needs protecting. A concurrent
 -- create_booking may read a balance that does not yet include the new credit —
 -- stale, but safe: the player simply gets less credit applied than they might.
 --
@@ -31,7 +31,7 @@
 create type public.confirm_result as (
   id uuid,
   status public.booking_status,
-  credit_issued_czk integer
+  credit_issued_thb integer
 );
 
 -- -----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ create type public.confirm_result as (
 create function public.confirm_booking(
   p_booking_id         uuid,
   p_confirmed_by       uuid default null,
-  p_received_amount_czk integer default null
+  p_received_amount_thb integer default null
 )
 returns public.confirm_result
 language plpgsql
@@ -69,22 +69,22 @@ begin
   select * into v_booking from public.bookings b where b.id = p_booking_id;
   select * into v_game    from public.games g    where g.id = v_booking.game_id;
 
-  v_amount_due := v_booking.price_czk - v_booking.credit_applied_czk;
+  v_amount_due := v_booking.price_thb - v_booking.credit_applied_thb;
 
   -- === payment landing AFTER expiry ==========================================
   -- Credited in full to the wallet; the booking stays expired and the spot is
   -- NEVER reinstated. Do not "helpfully" add reinstatement here: the spot has
   -- almost certainly been taken by someone else, and capacity must not move.
   if v_booking.status = 'expired' then
-    v_credit := coalesce(p_received_amount_czk, 0);
+    v_credit := coalesce(p_received_amount_thb, 0);
 
     if v_credit > 0 then
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
       values (v_booking.player_id, v_credit, 'adjustment', p_booking_id);
 
       insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
       values ('credit_issued', v_booking.player_id, v_booking.game_id, p_booking_id,
-              jsonb_build_object('amount_czk', v_credit, 'reason', 'payment_after_expiry',
+              jsonb_build_object('amount_thb', v_credit, 'reason', 'payment_after_expiry',
                                  'confirmed_by', p_confirmed_by),
               v_game.city, v_game.brand);
     end if;
@@ -103,21 +103,21 @@ begin
   -- payment_confirmed, and raise so the admin follows up by hand. The raise
   -- rolls the transaction back, which is why no payment_unmatched event is
   -- written here — it could not survive.
-  if p_received_amount_czk is not null and p_received_amount_czk < v_amount_due then
+  if p_received_amount_thb is not null and p_received_amount_thb < v_amount_due then
     raise exception 'PAYMENT_UNDERPAID'
-      using detail = 'received ' || p_received_amount_czk::text || ' of ' || v_amount_due::text;
+      using detail = 'received ' || p_received_amount_thb::text || ' of ' || v_amount_due::text;
   end if;
 
   -- === overpayment ===========================================================
-  if p_received_amount_czk is not null and p_received_amount_czk > v_amount_due then
-    v_credit := p_received_amount_czk - v_amount_due;
+  if p_received_amount_thb is not null and p_received_amount_thb > v_amount_due then
+    v_credit := p_received_amount_thb - v_amount_due;
 
-    insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+    insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
     values (v_booking.player_id, v_credit, 'adjustment', p_booking_id);
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_issued', v_booking.player_id, v_booking.game_id, p_booking_id,
-            jsonb_build_object('amount_czk', v_credit, 'reason', 'overpayment',
+            jsonb_build_object('amount_thb', v_credit, 'reason', 'overpayment',
                                'confirmed_by', p_confirmed_by),
             v_game.city, v_game.brand);
   end if;
@@ -127,8 +127,8 @@ begin
   insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
   values ('payment_confirmed', v_booking.player_id, v_booking.game_id, p_booking_id,
           jsonb_build_object(
-            'amount_czk', coalesce(p_received_amount_czk, v_amount_due),
-            'expected_czk', v_amount_due,
+            'amount_thb', coalesce(p_received_amount_thb, v_amount_due),
+            'expected_thb', v_amount_due,
             'confirmed_by', p_confirmed_by,
             'via_service_role', public.is_service_role()),
           v_game.city, v_game.brand);
@@ -142,7 +142,7 @@ grant execute on function public.confirm_booking(uuid, uuid, integer) to authent
 
 comment on function public.confirm_booking(uuid, uuid, integer) is
   'The single automation seam for payment confirmation. Admin UI passes NULL '
-  'for received_amount_czk (confirm at expected); a future bank poller passes '
+  'for received_amount_thb (confirm at expected); a future bank poller passes '
   'the bank-reported amount. Over -> confirm + credit the difference. Under -> '
   'refuse, booking stays reserved. After expiry -> credit in full, never '
   'reinstate the spot.';
@@ -194,21 +194,21 @@ begin
   -- leaving the system through the back door, which is the one thing this
   -- design forbids. The amount is returned as a positive ledger row so the
   -- wallet stays a derivable SUM.
-  if v_booking.credit_applied_czk > 0 then
-    v_credit := v_booking.credit_applied_czk;
+  if v_booking.credit_applied_thb > 0 then
+    v_credit := v_booking.credit_applied_thb;
 
-    insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+    insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
     values (v_booking.player_id, v_credit, 'adjustment', p_booking_id);
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_issued', v_booking.player_id, v_booking.game_id, p_booking_id,
-            jsonb_build_object('amount_czk', v_credit, 'reason', 'credit_returned_on_expiry'),
+            jsonb_build_object('amount_thb', v_credit, 'reason', 'credit_returned_on_expiry'),
             v_game.city, v_game.brand);
   end if;
 
   insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
   values ('booking_expired', v_booking.player_id, v_booking.game_id, p_booking_id,
-          jsonb_build_object('credit_returned_czk', v_credit), v_game.city, v_game.brand);
+          jsonb_build_object('credit_returned_thb', v_credit), v_game.city, v_game.brand);
 
   insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
   values ('spot_released', v_booking.player_id, v_booking.game_id, p_booking_id,
@@ -258,7 +258,7 @@ begin
 
   insert into public.events (event_type, game_id, metadata, city, brand)
   values ('game_published', p_game_id,
-          jsonb_build_object('capacity', v_game.capacity, 'price_czk', v_game.price_czk),
+          jsonb_build_object('capacity', v_game.capacity, 'price_thb', v_game.price_thb),
           v_game.city, v_game.brand);
 
   -- A game published with bookings already on it (admin pre-fill) may be full
@@ -375,9 +375,9 @@ begin
     -- Same credit rule as cancel_booking: a confirmed booking is fully
     -- accounted for; a reserved one returns only the credit already applied.
     if v_booking.status = 'confirmed' then
-      v_credit := v_booking.price_czk;
+      v_credit := v_booking.price_thb;
     else
-      v_credit := v_booking.credit_applied_czk;
+      v_credit := v_booking.credit_applied_thb;
     end if;
 
     update public.bookings
@@ -386,18 +386,18 @@ begin
      where id = v_booking.id;
 
     if v_credit > 0 then
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
       values (v_booking.player_id, v_credit, 'cancellation_credit', v_booking.id);
 
       insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
       values ('credit_issued', v_booking.player_id, p_game_id, v_booking.id,
-              jsonb_build_object('amount_czk', v_credit, 'reason', 'game_cancelled'),
+              jsonb_build_object('amount_thb', v_credit, 'reason', 'game_cancelled'),
               v_game.city, v_game.brand);
     end if;
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('booking_cancelled', v_booking.player_id, p_game_id, v_booking.id,
-            jsonb_build_object('credit_issued_czk', v_credit, 'source', 'game_cancelled'),
+            jsonb_build_object('credit_issued_thb', v_credit, 'source', 'game_cancelled'),
             v_game.city, v_game.brand);
 
     v_count := v_count + 1;

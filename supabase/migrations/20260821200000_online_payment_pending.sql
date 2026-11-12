@@ -343,7 +343,7 @@ begin
                   || ', capacity ' || v_game.capacity::text;
   end if;
 
-  v_price := v_game.price_czk * v_seats;
+  v_price := v_game.price_thb * v_seats;
 
   if v_player.is_seed then
     v_method         := 'seed_free';
@@ -353,7 +353,7 @@ begin
     v_payment_code   := null;
     v_status         := 'confirmed';
   else
-    select coalesce(sum(cl.delta_czk), 0) into v_balance
+    select coalesce(sum(cl.delta_thb), 0) into v_balance
       from public.credit_ledger cl
      where cl.player_id = p_player_id;
 
@@ -399,7 +399,7 @@ begin
 
   insert into public.bookings (
     game_id, player_id, status, payment_method, payment_code,
-    price_czk, credit_applied_czk, is_seed, booked_by_admin, guest_count,
+    price_thb, credit_applied_thb, is_seed, booked_by_admin, guest_count,
     payment_pending_at
   ) values (
     p_game_id, p_player_id, v_status, v_method, v_payment_code,
@@ -415,16 +415,16 @@ begin
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('credit_redeemed', p_player_id, p_game_id, v_booking_id,
-            jsonb_build_object('amount_czk', v_credit_applied), v_game.city, v_game.brand);
+            jsonb_build_object('amount_thb', v_credit_applied), v_game.city, v_game.brand);
   end if;
 
   insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
   values ('booking_created', p_player_id, p_game_id, v_booking_id,
           jsonb_build_object(
             'payment_method', v_method,
-            'price_czk', v_price,
-            'credit_applied_czk', v_credit_applied,
-            'amount_due_czk', v_amount_due,
+            'price_thb', v_price,
+            'credit_applied_thb', v_credit_applied,
+            'amount_due_thb', v_amount_due,
             'guest_count', p_guest_count,
             'seats', v_seats,
             'awaiting_online_payment', v_pending_at is not null,
@@ -434,7 +434,7 @@ begin
   if v_status = 'confirmed' then
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('payment_confirmed', p_player_id, p_game_id, v_booking_id,
-            jsonb_build_object('method', v_method, 'amount_czk', 0),
+            jsonb_build_object('method', v_method, 'amount_thb', 0),
             v_game.city, v_game.brand);
   end if;
 
@@ -529,7 +529,7 @@ grant execute on function
 create function public.confirm_online_payment(
   p_booking_id  uuid,
   p_session_id  text,
-  p_amount_czk  integer
+  p_amount_thb  integer
 )
 returns text
 language plpgsql
@@ -593,9 +593,9 @@ begin
    * money on the day, discovered by the organizer.
    */
   if v_reason is null
-     and p_amount_czk < (v_booking.price_czk - v_booking.credit_applied_czk) then
-    v_reason := 'paid ' || p_amount_czk::text || ' CZK against '
-             || (v_booking.price_czk - v_booking.credit_applied_czk)::text || ' CZK owed';
+     and p_amount_thb < (v_booking.price_thb - v_booking.credit_applied_thb) then
+    v_reason := 'paid ' || p_amount_thb::text || ' THB against '
+             || (v_booking.price_thb - v_booking.credit_applied_thb)::text || ' THB owed';
   end if;
 
   -- A booking the player cancelled, or one that expired, cannot be seated by
@@ -640,7 +640,7 @@ begin
     values ('payment_unmatched', v_booking.player_id, v_booking.game_id, p_booking_id,
             jsonb_build_object(
               'session_id', p_session_id,
-              'amount_czk', p_amount_czk,
+              'amount_thb', p_amount_thb,
               'reason', v_reason),
             v_game.city, v_game.brand);
 
@@ -659,7 +659,7 @@ begin
   -- The existing ledger path, unchanged: it emits `payment_confirmed`, credits
   -- an overpayment, and credits a post-expiry payment without reinstating the
   -- spot.
-  perform public.confirm_booking(p_booking_id, null, p_amount_czk);
+  perform public.confirm_booking(p_booking_id, null, p_amount_thb);
 
   perform public.sync_game_fullness(v_booking.game_id);
 

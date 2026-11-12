@@ -109,7 +109,7 @@ end $$;
 do $$
 declare v_id uuid;
 begin
-  insert into public.games (venue, starts_at, capacity, price_czk, format, surface, notes)
+  insert into public.games (venue, starts_at, capacity, price_thb, format, surface, notes)
   values ('Test Pitch', now() + interval '3 days', 12, 200, '6v6', 'turf', 'Gate code 1234')
   returning id into v_id;
 
@@ -241,12 +241,12 @@ do $$
 declare v_game uuid; v_player uuid; v_booking uuid;
 begin
   -- A published game with one confirmed booking at the old price.
-  insert into public.games (id, venue, venue_id, starts_at, capacity, price_czk, status)
+  insert into public.games (id, venue, venue_id, starts_at, capacity, price_thb, status)
   values ('22220000-0000-0000-0000-000000000e02', 'Test Pitch',
           '11110000-0000-0000-0000-000000000e01', now() + interval '4 days', 10, 200, 'published')
   returning id into v_game;
 
-  insert into public.bookings (id, game_id, player_id, payment_method, status, price_czk)
+  insert into public.bookings (id, game_id, player_id, payment_method, status, price_thb)
   values ('33330000-0000-0000-0000-000000000e03', v_game,
           'bbbb0000-0000-0000-0000-0000000b1001', 'cash', 'confirmed', 200)
   returning id into v_booking;
@@ -267,7 +267,7 @@ begin
    * what the rest of this assertion is about.
    */
   perform pg_temp.ok(
-    (select price_czk = 350
+    (select price_thb = 350
               and format = '5v5' and surface = 'indoor'
        from public.games where id = v_game),
     'admin_update_game writes the detail columns and the price it was handed');
@@ -277,7 +277,7 @@ begin
     'admin_update_game leaves status untouched');
 
   perform pg_temp.ok(
-    (select price_czk = 200 from public.bookings where id = v_booking),
+    (select price_thb = 200 from public.bookings where id = v_booking),
     'an existing booking keeps the price it was made at after a reprice');
 end $$;
 

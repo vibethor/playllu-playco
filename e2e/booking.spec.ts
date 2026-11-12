@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { PASS_REFERENCE_PRICE_CZK } from "../lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "../lib/pass/creditPrice";
 import { apiClientFor, players, serviceClient, signInAs } from "./helpers/session.ts";
 import {
   createScratchGame,
@@ -50,7 +50,7 @@ test("book to a confirmed spot in under 60 seconds", async ({ page, context }) =
   await signInAs(context, players.runner);
   // Funded to exactly the price: the credit option is the one that completes
   // on this origin, and one game's worth is the smallest wallet that does.
-  await setWalletTo(players.runner.id, game.priceCzk);
+  await setWalletTo(players.runner.id, game.priceThb);
 
   // The clock starts where the player's does: on the game page, having decided
   // to play. Sixty seconds is the criterion, and it is measured against the
@@ -85,7 +85,7 @@ test("book to a confirmed spot in under 60 seconds", async ({ page, context }) =
 test("full credit confirms instantly and shows no QR", async ({ page, context }) => {
   await signInAs(context, players.creditRich);
   // Comfortably more than the price: the wallet covers it and has headroom.
-  await setWalletTo(players.creditRich.id, game.priceCzk + 250);
+  await setWalletTo(players.creditRich.id, game.priceThb + 250);
 
   await page.goto(`/game/${game.id}/book`);
   await page.getByTestId("pay-credit-input").check();
@@ -101,7 +101,7 @@ test("full credit confirms instantly and shows no QR", async ({ page, context })
   const admin = serviceClient();
   const { data } = await admin
     .from("bookings")
-    .select("status,payment_method,credit_applied_czk,payment_code")
+    .select("status,payment_method,credit_applied_thb,payment_code")
     .eq("game_id", game.id)
     .eq("player_id", players.creditRich.id)
     .single();
@@ -111,23 +111,23 @@ test("full credit confirms instantly and shows no QR", async ({ page, context })
   expect(data?.payment_method).toBe("credit");
   /*
    * ONE CREDIT, NOT THE GAME'S PRICE (round 35's ruling). The fixture is a 200
-   * CZK game and a seat costs 150 whatever the card would have paid, so the
+   * THB game and a seat costs 150 whatever the card would have paid, so the
    * assertion is the credit rather than the price — and the headroom above is
    * what makes that visible instead of coincidental.
    */
-  expect(data?.credit_applied_czk).toBe(PASS_REFERENCE_PRICE_CZK);
+  expect(data?.credit_applied_thb).toBe(PASS_REFERENCE_PRICE_THB);
   // No money is owed, so there is no variable symbol to owe it against.
   expect(data?.payment_code).toBeNull();
 
   /*
    * THE HEADROOM IS WHAT IS LEFT, and under the ruling that is more than it
    * used to be: the wallet was funded at price + 250 and a seat costs one
-   * credit, so 300 remains on a 200 CZK game rather than 250. The number moving
+   * credit, so 300 remains on a 200 THB game rather than 250. The number moving
    * IS the ruling, which is why it is written as the arithmetic rather than as
    * a literal.
    */
   expect(await walletBalance(players.creditRich.id)).toBe(
-    game.priceCzk + 250 - PASS_REFERENCE_PRICE_CZK,
+    game.priceThb + 250 - PASS_REFERENCE_PRICE_THB,
   );
 });
 
@@ -136,7 +136,7 @@ test("partial credit reduces the amount due and still asks for the rest", async 
   context,
 }) => {
   /*
-   * ~~50 crowns against a 200 CZK game, one seat.~~ ONE CREDIT AND A PARTY OF
+   * ~~50 crowns against a 200 THB game, one seat.~~ ONE CREDIT AND A PARTY OF
    * TWO, SINCE ROUND 35, and the reshape is forced rather than cosmetic.
    *
    * Under the seat-denominated ruling a SINGLE seat can never be partly paid:
@@ -147,7 +147,7 @@ test("partial credit reduces the amount due and still asks for the rest", async 
    * own price. The claim is unchanged: a booking that owes money says what it
    * owes.
    */
-  const credit = PASS_REFERENCE_PRICE_CZK;
+  const credit = PASS_REFERENCE_PRICE_THB;
   await signInAs(context, players.creditPartial);
   await setWalletTo(players.creditPartial.id, credit);
 
@@ -181,7 +181,7 @@ test("partial credit reduces the amount due and still asks for the rest", async 
    * credit, one owed at the game's own price — and that arithmetic is
    * `create_booking`'s, unchanged by which rail the remainder travels on.
    */
-  const due = game.priceCzk;
+  const due = game.priceThb;
   await expect(page.getByTestId("amount-due")).toContainText(String(due));
 
   /*
@@ -194,14 +194,14 @@ test("partial credit reduces the amount due and still asks for the rest", async 
   const admin = serviceClient();
   const { data } = await admin
     .from("bookings")
-    .select("status,payment_method,credit_applied_czk")
+    .select("status,payment_method,credit_applied_thb")
     .eq("game_id", game.id)
     .eq("player_id", players.creditPartial.id)
     .single();
 
   expect(data?.status).toBe("reserved");
   expect(data?.payment_method).toBe("qr");
-  expect(data?.credit_applied_czk).toBe(credit);
+  expect(data?.credit_applied_thb).toBe(credit);
   expect(await walletBalance(players.creditPartial.id)).toBe(0);
 });
 
@@ -355,7 +355,7 @@ test("a cancelled booking returns its value as wallet credit", async ({ page, co
     await expect(page.getByTestId("credit-balance")).toContainText("1");
   }).toPass({ timeout: 15_000 });
 
-  expect(await walletBalance(players.runner.id)).toBe(game.priceCzk);
+  expect(await walletBalance(players.runner.id)).toBe(game.priceThb);
 
   // Left as we found it, or the next spec inherits a wallet.
   await setWalletTo(players.runner.id, 0);
@@ -410,7 +410,7 @@ test("a booking the wallet cannot cover offers credits AND still takes payment",
     await expect(page.getByTestId("confirmation")).toBeVisible();
 
     // No crown shortfall anywhere in the offer.
-    await expect(offer).not.toContainText(/\d+\s*CZK/);
+    await expect(offer).not.toContainText(/\d+\s*THB/);
     await expect(offer).toContainText("1 credit");
   } finally {
     await setWalletTo(players.runner.id, 0);

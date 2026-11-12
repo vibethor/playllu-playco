@@ -17,7 +17,7 @@
 --   1. Policy values, one function each: credit_validity_days() = 60,
 --      cancelled_game_extension_days() = 7, cancellation_refund_cutoff_hours()
 --      = 12, and price_for_duration() prefills 180 for EVERY length — the
---      150 CZK hour is gone, because a game is one Credit.
+--      150 THB hour is gone, because a game is one Credit.
 --   2. A Credit pays for a game of any length: credit_seat_minutes() and the
 --      two checks that read it are removed.
 --   3. Every confirmed top-up — a pass or anything else — is a batch valid 60
@@ -78,12 +78,12 @@ as $$ select 12 $$;
 
 /*
  * A GAME IS ONE CREDIT, SO EVERY LENGTH PREFILLS THE CREDIT PRICE. Called
- * rather than restated: the price lives in credit_seat_price_czk() and nowhere
+ * rather than restated: the price lives in credit_seat_price_thb() and nowhere
  * else, which is the round-35-v2 lesson about copies.
  */
 create or replace function public.price_for_duration(p_minutes integer)
 returns integer language sql immutable set search_path = ''
-as $$ select public.credit_seat_price_czk() $$;
+as $$ select public.credit_seat_price_thb() $$;
 
 comment on function public.price_for_duration(integer) is
   'What the admin form PREFILLS as a game''s price. Since round 40 every '
@@ -159,11 +159,11 @@ select pg_temp.round40_substitute('create_booking_internal',
   array[$old$    -- ROUND 35 v5: A CREDIT IS A 90-MINUTE SEAT. A game of any other
     -- length takes no credit at all — it is online-only, and the booking
     -- below comes back owing its whole price.
-    v_credit_applied := case when v_game.price_czk > 0
+    v_credit_applied := case when v_game.price_thb > 0
       and coalesce(v_game.duration_minutes, 60) = public.credit_seat_minutes() then$old$],
   array[$new$    -- ROUND 40: A CREDIT PAYS FOR A GAME OF ANY LENGTH. Every game is one
     -- Credit (Obchodní podmínky 5.1–5.2); the 90-minute rule is gone.
-    v_credit_applied := case when v_game.price_czk > 0 then$new$]);
+    v_credit_applied := case when v_game.price_thb > 0 then$new$]);
 
 select pg_temp.round40_substitute('add_guests_with_credit',
   array[$old$  -- ROUND 35 v5: a credit is a 90-minute seat; anything else is online-only.
@@ -213,15 +213,15 @@ select pg_temp.round40_substitute('cancel_booking',
     $old$   * THE CUTOFF. EIGHT HOURS SINCE POLICY v3.$old$,
     $old$  v_cutoff_hours constant numeric := 8;$old$,
     $old$  v_unexpiring  integer;$old$,
-    $old$      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, batch_id)
-      values (v_booking.player_id, v_redemption.amount_czk, 'cancellation_credit',
+    $old$      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, batch_id)
+      values (v_booking.player_id, v_redemption.amount_thb, 'cancellation_credit',
               p_booking_id, v_redemption.batch_id);
-      v_refunded := v_refunded + v_redemption.amount_czk;$old$,
+      v_refunded := v_refunded + v_redemption.amount_thb;$old$,
     $old$    -- Whatever is left is credit that came from the ordinary pool, plus the
     -- cash or QR the player actually paid on a confirmed booking. Both are
     -- unexpiring, which is Phase 1 behaviour unchanged.
     v_unexpiring := v_credit - v_refunded;$old$,
-    $old$              'returned_to_batches_czk', v_refunded),$old$],
+    $old$              'returned_to_batches_thb', v_refunded),$old$],
   array[
     $new$   * THE CUTOFF. TWELVE HOURS SINCE ROUND 40 (Obchodní podmínky 9.1), and
    * READ from `cancellation_refund_cutoff_hours()` rather than restated, so the
@@ -233,20 +233,20 @@ select pg_temp.round40_substitute('cancel_booking',
       -- removed in time were refunded by cancel_guests already; their
       -- redemptions are still on the ledger and must not come back twice.
       exit when v_refunded >= v_credit;
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, batch_id)
-      values (v_booking.player_id, least(v_redemption.amount_czk, v_credit - v_refunded),
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, batch_id)
+      values (v_booking.player_id, least(v_redemption.amount_thb, v_credit - v_refunded),
               'cancellation_credit', p_booking_id, v_redemption.batch_id);
-      v_refunded := v_refunded + least(v_redemption.amount_czk, v_credit - v_refunded);$new$,
+      v_refunded := v_refunded + least(v_redemption.amount_thb, v_credit - v_refunded);$new$,
     $new$    -- ROUND 40: WHAT WAS PAID IS A CREDIT BOUGHT ON THE DAY IT WAS PAID.
     -- Card (or old QR rail) money on a confirmed booking comes back valid
     -- credit_validity_days() from the payment, in a batch of its own — the
     -- terms' "s původní dobou platnosti".
     v_paid := case when v_booking.status = 'confirmed'
-                   then greatest(v_booking.price_czk - v_booking.credit_applied_czk, 0)
+                   then greatest(v_booking.price_thb - v_booking.credit_applied_thb, 0)
                    else 0 end;
     v_paid := least(v_paid, v_credit - v_refunded);
     if v_paid > 0 then
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, expires_at)
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, expires_at)
       values (v_booking.player_id, v_paid, 'cancellation_credit', p_booking_id,
               public.booking_paid_at(p_booking_id)
                 + make_interval(days => public.credit_validity_days()));
@@ -255,34 +255,34 @@ select pg_temp.round40_substitute('cancel_booking',
     -- Whatever is left came from the ordinary pool: credit bought before
     -- round 40, which keeps the unexpiring terms it was bought under.
     v_unexpiring := v_credit - v_refunded - v_paid;$new$,
-    $new$              'returned_to_batches_czk', v_refunded,
-              'paid_credit_czk', v_paid),$new$]);
+    $new$              'returned_to_batches_thb', v_refunded,
+              'paid_credit_thb', v_paid),$new$]);
 
 select pg_temp.round40_substitute('cancel_guests',
-  array[$old$    insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+  array[$old$    insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
     values (v_booking.player_id, v_credit, 'cancellation_credit', p_booking_id);$old$],
   array[$new$    -- ROUND 40: the CARD share is a Credit bought when it was paid, valid
     -- credit_validity_days() from then, in a batch of its own. The CREDIT
     -- share keeps row 271's ruling and lands in the unexpiring pool.
     if v_booking.status = 'confirmed' and v_card_share > 0 then
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, expires_at)
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, expires_at)
       values (v_booking.player_id, v_card_share, 'cancellation_credit', p_booking_id,
               public.booking_paid_at(p_booking_id)
                 + make_interval(days => public.credit_validity_days()));
     end if;
     if v_credit - (case when v_booking.status = 'confirmed' then v_card_share else 0 end) > 0 then
-      insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+      insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
       values (v_booking.player_id,
               v_credit - (case when v_booking.status = 'confirmed' then v_card_share else 0 end),
               'cancellation_credit', p_booking_id);
     end if;$new$]);
 
 select pg_temp.round40_substitute('settle_checkout_session',
-  array[$old$  insert into public.credit_ledger (player_id, delta_czk, reason)
-       values (v_session.player_id, p_amount_czk, 'cancellation_credit');$old$],
+  array[$old$  insert into public.credit_ledger (player_id, delta_thb, reason)
+       values (v_session.player_id, p_amount_thb, 'cancellation_credit');$old$],
   array[$new$  -- ROUND 40: the payment bought a Credit today, valid credit_validity_days().
-  insert into public.credit_ledger (player_id, delta_czk, reason, expires_at)
-       values (v_session.player_id, p_amount_czk, 'cancellation_credit',
+  insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
+       values (v_session.player_id, p_amount_thb, 'cancellation_credit',
                now() + make_interval(days => public.credit_validity_days()));$new$]);
 
 -- -----------------------------------------------------------------------------
@@ -351,9 +351,9 @@ begin
     -- Same credit rule as cancel_booking: a confirmed booking is fully
     -- accounted for; a reserved one returns only the credit already applied.
     if v_booking.status = 'confirmed' then
-      v_credit := v_booking.price_czk;
+      v_credit := v_booking.price_thb;
     else
-      v_credit := v_booking.credit_applied_czk;
+      v_credit := v_booking.credit_applied_thb;
     end if;
 
     update public.bookings
@@ -369,7 +369,7 @@ begin
       -- (a) Pass Credits: each comes back as a Credit of its own, valid seven
       -- days past the date it had. The rest of the pass keeps its date.
       for v_redemption in
-        select -cl.delta_czk as amount_czk, b.expires_at
+        select -cl.delta_thb as amount_thb, b.expires_at
           from public.credit_ledger cl
           join public.credit_ledger b on b.id = cl.batch_id
          where cl.booking_id = v_booking.id
@@ -378,20 +378,20 @@ begin
          order by cl.created_at, cl.id
       loop
         exit when v_refunded >= v_credit;
-        insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, expires_at)
-        values (v_booking.player_id, least(v_redemption.amount_czk, v_credit - v_refunded),
+        insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, expires_at)
+        values (v_booking.player_id, least(v_redemption.amount_thb, v_credit - v_refunded),
                 'cancellation_credit', v_booking.id,
                 greatest(v_redemption.expires_at + v_extension, v_floor));
-        v_refunded := v_refunded + least(v_redemption.amount_czk, v_credit - v_refunded);
+        v_refunded := v_refunded + least(v_redemption.amount_thb, v_credit - v_refunded);
       end loop;
 
       -- (b) Paid money: a Credit bought on the day it was paid, plus seven.
       v_paid := case when v_booking.status = 'confirmed'
-                     then greatest(v_booking.price_czk - v_booking.credit_applied_czk, 0)
+                     then greatest(v_booking.price_thb - v_booking.credit_applied_thb, 0)
                      else 0 end;
       v_paid := least(v_paid, v_credit - v_refunded);
       if v_paid > 0 then
-        insert into public.credit_ledger (player_id, delta_czk, reason, booking_id, expires_at)
+        insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, expires_at)
         values (v_booking.player_id, v_paid, 'cancellation_credit', v_booking.id,
                 greatest(public.booking_paid_at(v_booking.id)
                            + make_interval(days => public.credit_validity_days())
@@ -402,21 +402,21 @@ begin
       -- (c) The unexpiring pool: credit bought before round 40 stays as it was.
       v_pool := v_credit - v_refunded - v_paid;
       if v_pool > 0 then
-        insert into public.credit_ledger (player_id, delta_czk, reason, booking_id)
+        insert into public.credit_ledger (player_id, delta_thb, reason, booking_id)
         values (v_booking.player_id, v_pool, 'cancellation_credit', v_booking.id);
       end if;
 
       insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
       values ('credit_issued', v_booking.player_id, p_game_id, v_booking.id,
-              jsonb_build_object('amount_czk', v_credit, 'reason', 'game_cancelled',
-                                 'returned_to_batches_czk', v_refunded,
-                                 'paid_credit_czk', v_paid),
+              jsonb_build_object('amount_thb', v_credit, 'reason', 'game_cancelled',
+                                 'returned_to_batches_thb', v_refunded,
+                                 'paid_credit_thb', v_paid),
               v_game.city, v_game.brand);
     end if;
 
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('booking_cancelled', v_booking.player_id, p_game_id, v_booking.id,
-            jsonb_build_object('credit_issued_czk', v_credit, 'source', 'game_cancelled'),
+            jsonb_build_object('credit_issued_thb', v_credit, 'source', 'game_cancelled'),
             v_game.city, v_game.brand);
 
     v_count := v_count + 1;
@@ -608,7 +608,7 @@ as $$
        where n.nspname = 'public' and p.proname = 'cancel_guests')),
     'creditsAreSeats',   to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-       where n.nspname = 'public' and p.proname = 'credit_seat_price_czk')),
+       where n.nspname = 'public' and p.proname = 'credit_seat_price_thb')),
     'seatsTakenMany',    to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'game_seats_taken_many')),
@@ -648,8 +648,8 @@ begin
     raise exception 'round 40: a policy value is wrong';
   end if;
 
-  if public.price_for_duration(60) <> public.credit_seat_price_czk()
-     or public.price_for_duration(null) <> public.credit_seat_price_czk() then
+  if public.price_for_duration(60) <> public.credit_seat_price_thb()
+     or public.price_for_duration(null) <> public.credit_seat_price_thb() then
     raise exception 'round 40: price_for_duration still prices by length';
   end if;
 

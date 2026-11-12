@@ -2,7 +2,7 @@ import { SectionHeading } from "@/components/admin/players/SectionHeading";
 import { BreakdownBars } from "@/components/admin/ui/BreakdownBars";
 import { Panel } from "@/components/admin/ui/Panel";
 import type { PlayerSpend } from "@/lib/admin/players/spend";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import { strings } from "@/lib/strings";
 
 const t = strings.admin.playersHub;
@@ -14,13 +14,13 @@ const t = strings.admin.playersHub;
  */
 export function MoneySpentPanel({ spend }: { spend: PlayerSpend }) {
   const rows = [
-    { key: "single", label: t.spendKinds.single, value: spend.singleCzk },
-    { key: "pass", label: t.spendKinds.pass, value: spend.passCzk },
-    { key: "credit", label: t.spendKinds.credit, value: spend.creditCzk },
-    { key: "kept", label: t.spendKinds.kept, value: spend.keptCzk },
+    { key: "single", label: t.spendKinds.single, value: spend.singleThb },
+    { key: "pass", label: t.spendKinds.pass, value: spend.passThb },
+    { key: "credit", label: t.spendKinds.credit, value: spend.creditThb },
+    { key: "kept", label: t.spendKinds.kept, value: spend.keptThb },
   ]
     .filter((row) => row.value > 0)
-    .map((row) => ({ ...row, display: formatCzk(row.value) }));
+    .map((row) => ({ ...row, display: formatThb(row.value) }));
 
   return (
     <Panel testId="admin-player-spend">
@@ -28,7 +28,7 @@ export function MoneySpentPanel({ spend }: { spend: PlayerSpend }) {
         <div>
           <SectionHeading title={t.playerKpis.spent} />
           <div data-testid="admin-player-spend-total" className="font-display text-[34px] leading-none tabular-nums text-volt">
-            {formatCzk(spend.totalCzk)}
+            {formatThb(spend.totalThb)}
           </div>
           <p className="m-0 mt-2 max-w-[360px] text-[11px] leading-snug text-muted">{t.playerKpis.spentDetail}</p>
         </div>

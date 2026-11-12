@@ -107,7 +107,7 @@ grant execute on function public.begin_pass_purchase(integer)
 create function public.confirm_online_purchase(
   p_reference   uuid,
   p_session_id  text,
-  p_amount_czk  integer
+  p_amount_thb  integer
 )
 returns text
 language plpgsql
@@ -131,7 +131,7 @@ begin
   -- `confirm_online_payment` already answers 'unknown' harmlessly when the id
   -- names nothing of its kind.
   if exists (select 1 from public.bookings b where b.id = p_reference) then
-    return public.confirm_online_payment(p_reference, p_session_id, p_amount_czk);
+    return public.confirm_online_payment(p_reference, p_session_id, p_amount_thb);
   end if;
 
   select * into v_topup from public.credit_topups t where t.id = p_reference;
@@ -164,9 +164,9 @@ begin
    * usually MORE than the tier, which this check would happily accept. The
    * guard against that is one link per tier, in the JSON.
    */
-  if v_reason is null and p_amount_czk < v_topup.amount_czk then
-    v_reason := 'paid ' || p_amount_czk::text || ' CZK against '
-             || v_topup.amount_czk::text || ' CZK for this pass';
+  if v_reason is null and p_amount_thb < v_topup.amount_thb then
+    v_reason := 'paid ' || p_amount_thb::text || ' THB against '
+             || v_topup.amount_thb::text || ' THB for this pass';
   end if;
 
   if v_reason is null and v_topup.status <> 'pending' then
@@ -183,7 +183,7 @@ begin
     insert into public.events (event_type, player_id, metadata, city, brand)
     values ('payment_unmatched', v_topup.player_id,
             jsonb_build_object('topup_id', p_reference, 'session_id', p_session_id,
-                               'amount_czk', p_amount_czk, 'reason', v_reason),
+                               'amount_thb', p_amount_thb, 'reason', v_reason),
             v_topup.city, v_topup.brand);
 
     return 'attention';
@@ -196,7 +196,7 @@ begin
 
   -- The existing ledger path, unchanged: it writes the credit batch with the
   -- pass expiry §4.2 requires and emits `topup_confirmed`.
-  perform public.confirm_topup(p_reference, null, p_amount_czk);
+  perform public.confirm_topup(p_reference, null, p_amount_thb);
 
   return 'confirmed';
 end;

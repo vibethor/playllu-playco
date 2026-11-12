@@ -86,7 +86,7 @@ export interface AppCapabilities {
   addGuestsConfirmation: boolean;
   /** Round 35 v2 item 8 — `ban_player` exists. */
   banProfile: boolean;
-  /** Round 35 v2 item 2 — `credit_seat_price_czk()` returns 180. */
+  /** Round 35 v2 item 2 — `credit_seat_price_thb()` returns 180. */
   priceOneEighty: boolean;
   /** Round 39 item 2 — `venues.archived_at` and the archive/restore RPCs. */
   venueArchive: boolean;

@@ -8,7 +8,7 @@
 -- WHY THIS FILE EXISTS. The 15- and 20-game passes were unbuyable on production
 -- and nothing said so: the tiles rendered, the prices were right, and the
 -- button answered "Something went wrong. Please try again." `credit_topups`
--- capped `amount_czk` at 2000 and round 35 v2 had priced those two tiers at
+-- capped `amount_thb` at 2000 and round 35 v2 had priced those two tiers at
 -- 2241 and 2772 — so the split was exactly the ceiling, and the three tiers
 -- under it went on working, which is what made it look like a code path that
 -- could not possibly differ per tier.
@@ -73,9 +73,9 @@ begin
       v_row := public.begin_pass_purchase(t.games);
 
       perform pg_temp.ok(
-        v_row.amount_czk = t.price_czk,
+        v_row.amount_thb = t.price_thb,
         format('the %s-game pass is charged its own price', t.games),
-        format('charged %s, tier says %s', v_row.amount_czk, t.price_czk));
+        format('charged %s, tier says %s', v_row.amount_thb, t.price_thb));
 
       perform pg_temp.ok(
         v_row.pass_games = t.games,
@@ -122,13 +122,13 @@ exception when others then
   return sqlerrm;
 end $$;
 
-select pg_temp.ok(pg_temp.manual(public.manual_topup_min_czk()) = 'accepted',
+select pg_temp.ok(pg_temp.manual(public.manual_topup_min_thb()) = 'accepted',
   'a hand-entered top-up at the floor is accepted');
-select pg_temp.ok(pg_temp.manual(public.manual_topup_max_czk()) = 'accepted',
+select pg_temp.ok(pg_temp.manual(public.manual_topup_max_thb()) = 'accepted',
   'a hand-entered top-up at the ceiling is accepted');
-select pg_temp.ok(pg_temp.manual(public.manual_topup_min_czk() - 1) = 'AMOUNT_OUT_OF_RANGE',
+select pg_temp.ok(pg_temp.manual(public.manual_topup_min_thb() - 1) = 'AMOUNT_OUT_OF_RANGE',
   'a hand-entered top-up below the floor is refused by name');
-select pg_temp.ok(pg_temp.manual(public.manual_topup_max_czk() + 1) = 'AMOUNT_OUT_OF_RANGE',
+select pg_temp.ok(pg_temp.manual(public.manual_topup_max_thb() + 1) = 'AMOUNT_OUT_OF_RANGE',
   'A HAND-ENTERED TOP-UP OVER THE CEILING IS STILL REFUSED — the ceiling moved '
   'paths, it did not disappear');
 

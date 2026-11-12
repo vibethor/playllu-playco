@@ -251,7 +251,7 @@ begin
     insert into public.events (event_type, player_id, game_id, booking_id, metadata, city, brand)
     values ('booking_cancelled', p_player_id, v_booking.game_id, v_booking.id,
             jsonb_build_object('reason', 'banned', 'by_player_id', v_actor,
-                               'credit_issued_czk', 0,
+                               'credit_issued_thb', 0,
                                'previous_status', v_booking.status),
             v_game.city, v_game.brand);
 
@@ -402,12 +402,12 @@ as $$
        where n.nspname = 'public' and p.proname = 'cancel_guests')),
     'creditsAreSeats',   to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-       where n.nspname = 'public' and p.proname = 'credit_seat_price_czk')),
+       where n.nspname = 'public' and p.proname = 'credit_seat_price_thb')),
     'seatsTakenMany',    to_jsonb(exists (
       select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'game_seats_taken_many')),
     'priceOneEighty',    to_jsonb(coalesce(
-      (select public.credit_seat_price_czk() = 180), false)),
+      (select public.credit_seat_price_thb() = 180), false)),
     'addGuestsConfirmation', to_jsonb(exists (
       select 1 from information_schema.routines r
        join information_schema.parameters p on p.specific_name = r.specific_name

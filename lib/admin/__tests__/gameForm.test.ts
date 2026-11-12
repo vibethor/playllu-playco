@@ -19,7 +19,7 @@ const VALID = {
   venueId: "11110000-0000-0000-0000-000000000e01",
   startsAtIso: "2026-08-02T18:00:00.000Z",
   capacity: "14",
-  priceCzk: "200",
+  priceThb: "200",
   // Required since Phase 2 §5. The form pre-fills the creating admin's
   // nickname, so a real submission always carries one.
   organizerName: "Oliver",
@@ -38,7 +38,7 @@ describe("parseGameForm", () => {
     if (!result.ok) return;
     expect(result.values.venueId).toBe(VALID.venueId);
     expect(result.values.capacity).toBe(14);
-    expect(result.values.priceCzk).toBe(200);
+    expect(result.values.priceThb).toBe(200);
     expect(result.values.format).toBeNull();
     expect(result.values.surface).toBe("turf");
     expect(result.values.notes).toBeNull();
@@ -131,10 +131,10 @@ describe("parseGameForm", () => {
      * a cap here would be this file inventing a policy nobody stated.
      */
     for (const good of ["1", "95", "222", "4242", "99999"]) {
-      expect(parseGameForm(form({ ...VALID, priceCzk: good })).ok, good).toBe(true);
+      expect(parseGameForm(form({ ...VALID, priceThb: good })).ok, good).toBe(true);
     }
     for (const bad of ["0", "-1", "12.5", "", "abc"]) {
-      expect(parseGameForm(form({ ...VALID, priceCzk: bad })).ok, bad).toBe(false);
+      expect(parseGameForm(form({ ...VALID, priceThb: bad })).ok, bad).toBe(false);
     }
   });
 
@@ -292,7 +292,7 @@ describe("parseGameForm", () => {
         newVenueMapQuery: "Vysočany sports hall, Praha",
         startsAtIso: "2026-09-13T17:45:00.000Z",
         capacity: "18",
-        priceCzk: "333",
+        priceThb: "333",
         format: "9v9",
         surface: "sand",
         notes: "Gate code 4417, park on the north side.",
@@ -317,7 +317,7 @@ describe("parseGameForm", () => {
       newVenueMapQuery: "Vysočany sports hall, Praha",
       startsAt: "2026-09-13T17:45:00.000Z",
       capacity: 18,
-      priceCzk: 333,
+      priceThb: 333,
       format: "9v9",
       surface: "sand",
       // Round 18 item 2. Carried through like every other field — and unlike
@@ -350,7 +350,7 @@ describe("parseGameForm", () => {
         venueId: "",
         startsAtIso: "",
         capacity: "0",
-        priceCzk: "-5",
+        priceThb: "-5",
         format: "nope",
         organizerName: "",
         durationMinutes: "5",
@@ -364,7 +364,7 @@ describe("parseGameForm", () => {
       "durationMinutes",
       "format",
       "organizerName",
-      "priceCzk",
+      "priceThb",
       "startsAt",
       "subsPerTeam",
       // Round 16 item 10: an unchosen surface is now one of the fields the

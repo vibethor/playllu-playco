@@ -43,7 +43,7 @@ export async function listPlayerDirectory(now: number = Date.now()): Promise<Dir
   const [players, ledger, bookings, games, sessions, topups] = await Promise.all([
     readAll("players", (from, to) => service.from("players").select("*").order("id").range(from, to)),
     readAll("credit_ledger", (from, to) =>
-      service.from("credit_ledger").select("player_id, delta_czk").order("id").range(from, to),
+      service.from("credit_ledger").select("player_id, delta_thb").order("id").range(from, to),
     ),
     readAll("bookings", (from, to) =>
       service
@@ -62,7 +62,7 @@ export async function listPlayerDirectory(now: number = Date.now()): Promise<Dir
   ]);
 
   const balances = new Map<string, number>();
-  for (const row of ledger) balances.set(row.player_id, (balances.get(row.player_id) ?? 0) + row.delta_czk);
+  for (const row of ledger) balances.set(row.player_id, (balances.get(row.player_id) ?? 0) + row.delta_thb);
 
   const activity = summariseActivity(
     bookings.map((b) => ({ playerId: b.player_id, gameId: b.game_id, status: b.status })),
@@ -97,7 +97,7 @@ export async function listPlayerDirectory(now: number = Date.now()): Promise<Dir
       country: player.country,
       skillLevel: player.skill_level,
       marketingOptIn: player.marketing_opt_in,
-      balanceCzk: balances.get(player.id) ?? 0,
+      balanceThb: balances.get(player.id) ?? 0,
       bookingCount: played?.bookingCount ?? 0,
       gamesPlayed: played?.gamesPlayed ?? 0,
       lastGameAt: played?.lastGameAt ?? null,

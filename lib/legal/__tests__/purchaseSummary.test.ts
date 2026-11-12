@@ -32,14 +32,14 @@ describe("creditPurchaseSummary", () => {
 
     // Act
     const text = creditPurchaseSummary(
-      { credits: 1, amountCzk: 180, paidAt: PAID_AT, termsUrl: TERMS_URL },
+      { credits: 1, amountThb: 180, paidAt: PAID_AT, termsUrl: TERMS_URL },
       "cs",
       t,
     );
 
     // Assert
     expect(text).toBe(
-      "Kupuješ: 1 Kredit (1 Kredit = 1 místo na jednom Zápase). Cena celkem: 180 CZK. " +
+      "Kupuješ: 1 Kredit (1 Kredit = 1 místo na jednom Zápase). Cena celkem: 180 THB. " +
         "Platnost Kreditů: 60 dní od připsání, tj. do 18. 12. 2026; nevyčerpané Kredity poté propadají. " +
         "Kredity lze použít jen na Rezervace Zápasů Playllu, nejsou převoditelné a nelze je vyměnit za peníze. " +
         "Kredity ti připíšeme okamžitě po zaplacení. Od nákupu Kreditů nelze odstoupit. " +
@@ -53,7 +53,7 @@ describe("creditPurchaseSummary", () => {
 
     // Act
     const text = creditPurchaseSummary(
-      { credits: 5, amountCzk: 840, packageName: "Game Pass", paidAt: PAID_AT, termsUrl: TERMS_URL },
+      { credits: 5, amountThb: 840, packageName: "Game Pass", paidAt: PAID_AT, termsUrl: TERMS_URL },
       "cs",
       t,
     );
@@ -66,7 +66,7 @@ describe("creditPurchaseSummary", () => {
     // Arrange
     const purchase = {
       credits: 20,
-      amountCzk: 2772,
+      amountThb: 2772,
       packageName: "Game Pass",
       paidAt: PAID_AT,
       termsUrl: TERMS_URL,
@@ -83,7 +83,7 @@ describe("creditPurchaseSummary", () => {
 
   it("leaves no slot unfilled in any language", () => {
     // Arrange
-    const purchase = { credits: 3, amountCzk: 540, paidAt: PAID_AT, termsUrl: TERMS_URL };
+    const purchase = { credits: 3, amountThb: 540, paidAt: PAID_AT, termsUrl: TERMS_URL };
 
     // Act
     const texts = LOCALES.map((locale) =>

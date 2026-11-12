@@ -42,8 +42,8 @@ comment on function public.price_for_duration(integer) is
 -- read what is installed, put the caller's value back, and RAISE if the text is
 -- not what is expected rather than overwriting a body that has moved on.
 --
--- `coalesce(p_price_czk, price_for_duration(...))` RATHER THAN A BARE
--- `p_price_czk`. Both signatures already validate the parameter as non-null, so
+-- `coalesce(p_price_thb, price_for_duration(...))` RATHER THAN A BARE
+-- `p_price_thb`. Both signatures already validate the parameter as non-null, so
 -- the fallback is unreachable through the RPC — it is there for the shape of
 -- the statement to say, in one line, that the mapping is what fills a gap and
 -- the caller is what decides. A reader who comes to this cold learns the rule
@@ -64,7 +64,7 @@ declare
     || chr(10) ||
     '    v_venue.name, v_venue.id, p_starts_at, p_capacity,'
     || chr(10) ||
-    '    coalesce(p_price_czk, public.price_for_duration(p_duration_minutes)),';
+    '    coalesce(p_price_thb, public.price_for_duration(p_duration_minutes)),';
 begin
   select pg_get_functiondef(p.oid) into v_def
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -86,11 +86,11 @@ do $$
 declare
   v_def text;
   v_old constant text :=
-    '         price_czk  = public.price_for_duration(v_game.duration_minutes),';
+    '         price_thb  = public.price_for_duration(v_game.duration_minutes),';
   v_new constant text :=
     '         -- ROUND 36: the organizer types it; the length only prefills.'
     || chr(10) ||
-    '         price_czk  = coalesce(p_price_czk,'
+    '         price_thb  = coalesce(p_price_thb,'
     || chr(10) ||
     '                               public.price_for_duration(v_game.duration_minutes)),';
 begin
@@ -121,13 +121,13 @@ do $$
 begin
   if (select prosrc from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'admin_create_game_v2')
-     not like '%coalesce(p_price_czk%' then
+     not like '%coalesce(p_price_thb%' then
     raise exception 'typed price: admin_create_game_v2 still ignores the caller';
   end if;
 
   if (select prosrc from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'admin_update_game')
-     not like '%coalesce(p_price_czk%' then
+     not like '%coalesce(p_price_thb%' then
     raise exception 'typed price: admin_update_game still ignores the caller';
   end if;
 

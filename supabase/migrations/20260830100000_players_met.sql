@@ -278,15 +278,15 @@ begin
   end if;
 
   begin
-    insert into public.games (venue, starts_at, capacity, price_czk, status)
+    insert into public.games (venue, starts_at, capacity, price_thb, status)
          values ('players_met probe', now() - interval '2 days', 12, 150, 'played')
       returning id into v_game;
 
-    insert into public.bookings (game_id, player_id, status, price_czk, payment_method)
+    insert into public.bookings (game_id, player_id, status, price_thb, payment_method)
          values (v_game, v_a, 'confirmed', 150, 'cash'),
                 (v_game, v_b, 'confirmed', 150, 'cash');
     if v_guest is not null then
-      insert into public.bookings (game_id, player_id, status, price_czk, payment_method)
+      insert into public.bookings (game_id, player_id, status, price_thb, payment_method)
            values (v_game, v_guest, 'confirmed', 150, 'cash');
     end if;
 

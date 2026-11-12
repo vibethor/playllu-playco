@@ -9,18 +9,18 @@ import { creditCount, reservationSummary } from "@/lib/legal/purchaseSummary";
 import { describeBookingError } from "@/lib/booking/errors";
 import { useLocale, useStrings } from "@/components/LocaleProvider";
 import { GuestOverflowSelect } from "@/components/game/GuestOverflowSelect";
-import { PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/creditPrice";
+import { PASS_REFERENCE_PRICE_THB } from "@/lib/pass/creditPrice";
 import { pluralise } from "@/lib/i18n/plural";
 import Link from "next/link";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import { policy } from "@/lib/policy";
 
 export interface PaymentMethodChoiceProps {
   gameId: string;
   /** This game's price PER SEAT, for deciding whether the wallet covers it. */
-  priceCzk: number;
+  priceThb: number;
   /** The player's wallet balance, read server-side from the ledger. */
-  creditCzk: number;
+  creditThb: number;
   /**
    * Seats still free on this pitch, INCLUDING the one this player is about to
    * take. Caps the party control: `+3` is offered only when four seats remain.
@@ -99,8 +99,8 @@ const INITIAL: BookingActionState = { status: "idle" };
  */
 export function PaymentMethodChoice({
   gameId,
-  priceCzk,
-  creditCzk,
+  priceThb,
+  creditThb,
   spotsLeft,
   embeddedCheckout,
   partyUpToThirteen,
@@ -137,7 +137,7 @@ export function PaymentMethodChoice({
   const maxGuests = Math.max(0, Math.min(policyMax, spotsLeft - 1));
   const pillMax = Math.min(policy.booking.partyPills, maxGuests);
   const seats = guests + 1;
-  const partyPrice = priceCzk * seats;
+  const partyPrice = priceThb * seats;
 
   /*
    * Build-time inline, like every `NEXT_PUBLIC_*`. Read here rather than
@@ -176,7 +176,7 @@ export function PaymentMethodChoice({
   /*
    * THE WALLET COVERS THE WHOLE PARTY, or the option is not offered.
    *
-   * `priceCzk` became `partyPrice` in round 11 and that is the entire change
+   * `priceThb` became `partyPrice` in round 11 and that is the entire change
    * to this rule — but it is the rule the owner named: credits are selectable
    * only when the balance covers all `N+1` seats. Partial credit still
    * happens inside `create_booking`, exactly as it did for a single booking;
@@ -187,10 +187,10 @@ export function PaymentMethodChoice({
   /*
    * WHAT THE PARTY COSTS IN CREDITS — SEATS, NOT CROWNS (round 35's ruling).
    *
-   * ~~`creditCzk >= partyPrice`.~~ A credit buys a SEAT now, flat, whatever the
-   * game charges a card. On the 150 CZK game the two tests agree; on the 180
-   * and 200 CZK fixtures production still has, the old test refused a wallet
-   * that could in fact pay — three credits could not cover a 540 CZK party of
+   * ~~`creditThb >= partyPrice`.~~ A credit buys a SEAT now, flat, whatever the
+   * game charges a card. On the 150 THB game the two tests agree; on the 180
+   * and 200 THB fixtures production still has, the old test refused a wallet
+   * that could in fact pay — three credits could not cover a 540 THB party of
    * three, and under the ruling three credits is exactly what that party costs.
    *
    * THE GATE AND THE DEBIT MUST ASK THE SAME QUESTION. `create_booking_internal`
@@ -198,9 +198,9 @@ export function PaymentMethodChoice({
    * arithmetic, stated once on the surface that decides whether to offer the
    * option at all. If they disagree the database is right and the UI is lying.
    */
-  const partyCreditCzk = PASS_REFERENCE_PRICE_CZK * seats;
+  const partyCreditThb = PASS_REFERENCE_PRICE_THB * seats;
   // ~~AND THE GAME HAS TO TAKE CREDIT AT ALL~~ — every game does since round 40.
-  const creditCovers = creditCzk >= partyCreditCzk;
+  const creditCovers = creditThb >= partyCreditThb;
 
   const [choice, setChoice] = useState<"credit" | "online" | null>(
     // DEFAULT TO CREDIT WHEN IT COVERS THE GAME (item 11). A player who has
@@ -339,7 +339,7 @@ export function PaymentMethodChoice({
                     locale,
                   ),
                 )
-                .replace("{total}", formatCzk(partyPrice))}
+                .replace("{total}", formatThb(partyPrice))}
             </p>
           )}
 

@@ -11,7 +11,7 @@ import { VenuePhotoUpload } from "@/components/admin/VenuePhotoUpload";
 import { Chevron } from "@/components/admin/venues/Chevron";
 import { VenuePitchCostForm } from "@/components/admin/venues/VenuePitchCostForm";
 import { pitchCostInForce, type PitchCostPair } from "@/lib/admin/venues/pitchCosts";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import type { Database, PitchSeason } from "@/lib/types/database";
 import { venueMapsHref } from "@/lib/venues/mapsHref";
 import { strings } from "@/lib/strings";
@@ -77,7 +77,7 @@ export function VenueCard({
               data-amount={costNow}
               className="shrink-0 text-small font-semibold tabular-nums text-bone"
             >
-              {formatCzk(costNow)}
+              {formatThb(costNow)}
             </span>
           )}
           <Chevron testId="venue-disclosure" />

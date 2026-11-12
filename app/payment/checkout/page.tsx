@@ -11,7 +11,7 @@ import {
 } from "@/lib/payments/embeddedCheckout";
 import { siteUrl } from "@/lib/site";
 import { createServerSupabaseClient } from "@/lib/supabase/clients";
-import { formatCzk, formatGameDateTime } from "@/lib/format";
+import { formatThb, formatGameDateTime } from "@/lib/format";
 import { TERMS_VERSION } from "@/lib/legal";
 import { termsAgreementWording } from "@/lib/legal/consentWording";
 import { fillTemplate } from "@/lib/i18n/template";
@@ -22,7 +22,7 @@ import {
 } from "@/lib/legal/purchaseSummary";
 import { refundCutoffHours } from "@/lib/policy/refundCutoff";
 import { policy } from "@/lib/policy";
-import { partyAmountCzk } from "@/lib/payments/partyAmount";
+import { partyAmountThb } from "@/lib/payments/partyAmount";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
  * the item. A Payment Link had one price and no idea how many seats were being
  * bought, so a party of three was told to set the quantity themselves — and
  * could type 1. This reads the row that already exists and charges what it
- * says: `price_czk` minus whatever wallet credit was already applied.
+ * says: `price_thb` minus whatever wallet credit was already applied.
  *
  * OWNERSHIP IS CHECKED BEFORE A SESSION IS CREATED. The id is in the URL, so
  * the first thing this does is confirm the row belongs to the person asking.
@@ -101,7 +101,7 @@ export default async function CheckoutPage({
   const origin = await siteUrl();
   const returnUrl = `${origin}/payment/return?session_id={CHECKOUT_SESSION_ID}`;
 
-  let line: { name: string; description?: string; amountCzk: number };
+  let line: { name: string; description?: string; amountThb: number };
   let reference: string;
   let backHref: string;
   /** How many Credits this payment buys — every card payment buys Credits (round 40). */
@@ -134,22 +134,22 @@ export default async function CheckoutPage({
 
     const { data: gameRow } = await supabase
       .from("games")
-      .select("id, venue, price_czk, starts_at")
+      .select("id, venue, price_thb, starts_at")
       .eq("id", booking.game_id)
       .maybeSingle();
     const game = gameRow as
-      | { id: string; venue: string; price_czk: number; starts_at: string }
+      | { id: string; venue: string; price_thb: number; starts_at: string }
       | null;
     if (!game) notFound();
 
     /*
-     * GUEST-ONLY. The player's own seat is already paid for; `partyAmountCzk`
+     * GUEST-ONLY. The player's own seat is already paid for; `partyAmountThb`
      * would add it back and bill them twice.
      */
     line = {
       name: game.venue,
       description: t.payment.checkoutSeats.replace("{seats}", String(guests)),
-      amountCzk: game.price_czk * guests,
+      amountThb: game.price_thb * guests,
     };
     reference = booking.id;
     backHref = `/game/${game.id}`;
@@ -163,7 +163,7 @@ export default async function CheckoutPage({
   } else if (gameId) {
     const { data: gameRow } = await supabase
       .from("games")
-      .select("id, venue, status, price_czk, capacity, starts_at")
+      .select("id, venue, status, price_thb, capacity, starts_at")
       .eq("id", gameId)
       .maybeSingle();
 
@@ -172,7 +172,7 @@ export default async function CheckoutPage({
           id: string;
           venue: string;
           status: string;
-          price_czk: number;
+          price_thb: number;
           capacity: number;
           starts_at: string;
         }
@@ -208,7 +208,7 @@ export default async function CheckoutPage({
     line = {
       name: game.venue,
       description: t.payment.checkoutSeats.replace("{seats}", String(seats)),
-      amountCzk: partyAmountCzk(game.price_czk, guests),
+      amountThb: partyAmountThb(game.price_thb, guests),
     };
     reference = game.id;
     backHref = `/game/${game.id}`;
@@ -222,7 +222,7 @@ export default async function CheckoutPage({
   } else {
     const { data } = await supabase
       .from("credit_topups")
-      .select("id, player_id, status, amount_czk, pass_games")
+      .select("id, player_id, status, amount_thb, pass_games")
       .eq("id", passId!)
       .maybeSingle();
 
@@ -231,7 +231,7 @@ export default async function CheckoutPage({
           id: string;
           player_id: string;
           status: string;
-          amount_czk: number;
+          amount_thb: number;
           pass_games: number | null;
         }
       | null;
@@ -241,7 +241,7 @@ export default async function CheckoutPage({
 
     /*
      * THE PRICE COMES FROM THE ROW, WHICH CAME FROM THE LIVE TIER TABLE.
-     * `begin_pass_purchase` reads `pass_tiers` and stamps `amount_czk` — so
+     * `begin_pass_purchase` reads `pass_tiers` and stamps `amount_thb` — so
      * the number charged here is the tier's price at the moment the buyer
      * pressed the button, not a figure this page recomputed and could get
      * wrong.
@@ -252,7 +252,7 @@ export default async function CheckoutPage({
         "{credits}",
         String(topup.pass_games ?? 0),
       ),
-      amountCzk: topup.amount_czk,
+      amountThb: topup.amount_thb,
     };
     reference = topup.id;
     backHref = "/pass";
@@ -272,7 +272,7 @@ export default async function CheckoutPage({
       summary: creditPurchaseSummary(
         {
           credits,
-          amountCzk: line.amountCzk,
+          amountThb: line.amountThb,
           ...(passId ? { packageName: t.pass.panelTitle } : {}),
           paidAt: new Date(),
           termsUrl: `${origin}/terms`,
@@ -306,13 +306,13 @@ export default async function CheckoutPage({
           p_booking_id: addGuestsBookingId,
           p_guest_count: guests,
           p_stripe_session_id: session.sessionId,
-          p_amount_czk: line.amountCzk,
+          p_amount_thb: line.amountThb,
         })
       : await supabase.rpc("open_checkout", {
           p_game_id: gameId!,
           p_guest_count: guests,
           p_stripe_session_id: session.sessionId,
-          p_amount_czk: line.amountCzk,
+          p_amount_thb: line.amountThb,
         });
 
     /*
@@ -379,7 +379,7 @@ export default async function CheckoutPage({
         data-testid="checkout-amount"
         className="mt-2 font-display text-title uppercase leading-none text-volt"
       >
-        {formatCzk(line.amountCzk)}
+        {formatThb(line.amountThb)}
       </p>
       <p className="mt-1 text-[13px] leading-snug text-muted">{line.description}</p>
 

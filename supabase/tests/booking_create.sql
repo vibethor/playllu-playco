@@ -114,7 +114,7 @@ insert into public.players (id, nickname, email, auth_user_id, is_seed, is_admin
 -- takes no credit at all — so every game a credit is spent on below says how
 -- long it is. The price follows from that, which is why none of these rows
 -- states one it chose.
-insert into public.games (id, venue, starts_at, capacity, price_czk, status, duration_minutes) values
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
   ('91110000-0000-0000-0000-000000000001', 'Cap Two',    now() + interval '7 days', 2,  200, 'published', 90),
   ('92220000-0000-0000-0000-000000000002', 'Roomy',      now() + interval '8 days', 10, 200, 'published', 90),
   ('93330000-0000-0000-0000-000000000003', 'Roomy Two',  now() + interval '9 days', 10, 200, 'published', 90),
@@ -136,11 +136,11 @@ reset role;
 select pg_temp.ok(
   (select count(*) from public.bookings
     where player_id = '55550000-0000-0000-0000-000000000055'
-      and status = 'confirmed' and price_czk = 0 and payment_code is null) = 1,
+      and status = 'confirmed' and price_thb = 0 and payment_code is null) = 1,
   'seed booking is confirmed at price 0 with no VS');
 
 -- --- full credit -> credit, confirmed instantly, no VS ----------------------
-insert into public.credit_ledger (player_id, delta_czk, reason) values
+insert into public.credit_ledger (player_id, delta_thb, reason) values
   ('aaaa0000-0000-0000-0000-00000000000a', 230, 'admin_grant');
 
 select pg_temp.act_as('a0000000-0000-0000-0000-0000000000a1');
@@ -153,20 +153,20 @@ select pg_temp.ok(
   (select count(*) from public.bookings
     where player_id = 'aaaa0000-0000-0000-0000-00000000000a'
       and game_id = '92220000-0000-0000-0000-000000000002'
-      and status = 'confirmed' and payment_code is null and credit_applied_czk = 180) = 1,
+      and status = 'confirmed' and payment_code is null and credit_applied_thb = 180) = 1,
   'full-credit booking is confirmed, no VS, and ONE CREDIT applied — 180, not '
   'the game''s 200 (round 35''s seat-denominated ruling)');
 
 select pg_temp.ok(
-  (select coalesce(sum(delta_czk), 0) from public.credit_ledger
+  (select coalesce(sum(delta_thb), 0) from public.credit_ledger
     where player_id = 'aaaa0000-0000-0000-0000-00000000000a') = 50,
   'and the wallet keeps the 50 that was not a whole credit',
-  'balance=' || (select coalesce(sum(delta_czk), 0) from public.credit_ledger
+  'balance=' || (select coalesce(sum(delta_thb), 0) from public.credit_ledger
                   where player_id = 'aaaa0000-0000-0000-0000-00000000000a'));
 
 -- --- a SUB-CREDIT balance buys nothing --------------------------------------
 --
--- ~~Partial credit reduces amount_due: 50 off a 200 CZK game.~~ THAT IS THE
+-- ~~Partial credit reduces amount_due: 50 off a 200 THB game.~~ THAT IS THE
 -- PRICE-BASED DEBIT THE RULING REMOVES. A credit buys a SEAT; 50 crowns is not
 -- a seat and cannot be a third of one, so nothing is applied and the whole
 -- price is owed.
@@ -174,12 +174,12 @@ select pg_temp.ok(
 -- THIS IS THE RULING'S SHARPEST CONSEQUENCE and it is asserted rather than
 -- discovered: a player holding less than one credit can no longer put it
 -- towards a game. See ledger row 283 — production has wallets of 110 and 50.
-insert into public.credit_ledger (player_id, delta_czk, reason) values
+insert into public.credit_ledger (player_id, delta_thb, reason) values
   ('bbbb0000-0000-0000-0000-00000000000b', 50, 'admin_grant');
 
 select pg_temp.act_as('b0000000-0000-0000-0000-0000000000b1');
 select pg_temp.ok(
-  (select (public.create_booking('92220000-0000-0000-0000-000000000002', 'qr')).amount_due_czk) = 200,
+  (select (public.create_booking('92220000-0000-0000-0000-000000000002', 'qr')).amount_due_thb) = 200,
   'a balance under one credit is not applied — the whole 200 is owed');
 
 reset role;
@@ -187,14 +187,14 @@ select pg_temp.ok(
   (select count(*) from public.bookings
     where player_id = 'bbbb0000-0000-0000-0000-00000000000b'
       and status = 'reserved' and payment_method = 'qr'
-      and credit_applied_czk = 0 and payment_code is not null) = 1,
+      and credit_applied_thb = 0 and payment_code is not null) = 1,
   'the booking keeps qr, stays reserved, gets a VS, and spends nothing');
 
 select pg_temp.ok(
-  (select coalesce(sum(delta_czk), 0) from public.credit_ledger
+  (select coalesce(sum(delta_thb), 0) from public.credit_ledger
     where player_id = 'bbbb0000-0000-0000-0000-00000000000b') = 50,
   'and the 50 is STILL THERE — untouched, not consumed',
-  (select coalesce(sum(delta_czk), 0)::text from public.credit_ledger
+  (select coalesce(sum(delta_thb), 0)::text from public.credit_ledger
     where player_id = 'bbbb0000-0000-0000-0000-00000000000b'));
 
 -- --- cash reserves with no VS ------------------------------------------------
@@ -459,7 +459,7 @@ reset role;
 select pg_temp.ok(
   not exists (
     select 1 from public.credit_ledger
-    group by player_id having sum(delta_czk) < 0),
+    group by player_id having sum(delta_thb) < 0),
   'no player''s ledger sums below zero anywhere in this run');
 
 -- =============================================================================

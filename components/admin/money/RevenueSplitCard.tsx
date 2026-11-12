@@ -1,5 +1,5 @@
 import type { RevenueSplit } from "@/lib/admin/money/revenue";
-import { formatCzk } from "@/lib/format";
+import { formatThb } from "@/lib/format";
 import { strings } from "@/lib/strings";
 
 /**
@@ -11,11 +11,11 @@ import { strings } from "@/lib/strings";
  */
 export function RevenueSplitCard({ split }: { split: RevenueSplit }) {
   const copy = strings.admin.money;
-  const lines: { key: string; label: string; czk: number }[] = [
-    { key: "games", label: copy.splitGames, czk: split.gamesCzk },
-    { key: "pass", label: copy.splitPass, czk: split.passCzk },
+  const lines: { key: string; label: string; thb: number }[] = [
+    { key: "games", label: copy.splitGames, thb: split.gamesThb },
+    { key: "pass", label: copy.splitPass, thb: split.passThb },
   ];
-  if (split.topupCzk > 0) lines.push({ key: "topups", label: copy.splitTopups, czk: split.topupCzk });
+  if (split.topupThb > 0) lines.push({ key: "topups", label: copy.splitTopups, thb: split.topupThb });
 
   return (
     <div data-testid="financials-revenue-split" className="lifted flex min-w-0 flex-col rounded-card p-4 sm:p-5">
@@ -25,7 +25,7 @@ export function RevenueSplitCard({ split }: { split: RevenueSplit }) {
           <div key={line.key} data-testid={`revenue-split-${line.key}`} className="min-w-0">
             <dt className="text-[11px] text-muted">{line.label}</dt>
             <dd className="m-0 font-display text-[length:clamp(18px,5vw,24px)] leading-none tabular-nums text-volt">
-              {formatCzk(line.czk)}
+              {formatThb(line.thb)}
             </dd>
           </div>
         ))}

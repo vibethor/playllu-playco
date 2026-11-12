@@ -1,8 +1,8 @@
 import { BuyPassButton } from "@/components/pass/BuyPassButton";
 import { stripePassUrl } from "@/lib/payments/stripeLinks";
 import { embeddedCheckoutEnabled } from "@/lib/payments/embeddedCheckout";
-import { formatCzk } from "@/lib/format";
-import { MOST_POPULAR_GAMES, PASS_REFERENCE_PRICE_CZK } from "@/lib/pass/queries";
+import { formatThb } from "@/lib/format";
+import { MOST_POPULAR_GAMES, PASS_REFERENCE_PRICE_THB } from "@/lib/pass/queries";
 import type { PassTier } from "@/lib/pass/queries";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 import { creditsLabel } from "@/lib/pass/credits";
@@ -47,12 +47,12 @@ export async function PassTierCard({
   /*
    * THE ANCHOR: what these games cost bought one at a time.
    *
-   * `games x 150`, from the flat-150 fiat — not `creditedCzk`, which is the
+   * `games x 150`, from the flat-150 fiat — not `creditedThb`, which is the
    * wallet value a tier lands and is a different number. Struck through in
    * `danger` beside the price, because a discount nobody can see the original
    * of is not a discount, it is just a price.
    */
-  const anchorCzk = tier.games * PASS_REFERENCE_PRICE_CZK;
+  const anchorThb = tier.games * PASS_REFERENCE_PRICE_THB;
 
   /*
    * COMPUTED, NEVER TABULATED. A hardcoded percent list drifts the first time
@@ -67,13 +67,13 @@ export async function PassTierCard({
    *
    * IT ROUNDS THE DISPLAY AND NOTHING ELSE. The price, the anchor and the
    * credited value are all exact integers from `pass_tiers`, and the buyer
-   * pays `tier.priceCzk`. A rounded percentage beside two exact figures is a
+   * pays `tier.priceThb`. A rounded percentage beside two exact figures is a
    * summary, not a term — and it can only ever round in the range where the
    * two crowns figures above it already say precisely what the deal is.
    */
   const discountPercent = new Intl.NumberFormat(locale, {
     maximumFractionDigits: 0,
-  }).format(((anchorCzk - tier.priceCzk) / anchorCzk) * 100);
+  }).format(((anchorThb - tier.priceThb) / anchorThb) * 100);
 
   /** Ruled onto the 12-credit tier. */
   const mostPopular = tier.games === MOST_POPULAR_GAMES;
@@ -126,14 +126,14 @@ export async function PassTierCard({
         data-testid="pass-tier-per-game"
         className="mt-2 mb-0 font-display text-[34px] leading-none text-volt"
       >
-        {t.pass.tierPerGame.replace("{amount}", formatCzk(tier.perGameCzk))}
+        {t.pass.tierPerGame.replace("{amount}", formatThb(tier.perGameThb))}
       </p>
 
       {/* Then the pass price, with the anchor struck beside it at the same
           size, and the discount quiet after both. */}
       <p className="mt-3 mb-0 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <span data-testid="pass-tier-price" className="text-body-lg font-bold text-bone">
-          {formatCzk(tier.priceCzk)}
+          {formatThb(tier.priceThb)}
         </span>
         {/*
           THE STRUCK ANCHOR GOES `muted`, NOT `danger`.
@@ -153,7 +153,7 @@ export async function PassTierCard({
           data-testid="pass-tier-anchor"
           className="text-body-lg text-muted line-through"
         >
-          {formatCzk(anchorCzk)}
+          {formatThb(anchorThb)}
         </span>
         <span data-testid="pass-tier-discount" className="text-small text-muted">
           {`\u2212${discountPercent}\u202f%`}
