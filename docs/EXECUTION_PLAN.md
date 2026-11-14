@@ -58,7 +58,11 @@ added only when latency or data law requires it.
   by the player, approved by the organiser or the city manager.
 - No passes at launch. Passes, then an unlimited monthly plan, come later — nothing built now may block them.
 - **No cash.** A seat exists only once it is paid online (or is a staff seat, or paid from the wallet).
-- Wallet credit from a cancellation does not expire. The 60-day expiry belongs to passes only.
+- Wallet credit from a cancellation never expires. A purchased game pass expires 60 days after purchase.
+- **Back office:** managers and organisers get a limited login that Playllu creates for them. At launch they work
+  in Playco's own admin panel. After launch that back office moves into Playllu HQ (Phase 18), where they get a
+  limited view. Build the admin so the move is cheap: every admin action is one RPC and every admin screen reads
+  through one query module per area — no logic in the components.
 - Standard city-manager deal: 50% of profit, 50% of a loss.
 - A city manager sees the phone numbers of players who booked in their city, for as long as they hold the role.
 - Referral: every player gets a code, and sign-up records who referred them, from day one. The reward comes later.
@@ -87,7 +91,7 @@ added only when latency or data law requires it.
 ─┬─ 5 Prices, staff seats, venue costs ─┬─ 7 Wallet per currency ─ 8 Payments ─ 9 Deals and statements
  └─ 6 City and sport views ─────────────┘
 10 Recurring games, referral codes ─ 11 Languages, phone, legal ─ 12 Hosted database + deploy
-─ 13 HQ connection ─ 14 Pilot ─ 15 Design ─ 16 Launch ─ 17 Second city (the proof)
+─ 13 HQ connection ─ 14 Pilot ─ 15 Design ─ 16 Launch ─ 17 Second city (the proof) ─ 18 Back office into HQ
 ```
 5 and 6 touch different files and may run in parallel. Everything else is sequential.
 
@@ -162,16 +166,17 @@ game's local start time and price formatted correctly · a paused city's games a
    city** — nickname, level and phone, never email; the phone read goes through one RPC that checks the role on
    every call, so it stops the moment the role is revoked). An organiser sees nicknames and levels only. An organiser
    reads and writes only games they run. Nobody below platform admin can export players.
-4. Invitations: `invite_city_manager(city, email)` (platform admin) and `invite_organiser(city, email)` (manager).
-   The role starts when the invited person signs in. `revoke_city_role` ends access at once and keeps all history.
+4. Logins are created by Playllu: `create_staff_login(city, email, role)` — platform admin only, for managers and
+   for organisers (a manager asks Playllu to add an organiser). The person receives a set-password email; the role
+   is active from their first sign-in. `revoke_city_role` ends access at once and keeps all history.
 5. Applications: a public "Run Playco in your city" form writes `city_applications` (name, city, sport, contact,
-   current games per week). Platform admin approves → creates the city as `draft` and sends the invitation.
+   current games per week). Platform admin approves → creates the city as `draft` and the manager's login.
 6. Every grant, revoke and approval is an event.
 
 Done when: SQL suite `roles.sql` passes: manager A cannot read or change anything in city B · an organiser cannot
 touch another organiser's game · a revoked manager is refused on the next call, including the phone read · a
 manager cannot read the phone of a player who never booked in their city · no role below platform admin can
-select `players.email` · an approved application produces a draft city and one pending invitation.
+select `players.email` · an approved application produces a draft city and one staff login · a manager cannot create a login.
 
 ### Phase 4 — Sports per city
 
@@ -229,7 +234,7 @@ HrajFotbal's wallet counts credits as seats at one flat price (`credit_seat_pric
 1. A player has one balance per currency. A refunded cancellation returns what was paid for that seat, in that
    currency. Paying from the wallet spends up to the game's price; the rest is paid online in the same checkout.
 2. Restate booking, guest, cancel and admin-credit RPCs so none uses a flat seat price. Admin grants are amounts.
-3. **Keep the batch columns** (`batch_id`, `expires_at`): passes will come back later as a second kind of balance
+3. **Keep the batch columns** (`batch_id`, `expires_at`) and the 60-day pass expiry: passes will come back later as a second kind of balance
    ("N games in city X, sport Y"). Hide `/pass` behind one flag; do not delete its tables or tests.
 4. Cancellation credit never expires: remove the 60-day expiry from wallet credit and its cron sweep. Keep the
    expiry machinery for pass batches only (dormant with passes).
@@ -348,10 +353,24 @@ launch; this adds the domain, 3-of-3 approval in HQ, WhatsApp groups point to Pl
 
 ### Phase 17 — The second city (the proof)
 On staging, with no code change and no deploy: approve an application → a draft city in another currency and time
-zone → the invited manager signs in, enables football, adds a venue, a price and a weekly series → set the city
+zone → the manager signs in with the login Playllu created, enables football, adds a venue, a price and a weekly series → set the city
 live → a test player books and pays → the statement shows the manager's share → pause the city.
 **If any step needs a developer, the phase that owns it is not finished.** Write the steps up as
 `docs/NEW_CITY.md`, the manager's onboarding guide.
+
+### Phase 18 — The back office moves into Playllu HQ (after launch)
+Goal: managers and organisers do everything in HQ with a limited view; Playco becomes player-facing only.
+This changes HQ's own hard rules (founders-only, read-only on app databases, player data for founders only), so it
+starts with a written proposal approved by the three founders, in `playllu/playllu-hq`.
+1. HQ gains roles (founder, city manager, organiser) and server-side scoping: a manager sees only their cities'
+   screens and numbers, never company totals, other cities, approvals or founders' notes.
+2. HQ writes to Playco only by calling Playco's existing admin RPCs through a dedicated database role that can
+   execute those functions and nothing else; the acting person is passed in and re-checked inside each function.
+3. Screens move one area at a time (games and series → attendance → venues and prices → players → statements);
+   each area is removed from Playco's admin only after its HQ version passes the same tests.
+
+Done when: a manager signed in to HQ creates a repeating game, sees only their city, and cannot load any founder
+screen by address · Playco's `/admin` is gone except for platform-admin tools.
 
 ---
 
