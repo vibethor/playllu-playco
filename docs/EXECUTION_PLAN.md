@@ -1,371 +1,367 @@
-# Playco — execution plan
+# Playco — execution plan (v2, franchise-ready)
 
-Written 14 Nov 2026 for the agent that builds Playco. Read `CLAUDE.md` first, then this file top to bottom, then
-`docs/upstream/CLAUDE.hrajfotbal.md` once (the inherited rules and the expensive lessons).
+Written 15 Nov 2026 for the agent that builds Playco. It replaces v1 (14 Nov). Read `CLAUDE.md` first, then this file
+top to bottom, then `docs/upstream/CLAUDE.hrajfotbal.md` once (inherited rules and the expensive lessons).
 
 Work one phase at a time, in order. One pull request per phase into `main`. A phase is finished only when every line
 of its **Done when** passes; paste the command output into the PR. Stop and ask Jachym on anything in `CLAUDE.md` §2.
 
 ---
 
-## 1. What Playco is
+## 1. What is being built
 
-One website for pickup games in Bangkok. One account, one wallet, one database, one admin — and a **separate view per
-sport**: volleyball, football, basketball. **Only volleyball is switched on at launch.** Football is added later by
-switching it on in admin and creating games; no code change, no new database.
+**Playllu** is the platform: one codebase, one database per region, many cities, many team sports. **Playco** is the
+brand players see. The first launch is **Bangkok volleyball**. The second city must be a row in the database and a
+manager's invitation — not a new project.
 
-### How the sport views work (the product model)
+The one sentence that decides most design questions: *a new city with a new manager must cost nothing to switch on
+and nothing to switch off.*
+
+### The model
 
 | Thing | Rule |
 |---|---|
-| Address | One domain. Each sport lives under its own path: `/volleyball`, `/football`, `/basketball` |
-| `/` (home) | While one sport is on: goes straight to `/volleyball`. With two or more on: a short "pick your sport" page; the last sport a player used is remembered (cookie) and `/` goes there |
-| Sport switcher | A control in the header listing the sports that are on. Hidden while only one sport is on |
-| Inside a sport | Home, the games list, the game page, venues and "player of the month" show **only that sport** |
-| Game links | `/game/<id>` stays one address for every sport (links shared on WhatsApp/LINE never break); the page takes its sport from the game |
-| Across sports | One account, one profile, one wallet (baht), one "My games" list (each game tagged with its sport), one login |
-| Per sport on a profile | Level and positions are kept per sport (a setter in volleyball can be a beginner in football) |
-| A sport that is off | Its path returns "not found", it is absent from the switcher, sign-up, and filters. Admins can still prepare games for it as drafts |
-| Admin | One admin panel. Every list has a sport filter. Sports are switched on and off in Admin → Site |
-| Organisers | An organiser sees and manages only the games they run, in any sport |
-| HQ | Reads every game with its `sport`, so Bangkok volleyball, football and basketball stay separate tracks |
+| City | A row: name, slug, country, **currency**, **time zone**, languages, payment account, enabled sports, status (draft / live / paused) |
+| Sport | Volleyball, football, basketball. Switched on **per city** |
+| Address | One domain. `/<city>/<sport>` — e.g. `/bangkok/volleyball`. While one city and one sport are live, `/` goes straight there and no picker or switcher is shown |
+| Game link | `/game/<id>` for every city and sport, so shared links never break |
+| Player | One account for every city and sport. Level and positions per sport. One wallet **per currency** |
+| Roles | **Platform admin** (Playllu) › **City manager** (one or more cities) › **Organiser** (their own games) › **Player**. Each sees and changes only its own scope; the check is inside every database function |
+| Money in | Always to Playllu, through the payment account the city is linked to. Never to a manager's or organiser's own account |
+| Money out | Profit share. The app computes what each city manager is owed; Playllu pays them; the manager settles with their organisers as they agree |
+| Data | Players belong to Playllu. A manager who leaves loses access; nothing is exported or deleted |
+| Brand | Playco. A city may carry its own name and domain later ("brand" is a field on the city), not built now |
+| HrajFotbal | Stays a separate app. Not migrated. Fixes are ported by hand when wanted (`UPSTREAM.md`) |
+| China and similar | Out of scope. Markets that need local hosting, licences or other payment rails are a separate installation of this code, decided case by case |
 
-Why paths and not subdomains or separate apps: one login cookie, one deploy, one Supabase redirect list, links that
-are easy to share, and nothing to set up when a sport is added.
+### What is configuration, from day one
 
-### What was learned from similar platforms
+Four things the code may never assume: **currency**, **time zone and language**, **payment provider and account**,
+**which city**. Everything else may be Bangkok-shaped until the second city asks for more.
 
-Reclub is what Bangkok volleyball and pickleball groups use today (e.g. "Bangkok Volley"). Its sessions take an RSVP
-for the head count, show a fee with a **payment deadline after which the spot is cancelled automatically**, and leave
-the cancellation rule to each host; payment is usually a bank transfer with the slip sent in chat. Playco already
-does the first three better (pay-first booking, automatic waitlist, one written cancellation rule) and replaces the
-slip with PromptPay through Stripe, which confirms by itself. What Reclub has and Playco does not: clubs run by
-anyone, and a native app. Neither is in scope.
+### Cost of a new city
+
+One shared database and one deployment mean a new city adds **no monthly cost**. A manager who leaves after two
+weeks costs a paused row. A new *region* (Europe, Middle East) is a second database and deployment of the same code,
+added only when latency or data law requires it.
 
 ---
 
-## 2. Decisions already made (do not reopen)
+## 2. Decisions (do not reopen)
 
-- Fork of HrajFotbal, own repo and database. Jachym approves every change.
-- Money is THB, whole baht. No passes at launch. Same cancellation rule as HrajFotbal (cancel any time; refund to
-  the wallet up to 8 hours before the start).
-- Languages: English (default) and Thai.
-- Payments: a Thai Stripe account — card and PromptPay — plus cash at the court confirmed by the organiser.
-- Prices, venues and venue costs are entered in the admin panel, not in code.
-- Free plans for now; the `*.vercel.app` address until tested; the domain comes later.
-- **The hosted database is set up last** (Phase 10). Until then everything is built and tested on the local
-  Postgres described in `CLAUDE.md` §4. Nothing before Phase 10 needs Supabase, Vercel or a secret.
+- One platform, cities as data, one database per region. Region 1: Southeast Asia (Singapore).
+- Playllu controls the cash flow and owns the player data. City managers are paid a profit share.
+- City managers are approved by Playllu: invited, or apply and are approved. Never self-service to live.
+- Web app, installable to the home screen. Login: email, password, Google.
+- Levels are shown, not enforced. No no-show penalties: players pay up front and a no-show keeps nothing.
+- Cancellation: any time; refund to the wallet up to 8 hours before. A real-money refund is the exception: requested
+  by the player, approved by the organiser or the city manager.
+- No passes at launch. Passes, then an unlimited monthly plan, come later — nothing built now may block them.
+- Referral: every player gets a code, and sign-up records who referred them, from day one. The reward comes later.
+- Recurring games: a manager sets a weekly slot once.
+- Support is the manager's or the organiser's job; the app shows players who to contact per game.
+- Build with agents and Jachym now; a developer or agency later. So: plain structure, tests, README, no cleverness.
+- **The hosted database is set up last** (Phase 12). Everything before it runs on the local Postgres of `CLAUDE.md` §4.
 
-## 3. Owner to-do list (Jachym; none of it blocks Phases 0–9)
+## 3. What v1 got wrong (and what this version changes)
 
-See `TODO.md`. In short: the Supabase project, the Thai Stripe account, making this repo private, Vercel, the
-domain, the legal texts, a Thai speaker to check the translation.
+1. v1 renamed money to `_thb`. Money is now **an integer amount in the currency's smallest unit plus a currency
+   code** (`price_minor`, `currency`). 250 baht is `25000` / `THB`; 9 euro is `900` / `EUR`.
+2. v1 had "Bangkok identity" as a phase. It is now "location as configuration".
+3. v1 had two roles. There are four.
+4. v1 switched sports on globally. They are switched on per city.
+5. v1 let organisers hold cash. All online money goes to Playllu; cash at the court is recorded against the
+   organiser as money they owe.
+6. v1 had no way to pay anyone. Deals, statements and payouts are now part of the app.
 
 ---
 
 ## 4. The phases
 
-Order and dependencies:
-
 ```
-0 Tooling ─ 1 Bangkok identity ─ 2 Sports in the database ─┬─ 3 Prices + staff seats ─┬─ 5 Wallet in baht ─ 6 Stripe
-                                                           └─ 4 Sport views ──────────┘        7 Organisers (after 2)
-8 Thai + legal (after 4, 6) ─ 9 HQ connection (after 2, 3) ─ 10 Hosted database + deploy ─ 11 Pilot ─ 12 Design ─ 13 Launch
+0 Tooling ─ 1 Money as amount+currency ─ 2 Cities and configuration ─ 3 Roles ─ 4 Sports per city
+─┬─ 5 Prices, staff seats, venue costs ─┬─ 7 Wallet per currency ─ 8 Payments ─ 9 Deals and statements
+ └─ 6 City and sport views ─────────────┘
+10 Recurring games, referral codes ─ 11 Languages, phone, legal ─ 12 Hosted database + deploy
+─ 13 HQ connection ─ 14 Pilot ─ 15 Design ─ 16 Launch ─ 17 Second city (the proof)
 ```
-Phases 3 and 4 touch different files and may run in parallel; everything else is sequential.
+5 and 6 touch different files and may run in parallel. Everything else is sequential.
 
-Rules that apply to every phase:
+Rules for every phase:
 - New logic gets a failing test first (unit in `lib/**/__tests__`, SQL in `supabase/tests/`). Arrange / Act / Assert.
-- Every state change is a `SECURITY DEFINER` RPC with `search_path = ''`; grants are explicit; `app_capabilities()`
-  is restated in full with every earlier flag probed, never copied.
-- New migrations get a Playco timestamp from `20261115…` on. Never edit an inherited migration.
-- A catalogue that exists in SQL and in TypeScript (sports, surfaces, positions) gets a test that reads both.
-- Copy goes in `lib/strings.ts`; no user-visible string in a component.
-- Leave `docs/upstream/` untouched.
+- Every state change is a `SECURITY DEFINER` RPC with `search_path = ''`; grants are explicit; a changed parameter
+  list is a new function version; `app_capabilities()` is restated in full with every earlier flag probed.
+- New migrations get a Playco timestamp from `20261116…` on. Never edit an inherited migration.
+- **No city, currency, time zone, language or country literal** in `app/`, `components/`, `lib/` or a new migration.
+  They come from the city row. Phase 2 adds a test that greps for them; it must stay green in every later phase.
+- Every table a manager can reach has a `city_id` and every read and write is scoped by it.
+- Copy goes in `lib/strings.ts`. Leave `docs/upstream/` untouched.
 
 ### Phase 0 — Tooling
 
-Goal: one command proves the whole thing, locally and in CI.
+1. `scripts/test-db.sh`: start the throwaway Postgres, fresh database, `supabase/local/supabase_shim.sql`, every
+   migration in order, every `supabase/tests/*.sql`; exit non-zero on any `FAIL` or `ERROR`.
+2. Close the three local gaps (pgTAP for `notifications.sql` or a printed skip; a seeded player for
+   `ledger_invariant.sql`; `profile_photos.sql` #14 marked as needing real storage).
+3. `package.json`: name `playco`; `check` = `tsc --noEmit && eslint && vitest run`; `test:db`.
+4. `.github/workflows/ci.yml`: check, database tests on a `postgres:16` service, build. No secrets.
+5. `README.md` rewritten for Playco / Playllu.
 
-1. Add `scripts/test-db.sh`: start the throwaway Postgres if needed, create a fresh database, apply
-   `supabase/local/supabase_shim.sql`, apply every migration in order **twice** (the second run proves they are
-   idempotent — fix the script, not the migration, if an inherited file is not), run every `supabase/tests/*.sql`,
-   exit non-zero on any `FAIL` or `ERROR`.
-2. Close the three known local gaps: install pgTAP for `notifications.sql` (or skip that file with a printed
-   reason when the extension is missing); give `ledger_invariant.sql` the seeded player it needs; mark
-   `profile_photos.sql` #14 as needing real Supabase storage.
-3. `package.json`: `check` = `tsc --noEmit && eslint && vitest run`; `test:db` = the script; rename the package to
-   `playco`.
-4. `.github/workflows/ci.yml`: `npm ci`, `npm run check`, `npm run test:db` on a `postgres:16` service, `npm run
-   build`. No secrets.
-5. Rewrite `README.md` for Playco (what it is, quickstart, env variables, commands, architecture, how to port an
-   upstream fix).
+Done when: `npm run check` exits 0 · `npm run test:db` exits 0 with 0 failures · CI green.
 
-Done when: `npm run check` exits 0 · `npm run test:db` exits 0 and prints 0 failures · CI is green on the PR.
+### Phase 1 — Money as amount + currency
 
-### Phase 1 — Bangkok identity
+1. Extend `scripts/fork/rename-currency.mjs` (or add a second script) to turn every `_thb` name into a neutral one:
+   `price_thb` → `price_minor`, `formatThb` → `formatMoney`, and so on. Keep it idempotent and scripted — it is still
+   how an upstream fix is ported.
+2. One migration: every table that stores money gains `currency text not null` (ISO code, CHECK against a
+   `currencies` table holding code and decimal places: THB 2, EUR 2, VND 0, AED 2, CZK 2). Amounts are integers in
+   the smallest unit. Every RPC that moves money takes the currency from the game's city and refuses to add or
+   compare two currencies.
+3. `lib/money/`: `formatMoney(amountMinor, currency, locale)` and conversion to and from Stripe's units, driven by
+   the decimal places. Remove every hard-coded "THB"/"CZK" in display text.
+4. Remove the Czech QR payment (`lib/payments/spd.ts`, `PAYMENT_IBAN`) and its UI.
 
-Goal: nothing in the running app says Prague, HrajFotbal, Czech or CZK-era wording. No behaviour change otherwise.
+Done when: `grep -rniE "_thb|_czk|\bTHB\b|\bCZK\b" app components lib supabase/migrations/2026111*` finds only the
+currencies seed and tests · a unit test formats `25000 THB` as "250 THB"/"฿250" and `150000 VND` with no decimals ·
+an SQL test shows a booking in one currency cannot spend wallet money of another · `npm run check`, `npm run
+test:db` exit 0.
 
-1. Time zone: every `Europe/Prague` (`lib/format.ts`, stats windows, email templates, cron, SQL) → `Asia/Bangkok`,
-   through one constant in TypeScript and one SQL function `app_timezone()`.
-2. Defaults: migration setting `games.city` and `venues.city` default to `bangkok`, `brand` to `playco`; every RPC
-   that falls back to `'prague'` / `'hrajfotbal'` restated.
-3. Languages: `LOCALES = ["en", "th"]`, default `en`. Delete `cs.ts`, `ru.ts`, `uk.ts`; add an empty `th.ts`
-   overlay (filled in Phase 8). `games.language` catalogue becomes `en` / `th` (which language the game is run in).
-4. Remove what is Prague-only: `lib/legacyHost.ts` and its use in `proxy.ts`; the Telegram route `app/api/tg`
-   (keep the WhatsApp share route, add LINE in Phase 8); the Czech QR payment (`lib/payments/spd.ts`, `PAYMENT_IBAN`,
-   the `qr` flow's Czech wording) — remove the UI entry now, the enum value is dealt with in Phase 6.
-5. Names: site name, page titles, Open Graph card, PWA manifest, email sender name → "Playco". Colours and logo
-   stay as they are until Phase 12; use a plain text wordmark.
-6. Clean the comments the rename left wrong where they describe money (e.g. "THB has a hundred haléřů").
-7. `vercel.json`: region `sin1`.
-8. Football-only fields stay but become optional per sport in Phase 2: `format`, `subs_per_team`, `pitch_name`.
+### Phase 2 — Cities and configuration
 
-Done when: `grep -rniE "prague|praha|hraj ?fotbal|hrajsport|variabiln|QR platba|Kč" app components lib --include=*.ts
---include=*.tsx` returns nothing outside tests that assert their absence · `npm run check` and `npm run test:db`
-exit 0 · a unit test formats `2026-11-15T10:00:00Z` as 17:00 Bangkok time.
+1. `public.cities`: `id`, `slug`, `name`, `country`, `currency`, `timezone`, `locales text[]`, `default_locale`,
+   `phone_country`, `payment_account` (a key, not a secret), `brand` (default `playco`), `status`
+   (`draft` | `live` | `paused`), `support_contact`.
+2. `games`, `venues`, `events`, and every table reached from them, reference `city_id` (replacing the free-text
+   `city`/`brand` columns for all new reads; the old columns stay, unread).
+3. Time: every place that says `Europe/Prague` takes the game's city time zone. Cron jobs loop over cities.
+4. Languages: `LOCALES` becomes the union of what cities list; start with `en`, `th`. Delete `cs`, `ru`, `uk`.
+5. `lib/city/context.ts`: one function resolves the city for a request (path → cookie → the only live city).
+   Every query takes the city as an argument.
+6. Remove Prague-only code: `lib/legacyHost.ts`, the Telegram route. Names → "Playco" (text wordmark for now).
+7. Seed (dev only): Bangkok, THB, Asia/Bangkok, `en`+`th`, +66, draft.
+8. Add `tests/no-location-literals.test.ts`: fails on `prague|bangkok|Europe/|Asia/|'THB'|\+66|\+420` in `app/`,
+   `components/`, `lib/` outside tests and seeds.
 
-### Phase 2 — Sports in the database
+Done when: that test passes · an SQL test creates two cities in different time zones and currencies and shows each
+game's local start time and price formatted correctly · a paused city's games are invisible to players ·
+`npm run check`, `npm run test:db` exit 0.
 
-Goal: every game belongs to a sport; sports can be switched on and off; nothing is football-shaped by accident.
+### Phase 3 — Roles
 
-New migration(s):
-1. `public.sports` — `key` (`volleyball` | `football` | `basketball`, CHECK), `enabled boolean`, `sort int`.
-   Seeded: volleyball on, the others off. Readable by everyone; written only by `admin_set_sport_enabled(key, flag)`
-   (admin only, logs `sport_enabled` / `sport_disabled`).
-2. `games.sport text not null references sports(key)` — no default, so no writer can forget it.
-   `venues.sports text[]` (which sports a venue hosts).
-3. Per-sport catalogues as SQL functions with TypeScript mirrors in `lib/sports/`:
-   - surfaces: volleyball `indoor`, `sand`; football `turf`, `grass`, `indoor`; basketball `indoor`, `outdoor`
-   - formats: volleyball `6v6`, `4v4`, `2v2`; football `5v5`–`11v11`; basketball `5v5`, `3v3`
-   - positions: volleyball setter, outside, middle, opposite, libero; football as inherited; basketball guard,
-     forward, centre
-   - default length: volleyball and basketball 120 min, football 90
-   Replace `games_surface_known` with a check that the surface belongs to the game's sport.
-4. `public.player_sports` — (`player_id`, `sport`) primary key, `skill_level`, `positions text[]`. This becomes the
-   only source for level and positions. `players.skill_level` and `players.positions` are no longer read or written
-   (find every reader with grep; leave the columns in place).
-5. RPCs restated with a `p_sport` parameter as **new versions** (a changed parameter list is a new function, as
-   upstream learned): `admin_create_game_v3`, `admin_update_game_v3`, `complete_signup_v3` (sports + level per sport),
-   `set_player_sport(sport, level, positions)`. Public reads (`game_roster_public`, public profile, venue lists)
-   return `sport`. A public read never returns a game whose sport is off.
-6. `events.sport` stamped next to `city` and `brand` by every writer that has a game.
-7. `app_capabilities()` gains `sports`.
+1. `public.city_roles`: (`player_id`, `city_id`, `role` = `manager` | `organiser`). `players.is_admin` stays as
+   **platform admin**. `players.is_organizer` is replaced by a city role.
+2. Two SQL helpers used by every admin RPC: `can_manage_city(city_id)` (platform admin, or manager of it) and
+   `can_run_game(game_id)` (the above, or the organiser of that game). Restate every `admin_*` RPC to call one of
+   them instead of checking `is_admin`.
+3. Scope: a manager reads and writes only their cities (games, venues, prices, players **who booked in their
+   city** — nickname and level, never email; phone only under the existing organiser-contact rule). An organiser
+   reads and writes only games they run. Nobody below platform admin can export players.
+4. Invitations: `invite_city_manager(city, email)` (platform admin) and `invite_organiser(city, email)` (manager).
+   The role starts when the invited person signs in. `revoke_city_role` ends access at once and keeps all history.
+5. Applications: a public "Run Playco in your city" form writes `city_applications` (name, city, sport, contact,
+   current games per week). Platform admin approves → creates the city as `draft` and sends the invitation.
+6. Every grant, revoke and approval is an event.
 
-Done when: SQL suite `sports.sql` exists and passes, covering: a game without a sport is refused · a volleyball game
-with surface `turf` is refused · a non-admin cannot switch a sport · games of a switched-off sport are invisible to
-`anon` and visible to an admin · `player_sports` holds different levels for two sports for one player · a
-TS-vs-SQL catalogue test passes · `npm run test:db` and `npm run check` exit 0.
+Done when: SQL suite `roles.sql` passes: manager A cannot read or change anything in city B · an organiser cannot
+touch another organiser's game · a revoked manager is refused on the next call · no role below platform admin can
+select `players.email` · an approved application produces a draft city and one pending invitation.
 
-### Phase 3 — Prices and staff seats
+### Phase 4 — Sports per city
 
-Goal: the price of a game comes from a list Jachym edits in admin; staff play free.
+1. `public.sports` (key, sort) and `public.city_sports` (`city_id`, `sport`, `enabled`). Toggled by
+   `set_city_sport(city, sport, flag)` — manager of that city.
+2. `games.sport not null`; `venues.sports text[]`.
+3. Per-sport catalogues as SQL functions with TypeScript mirrors in `lib/sports/`: surfaces (volleyball `indoor`,
+   `sand`; football `turf`, `grass`, `indoor`; basketball `indoor`, `outdoor`), formats, positions, default length
+   (volleyball and basketball 120, football 90). The surface check depends on the sport.
+4. `public.player_sports` (`player_id`, `sport`, `skill_level`, `positions`) is the only source of level and
+   positions. `players.skill_level` / `positions` are no longer read.
+5. New RPC versions with `p_sport`: game create/update, `complete_signup_v3`, `set_player_sport`. Public reads
+   return `sport` and never return a game of a disabled sport or a non-live city.
 
-1. `public.price_rules` — `sport`, optional `surface`, optional `venue_id`, optional `min_duration_minutes`,
-   `price_thb`, `valid_from`, `valid_to`. `price_for_game(sport, surface, venue_id, duration)` returns the most
-   specific open rule (venue beats surface beats sport); it raises a named error when no rule matches.
-   It replaces `price_for_duration()`; both game writers call it; the admin form's price stays read-only.
-   A price change closes the old rule (`valid_to`), so existing games keep their price.
-2. Admin → Site → Prices: list, add, close a rule. RPCs `admin_add_price_rule`, `admin_close_price_rule`.
-   No prices are seeded in a migration; the dev seed script adds volleyball 250, sand 300, 180-minute 300.
-3. Staff seats: `games.staff_seats int not null default 3`. `payment_method` gains `staff`.
-   `admin_add_staff(game, player)` books a 0-baht confirmed seat; at most `staff_seats` per game; staff seats do not
-   reduce the capacity sold to players; they are flagged in the roster read and excluded from paid counts.
-4. Venue costs: keep `venue_pitch_costs`, but per hour and without the summer/winter split
-   (`cost_per_hour_thb`, optional per sport and court size: full / half). Entered in Admin → Venues.
-5. Venue default capacity: `venues.default_capacity`; the game form prefills it.
+Done when: SQL suite `sports.sql` passes (game without sport refused · volleyball on `turf` refused · a manager of
+another city cannot toggle · disabled sport invisible to `anon` · two levels for one player) · TS-vs-SQL catalogue
+test passes.
 
-Done when: SQL suite `pricing.sql` passes: no rule → named error · sport rule 250, surface rule 300 → a sand game
-costs 300 · closing a rule leaves an existing game's price unchanged · a 4th staff seat is refused · a staff seat
-does not take a paid place · `lib/games/price.ts` mirror test passes · `npm run test:db`, `npm run check` exit 0.
+### Phase 5 — Prices, staff seats, venue costs
 
-### Phase 4 — Sport views (structure only, not design)
+1. `public.price_rules`: `city_id`, `sport`, optional `surface`, `venue_id`, `min_duration_minutes`,
+   `price_minor`, `valid_from`, `valid_to`. `price_for_game(...)` returns the most specific open rule and raises a
+   named error when none matches. Both game writers call it; the form's price is read-only. Closing a rule never
+   changes an existing game. Managed by the city manager in Admin → Prices.
+2. Staff seats: `games.staff_seats` (city default, 3 in Bangkok); `payment_method` gains `staff`;
+   `add_staff(game, player)`: a 0-amount confirmed seat, capped, outside the sold capacity, excluded from paid counts.
+3. Venue costs per hour (optional per sport and court size), `venues.default_capacity`, in the city's currency.
+4. No prices in migrations. The dev seed adds Bangkok volleyball 250, sand 300, 180-minute 300.
 
-Goal: the product model in §1 works in the browser with the inherited look.
+Done when: SQL suite `pricing.sql` passes (no rule → named error · sand beats sport rule · closed rule leaves a
+game's price · 4th staff seat refused · staff seat takes no paid place · a manager cannot set another city's price).
 
-1. Routes: `app/[sport]/page.tsx` (sport home), `app/[sport]/games/page.tsx`. `[sport]` is validated against the
-   enabled sports; anything else is `notFound()`. `/games` redirects to the remembered or first enabled sport.
-2. `/`: one enabled sport → redirect to it. Two or more → the sport picker; with a `playco_sport` cookie → that
-   sport. The cookie is written in a route handler or server action, never during render.
-3. Header: sport switcher, rendered only when two or more sports are on. Nav links carry the current sport.
-4. `lib/sports/context.ts`: one function that resolves the current sport for a request (path → cookie → first
-   enabled). Every list query takes it as an argument; no query reads it implicitly.
-5. `/game/[id]`: unchanged address; sport-specific fields (format, positions, surface wording) come from the game's
-   sport. A game of a switched-off sport is `notFound()` for non-admins.
-6. `/my-games`, `/account`: all sports; each game shows its sport. Profile: one level + positions block per sport
-   the player plays, with "add a sport".
-7. Sign-up: "Which sports do you play?" limited to enabled sports; with one enabled it is preselected and not asked.
-8. Admin: sport filter on games, players (plays sport X), venues and stats; the new-game form starts with the sport
-   and shows that sport's surfaces, formats and default length; Admin → Site → Sports toggles.
-9. Home panels (community, player of the month, FAQ) are per sport; FAQ copy for volleyball is written, football and
-   basketball fall back to a generic text.
-10. An error boundary per route segment already exists; add one for `[sport]`.
+### Phase 6 — City and sport views (structure only)
 
-Done when: Playwright spec `e2e/sports.spec.ts` passes on the local stack: with only volleyball on, `/` lands on
-`/volleyball`, no switcher is rendered, `/football` is a 404 · after an admin switches football on, `/` shows the
-picker, the switcher lists both, a football game appears only under `/football`, and `/game/<id>` opens for both ·
-switching football off again restores the first state · `npm run check` exits 0.
+1. Routes `app/[city]/[sport]/page.tsx` and `…/games/page.tsx`, validated against live cities and enabled sports.
+2. `/`: one live city with one sport → redirect there. Otherwise a picker (city, then sport); a cookie remembers
+   the last choice. The cookie is set in a route handler or action, never during render.
+3. Header: city switcher and sport switcher, each rendered only when there is more than one choice.
+4. `/game/[id]`: sport- and city-specific fields come from the game. Not found for a non-live city or disabled
+   sport unless the viewer can manage it.
+5. `/my-games`, `/account`: every city and sport, each game labelled. Profile: a level + positions block per sport.
+6. Sign-up: home city (preselected from the path) and sports played.
+7. Admin: one panel. Platform admin sees a city selector and Admin → Cities (create, status, sports, manager,
+   applications). A manager sees their cities. An organiser sees their games. Every list filters by sport.
+8. Each game page shows who to contact (the organiser, else the city's support contact).
 
-### Phase 5 — The wallet in baht
+Done when: `e2e/views.spec.ts` passes locally: one city + one sport → `/` lands on it, no switchers · enabling
+football shows the sport switcher and football games only under `/…/football` · adding a second live city shows the
+picker · a manager signed in sees only their city in admin.
 
-Why this is its own phase: HrajFotbal's wallet counts **credits as seats at one flat price** (migration
-`20260915100000_credits_are_seats.sql`, `credit_seat_price_thb()`), because every Prague game costs the same. In
-Bangkok a game costs 250 or 300, and there are no passes, so a "credit" has no fixed value.
+### Phase 7 — Wallet per currency
 
-1. The wallet is an amount in baht. A refunded cancellation returns exactly what was paid for that seat. Paying from
-   the wallet spends up to the game's price; a shortfall is paid by card/PromptPay in the same checkout
-   (`credit_applied_thb` already exists for this).
-2. Restate the booking, guest, cancel and admin-credit RPCs so none calls `credit_seat_price_thb()`; drop the
-   "whole number of credits" invariant; admin grants are entered in baht.
-3. UI: the wallet shows baht, never "N credits".
-4. Passes: `/pass` and its cron return "not found" behind one flag `PASSES_ENABLED = false`; the tables stay.
-5. The 60-day expiry of wallet credit: keep it (same rule as HrajFotbal) unless Jachym says otherwise — **ask**.
+HrajFotbal's wallet counts credits as seats at one flat price (`credit_seat_price_*`). Playco's prices vary.
 
-Done when: SQL suite `wallet_baht.sql` passes: cancel a 300-baht seat in time → +300 · book a 250 game with 300 in
-the wallet → 50 left, nothing to pay · book a 300 game with 250 → 50 due online · a late cancellation returns 0 ·
-the ledger sum always equals the balance · the rewritten inherited suites pass · `npm run test:db` exits 0.
+1. A player has one balance per currency. A refunded cancellation returns what was paid for that seat, in that
+   currency. Paying from the wallet spends up to the game's price; the rest is paid online in the same checkout.
+2. Restate booking, guest, cancel and admin-credit RPCs so none uses a flat seat price. Admin grants are amounts.
+3. **Keep the batch columns** (`batch_id`, `expires_at`): passes will come back later as a second kind of balance
+   ("N games in city X, sport Y"). Hide `/pass` behind one flag; do not delete its tables or tests.
+4. Wallet credit expiry: 60 days as upstream, unless Jachym says otherwise — **ask**.
 
-### Phase 6 — Stripe (Thailand), test mode
+Done when: SQL suite `wallet.sql` passes (cancel 300 in time → +300 · 250 game with 300 in wallet → 50 left ·
+300 game with 250 → 50 due · late cancel → 0 · ledger sum = balance per currency · THB balance unusable in a EUR city).
 
-Goal: a player pays by card or PromptPay in baht; the booking confirms by itself. Built entirely in Stripe test
-mode, which needs no verified account. Read §5 before starting.
+### Phase 8 — Payments
 
-1. `lib/payments/embeddedCheckout.ts`: `CHECKOUT_PAYMENT_METHOD_TYPES = ["card", "promptpay"]`, currency `thb`
-   (Stripe counts in satang: baht × 100 — the existing minor-unit helpers already do this).
-2. PromptPay shows a QR the player scans in their banking app. The seat is held by `open_checkout` exactly as for a
-   card; confirmation still comes only from the webhook (`settle_checkout_session`). Handle
-   `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`
-   and `checkout.session.expired`; an unpaid QR releases the seat when the session expires. Set the session expiry
-   to a named constant.
-3. `payment_method` enum: add `card`, `promptpay`; `qr` is no longer offered (enum values cannot be dropped — leave
-   it unused and say so in the migration).
-4. Cash: the player chooses "pay at the court"; the seat is reserved; the organiser confirms in admin
-   (`confirm_cash_payment`, organiser of that game or admin). Whether cash holds a seat without limit or expires
-   before the game: **ask Jachym**.
-5. Environment variables (names only, values are Jachym's): `STRIPE_SECRET_KEY`,
-   `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`. Remove `PAYMENT_IBAN`,
-   `NEXT_PUBLIC_STRIPE_PAYMENT_URL`, `NEXT_PUBLIC_STRIPE_PASS_URLS`. Update `.env.example` and the README.
-6. Refunds stay wallet-only (no money leaves Stripe from the app), as in HrajFotbal.
+Goal: money always reaches Playllu; the provider and the account are configuration.
 
-Done when: unit tests cover the webhook for all four events with recorded test payloads · an SQL test shows an
-expired PromptPay session frees the seat for the next player on the waitlist · `grep -rn "sk_live\|sk_test\|whsec_"`
-over the repo returns nothing · `npm run check`, `npm run test:db` exit 0.
-(The click-through with a real test-mode QR happens in Phase 10, when there is a deployed webhook address.)
+1. `lib/payments/providers/`: an interface (`createCheckout`, `parseWebhook`, `refund`) with one implementation,
+   `stripe`. `cities.payment_account` selects a configured account; each account has its own key names in env
+   (`STRIPE_<ACCOUNT>_SECRET_KEY`, `…_PUBLISHABLE_KEY`, `…_WEBHOOK_SECRET`) and its own list of payment methods
+   (`th`: card + PromptPay). Webhook route: `/api/stripe/webhook/[account]`.
+2. Checkout in the city's currency. Confirmation only from the webhook. Handle completed, async succeeded, async
+   failed, expired; an unpaid session frees the seat for the waitlist.
+3. `payment_method`: add `card`, `promptpay`; `qr` unused.
+4. Cash at the court: allowed per city (a setting). The organiser confirms it; the amount is recorded as **cash
+   held by that organiser** and appears in the statements of Phase 9. Whether a cash booking holds its seat until
+   the game or expires: **ask**.
+5. Real-money refunds: `request_refund(booking, reason)` by the player → approved or declined by the game's
+   organiser or the city manager → the provider refund is issued and logged. The wallet remains the default.
+6. Stripe test mode only. See §5.
 
-### Phase 7 — Organisers
+Done when: unit tests cover the four webhook events and the account routing · an SQL test shows an expired session
+frees the seat · a refund cannot be approved by a manager of another city · `grep -rn "sk_live\|sk_test\|whsec_"`
+finds nothing · `npm run check`, `npm run test:db` exit 0.
 
-Goal: Steven and Sofi run their own games without seeing the rest.
+### Phase 9 — Deals and statements
 
-1. Authorisation inside the RPCs: an organiser may edit, mark attendance on, confirm cash for, add staff to and
-   cancel only games where they are `organizer_player_id`. Admins may do everything.
-2. Admin panel: an organiser sees only their games, the players booked on them (nickname and level, never email;
-   phone only as today's organiser-contact rule allows), and their own totals.
-3. Per-game totals for the organiser: paid seats, cash to collect, online collected, venue cost, profit.
+1. `public.deals`: `city_id`, optional `sport`, `party` (a manager), `share_percent`, `basis` (`profit`),
+   `loss_share_percent`, `valid_from`, `valid_to`. Set by platform admin only.
+2. Per game, computed in SQL and tested: revenue (online + cash) − venue cost = profit; manager share =
+   round(profit × share); losses shared by `loss_share_percent`.
+3. `public.payouts`: what Playllu paid a manager (amount, currency, date, note) and what cash an organiser handed
+   over. Recorded by platform admin. The app records payouts; it does not send money.
+4. Admin → Statement, per city and month: games, paid seats, revenue online / cash, venue costs, profit, manager
+   share, already paid, balance owed either way. A manager sees their own; platform admin sees all.
+5. The manager's arrangements with their organisers are theirs: an optional per-organiser note and share that only
+   feeds the manager's own view.
 
-Done when: SQL suite `organiser_scope.sql` passes: organiser A cannot edit, confirm cash on, or read the booking
-list of organiser B's game; an admin can; a player who is not an organiser can do none of it.
+Done when: SQL suite `statements.sql` passes with the Bangkok figures as the fixture — 9 games, 28,750 THB revenue,
+20,400 venue costs, +8,350 profit, 50% → 4,175 — and a loss-making month splits the loss · a manager cannot read
+another city's statement or any deal's terms but their own.
 
-### Phase 8 — Thai, phone, legal
+### Phase 10 — Recurring games and referral codes
 
-1. Fill `lib/i18n/th.ts`. The inherited test that walks every player-facing key must pass for `th`. Mark the PR
-   "needs a Thai speaker's review" — machine translation is not a release.
-2. Phone: default country +66; validation with the existing `libphonenumber-js`.
-3. Sharing: keep the WhatsApp share route, add a LINE share link.
-4. Legal: `/privacy` (Thai PDPA), `/terms`, `/cookies` from texts Jachym supplies — draft them in `content/` as
-   **drafts marked as such**, and stop for his approval. The seller named in the terms must match the Stripe
-   account's owner (§5).
-5. Emails: sender name and wording for Playco; emails stay English (as upstream) until `players.locale` exists.
+1. `public.game_series`: city, sport, venue, weekday, start time, length, capacity, level, organiser, active.
+   A daily job creates the games a configurable number of days ahead as **drafts or published** (a series setting);
+   price from the rules; editing a series never changes games that already have bookings.
+2. Referral: `players.referral_code` (unique, short) and `players.referred_by`, captured from `?ref=` at sign-up
+   and shown on the profile with a share link. `referral_events` records the first paid game of a referred player.
+   No reward logic yet.
 
-Done when: the i18n key-coverage test passes for `th` · a unit test accepts `081 234 5678` as a Thai mobile and
-formats it `+66 81 234 5678` · `/privacy`, `/terms` render in the build.
+Done when: an SQL test generates four weeks from a series with correct local times across a time-zone edge and
+does not duplicate on a second run · a sign-up with a valid code stores the referrer; an invalid code is ignored;
+a player cannot refer themselves.
 
-### Phase 9 — HQ connection
+### Phase 11 — Languages, phone, legal
 
-In this repo:
-1. `supabase/roles/hq_readonly.sql`: read-only role, `SELECT` on named columns only — players (no email, phone,
-   auth id), games (with `sport`), bookings, credit ledger, checkout sessions, events, venue costs, price rules.
-2. `docs/HQ_CONTRACT.md`: the exact columns HQ reads. A change to any of them is a change to HQ too.
+1. `lib/i18n/th.ts` filled; the key-coverage test passes for `th`. PR marked "needs a Thai speaker's review".
+2. Phone default and validation from the city's `phone_country`.
+3. WhatsApp share kept; LINE share added.
+4. `/privacy`, `/terms`, `/cookies`: one text per **country**, selected by the city; Thailand's drafted (PDPA) and
+   marked draft until Jachym approves. The seller named must be the owner of the city's payment account.
+5. Emails: Playco sender and wording; English until `players.locale` exists.
 
-In `playllu/playllu-hq` (a separate PR there, under HQ's own rules):
-3. `PLAYCO_DB_READONLY_URL` in `.env.example`; `src/data/playco-source.ts` mapping Playco rows to HQ's raw rows with
-   `source = 'playco'` and currency THB; players keyed by (source, id); a cutover date after which Bangkok games come
-   only from Playco; HQ's golden numbers unchanged.
+Done when: coverage test passes for `th` · a unit test formats `081 234 5678` as `+66 81 234 5678` for a Thai city ·
+`/privacy` renders the Thai text for Bangkok and a "not available yet" page for a country with no text.
 
-Done when: `npm run test:db` here proves the role cannot read `players.email` or `players.phone` and cannot write
-anything · HQ's `npm run check` and `npm run test:db` are green with a Playco fixture.
+### Phase 12 — Hosted database and deploy (first phase that needs accounts)
 
-### Phase 10 — Hosted database and deploy (first phase that needs accounts)
+Needs from Jachym: a Supabase project slot, a Vercel project on this repo, Stripe test keys pasted into Vercel.
 
-Needs from Jachym: a Supabase project slot (see `TODO.md`), a Vercel project connected to this repo, Stripe
-test-mode keys pasted into Vercel.
-
-1. Create `playco-staging` in the Playco org, region `ap-southeast-1`. Apply every migration in order. Run the SQL
-   suites against it. Check `get_advisors` for security findings and fix them.
-2. Supabase Auth: Site URL and redirect list = the Vercel address (they must match `NEXT_PUBLIC_SITE_URL` exactly);
-   email templates from `docs/upstream/AUTH_EMAIL_TEMPLATE.md` re-branded.
+1. `playco-staging`, region `ap-southeast-1`. Apply every migration; run the suites; fix `get_advisors` findings.
+2. Supabase Auth: Site URL and redirect list match `NEXT_PUBLIC_SITE_URL` exactly; Google login; branded templates.
 3. Vercel: env variables (Jachym pastes), region `sin1`.
-4. **Cron:** the inherited `*/5 * * * *` job will not deploy on Vercel's free plan (free cron runs at most once a
-   day). Move the frequent jobs to Supabase `pg_cron` calling the same RPCs, or ask Jachym about Vercel Pro.
-   Note for Jachym: Vercel's free plan is for non-commercial use; taking real payments needs Pro.
-5. Stripe test mode: register the webhook for the deployed address; pay one booking by test card and one by test
-   PromptPay end to end.
-6. Seed: sports, Steven / Sofi / Jay as organisers, the venues — through the admin panel, not SQL.
+4. Cron: the 5-minute job does not run on Vercel's free plan. Move frequent jobs to Supabase `pg_cron` calling the
+   same RPCs. Vercel's free plan is for non-commercial use: Pro before real payments.
+5. Stripe test mode: register the webhook; one booking by test card, one by test PromptPay.
+6. Through the admin panel, not SQL: create Bangkok, enable volleyball, add venues, prices, Steven and Sofi as
+   organisers, the Bangkok deal.
 
-Done when: the deployed site loads `/volleyball` · a test booking by card and one by PromptPay reach `confirmed`
-through the webhook · a cancellation credits the wallet · the Playwright smoke suite passes against the deployment.
+Done when: the deployed site loads `/bangkok/volleyball` · both test bookings reach `confirmed` by webhook · a
+cancellation credits the wallet · the Playwright smoke suite passes against the deployment.
 
-### Phase 11 — Pilot
-One real week: every volleyball game is created in Playco and announced in WhatsApp with the game link. Stripe stays
-in test mode until Phase 13 is approved, so pilot players pay cash at the court. Collect what breaks. HQ compares Playco's numbers with the hand-entered ones for the same week.
+### Phase 13 — HQ connection
 
-### Phase 12 — Design
-The Playco look on the same components: tokens in `tailwind.config.ts`, logo, Open Graph card, PWA icons, a sport
-accent colour per view. No structural change.
+Here: `supabase/roles/hq_readonly.sql` (SELECT on named columns: cities, games with sport and city, bookings,
+ledger, checkout sessions, events, venue costs, price rules, deals, payouts, players without email / phone / auth
+id) and `docs/HQ_CONTRACT.md`.
+In `playllu/playllu-hq` (separate PR, HQ's rules): `PLAYCO_DB_READONLY_URL`; `src/data/playco-source.ts`; **every
+city appears automatically** as a track per city and sport; a cutover date per city; HQ's golden numbers unchanged.
 
-### Phase 13 — Launch gate
-Live Supabase project; live Stripe keys; domain; 3-of-3 approval in HQ; WhatsApp groups point to Playco.
+Done when: a database test proves the role cannot read email or phone and cannot write · HQ's checks are green with
+a two-city Playco fixture.
 
----
+### Phase 14 — Pilot
+One real week of Bangkok volleyball. Stripe stays in test mode; players pay cash at the court. HQ compares Playco's
+numbers with the hand-entered ones.
 
-## 5. Stripe: what was found (14 Nov 2026)
+### Phase 15 — Design
+The Playco look: tokens, logo, Open Graph card, icons, an accent per sport. No structural change.
 
-**Can the existing Playllu Stripe account be used?** Not for this. A Stripe account belongs to one country and that
-cannot be changed, and PromptPay is offered only to accounts based in Thailand. Charging baht on the current account
-would work for cards only and would pay out converted.
+### Phase 16 — Launch
+Live database, live Stripe keys, domain, 3-of-3 approval in HQ, WhatsApp groups point to Playco.
 
-**Can it sit under the same login?** Yes. In the Stripe dashboard, open the account selector (top left) and choose
-"New account"; pick Thailand. It is a separate account with its own verification, bank account, balance, keys and
-webhooks, reachable from the same login. This is not Stripe Connect and needs no platform setup.
-
-**As an individual, before the company exists:** Stripe Thailand lists "Individual" among its business types. A
-non-Thai national verifies with a passport. Stripe asks for a current residential address. A Thai account can
-charge in many currencies but is paid out only in THB, so it needs a Thai bank account in the same name.
-
-**Not confirmed — ask Stripe support before relying on it:**
-- whether a foreigner living in Thailand is accepted as an "Individual" without a Thai company (Stripe's pages do
-  not say; third-party guides say individual accounts are for residents);
-- what happens when the company is registered — usually a different legal entity means a **new** Stripe account
-  (for the app that is only three new keys in Vercel; history stays in the old account).
-
-**Outside Stripe:** taking business income in Thailand as a foreign individual has work-permit and tax
-consequences. That is a question for a Thai accountant, not for this plan.
-
-**For the build:** none of this blocks Phase 6. A Stripe account in test mode (a "sandbox") gives working keys and
-test PromptPay QR codes without any verification.
-
-Sources: Stripe support — "Supported payment methods, currencies, and businesses for Stripe accounts in Thailand",
-"What information is required to open a Stripe account in Thailand?", "What documents are accepted to verify my
-account in Thailand?", "Thailand FAQ"; Stripe docs — PromptPay payments, Multiple accounts, Organizations.
+### Phase 17 — The second city (the proof)
+On staging, with no code change and no deploy: approve an application → a draft city in another currency and time
+zone → the invited manager signs in, enables football, adds a venue, a price and a weekly series → set the city
+live → a test player books and pays → the statement shows the manager's share → pause the city.
+**If any step needs a developer, the phase that owns it is not finished.** Write the steps up as
+`docs/NEW_CITY.md`, the manager's onboarding guide.
 
 ---
 
-## 6. Adding football later (the check that the model works)
+## 5. Payments across countries (read before Phase 8)
 
-1. Admin → Site → Sports: switch football on.
-2. Admin → Site → Prices: add a football price.
-3. Admin → Venues: add the football venue, its cost per hour and default capacity.
-4. Make someone the organiser; create the games.
+- **Thailand:** a Thai Stripe account (card + PromptPay), under the same Stripe login as the existing account
+  (account selector → New account → Thailand). Separate verification, bank account and keys. Test mode works
+  without verification.
+- **Open before live:** whether Stripe accepts a foreign individual in Thailand without a company, and what happens
+  when the company is registered (usually a new account — for the app, three new env values).
+- **Europe:** the existing Playllu Stripe account can be linked to European cities as a second payment account.
+- **Other countries:** "Playllu controls the cash flow" needs, per country, either a Stripe account Playllu can
+  open there, or charging from an existing account in the local currency (cards only, converted at payout), or a
+  second provider behind the same interface. Stripe does not serve every country. Decide per city, at application
+  time — it is the first question to ask a prospective manager.
+- **Paying managers:** recorded in the app, sent by Playllu outside it (bank transfer). Automatic payouts are not
+  in scope.
+- Tax and legal structure per country are open until a market is validated; the app keeps every amount, currency,
+  city and date needed to produce the numbers later.
 
-`/` now shows the sport picker, the header shows the switcher, `/football` is live. If any of this needs a code
-change, Phase 2 or Phase 4 was not finished.
+Sources: Stripe support (Thailand: supported payment methods, required information, accepted documents, FAQ);
+Stripe docs (PromptPay, multiple accounts, Organizations).
+
+## 6. Later, deliberately not now
+
+Passes and an unlimited monthly plan · referral rewards · a city's own brand and domain · a second region ·
+automatic payouts · LINE / phone login · ratings, chat, team balancing · level enforcement · native apps · China.
+Nothing in Phases 0–17 may make any of these harder: when in doubt, keep the column and hide the feature.
