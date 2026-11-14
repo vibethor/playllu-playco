@@ -28,7 +28,8 @@ this file says otherwise. Read it once.
 5. **Money is an integer in the currency's smallest unit plus a currency code.** Two currencies are never added or
    compared. A price is a function of price rules, never a typed number.
 6. **Four roles, checked in the database:** platform admin › city manager › organiser › player. A manager reaches
-   only their cities; an organiser only their games. Players' email and phone never leave platform admin.
+   only their cities; an organiser only their games. A manager sees the phone numbers of players who booked
+   in their city while they hold the role; email never leaves platform admin.
 7. **Money always goes to Playllu**, through the payment account the city is linked to. Managers and organisers are
    paid a share; the app records payouts and never sends money.
 8. **Players belong to Playllu.** Revoking a role ends access and keeps all history. No export below platform admin.
@@ -50,11 +51,14 @@ change a business rule below; find a design gap; send anything to players; add a
 Platform:
 - **Cancellation:** any time; refund to the wallet up to 8 hours before the start. No-shows keep nothing. A
   real-money refund is requested by the player and approved by the organiser or the city manager.
+- **No cash.** Players prepay online (or from the wallet); a seat exists only once it is paid. Staff seats are free.
+- **Wallet credit** from a cancellation does not expire. The 60-day expiry is for passes only.
 - **Levels** are shown, not enforced. **No passes** at launch. **Referral code** per player, recorded at sign-up;
   no reward yet.
-- **City managers** are invited or approved by Playllu and paid a profit share (losses shared per the deal). They
+- **City managers** are invited or approved by Playllu and paid a profit share: 50% of profit and 50% of a loss as standard. They
   may bring their own organisers. Big decisions are discussed with Playllu; day-to-day growth is theirs.
 - **Support** is the organiser's, then the city manager's.
+- **Recurring games:** "repeats weekly" on the game form; following weeks are created and published automatically.
 - **Login:** email, password, Google. Web app, installable.
 
 Bangkok (the first city — these are data, entered in admin, listed here so the agent can seed a dev database):
@@ -67,7 +71,7 @@ Bangkok (the first city — these are data, entered in admin, listed here so the
 - Organisers: Steven (hard-court volleyball), Sofi (beach volleyball), Jachym (basketball).
 - Deal: volleyball 50% of profit, losses split 50/50. Reference month 11 Oct–8 Nov: 9 games, 28,750 revenue,
   20,400 venues, +8,350 profit, 4,175 share.
-- Payments: Thai Stripe account (card + PromptPay); cash at the court confirmed by the organiser.
+- Payments: Thai Stripe account (card + PromptPay).
 
 ## 4. Running it
 

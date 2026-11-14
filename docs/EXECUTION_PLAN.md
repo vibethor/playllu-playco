@@ -57,8 +57,13 @@ added only when latency or data law requires it.
 - Cancellation: any time; refund to the wallet up to 8 hours before. A real-money refund is the exception: requested
   by the player, approved by the organiser or the city manager.
 - No passes at launch. Passes, then an unlimited monthly plan, come later — nothing built now may block them.
+- **No cash.** A seat exists only once it is paid online (or is a staff seat, or paid from the wallet).
+- Wallet credit from a cancellation does not expire. The 60-day expiry belongs to passes only.
+- Standard city-manager deal: 50% of profit, 50% of a loss.
+- A city manager sees the phone numbers of players who booked in their city, for as long as they hold the role.
 - Referral: every player gets a code, and sign-up records who referred them, from day one. The reward comes later.
-- Recurring games: a manager sets a weekly slot once.
+- Recurring games: the manager creates a game in the admin panel and ticks "repeats weekly"; the following
+  weeks are created and published automatically until the manager changes or stops it.
 - Support is the manager's or the organiser's job; the app shows players who to contact per game.
 - Build with agents and Jachym now; a developer or agency later. So: plain structure, tests, README, no cleverness.
 - **The hosted database is set up last** (Phase 12). Everything before it runs on the local Postgres of `CLAUDE.md` §4.
@@ -70,8 +75,7 @@ added only when latency or data law requires it.
 2. v1 had "Bangkok identity" as a phase. It is now "location as configuration".
 3. v1 had two roles. There are four.
 4. v1 switched sports on globally. They are switched on per city.
-5. v1 let organisers hold cash. All online money goes to Playllu; cash at the court is recorded against the
-   organiser as money they owe.
+5. v1 let organisers hold cash. **There is no cash.** Players prepay online; all money goes to Playllu.
 6. v1 had no way to pay anyone. Deals, statements and payouts are now part of the app.
 
 ---
@@ -155,7 +159,8 @@ game's local start time and price formatted correctly · a paused city's games a
    `can_run_game(game_id)` (the above, or the organiser of that game). Restate every `admin_*` RPC to call one of
    them instead of checking `is_admin`.
 3. Scope: a manager reads and writes only their cities (games, venues, prices, players **who booked in their
-   city** — nickname and level, never email; phone only under the existing organiser-contact rule). An organiser
+   city** — nickname, level and phone, never email; the phone read goes through one RPC that checks the role on
+   every call, so it stops the moment the role is revoked). An organiser sees nicknames and levels only. An organiser
    reads and writes only games they run. Nobody below platform admin can export players.
 4. Invitations: `invite_city_manager(city, email)` (platform admin) and `invite_organiser(city, email)` (manager).
    The role starts when the invited person signs in. `revoke_city_role` ends access at once and keeps all history.
@@ -164,7 +169,8 @@ game's local start time and price formatted correctly · a paused city's games a
 6. Every grant, revoke and approval is an event.
 
 Done when: SQL suite `roles.sql` passes: manager A cannot read or change anything in city B · an organiser cannot
-touch another organiser's game · a revoked manager is refused on the next call · no role below platform admin can
+touch another organiser's game · a revoked manager is refused on the next call, including the phone read · a
+manager cannot read the phone of a player who never booked in their city · no role below platform admin can
 select `players.email` · an approved application produces a draft city and one pending invitation.
 
 ### Phase 4 — Sports per city
@@ -225,10 +231,11 @@ HrajFotbal's wallet counts credits as seats at one flat price (`credit_seat_pric
 2. Restate booking, guest, cancel and admin-credit RPCs so none uses a flat seat price. Admin grants are amounts.
 3. **Keep the batch columns** (`batch_id`, `expires_at`): passes will come back later as a second kind of balance
    ("N games in city X, sport Y"). Hide `/pass` behind one flag; do not delete its tables or tests.
-4. Wallet credit expiry: 60 days as upstream, unless Jachym says otherwise — **ask**.
+4. Cancellation credit never expires: remove the 60-day expiry from wallet credit and its cron sweep. Keep the
+   expiry machinery for pass batches only (dormant with passes).
 
 Done when: SQL suite `wallet.sql` passes (cancel 300 in time → +300 · 250 game with 300 in wallet → 50 left ·
-300 game with 250 → 50 due · late cancel → 0 · ledger sum = balance per currency · THB balance unusable in a EUR city).
+300 game with 250 → 50 due · late cancel → 0 · credit dated 61 days ago is still spendable · ledger sum = balance per currency · THB balance unusable in a EUR city).
 
 ### Phase 8 — Payments
 
@@ -240,27 +247,27 @@ Goal: money always reaches Playllu; the provider and the account are configurati
    (`th`: card + PromptPay). Webhook route: `/api/stripe/webhook/[account]`.
 2. Checkout in the city's currency. Confirmation only from the webhook. Handle completed, async succeeded, async
    failed, expired; an unpaid session frees the seat for the waitlist.
-3. `payment_method`: add `card`, `promptpay`; `qr` unused.
-4. Cash at the court: allowed per city (a setting). The organiser confirms it; the amount is recorded as **cash
-   held by that organiser** and appears in the statements of Phase 9. Whether a cash booking holds its seat until
-   the game or expires: **ask**.
+3. `payment_method`: add `card`, `promptpay`; `qr` and `cash` unused.
+4. **Remove cash completely:** the "pay at the court" choice, the unpaid-reservation grace window and its nudge
+   and expiry crons, and admin "mark as paid in cash". A player-facing seat is created only by a settled online
+   payment or wallet money. Platform admin keeps one escape hatch, `admin_create_booking` (logged, with a reason),
+   for fixing mistakes.
 5. Real-money refunds: `request_refund(booking, reason)` by the player → approved or declined by the game's
    organiser or the city manager → the provider refund is issued and logged. The wallet remains the default.
 6. Stripe test mode only. See §5.
 
 Done when: unit tests cover the four webhook events and the account routing · an SQL test shows an expired session
-frees the seat · a refund cannot be approved by a manager of another city · `grep -rn "sk_live\|sk_test\|whsec_"`
+frees the seat · no RPC callable by a player, organiser or manager can create an unpaid seat · a refund cannot be approved by a manager of another city · `grep -rn "sk_live\|sk_test\|whsec_"`
 finds nothing · `npm run check`, `npm run test:db` exit 0.
 
 ### Phase 9 — Deals and statements
 
-1. `public.deals`: `city_id`, optional `sport`, `party` (a manager), `share_percent`, `basis` (`profit`),
+1. The standard deal is 50% of profit and 50% of a loss; a new city gets it by default. `public.deals`: `city_id`, optional `sport`, `party` (a manager), `share_percent`, `basis` (`profit`),
    `loss_share_percent`, `valid_from`, `valid_to`. Set by platform admin only.
-2. Per game, computed in SQL and tested: revenue (online + cash) − venue cost = profit; manager share =
+2. Per game, computed in SQL and tested: revenue − venue cost = profit; manager share =
    round(profit × share); losses shared by `loss_share_percent`.
-3. `public.payouts`: what Playllu paid a manager (amount, currency, date, note) and what cash an organiser handed
-   over. Recorded by platform admin. The app records payouts; it does not send money.
-4. Admin → Statement, per city and month: games, paid seats, revenue online / cash, venue costs, profit, manager
+3. `public.payouts`: what Playllu paid a manager (amount, currency, date, note). Recorded by platform admin. The app records payouts; it does not send money.
+4. Admin → Statement, per city and month: games, paid seats, revenue, venue costs, profit, manager
    share, already paid, balance owed either way. A manager sees their own; platform admin sees all.
 5. The manager's arrangements with their organisers are theirs: an optional per-organiser note and share that only
    feeds the manager's own view.
@@ -271,15 +278,19 @@ another city's statement or any deal's terms but their own.
 
 ### Phase 10 — Recurring games and referral codes
 
-1. `public.game_series`: city, sport, venue, weekday, start time, length, capacity, level, organiser, active.
-   A daily job creates the games a configurable number of days ahead as **drafts or published** (a series setting);
-   price from the rules; editing a series never changes games that already have bookings.
+1. The game form (create and edit) has "Repeats weekly". Ticking it creates a `public.game_series` from that
+   game (city, sport, venue, weekday, local start time, length, capacity, level, organiser). A daily job keeps the
+   next N weeks (a named constant, 4) created and **published**, each priced from the rules at creation.
+   Editing a game asks "this game only" or "this and all following"; the second updates the series and the future
+   games that have no bookings yet. Unticking stops the series and leaves existing games alone. Cancelling one
+   game never stops the series.
 2. Referral: `players.referral_code` (unique, short) and `players.referred_by`, captured from `?ref=` at sign-up
    and shown on the profile with a share link. `referral_events` records the first paid game of a referred player.
    No reward logic yet.
 
 Done when: an SQL test generates four weeks from a series with correct local times across a time-zone edge and
-does not duplicate on a second run · a sign-up with a valid code stores the referrer; an invalid code is ignored;
+does not duplicate on a second run · "this and following" leaves a game with bookings unchanged · stopping a
+series creates nothing further · a sign-up with a valid code stores the referrer; an invalid code is ignored;
 a player cannot refer themselves.
 
 ### Phase 11 — Languages, phone, legal
@@ -322,14 +333,18 @@ Done when: a database test proves the role cannot read email or phone and cannot
 a two-city Playco fixture.
 
 ### Phase 14 — Pilot
-One real week of Bangkok volleyball. Stripe stays in test mode; players pay cash at the court. HQ compares Playco's
-numbers with the hand-entered ones.
+Because there is no cash, a pilot with real players needs real payments. Two steps:
+1. **Dry run (test mode):** founders and organisers book and pay every game of one week with Stripe test cards and
+   test PromptPay, in parallel with the real WhatsApp sign-ups. HQ compares Playco's numbers with the hand-entered ones.
+2. **Soft launch (live keys, needs Jachym's go and the verified Thai Stripe account):** one real game is opened to
+   players in Playco only; the others stay on WhatsApp. Widen game by game.
 
 ### Phase 15 — Design
 The Playco look: tokens, logo, Open Graph card, icons, an accent per sport. No structural change.
 
 ### Phase 16 — Launch
-Live database, live Stripe keys, domain, 3-of-3 approval in HQ, WhatsApp groups point to Playco.
+Every Bangkok volleyball game in Playco. Live database and live Stripe keys are already in place from the soft
+launch; this adds the domain, 3-of-3 approval in HQ, WhatsApp groups point to Playco.
 
 ### Phase 17 — The second city (the proof)
 On staging, with no code change and no deploy: approve an application → a draft city in another currency and time
