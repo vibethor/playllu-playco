@@ -6,7 +6,8 @@ and it reports into Playllu HQ through a read-only role.
 
 Next.js App Router + Supabase (Postgres, RLS, plpgsql RPCs) + Vercel + Stripe (Thai account, THB, PromptPay + card).
 
-Read this file before every task. HrajFotbal's original `CLAUDE.md` is in `docs/upstream/CLAUDE.hrajfotbal.md`: its
+Read this file before every task. **The build order is `docs/EXECUTION_PLAN.md`** — work its phases in order, one
+pull request each; what only Jachym can do is in `TODO.md`. HrajFotbal's original `CLAUDE.md` is in `docs/upstream/CLAUDE.hrajfotbal.md`: its
 rules and its "lessons, in the order they hurt" apply here unchanged unless this file says otherwise. Read it once.
 
 ---
