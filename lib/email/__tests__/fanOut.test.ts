@@ -12,7 +12,7 @@ vi.mock("@/lib/email/env", async () => {
   const env = (locale: "en" | "cs" | "ru" | "uk") => ({
     locale,
     t: resolveStrings(locale),
-    baseUrl: "https://www.hrajfotbal.com",
+    baseUrl: "https://playco.example",
     cutoffHours: 12,
   });
   return { emailEnv: async (locale: "en" | "cs" | "ru" | "uk") => env(locale), emailEnvFor: async () => env("en") };
@@ -30,8 +30,8 @@ const input = {
   gameId: "game-1",
   venue: "Pražačka",
   startsAt: "2026-07-25T16:00:00.000Z",
-  gameUrl: "https://hrajfotbal.com/games",
-  accountUrl: "https://hrajfotbal.com/account",
+  gameUrl: "https://playco.example/games",
+  accountUrl: "https://playco.example/account",
   recipients: [
     // paid — gets the notice AND the credit receipt
     { bookingId: "b1", email: "paid@example.com", nickname: "Paid", creditThb: 200 },

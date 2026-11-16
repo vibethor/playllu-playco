@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AUTH_TEMPLATES, supabaseTemplate } from "@/lib/email/templates/authEmails";
+import { AUTH_TEMPLATES, supabaseSubject, supabaseTemplate } from "@/lib/email/templates/authEmails";
 
 /**
  * ROUND 41 — the three emails Supabase sends, in the approved design and the
@@ -34,15 +34,28 @@ describe("the Supabase templates", () => {
     expect(template).toContain("{{ .NewEmail }}");
   });
 
-  it.each(AUTH_TEMPLATES)("%s carries all four languages, chosen from the account", (kind) => {
+  /*
+   * PLAYCO: English and Thai, the two languages a player can choose (SERVED_LOCALES). An account that somehow
+   * carries another locale falls through to English rather than to an unreviewed overlay.
+   */
+  it.each(AUTH_TEMPLATES)("%s carries English and Thai, chosen from the account", (kind) => {
     // Act
     const template = supabaseTemplate(kind);
 
     // Assert
     expect(template).toContain('{{ if .Data.email_locale }}{{ $l = .Data.email_locale }}{{ end }}');
-    for (const lang of ["cs", "ru", "uk"]) expect(template).toContain(`eq $l "${lang}"`);
-    expect(template.match(/<html lang="(en|cs|ru|uk)">/g)).toHaveLength(4);
+    expect(template).toContain('eq $l "th"');
+    expect(template.match(/<html lang="[a-z]+">/g)).toEqual(['<html lang="th">', '<html lang="en">']);
     expect(template.trim().endsWith("{{ end }}")).toBe(true);
+  });
+
+  it.each(AUTH_TEMPLATES)("%s says Playco, never the old brand", (kind) => {
+    // Act
+    const template = supabaseTemplate(kind) + supabaseSubject(kind);
+
+    // Assert
+    expect(template).not.toMatch(/hraj|fotbal|hrajsport/i);
+    expect(template).toContain("Playco");
   });
 
   it.each(AUTH_TEMPLATES)("%s leaves no copy placeholder unfilled", (kind) => {

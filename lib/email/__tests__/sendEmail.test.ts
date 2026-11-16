@@ -151,19 +151,19 @@ describe("sendEmail", () => {
     it("sends from the configured identity, which must be the verified domain", async () => {
       process.env.EMAIL_DRY_RUN = "off";
       process.env.RESEND_API_KEY = "re_test_key";
-      process.env.EMAIL_FROM = "Hraj Fotbal <noreply@hrajfotbal.com>";
+      process.env.EMAIL_FROM = "Playco <noreply@playco.example>";
       fetchSpy.mockResolvedValue({ ok: true, json: async () => ({ id: "email_from" }) });
 
       await sendEmail(payload);
 
       const [, init] = fetchSpy.mock.calls[0];
-      expect(JSON.parse(init.body).from).toBe("Hraj Fotbal <noreply@hrajfotbal.com>");
+      expect(JSON.parse(init.body).from).toBe("Playco <noreply@playco.example>");
     });
   });
 
   /**
    * ROUND 41 — "this email should also come from our email account". Resend
-   * is verified for the whole of hrajfotbal.com, so support@ can send; and
+   * is verified for the whole sending domain, so support@ can send; and
    * replies always reach the Seznam mailbox whatever EMAIL_FROM says.
    */
   describe("the published mailbox", () => {
@@ -187,7 +187,7 @@ describe("sendEmail", () => {
 
     it("directs replies to support@ even when EMAIL_FROM is a no-reply address", async () => {
       // Arrange
-      process.env.EMAIL_FROM = "Hraj Fotbal <noreply@hrajfotbal.com>";
+      process.env.EMAIL_FROM = "Playco <noreply@playco.example>";
 
       // Act
       await sendEmail(payload);
@@ -201,7 +201,7 @@ describe("sendEmail", () => {
       // Arrange
       const terms = {
         filename: "Hraj-Fotbal-obchodni-podminky.pdf",
-        path: "https://www.hrajfotbal.com/legal/obchodni-podminky.pdf",
+        path: "https://playco.example/legal/obchodni-podminky.pdf",
         contentType: "application/pdf",
       };
 

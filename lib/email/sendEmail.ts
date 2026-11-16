@@ -74,10 +74,10 @@ export async function sendEmail(payload: EmailPayload): Promise<SendEmailResult>
 
   /*
    * FROM AND REPLY-TO ARE THE PUBLISHED MAILBOX (round 41, owner: "this email
-   * should also come from our email account"). Resend is verified for the whole
-   * of hrajfotbal.com, so it may send as support@; and every reply lands in the
-   * Seznam inbox whatever `EMAIL_FROM` says, because a reply to a no-reply
-   * address is a player shouting into nothing.
+   * should also come from our email account"). PLAYCO: the sending domain must
+   * be verified in Resend before EMAIL_FROM can name it (TODO.md); every reply
+   * goes to OPERATOR_CONTACT.email whatever `EMAIL_FROM` says, because a reply
+   * to a no-reply address is a player shouting into nothing.
    */
   const from = process.env.EMAIL_FROM ?? DEFAULT_FROM;
 

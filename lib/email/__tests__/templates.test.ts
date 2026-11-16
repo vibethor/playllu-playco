@@ -26,7 +26,7 @@ import { policy } from "@/lib/policy";
 
 const STARTS_AT = "2026-07-25T11:00:00.000Z"; // 18:00 Asia/Bangkok
 const HOSTILE = '<script>alert("xss")</script>';
-const BASE_URL = "https://www.hrajfotbal.com";
+const BASE_URL = "https://playco.example";
 
 function env(locale: Locale = "en"): EmailEnv {
   return { locale, t: resolveStrings(locale), baseUrl: BASE_URL, cutoffHours: 12 };
@@ -117,7 +117,22 @@ describe("every email, in every language", () => {
     // Assert
     expect(email.html).toContain('<html lang="cs">');
     expect(email.html).toContain(`${BASE_URL}/brand/playco-mark-96.png`);
-    expect(email.html).toContain("Hraj <span");
+    expect(email.html).toContain(">Playco</td>");
+    expect(email.html).not.toMatch(/Hraj|hrajfotbal|Anton|Onest/);
+  });
+
+  /*
+   * PLAYCO: Thai stacks vowel and tone marks on its consonants; letter-spacing pulls them apart. The only spaced
+   * text left in a Thai email is the Latin wordmark and the digits of a code.
+   */
+  it("never letter-spaces Thai text", () => {
+    // Act
+    const htmls = all("th").map(({ email }) => email.html);
+
+    // Assert
+    const spaced = htmls.flatMap((h) => h.match(/letter-spacing:[1-9][^;"]*/g) ?? []);
+    const latinOnly = new Set(["letter-spacing:3px", "letter-spacing:8px"]); // wordmark, code digits
+    expect(spaced.filter((value) => !latinOnly.has(value))).toEqual([]);
   });
 
   it("escapes a hostile venue everywhere it appears", () => {
