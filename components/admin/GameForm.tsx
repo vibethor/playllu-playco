@@ -642,7 +642,7 @@ export function GameForm({
                   name="organizerTelegram"
                   className={FIELD}
                   autoComplete="off"
-                  placeholder="@oliver_hf"
+                  placeholder="@organiser"
                   value={organizerTelegram}
                   onChange={(event) => setOrganizerTelegram(event.target.value)}
                 />

@@ -87,5 +87,5 @@ export async function buildGameStory(
     t,
   });
 
-  return { image, fileName: `hraj-fotbal-${game.game_number ?? game.id}-story.png` };
+  return { image, fileName: `playco-${game.game_number ?? game.id}-story.png` };
 }

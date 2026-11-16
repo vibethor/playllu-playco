@@ -152,7 +152,7 @@ export function renderGameStory(props: GameStoryProps): ImageResponse {
             <img src={OG_MARK_DATA_URI} width={MARK_PX} height={MARK_PX} style={{ borderRadius: MARK_PX / 2 }} alt="" />
             <div style={{ display: "flex", marginLeft: 28, fontFamily: "Anton", fontSize: 76, letterSpacing: 1 }}>
               <span style={{ color: "white" }}>{upper(t.brand.wordmarkLead)}</span>
-              <span style={{ color: COLORS.volt, marginLeft: 18 }}>{upper(t.brand.wordmarkAccent)}</span>
+              <span style={{ color: COLORS.volt }}>{upper(t.brand.wordmarkAccent)}</span>
             </div>
           </div>
 

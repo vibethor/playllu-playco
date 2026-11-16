@@ -124,7 +124,7 @@ export function VenueForm({
               id={`address-${key}`}
               name="address"
               maxLength={120}
-              placeholder="Dubečská 9, Praha 10"
+              placeholder="Sukhumvit Soi 50, Phra Khanong, Bangkok 10260"
               defaultValue={venue?.address ?? ""}
               data-testid="venue-address-input"
               className="field mt-1 w-full"

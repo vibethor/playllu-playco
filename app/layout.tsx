@@ -19,6 +19,7 @@ import { getCurrentPlayer } from "@/lib/auth/session";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 import { strings } from "@/lib/strings";
 import { BRAND } from "@/lib/brand/palette";
+import { SITE_NAME } from "@/lib/city/default";
 import "./globals.css";
 
 
@@ -95,7 +96,7 @@ export async function generateMetadata(): Promise<Metadata> {
      */
     title: {
       default: t.meta.title,
-      template: `%s — ${strings.brand.wordmarkLead} ${strings.brand.wordmarkAccent}`,
+      template: `%s — ${SITE_NAME}`,
     },
     description: t.meta.description,
     applicationName: "Playco",

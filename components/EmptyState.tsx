@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { strings } from "@/lib/strings";
+import { LogoMark } from "@/components/brand/Logo";
 
 /**
  * The one empty-state shape (v1.3 §2.9, ruling P), used wherever a list has
@@ -45,10 +45,7 @@ export function EmptyState({
   return (
     <div className="rounded-card bg-surface px-6 py-10 text-center">
       {/* The mark, quiet. Volt at this size reads as a wink, not an error. */}
-      <p className="m-0 text-[34px] font-extrabold italic leading-none tracking-[-1px] text-accent-dim opacity-40">
-        {strings.brand.monogramLead}
-        {strings.brand.monogramAccent}
-      </p>
+      <LogoMark size={40} className="mx-auto opacity-90" />
 
       <h2 className="mt-5 mb-0 text-body-lg font-semibold text-bone">{title}</h2>
 

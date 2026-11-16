@@ -42,10 +42,11 @@ export const strings = {
   },
 
   brand: {
-    wordmarkLead: "HRAJ",
-    wordmarkAccent: "FOTBAL",
-    monogramLead: "H",
-    monogramAccent: "F",
+    // PLAYCO: the share images set the name in two colours, "PLAY" + lime "CO", as the old badge did.
+    wordmarkLead: "PLAY",
+    wordmarkAccent: "CO",
+    monogramLead: "P",
+    monogramAccent: "C",
   },
 
   nav: {
@@ -203,7 +204,7 @@ export const strings = {
     heroCta: "Find a game",
     heroPhotoCredit: "Photo: Spatialxplora, CC BY 4.0",
     vision:
-      "One match that repeats itself. Find a game, claim your spot, show up.",
+      "One game that repeats itself. Find a game, claim your spot, show up.",
     scrollHint: "↓ SCROLL",
     steps: [
       {
@@ -593,7 +594,7 @@ export const strings = {
       title: "Someone dropping out?",
       body: "Take guests off your spot. Yours stays — to leave the game entirely, use Cancel.",
       refund: "{credits} come back to you.",
-      forfeit: "Less than {hours}h to kickoff — removing a guest now returns nothing.",
+      forfeit: "Less than {hours}h to the start — removing a guest now returns nothing.",
       submit: "Remove {n}",
       confirm: "Remove {n} from your spot?",
       confirmLate: "Remove {n}? It is past the refund cutoff, so nothing comes back.",
@@ -645,7 +646,7 @@ export const strings = {
     mapAlt: "Map of the venue",
     // The panel is a real photograph of the pitch now, not a traced map, so
     // the alt text names the venue rather than describing a diagram.
-    venuePhotoAlt: "The pitch at {venue}",
+    venuePhotoAlt: "{venue}",
     // Shown on an avatar whose nickname has no letters or digits at all.
     rosterUnknown: "?",
     // Surface labels, keyed by the `games_surface_known` values. A closed set
@@ -697,8 +698,8 @@ export const strings = {
     // --- your booking (§5.6) -------------------------------------------------
     yourBookingTitle: "You are in",
     yourBookingHeld: "Your spot is held — pay to confirm it.",
-    yourBookingConfirmed: "Paid. See you on the pitch.",
-    yourBookingCash: "Paying cash at the pitch.",
+    yourBookingConfirmed: "Paid. See you on the court.",
+    yourBookingCash: "Paying cash at the game.",
     yourBookingPay: "Pay for this spot",
     yourBookingManage: "Manage your booking",
 
@@ -786,7 +787,7 @@ export const strings = {
      * `lib/venues/amenities.ts` and migration 20260802210000 rather than
      * invented here.
      */
-    pitchAmenitiesTitle: "Pitch amenities",
+    pitchAmenitiesTitle: "At the venue",
     /*
      * The amenity catalog, in the same order `lib/venues/amenities.ts` renders
      * it. Every key here has a matching value in `venues_amenities_catalog`
@@ -796,7 +797,7 @@ export const strings = {
     amenities: {
       bibs: "Bibs provided",
       gloves: "Goalkeeper gloves",
-      balls: "Match balls",
+      balls: "Game balls",
       water: "Water",
       drinks: "Drinks",
       showers: "Showers",
@@ -846,7 +847,7 @@ export const strings = {
      */
     notesLabel: "Notes from organizer",
     capacityLabel: "Capacity",
-    startsLabel: "Kick-off",
+    startsLabel: "Start time",
     venueLabel: "Where",
     priceLabel: "Price",
     alreadyStarted: "This game has already kicked off.",
@@ -890,7 +891,7 @@ export const strings = {
      * what, when, where and how many places, in three short lines, the short
      * link last. `{call}` is one of the three below.
      */
-    shareMessage: "⚽ Football on {when}\n📍 {venue}\n{call} 👉 {url}",
+    shareMessage: "Volleyball · {when}\n{venue}\n{call} {url}",
     shareCallOpen: "{spots} – grab one",
     shareCallFull: "Full – join the waitlist",
     shareCallDefault: "Grab a spot",
@@ -956,7 +957,7 @@ export const strings = {
      * It is deliberately phrased as a description of the arrangement rather
      * than as an instruction to choose it.
      */
-    payByCashHint: "You are settling this one with the organizer at the pitch.",
+    payByCashHint: "You are settling this one with the organizer at the game.",
     choosePayment: "How do you want to pay?",
     /* --- bringing people (round 11, part B) --- */
     partyTitle: "Bringing anyone?",
@@ -995,7 +996,7 @@ export const strings = {
      * is `partyPlus`, which every language already has.
      */
     partyMore: "More guests",
-    partyLimited: "Only {n} more can fit on this pitch.",
+    partyLimited: "Only {n} more can fit in this game.",
     /**
      * THE ONE THING A STATIC PAYMENT LINK CANNOT DO. A Stripe Payment Link
      * carries a fixed quantity of one and there is no parameter that presets
@@ -1022,9 +1023,9 @@ export const strings = {
     // wording under policy v1 (`cutoffHoursBeforeStart: 0`) and interpolates
     // {hours} into the cutoff wording if a v2 policy introduces a lead time.
     cancelReassuranceKickoff:
-      "Cancel anytime before kickoff — your credits come back in full.",
+      "Cancel anytime before the start — your credits come back in full.",
     cancelReassuranceCutoff:
-      "Cancel up to {hours}h before kickoff — your credits come back in full.",
+      "Cancel up to {hours}h before the start — your credits come back in full.",
     confirmBooking: "Confirm booking",
     /** Texty 4.2 — the commit names what it costs. `{credits}` is "1 Credit". */
     confirmWithCredits: "Book for {credits}",
@@ -1097,7 +1098,7 @@ export const strings = {
      * THE TWELVE HOURS, SAID IN BOTH SENTENCES (round 40, Obchodní podmínky
      * 9.1). `{hours}` is `cancellation_refund_cutoff_hours()`, read out.
      */
-    refundAsCredits: "It's more than {hours} hours to kick-off, so your Credit comes back.",
+    refundAsCredits: "It's more than {hours} hours to the start, so your Credit comes back.",
     /*
      * "I CAN'T MAKE IT" (round 40, the owner). Inside the cutoff nothing comes
      * back, but telling us still frees the spot — so the control says what the
@@ -1122,7 +1123,7 @@ export const strings = {
      * and then says the useful thing rather than warning them off.
      */
     refundLostLate:
-      "It is less than {hours} hours to kickoff, so this one is not credited back. Cancelling still frees your spot for someone else.",
+      "It is less than {hours} hours to the start, so this one is not credited back. Cancelling still frees your spot for someone else.",
     cancelConfirm: "Cancel this booking? Your credits are returned to you.",
     cancelled: "Booking cancelled",
     addToCalendar: "Add to calendar",
@@ -1274,12 +1275,12 @@ export const strings = {
     statGamesOne: "game played",
     statGamesFew: "games played",
     statGamesMany: "games played",
-    statHoursOne: "hour on pitch",
-    statHoursFew: "hours on pitch",
-    statHoursMany: "hours on pitch",
-    statVenuesOne: "pitch played",
-    statVenuesFew: "pitches played",
-    statVenuesMany: "pitches played",
+    statHoursOne: "hour on court",
+    statHoursFew: "hours on court",
+    statHoursMany: "hours on court",
+    statVenuesOne: "venue played",
+    statVenuesFew: "venues played",
+    statVenuesMany: "venues played",
     /*
      * PLAYERS MET (round 23, item 1) — the third tile on both profiles now,
      * replacing "pitches played" there. `statVenues*` stays because the
@@ -1324,9 +1325,9 @@ export const strings = {
       veteran: "Veteran",
       veteranHint: "Play 20 games",
       explorer: "Explorer",
-      explorerHint: "Play at 3 different pitches",
+      explorerHint: "Play at 3 different venues",
       ironLegs: "Iron legs",
-      ironLegsHint: "Spend 10 hours on the pitch",
+      ironLegsHint: "Spend 10 hours on court",
       teamPlayer: "Team player",
       teamPlayerHint: "Meet 50 players",
     },
@@ -1445,7 +1446,7 @@ export const strings = {
     // Payment/status badges.
     badgePaid: "Paid",
     badgeReserved: "Awaiting payment",
-    badgeCash: "Cash on the pitch",
+    badgeCash: "Cash at the game",
     badgeSeed: "Free",
     badgeCancelled: "Cancelled",
     badgeExpired: "Expired",
@@ -1476,7 +1477,10 @@ export const strings = {
      * language the thing they accepted is in, and which text binds.
      */
     czechOnlyNotice:
-      "This document is in Czech. The Czech text is the legally binding version.",
+      "This page is being reviewed under Thai law. Until the review is finished, the text below is a placeholder and not binding.",
+    /** PLAYCO: shown instead of the inherited Czech documents until the Thai versions are written by a lawyer. */
+    reviewBody:
+      "Playco's terms, privacy notice and cookie policy for Thailand are being prepared with a lawyer. Questions in the meantime: {email}",
     downloadPdf: "Download the terms as PDF",
     back: "← Back to the games",
     /*
@@ -1537,7 +1541,7 @@ export const strings = {
     items: [
       {
         q: "What should I bring?",
-        a: "Just bring your boots or trainers and be ready to play. Bibs, balls and gloves are provided. Goalkeepers rotate, so no one needs to bring their own gloves.",
+        a: "Bring indoor sports shoes, water and a towel, and be ready to play. Balls are provided.",
       },
       {
         q: "What if the game is full?",
@@ -1545,7 +1549,7 @@ export const strings = {
       },
       {
         q: "How do I pay?",
-        a: "Pay securely by card, Apple Pay or Google Pay when you book, or use credits from your game pass.",
+        a: "Pay securely by card or PromptPay when you book, or use credit from your wallet.",
       },
       {
         q: "Do I need to be good?",
@@ -1669,7 +1673,7 @@ export const strings = {
     gamePublishedBackToAdmin: "Back to games",
     notifyDraftGameTitle: "New game published",
     notifyDraftGameBody: "{name} — {when}. Claim your spot.",
-    notifyDraftVenueTitle: "A new pitch has been added",
+    notifyDraftVenueTitle: "A new venue has been added",
     notifyDraftVenueBody: "{name} is now on the board.",
     grantNoteRequired: "A note is required — say why this credit was granted.",
     contactTitle: "Contact",
@@ -1719,12 +1723,12 @@ export const strings = {
     venueSave: "Save venue",
     venueSaved: "Venue updated",
     venueNewHeading: "Add a venue",
-    venuePitchNameHint: "The ground's default pitch. A game can name its own instead.",
+    venuePitchNameHint: "The venue's default court. A game can name its own instead.",
     venuePresetsHeading: "Inherited by every game here",
     // The two facts you scan a venue list for, on the closed row.
     venueHasPhoto: "Photo set",
     venueNoPhoto: "No photo",
-    venueNoPitchName: "No pitch name",
+    venueNoPitchName: "No court name",
     /* --- what a game inherits from its venue (round 14, item 2) --- */
     venueInheritedTitle: "From the venue",
     venueInheritedLede:
@@ -1736,17 +1740,17 @@ export const strings = {
       "A file under public/venues/, e.g. prazacka.jpg.",
     // --- venue photograph (§5.4, migration 34) --------------------------------
     venueAmenitiesIncluded: "What's included",
-    venueAmenitiesPitch: "Pitch amenities",
-    venueAmenitiesTitle: "What this pitch provides",
+    venueAmenitiesPitch: "Venue amenities",
+    venueAmenitiesTitle: "What this venue provides",
     venueAmenitiesHint:
-      "Ticked items appear on the game page as \"What's included\". This is a property of the VENUE, so every game at this pitch shows the same set — and unticking one is how you stop the page promising it.",
+      "Ticked items appear on the game page as \"What's included\". This is a property of the VENUE, so every game at this venue shows the same set — and unticking one is how you stop the page promising it.",
     venueAmenitiesSubmit: "Save what's provided",
     venueAmenitiesFailed: "We could not save that. Please try again.",
-    venuePhotoTitle: "Pitch photo",
+    venuePhotoTitle: "Venue photo",
     venuePhotoUpload: "Upload a photo",
     venuePhotoReplace: "Replace the photo",
     venuePhotoHint:
-      "Landscape, taken at the pitch. It shows on every game here, above the map. Up to 4 MB, jpg/png/webp.",
+      "Landscape, taken at the venue. It shows on every game card and game page here. Up to 4 MB, jpg/png/webp.",
     venuePhotoBadType: "That is not a jpg, png or webp.",
     venuePhotoTooBig: "That file is over 4 MB. Photograph it again at a lower size.",
     venuePhotoFailed: "The upload did not go through. Try again.",
@@ -1759,7 +1763,7 @@ export const strings = {
       "We could not open that Google Maps link — it may have expired, or Maps did not answer. Try pasting the full link from the browser address bar, or type the place name instead.",
     venueMapUnparseable:
       "That link opened, but it carries no location we could read. Open it in Google Maps, copy the address-bar URL, and paste that instead — or just type the place name.",
-    startsAtLabel: "Kick-off",
+    startsAtLabel: "Start time",
     capacityLabel: "Capacity",
     capacityHint: "Cannot go below the players already booked.",
     priceLabel: "Price (THB)",
@@ -1888,18 +1892,18 @@ export const strings = {
     venueExists: "A venue with that name already exists — pick it from the list.",
     venueImageInvalid:
       "That does not look like a file under public/venues/ (letters, numbers, . _ - and a png/jpg/webp/avif extension).",
-    startsAtRequired: "Set a kick-off time.",
+    startsAtRequired: "Set a start time.",
     capacityInvalid: "Capacity must be a whole number of at least 1.",
     capacityBelowBooked:
       "Capacity cannot go below the players already booked. Cancel a booking first.",
     priceInvalid: "Price must be a whole number of THB, 1 or more.",
     formatInvalid: "Format looks like 6v6, or 6v6v6 — two or three numbers with a v between them.",
     /* --- pitch name (migration 41, round 9). Admin copy is English only. --- */
-    pitchNameLabel: "Pitch name",
+    pitchNameLabel: "Court name",
     pitchNameHint:
       "Empty uses the venue's own. Names you type are remembered.",
-    pitchNameTooLong: "A pitch name is at most 60 characters.",
-    pitchNameSuggestions: "Pitch names already in use",
+    pitchNameTooLong: "A court name is at most 60 characters.",
+    pitchNameSuggestions: "Court names already in use",
     notesTooLong: "Notes are limited to 500 characters.",
     organizerNameRequired: "Name whoever is running this game.",
     organizerNameTooLong: "The organizer name is limited to 60 characters.",
@@ -2006,13 +2010,13 @@ export const strings = {
      */
     guestsTitle: "Guests",
     guestsLede:
-      "Seats for people with no account — someone's friend, a regular who books over WhatsApp. They take up space on the pitch and show as Guest 1, Guest 2 in every lineup.",
+      "Seats for people with no account — someone's friend, a regular who books over WhatsApp. They take up space in the game and show as Guest 1, Guest 2 in every lineup.",
     guestsCount: "Guests on this game",
     guestsAdd: "Add a guest",
     guestsRemove: "Remove a guest",
     guestsSaved: "Guests updated",
     guestsNone: "No guests on this game.",
-    guestsNoRoom: "The pitch is full — there is no seat for another guest.",
+    guestsNoRoom: "The game is full — there is no seat for another guest.",
     guestsInvalid: "That is not a number of guests.",
     // Beside a name on the admin roster: "+2 guests". The booking is one row
     // with one attendance mark, because it is one decision.
@@ -2267,7 +2271,7 @@ export const strings = {
       "This cancels every booking, returns every player's money as credit, clears the waitlist and emails everyone. It cannot be undone.",
     /* Round 16 item 19. English by ruling R22 — the admin panel is. */
     cancelReasonLabel: "Why is it cancelled?",
-    cancelReasonPlaceholder: "Waterlogged pitch — the ground called it off",
+    cancelReasonPlaceholder: "Venue closed — the venue called it off",
     cancelReasonHint:
       "Sent to every booked player by email, word for word, and posted as a notification.",
     cancelGameConfirm: "Yes — cancel the game",
@@ -2278,7 +2282,7 @@ export const strings = {
     noticesSent: "Notices sent",
     receiptsSent: "Credit receipts sent",
     /* Round 42 — pitch costs. */
-    pitchCostOutOfRange: "A pitch cost is a whole number of crowns, from 0 to 100,000.",
+    pitchCostOutOfRange: "A venue cost is a whole number of baht, from 0 to 100,000.",
     pitchSeasonInvalid: "The season is summer or winter.",
     /* Round 42 rebuild — the seat bar every games surface draws. */
     seatKinds: {
@@ -2323,14 +2327,14 @@ export const strings = {
       tileWaitingDetail: "on the waitlists",
       tileUnpaid: "Unpaid holds",
       tileUnpaidDetail: "bookings still to collect",
-      tileCovered: "Pitch covered",
-      tileCoveredDetail: "games paying for their pitch",
+      tileCovered: "Venue covered",
+      tileCoveredDetail: "games covering their venue",
       tileRevenue: "Revenue",
-      tilePitchCosts: "{cost} on pitches",
+      tilePitchCosts: "{cost} on venues",
       tileInProfit: "{n} of {total} games in profit",
       tileSeatsPerGame: "Seats per game",
       tileSeatsPerGameDetail: "on average",
-      breakEvenCovered: "Pitch covered",
+      breakEvenCovered: "Venue covered",
       breakEvenShortOne: "1 more seat to break even",
       breakEvenShort: "{n} more seats to break even",
       breakEvenUnreachable: "{n} seats short — cannot break even",
@@ -2346,7 +2350,7 @@ export const strings = {
       durationMinutes: "{n} minutes",
       tileWaitingOne: "on the waitlist",
       seatMapTitle: "Seat map",
-      seatMapLabel: "Every seat on the pitch",
+      seatMapLabel: "Every seat in the game",
       seatTaken: "Seat {n}: {name}, {kind}",
       seatGuestOf: "Seat {n}: a guest of {name}, {kind}",
       seatHouse: "Seat {n}: {kind}",
@@ -2360,15 +2364,15 @@ export const strings = {
       seatsMany: "{n} seats",
       owed: "Owed",
       owedHint: "Unpaid seats — counted once they pay.",
-      pitchCost: "Pitch cost",
+      pitchCost: "Venue cost",
       pitchCostByHand: "Set by hand",
       pitchCostFromVenue: "From the venue",
-      pitchCostNone: "No pitch cost — the game has no venue.",
-      pitchCostLabel: "Correct this game's pitch cost (THB)",
-      pitchCostHint: "Whole crowns. Leave it empty to go back to the venue's price for the season.",
+      pitchCostNone: "No venue cost — the game has no venue.",
+      pitchCostLabel: "Correct this game's venue cost (THB)",
+      pitchCostHint: "Whole baht. Leave it empty to go back to the venue's price for the season.",
       pitchCostSave: "Save cost",
-      pitchCostSaved: "Pitch cost saved",
-      noPitchCost: "No pitch cost",
+      pitchCostSaved: "Venue cost saved",
+      noPitchCost: "No venue cost",
       rosterBookings: "{n} bookings",
       rosterBookingsOne: "1 booking",
       toConfirm: "Payments to confirm",
@@ -2385,7 +2389,7 @@ export const strings = {
       formGame: "The game",
 
       // --- a new game ---------------------------------------------------------
-      newGameLede: "Pick the venue and the kick-off — everything else starts on a sensible default.",
+      newGameLede: "Pick the venue and the start time — everything else starts on a sensible default.",
     },
 
     /** The players list and a player's page. */
@@ -2542,16 +2546,16 @@ export const strings = {
       colGame: "Game",
       colSeats: "Seats",
       colRevenue: "Revenue",
-      colPitch: "Pitch cost",
+      colPitch: "Venue cost",
       colProfit: "Profit",
       colBreakEven: "Break-even",
       totalRevenue: "Revenue",
-      totalPitch: "Pitch cost",
+      totalPitch: "Venue cost",
       totalProfit: "Profit",
       brokeEven: "Broke even",
       brokeEvenValue: "{n} of {total}",
-      uncostedOne: "{n} game has no pitch cost and is left out of profit.",
-      uncostedMany: "{n} games have no pitch cost and are left out of profit.",
+      uncostedOne: "{n} game has no venue cost and is left out of profit.",
+      uncostedMany: "{n} games have no venue cost and are left out of profit.",
       profitEmpty: "No games played in this period yet.",
       /* Revenue by week, the ledger and operations. */
       weeksLede: "Bookings paid each week, from the 1st.",
@@ -2572,7 +2576,7 @@ export const strings = {
 
     /** The venues page: the pitch cost area and the season switch. */
     pitch: {
-      costHeading: "Pitch cost",
+      costHeading: "Venue cost",
       costLede:
         "What one game here costs you, flat. The season switch at the top picks which of the two new games take.",
       seasons: {
@@ -2582,13 +2586,13 @@ export const strings = {
       /** Beside the one of a venue's two prices that new games take. */
       inForce: "Now",
       currency: "THB",
-      costSave: "Save pitch cost",
+      costSave: "Save venue cost",
       costSaved: "Saved. A game created here now costs {amount}; games already created keep theirs.",
       /** The one season switch, at the top of the page. */
-      seasonHeading: "Pitch season",
+      seasonHeading: "Pricing season",
       seasonLegend: "Price new games for",
       seasonHint:
-        "One switch for every venue. It prices the games you create from now on — games already created keep the pitch cost they were made with.",
+        "One switch for every venue. It prices the games you create from now on — games already created keep the venue cost they were made with.",
       seasonSaved: {
         winter: "Switched to winter. New games take each venue's winter cost.",
         summer: "Switched to summer. New games take each venue's summer cost.",
@@ -2723,9 +2727,9 @@ export const strings = {
       guestsMany: "{n} guests",
       /** `{hours}` is the database's cutoff; `{cantMakeIt}` is the button's own label. */
       cancelRule:
-        "Can't make it? Cancel at least **{hours} hours before kick-off** and your Credit comes back. After that, tap “{cantMakeIt}” so someone from the waitlist can play.",
+        "Can't make it? Cancel at least **{hours} hours before the start** and your Credit comes back. After that, tap “{cantMakeIt}” so someone from the waitlist can play.",
       noWithdrawal:
-        "A booking can't be withdrawn from, because it's a leisure service on a fixed date and time (§ 1837(j) of the Czech Civil Code).",
+        "A booking can't be withdrawn from, because it's a leisure service on a fixed date and time. (Under review for Thai law.)",
       rulesLink: "Community and Game Rules",
       questions: "Questions or complaints: {email}",
       termsAttached: "The Terms and Conditions in force today are attached as a PDF.",
@@ -2747,10 +2751,10 @@ export const strings = {
 
     bookingConfirmed: {
       subject: "You're in · {when} · {venue}",
-      preheader: "Cancel up to {hours} hours before kick-off and your Credit comes back.",
+      preheader: "Cancel up to {hours} hours before the start and your Credit comes back.",
       eyebrow: "Booking confirmed",
       headline: "You're in.",
-      lede: "{when} at {venue}. See you on the pitch.",
+      lede: "{when} at {venue}. See you on the court.",
     },
 
     guestsAdded: {
@@ -2794,10 +2798,10 @@ export const strings = {
 
     reminder: {
       subject: "Tomorrow · {time} · {venue}",
-      preheader: "Kick-off {when}. Here are the details again.",
+      preheader: "Starts {when}. Here are the details again.",
       eyebrow: "See you tomorrow",
       headline: "Game day is close.",
-      lede: "Kick-off is {when} at {venue}. Here are the details again.",
+      lede: "It starts {when} at {venue}. Here are the details again.",
     },
 
     waitlistSpotOpen: {
@@ -2820,7 +2824,7 @@ export const strings = {
       headline: "Booking cancelled.",
       ledeCredit: "Your place at {venue} on {when} is released. Back in your account: {credits}.",
       ledeLate:
-        "Your place at {venue} on {when} is released. It was less than {hours} hours before kick-off, so the Credit doesn't come back.",
+        "Your place at {venue} on {when} is released. It was less than {hours} hours before the start, so the Credit doesn't come back.",
       ledeUnpaid:
         "Your place at {venue} on {when} is released. Nothing had been paid, so there's nothing to return.",
       footer: "You're getting this because you cancelled a booking.",
@@ -2932,7 +2936,7 @@ export const strings = {
     termsLinkLabel: "Terms and Conditions",
     /** Texty 4.1 — before a booking is confirmed. */
     reservationSummary:
-      "You're booking a place at the game on {when}, {venue}. Payment: {credits}. Cancelling: you can cancel up to {hours} hours before kick-off and your Credit comes back. If you cancel later or don't turn up, the Credit is lost. If we cancel the game, we return your Credit and extend its validity by {extensionDays} days. A booking can't be withdrawn from, because it's a leisure service provided on a specific date and time (§ 1837(j) of the Czech Civil Code).",
+      "You're booking a place at the game on {when}, {venue}. Payment: {credits}. Cancelling: you can cancel up to {hours} hours before the start and your Credit comes back. If you cancel later or don't turn up, the Credit is lost. If we cancel the game, we return your Credit and extend its validity by {extensionDays} days. A booking can't be withdrawn from, because it's a leisure service provided on a specific date and time (§ 1837(j) of the Czech Civil Code).",
     reservationTitle: "Your booking",
     /** Our own box in front of the form, when Stripe cannot draw its own. */
     lockedHint: "Tick the box above to unlock payment.",
