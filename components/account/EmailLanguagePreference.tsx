@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { setEmailLocaleAction, type EmailLocaleActionState } from "@/app/account/actions";
 import { useStrings } from "@/components/LocaleProvider";
-import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/i18n/locales";
+import { LOCALE_LABELS, SERVED_LOCALES, type Locale } from "@/lib/i18n/locales";
 
 const INITIAL: EmailLocaleActionState = { status: "idle" };
 
@@ -34,7 +34,7 @@ export function EmailLanguagePreference({ current }: { current: Locale }) {
           onChange={(event) => event.currentTarget.form?.requestSubmit()}
           className="field"
         >
-          {LOCALES.map((locale) => (
+          {SERVED_LOCALES.map((locale) => (
             <option key={locale} value={locale}>
               {LOCALE_LABELS[locale].full}
             </option>

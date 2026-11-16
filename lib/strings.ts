@@ -598,7 +598,7 @@ export const strings = {
       submit: "Remove {n}",
       confirm: "Remove {n} from your spot?",
       confirmLate: "Remove {n}? It is past the refund cutoff, so nothing comes back.",
-      windowClosed: "This game has already kicked off.",
+      windowClosed: "This game has already started.",
       countInvalid: "You do not have that many guests.",
     },
     cancelled: "This game was cancelled.",
@@ -850,7 +850,7 @@ export const strings = {
     startsLabel: "Start time",
     venueLabel: "Where",
     priceLabel: "Price",
-    alreadyStarted: "This game has already kicked off.",
+    alreadyStarted: "This game has already started.",
     // Distinct from `alreadyStarted`, and the distinction is the point: while
     // the ball is rolling the page says so, and only once the game has run its
     // duration does it become past tense.
@@ -910,7 +910,7 @@ export const strings = {
     // {amount} is a formatted THB figure — `formatThb`, never interpolated by
     // hand, because it is the one number here a player checks against a bank.
     barAmountDue: "{amount} due",
-    barKickedOffAt: "Kicked off {time}",
+    barKickedOffAt: "Started {time}",
     barCancelled: "Cancelled",
     barOnWaitlist: "You are #{n} on the waitlist",
     // When `waitlist_position` comes back null. Saying nothing about the
@@ -1549,7 +1549,7 @@ export const strings = {
       },
       {
         q: "How do I pay?",
-        a: "Pay securely by card or PromptPay when you book, or use credit from your wallet.",
+        a: "Pay securely by card or PromptPay when you book, or use your credit.",
       },
       {
         q: "Do I need to be good?",
@@ -1923,7 +1923,7 @@ export const strings = {
     playerNoShows: "No-shows",
     playerGamesTitle: "History",
     playerGamesLede:
-      "Every booking, newest first. No-show marking is available on a game that has already kicked off — the same write the game roster performs.",
+      "Every booking, newest first. No-show marking is available on a game that has already started — the same write the game roster performs.",
     playerGamesEmpty: "No bookings yet.",
     playerOpen: "Open →",
     photoRemove: "Remove photo",
@@ -2316,7 +2316,7 @@ export const strings = {
       },
       empty: {
         upcoming: "No game coming up. Create the next one.",
-        played: "No game has kicked off yet.",
+        played: "No game has started yet.",
         cancelled: "No game has been cancelled.",
       },
       tileGames: "Games",
@@ -2430,7 +2430,7 @@ export const strings = {
       /* One line under the tabs saying exactly who is in the current one. */
       segmentHints: {
         all: "Every player who signed up.",
-        played: "Played at least one game — kicked off, not cancelled, not a no-show.",
+        played: "Played at least one game — started, not cancelled, not a no-show.",
         "came-back": "Played two games or more.",
         "never-booked": "Signed up and never booked anything.",
         "has-credit": "Holding at least one whole Credit.",
@@ -2520,7 +2520,7 @@ export const strings = {
       splitTopups: "Credit top-ups",
       splitHint: "What the money paid for, on the day it arrived.",
       gamesPlayedLabel: "Games played",
-      playedHint: "Games that kicked off in this period; cancelled ones aside.",
+      playedHint: "Games that started in this period; cancelled ones aside.",
       avgHint: "Each played game's own revenue — Game Pass seats at what the pass cost — averaged.",
       /* Revenue by how it was paid — "single" vs "a credit from a game pass". */
       mixTitle: "Revenue by how it was paid",
@@ -2680,7 +2680,7 @@ export const strings = {
     capacityFullWaitlist:
       "That spot went to someone else. You are still on the waitlist for the next one.",
     gameNotBookable: "This game is not open for booking.",
-    gameAlreadyStarted: "This game has already kicked off.",
+    gameAlreadyStarted: "This game has already started.",
     tryAgain: "Try again",
   },
 
@@ -2936,7 +2936,7 @@ export const strings = {
     termsLinkLabel: "Terms and Conditions",
     /** Texty 4.1 — before a booking is confirmed. */
     reservationSummary:
-      "You're booking a place at the game on {when}, {venue}. Payment: {credits}. Cancelling: you can cancel up to {hours} hours before the start and your Credit comes back. If you cancel later or don't turn up, the Credit is lost. If we cancel the game, we return your Credit and extend its validity by {extensionDays} days. A booking can't be withdrawn from, because it's a leisure service provided on a specific date and time (§ 1837(j) of the Czech Civil Code).",
+      "You're booking a place at the game on {when}, {venue}. Payment: {credits}. Cancelling: you can cancel up to {hours} hours before the start and your Credit comes back. If you cancel later or don't turn up, the Credit is lost. If we cancel the game, we return your Credit and extend its validity by {extensionDays} days. A booking can't be withdrawn from, because it's a leisure service provided on a specific date and time. (Under review for Thai law.)",
     reservationTitle: "Your booking",
     /** Our own box in front of the form, when Stripe cannot draw its own. */
     lockedHint: "Tick the box above to unlock payment.",
@@ -3070,7 +3070,7 @@ export const strings = {
      * what somebody reads this box to find out.
      */
     howItWorksBody:
-      "You pay by card, Apple Pay or Google Pay. Once the payment is confirmed, the credits will be applied to your account automatically.",
+      "You pay by card or PromptPay. Once the payment is confirmed, the credits will be applied to your account automatically.",
     batchesTitle: "Your credit",
     /*
      * CREDITS, NOT CROWNS (round 14, item 10). These read

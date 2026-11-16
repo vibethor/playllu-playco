@@ -182,17 +182,16 @@ describe("the booking confirmation — the approved template", () => {
     expect(email.text).toContain(`„${resolveStrings("cs").booking.cantMakeIt}“`);
   });
 
-  it("adds the receipt, the terms box as ticked and the terms PDF when money moved", () => {
+  it("adds the receipt and the terms box as ticked when money moved, but no terms PDF until the Thai terms exist", () => {
     // Act
     const email = bookingConfirmedEmail({ ...game, places: 1, creditsPaid: 1, ics, receipt: paid }, env("en"));
 
     // Assert
-    expect(email.text).toContain("HF-E5F6G7H8");
+    expect(email.text).toContain("PC-E5F6G7H8");
     expect(email.text).toContain("180 THB");
     expect(email.text).toContain(paid.terms!.wording);
-    expect(email.attachments?.map((a) => a.filename)).toContain("Hraj-Fotbal-obchodni-podminky.pdf");
-    const pdf = email.attachments?.find((a) => a.filename.endsWith(".pdf"));
-    expect(pdf && "path" in pdf ? pdf.path : null).toBe(`${BASE_URL}/legal/obchodni-podminky.pdf`);
+    // PLAYCO: the inherited PDF is HrajFotbal's Czech terms; nothing is attached until TERMS_PDF_READY (lib/legal.ts).
+    expect(email.attachments?.some((a) => a.filename.endsWith(".pdf"))).toBe(false);
   });
 
   it("counts a party as places and guests", () => {
@@ -255,7 +254,7 @@ describe("a cancellation says why nothing came back", () => {
     const unpaid = cancellationCreditEmail({ ...game, creditsReturned: 0, outcome: "unpaid" }, env("en"));
 
     // Assert
-    expect(late.text).toContain("less than 12 hours before kick-off");
+    expect(late.text).toContain("less than 12 hours before the start");
     expect(late.text).not.toContain("Nothing had been paid");
     expect(unpaid.text).toContain("Nothing had been paid");
   });

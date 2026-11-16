@@ -33,8 +33,6 @@ import { COLORS, OG_SIZE } from "@/lib/og/theme";
  */
 
 /** The mark's diameter: it fills the centre circle. */
-export const BRAND_MARK_PX = 236;
-
 /**
  * THE SHARE CARD (rebrand). Midnight Navy, the court-corners logo at the centre, the hero line beneath it with the
  * sport in lime, and the tagline. No pitch drawing: the brand is sport-neutral, and the card says "volleyball" only

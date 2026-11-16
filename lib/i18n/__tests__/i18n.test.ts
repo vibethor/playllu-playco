@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cs } from "@/lib/i18n/cs";
-import { ru } from "@/lib/i18n/ru";
-import { uk } from "@/lib/i18n/uk";
+import { th } from "@/lib/i18n/th";
 import { resolveStrings } from "@/lib/i18n/resolve";
 import {
   DEFAULT_LOCALE,
@@ -188,6 +186,8 @@ const INTENTIONALLY_UNTRANSLATED = new Set([
    * kick-off and a format pill at 390px, and "minut" spelled out does not.
    */
   "games.durationMin",
+  // PLAYCO: the venue photo's alt text is the venue's own name and nothing else.
+  "games.venuePhotoAlt",
 ]);
 
 function flatten(value: unknown, prefix = ""): Map<string, string> {
@@ -214,8 +214,8 @@ function flatten(value: unknown, prefix = ""): Map<string, string> {
 }
 
 describe("locale detection", () => {
-  it("accepts exactly the four supported codes", () => {
-    expect(LOCALES).toEqual(["en", "cs", "ru", "uk"]);
+  it("accepts exactly the five codes the tree carries (only en and th are served)", () => {
+    expect(LOCALES).toEqual(["en", "th", "cs", "ru", "uk"]);
     expect(isLocale("cs")).toBe(true);
     expect(isLocale("uk")).toBe(true);
     // `ua` is the country code, not the language code, and it is the mistake
@@ -312,11 +312,11 @@ describe("resolveStrings", () => {
  * `resolveStrings("en")` returns the table itself — a derived list would have
  * to special-case that, and the special case is the thing that rots.
  */
-describe.each([
-  ["cs", cs],
-  ["ru", ru],
-  ["uk", uk],
-] as const)("%s translation completeness", (locale, overlay) => {
+/*
+ * PLAYCO: completeness is enforced for Thai, the one translation the site serves. The Czech, Russian and Ukrainian
+ * overlays are inherited and unserved (SERVED_LOCALES), so new Playco copy is not translated into them.
+ */
+describe.each([["th", th]] as const)("%s translation completeness", (locale, overlay) => {
   const english = flatten(strings);
   const translated = flatten(resolveStrings(locale));
 

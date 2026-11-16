@@ -12,7 +12,7 @@ import {
 } from "@/lib/auth/signupProfile";
 import type { CountryOption } from "@/lib/auth/countries";
 import { useStrings } from "@/components/LocaleProvider";
-import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/i18n/locales";
+import { LOCALE_LABELS, SERVED_LOCALES, type Locale } from "@/lib/i18n/locales";
 import { LinkedText } from "@/components/form/LinkedText";
 import { TERMS_RULES_ANCHOR } from "@/lib/legal";
 import { PhoneField, type PhoneCountryChoice } from "@/components/form/PhoneField";
@@ -331,7 +331,7 @@ export function SignupForm({
             defaultValue={v?.emailLocale || defaultEmailLocale}
             className={FIELD_CLASS}
           >
-            {LOCALES.map((locale) => (
+            {SERVED_LOCALES.map((locale) => (
               <option key={locale} value={locale}>
                 {LOCALE_LABELS[locale].full}
               </option>

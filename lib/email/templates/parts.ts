@@ -147,13 +147,13 @@ export function bookingSmallPrint(env: EmailEnv, { purchase }: { purchase: boole
   return [
     common.noWithdrawal,
     join([rules, html`. `, questionsLine(env)]),
-    ...(purchase ? [common.termsAttached] : []),
+    ...(purchase && TERMS_PDF_READY ? [common.termsAttached] : []),
   ];
 }
 
 /** The small print under a Credit purchase: where to write, and the attached terms. */
 export function purchaseSmallPrint(env: EmailEnv): (string | SafeHtml)[] {
-  return [questionsLine(env), env.t.emails.common.termsAttached];
+  return TERMS_PDF_READY ? [questionsLine(env), env.t.emails.common.termsAttached] : [questionsLine(env)];
 }
 
 /** Questions only — every other email. */

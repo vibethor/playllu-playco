@@ -24,10 +24,10 @@ describe("statLabel", () => {
 
   it("pluralises every stat, not only the first one", () => {
     // Arrange / Act / Assert
-    expect(statLabel("hours", 1, "en", en)).toBe("hour on pitch");
-    expect(statLabel("hours", 4, "en", en)).toBe("hours on pitch");
-    expect(statLabel("venues", 1, "en", en)).toBe("pitch played");
-    expect(statLabel("venues", 3, "en", en)).toBe("pitches played");
+    expect(statLabel("hours", 1, "en", en)).toBe("hour on court");
+    expect(statLabel("hours", 4, "en", en)).toBe("hours on court");
+    expect(statLabel("venues", 1, "en", en)).toBe("venue played");
+    expect(statLabel("venues", 3, "en", en)).toBe("venues played");
   });
 
   it("takes all three Czech forms at their CLDR boundaries", () => {

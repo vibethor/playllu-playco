@@ -1,5 +1,6 @@
 import { strings, type Strings } from "@/lib/strings";
 import { cs } from "@/lib/i18n/cs";
+import { th } from "@/lib/i18n/th";
 import { ru } from "@/lib/i18n/ru";
 import { uk } from "@/lib/i18n/uk";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/locales";
@@ -76,6 +77,7 @@ function merge(base: Plain, overlay: Plain): Plain {
 
 const OVERLAYS: Record<Locale, StringsOverlay | null> = {
   en: null,
+  th,
   cs,
   ru,
   uk,

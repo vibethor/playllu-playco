@@ -35,6 +35,8 @@ export const DISPLAY_TIME_ZONE: string = DEFAULT_CITY.timeZone;
  */
 export const DATE_LOCALE = {
   en: "en-GB",
+  // Thai dates, on the Gregorian calendar: "th-TH" alone would print Buddhist-era years (2569).
+  th: "th-TH-u-ca-gregory",
   cs: "cs",
   ru: "ru",
   uk: "uk",

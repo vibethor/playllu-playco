@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import {
   LOCALE_COOKIE,
   LOCALE_COOKIE_MAX_AGE,
+  SERVED_LOCALES,
   isLocale,
 } from "@/lib/i18n/locales";
 
@@ -24,7 +25,7 @@ import {
  */
 export async function setLocale(formData: FormData): Promise<void> {
   const requested = formData.get("locale");
-  if (!isLocale(requested)) return;
+  if (!isLocale(requested) || !SERVED_LOCALES.includes(requested)) return;
 
   const store = await cookies();
   store.set(LOCALE_COOKIE, requested, {
