@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BadgeGrid } from "@/components/account/BadgeGrid";
 import { PublicFacts } from "@/components/profile/PublicFacts";
 import { ProfileCover } from "@/components/account/ProfileCover";
+import { ProfileHeader } from "@/components/account/ProfileHeader";
 import { ProfileStats } from "@/components/account/ProfileStats";
 import { PublicIdentity } from "@/components/player/PublicIdentity";
 import { getLocale, getStrings } from "@/lib/i18n/server";
@@ -80,7 +81,11 @@ export default async function PublicPlayerPage({
    * Explorer is "play at 3 different pitches", so the number is still needed
    * here even though "players met" has taken its place in the row above.
    */
-  const stats = { gamesPlayed: profile.gamesPlayed, hours: profile.hours, venues: profile.venues };
+  const stats = {
+    gamesPlayed: profile.gamesPlayed,
+    hours: profile.hours,
+    venues: profile.venues,
+  };
   const badges = playerBadges({ ...stats, playersMet: profile.playersMet }, t);
 
   return (
@@ -94,7 +99,7 @@ export default async function PublicPlayerPage({
         component parameterised over "which page am I" is how one of them ends
         up rendering the other's tabs.
       */}
-      <div className="relative pt-[104px]">
+      <ProfileHeader>
         <ProfileCover
           coverPath={profile.coverPath}
           photoVersion={await profilePhotoVersion(profile.coverPath)}
@@ -105,8 +110,13 @@ export default async function PublicPlayerPage({
           photoPath={profile.photoPath}
           country={profile.country}
         />
-        <ProfileStats stats={stats} playersMet={profile.playersMet} locale={locale} t={t} />
-      </div>
+        <ProfileStats
+          stats={stats}
+          playersMet={profile.playersMet}
+          locale={locale}
+          t={t}
+        />
+      </ProfileHeader>
 
       {/*
         POSITION AND LEVEL — round 28 item 4, the owner's amendment to round
