@@ -96,11 +96,27 @@ begin
     perform set_config('role', 'postgres', true);
   end loop;
 
-  perform pg_temp.ok(v_n >= 5, 'the tier table is populated', v_n::text);
+  -- PLAYCO: three tiers (Jachym, 16 Nov 2026), not HrajFotbal's five.
+  perform pg_temp.ok(v_n >= 3, 'the tier table is populated', v_n::text);
   perform pg_temp.ok(v_failed = '', 'EVERY TIER IS BUYABLE', v_failed);
 end $$;
 
 reset role;
+
+-- =============================================================================
+-- PLAYCO'S PASSES (Jachym, 16 Nov 2026): 5 games 1,150 THB · 10 games 2,200 · 20 games 4,000. Each credit is one
+-- seat at the flat seat price, so a tier's credited value is games x credit_seat_price_thb().
+-- =============================================================================
+
+select pg_temp.ok(
+  (select string_agg(games || ':' || price_thb, ',' order by games) from public.pass_tiers) = '5:1150,10:2200,20:4000',
+  'the passes are 5 for 1,150, 10 for 2,200 and 20 for 4,000',
+  (select string_agg(games || ':' || price_thb, ',' order by games) from public.pass_tiers));
+
+select pg_temp.ok(
+  not exists (select 1 from public.pass_tiers where credited_thb <> games * public.credit_seat_price_thb()),
+  'every pass credits one seat per game at the seat price',
+  (select string_agg(games || ' credits ' || credited_thb, ', ') from public.pass_tiers));
 
 -- =============================================================================
 -- AND THE CEILING STILL GUARDS THE PATH IT WAS WRITTEN FOR

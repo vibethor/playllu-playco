@@ -102,7 +102,8 @@ export { PASS_REFERENCE_PRICE_THB };
  * openly a recommendation. Named here rather than compared inline so the day
  * it becomes a real number, there is one place to change.
  */
-export const MOST_POPULAR_GAMES = 12;
+// PLAYCO: the 10-game pass, the middle of 5 / 10 / 20 (HrajFotbal marked its 12-game pass).
+export const MOST_POPULAR_GAMES = 10;
 
 /**
  * The best discount any tier offers, as a whole percent, floored.
