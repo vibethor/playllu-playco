@@ -6,10 +6,10 @@ Items 1 and 4 block today's preview (Phase F of `docs/EXECUTION_PLAN.md`). Nothi
 
 | # | What | Needed by | Notes |
 |---|---|---|---|
-| 1 | **Database: free a Supabase slot for `playco-staging`** — **blocks today's preview** | Phase F (today) | 2 free projects per person. Pause/delete one, or put the Playco org on Pro (25 USD/month, that org only). Region: Singapore. One database serves every city in the region |
+| 1 | **Supabase:** rename the "Playco" org to "Playllu", upgrade it to Pro, then the builder creates `playco-staging` (Singapore) — **blocks today's preview** | Phase F (today) | 25 USD/month now; ~35 with the live project at launch. One project serves every Asian city |
 | 2 | ~~Thai Stripe account~~ **done 16 Nov** | — | Test keys go into Vercel (Jachym pastes). Still open: confirm with Stripe support that a foreign individual is accepted for live payments, and what happens when the company is registered |
 | 3 | Make the repositories private (`vibethor/playllu-playco`, `reneomuller/hrajfotbalek` is Oliver's) | **low priority** | Settings → General → Change visibility. Kept public for now by choice; no secret is ever committed |
-| 4 | Vercel project on this repo | Phase F (today) | Pro before real payments (free plan is non-commercial) |
+| 4 | **Vercel:** create a team "Playllu" in your own Vercel account and import this repo as project `playco` | Phase F (today) | Hobby (free) is fine for the test preview; Pro (20 USD/month per member) before real payments. HQ and HrajFotbal live in Oliver's personal Vercel account today |
 | 5 | Domain | Phase 16 | One domain for every city |
 
 ## Decisions

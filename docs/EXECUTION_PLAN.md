@@ -258,8 +258,10 @@ game's price · 4th staff seat refused · staff seat takes no paid place · a ma
 ### Phase 6 — City and sport views (structure only)
 
 1. Routes `app/[city]/[sport]/page.tsx` and `…/games/page.tsx`, validated against live cities and enabled sports.
-2. `/`: one live city with one sport → redirect there. Otherwise a picker (city, then sport); a cookie remembers
-   the last choice. The cookie is set in a route handler or action, never during render.
+2. `/`: one live city with one sport → redirect there. Otherwise: the player's **home city** (a profile setting,
+   changeable any time in Settings → Location), else a cookie with the last choice, else a picker that **suggests the
+   nearest live city** from Vercel's request geo headers (`x-vercel-ip-country`, `x-vercel-ip-city`) — a suggestion,
+   never an automatic switch. `players.home_city_id` is added in this phase. The cookie is set in a route handler or action, never during render.
 3. Header: city switcher and sport switcher, each rendered only when there is more than one choice.
 4. `/game/[id]`: sport- and city-specific fields come from the game. Not found for a non-live city or disabled
    sport unless the viewer can manage it.
@@ -439,6 +441,19 @@ screen by address · Playco's `/admin` is gone except for platform-admin tools.
 
 Sources: Stripe support (Thailand: supported payment methods, required information, accepted documents, FAQ);
 Stripe docs (PromptPay, multiple accounts, Organizations).
+
+## 5b. Accounts and hosting (decided 16 Nov 2026)
+
+- **Supabase:** one org, renamed from "Playco" to **"Playllu"**, on Pro. Projects: `playco-staging` now, `playco`
+  (live) at launch, both region `ap-southeast-1`. **One project serves every Asian city** (Bangkok, Jakarta, Bali, Ho
+  Chi Minh City…). A second region (Europe, Middle East) is a new project in the same org, added only when needed.
+  `hrajfotbal-staging` (HrajFotbal's test copy, which also holds HQ) stays where it is.
+- **Vercel:** one project `playco` on one domain for every city. It belongs in a Vercel team owned by Playllu
+  (Jachym), not in a personal account. HQ and HrajFotbal currently deploy from Oliver's personal Vercel account;
+  moving them is a separate decision.
+- **Payments per country:** Thailand — the Thai Stripe account. Indonesia and Vietnam — Stripe does not, as far as is
+  known, serve businesses there; a regional provider (e.g. Xendit) behind the Phase 8 interface is the likely route.
+  Verify before promising a launch date in either.
 
 ## 6. Later, deliberately not now
 
