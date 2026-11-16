@@ -12,12 +12,12 @@ import { CHECKOUT_PAYMENT_METHOD_TYPES } from "@/lib/payments/embeddedCheckout";
  */
 
 describe("the checkout's payment methods", () => {
-  it("is exactly card, and nothing else", () => {
+  it("is exactly card and PromptPay, and nothing else", () => {
     // Arrange / Act
     const methods = [...CHECKOUT_PAYMENT_METHOD_TYPES];
 
     // Assert
-    expect(methods).toEqual(["card"]);
+    expect(methods).toEqual(["card", "promptpay"]);
   });
 
   it("never offers Link or Klarna", () => {

@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { CommunityPanel } from "@/components/home/CommunityPanel";
 import { FaqPanel } from "@/components/home/FaqPanel";
 import { PlayerOfMonthPanel } from "@/components/home/PlayerOfMonthPanel";
+
 import { GameCard } from "@/components/game/GameCard";
 import { getHomeContent } from "@/lib/home/queries";
 import {
@@ -18,6 +19,9 @@ import { getLocale } from "@/lib/i18n/server";
 import { siteUrl } from "@/lib/site";
 import { homeStructuredData } from "@/lib/seo/site";
 import { getStrings } from "@/lib/i18n/server";
+
+/** PLAYCO, PHASE F: the community panel still links to HrajFotbal's groups; off until Playco has its own. */
+const COMMUNITY_LINKS_READY = false;
 
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -482,10 +486,13 @@ export default async function LandingPage() {
           <section className="pt-4">
             {/* `items-start`, so a panel is as tall as its own contents. */}
             <div className="flex flex-wrap items-start gap-4">
-              <CommunityPanel
-                gamesPerWeek={home.gamesPerWeek}
-                activePlayers={home.activePlayers}
-              />
+              {/* PLAYCO, PHASE F: hidden until Playco has its own WhatsApp / Instagram links (TODO.md). */}
+              {COMMUNITY_LINKS_READY && (
+                <CommunityPanel
+                  gamesPerWeek={home.gamesPerWeek}
+                  activePlayers={home.activePlayers}
+                />
+              )}
               <PlayerOfMonthPanel
                 player={home.playerOfMonth}
                 supabaseUrl={supabaseUrl}

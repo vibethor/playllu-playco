@@ -125,11 +125,11 @@ export function buildIcsEvent({
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    `PRODID:-//hrajfotbal//${policy.version}//EN`,
+    `PRODID:-//playco//${policy.version}//EN`,
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:${uid}@hrajfotbal.com`,
+    `UID:${uid}@playllu.com`,
     `DTSTAMP:${formatIcsDate(stamp ?? start)}`,
     `DTSTART:${formatIcsDate(start)}`,
     `DTEND:${formatIcsDate(end)}`,

@@ -13,8 +13,12 @@ export const strings = {
     durationLabel: "Duration",
     minutes: "{n} min",
   },
+  /** PLAYCO, PHASE F: the bar shown while payments run on Stripe test keys (`components/chrome/PreviewBar.tsx`). */
+  preview: {
+    bar: "Preview — test payments only. No real money is taken.",
+  },
   meta: {
-    title: "Hraj Fotbal — pickup football in Prague",
+    title: "Playco — pickup volleyball in Bangkok",
     /**
      * The text under the link in a search result (2026-11-06, the owner: "an
      * anytime anywhere type of text that would be reflective and good for
@@ -23,9 +27,9 @@ export const strings = {
      * og/twitter description, so a shared link says the same.
      */
     description:
-      "Pickup football in Prague, anytime, anywhere. Pick a game, grab your spot online and just show up — no team, no commitment. New games every week.",
+      "Pickup volleyball in Bangkok, anytime, anywhere. Pick a game, grab your spot online and just show up — no team, no commitment. New games every week.",
     /** The small line under the brand share card (`lib/og/brandImage.tsx`). */
-    shareTagline: "Pickup football in Prague",
+    shareTagline: "Pickup volleyball in Bangkok",
     /**
      * The result's sub-links (2026-11-06, the owner): each page's own title and
      * line, so Google's sitelinks under the result say what the page is.
@@ -63,7 +67,7 @@ export const strings = {
     profileShort: "Profile",
     /** The accessible name of the tab bar itself. */
     primary: "Main navigation",
-    home: "Hraj Fotbal — home",
+    home: "Playco — home",
     // Shown only to an is_admin session. Hiding it hides nothing — the gate is
     // `requireAdmin()` in the admin layout — but the panel had no door before.
     admin: "Admin",
@@ -129,7 +133,7 @@ export const strings = {
      * `OPERATOR_CONTACT.email` in `lib/legal.ts` — a unit test holds the two
      * together.
      */
-    contactEmail: "support@hrajfotbal.com",
+    contactEmail: "support@playllu.com",
     contactTitle: "Get in touch",
   },
 
@@ -1425,7 +1429,7 @@ export const strings = {
     deleteAccountConfirm:
       "Delete your account? Your name, email, phone and photos are removed and you are signed out for good. Future bookings are cancelled and unused Credits lapse. This cannot be undone.",
     deleteAccountFailed: "We could not delete your account. Please email us instead.",
-    deleteMailto: "privacy@hrajfotbal.com",
+    deleteMailto: "privacy@playllu.com",
     deleteSubject: "Account deletion request",
     // Payment/status badges.
     badgePaid: "Paid",
@@ -2845,7 +2849,7 @@ export const strings = {
         "Your Credits ({credits}) expire on {date}. Book a game before then and they're spent, not lost.",
       left: "Left",
       expires: "Expires",
-      footer: "You're getting this because you have Credits on Hraj Fotbal.",
+      footer: "You're getting this because you have Credits on Playco.",
     },
 
     /**
@@ -2855,7 +2859,7 @@ export const strings = {
      * owner pastes, one template carrying all four languages.
      */
     auth: {
-      signInSubject: "Your Hraj Fotbal sign-in",
+      signInSubject: "Your Playco sign-in",
       signInEyebrow: "Sign in",
       signInHeadline: "Here's your link.",
       signInLede: "Tap the button to sign in.",
@@ -2863,17 +2867,17 @@ export const strings = {
       confirmSubject: "Confirm your email",
       confirmEyebrow: "Almost there",
       confirmHeadline: "Confirm your email.",
-      confirmLede: "One tap and your Hraj Fotbal account is ready.",
+      confirmLede: "One tap and your Playco account is ready.",
       confirmCta: "Confirm email",
       changeSubject: "Confirm your new email address",
       changeEyebrow: "Your account",
       changeHeadline: "New email address?",
-      changeLede: "You asked to change your Hraj Fotbal email from {email} to {newEmail}. Both addresses get this message, and both have to confirm.",
+      changeLede: "You asked to change your Playco email from {email} to {newEmail}. Both addresses get this message, and both have to confirm.",
       changeCta: "Confirm the change",
       code: "Your code",
       expiry: "The link and the code expire in one hour.",
       notYou: "Didn't ask for this? Ignore it — nothing happens.",
-      footer: "You're getting this because this address was used on Hraj Fotbal.",
+      footer: "You're getting this because this address was used on Playco.",
     },
   },
 

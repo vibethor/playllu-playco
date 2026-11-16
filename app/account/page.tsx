@@ -1,4 +1,5 @@
 import { profilePhotoVersion } from "@/lib/storage/photoVersions";
+import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ToastFromQuery } from "@/components/ToastFromQuery";
@@ -235,13 +236,15 @@ export default async function AccountPage({
           */}
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <CreditBalance balanceThb={balanceThb} batches={batches} />
-            <Link
-              href="/pass"
-              data-testid="topup-cta"
-              className="rounded-control border border-hairline-volt px-4 py-2 text-[13px] font-bold uppercase tracking-wide text-volt no-underline transition hover:bg-volt/10"
-            >
-              {t.account.topupCta}
-            </Link>
+            {PASSES_ENABLED && (
+              <Link
+                href="/pass"
+                data-testid="topup-cta"
+                className="rounded-control border border-hairline-volt px-4 py-2 text-[13px] font-bold uppercase tracking-wide text-volt no-underline transition hover:bg-volt/10"
+              >
+                {t.account.topupCta}
+              </Link>
+            )}
           </div>
 
           {/*

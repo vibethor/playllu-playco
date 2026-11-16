@@ -54,7 +54,13 @@ export type Locale = (typeof LOCALES)[number];
  * table, so an untranslated key renders English rather than a blank. Changing
  * this constant does not touch that.
  */
-export const DEFAULT_LOCALE: Locale = "cs";
+export const DEFAULT_LOCALE: Locale = "en";
+
+/**
+ * PLAYCO, PHASE F: the languages a visitor can actually be served. English only until Thai lands (plan Phase 11);
+ * the Czech, Russian and Ukrainian overlays stay in the tree, unserved, until then.
+ */
+export const SERVED_LOCALES: readonly Locale[] = ["en"];
 
 /**
  * The cookie carrying the choice.

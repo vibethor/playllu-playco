@@ -24,7 +24,7 @@ import { policy } from "@/lib/policy";
  * pass a broken email the day somebody blessed it.
  */
 
-const STARTS_AT = "2026-07-25T16:00:00.000Z"; // 18:00 Europe/Prague
+const STARTS_AT = "2026-07-25T11:00:00.000Z"; // 18:00 Asia/Bangkok
 const HOSTILE = '<script>alert("xss")</script>';
 const BASE_URL = "https://www.hrajfotbal.com";
 
@@ -44,13 +44,13 @@ const ics = { filename: "game.ics", content: "BEGIN:VCALENDAR", contentType: "te
 
 const paid: PaymentReceipt = {
   orderId: "cs_live_a1b2c3d4e5f6g7h8",
-  paidAt: "2026-07-20T12:03:00.000Z",
+  paidAt: "2026-07-20T07:03:00.000Z",
   credits: 1,
   amountThb: 180,
   method: "card",
-  validUntil: "2026-09-18T12:03:00.000Z",
+  validUntil: "2026-09-18T07:03:00.000Z",
   usedForGame: true,
-  terms: { wording: "I agree to the Terms and Conditions.", acceptedAt: "2026-07-20T12:02:00.000Z" },
+  terms: { wording: "I agree to the Terms and Conditions.", acceptedAt: "2026-07-20T07:02:00.000Z" },
 };
 
 /** Every template, rendered for one language. */
@@ -78,7 +78,7 @@ function all(locale: Locale, venue = game.venue): { name: string; email: Rendere
     { name: "game-cancelled", email: gameCancelledEmail({ ...g, creditsReturned: 2, reason: venue }, e) },
     { name: "credits-purchased", email: creditsPurchasedEmail({ paid: { ...paid, credits: 5, amountThb: 810, usedForGame: false }, balanceCredits: 6 }, e) },
     { name: "credits-game-full", email: creditsPurchasedEmail({ paid: { ...paid, usedForGame: false }, gameFull: true }, e) },
-    { name: "credits-expiring", email: creditsExpiringEmail({ credits: 2, expiresAt: "2026-09-18T12:03:00.000Z" }, e) },
+    { name: "credits-expiring", email: creditsExpiringEmail({ credits: 2, expiresAt: "2026-09-18T07:03:00.000Z" }, e) },
   ];
 }
 
@@ -130,7 +130,7 @@ describe("every email, in every language", () => {
     }
   });
 
-  it("writes kick-off in Prague time, never raw UTC", () => {
+  it("writes kick-off in Bangkok time, never raw UTC", () => {
     // Act
     const { email } = all("en")[0]!;
 

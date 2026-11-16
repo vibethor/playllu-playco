@@ -91,7 +91,7 @@ export function csvResponse(csv: string, slug: string, today: string): Response 
   return new Response(csv, {
     headers: {
       "content-type": "text/csv; charset=utf-8",
-      "content-disposition": `attachment; filename="hrajfotbal-${slug}-${today}.csv"`,
+      "content-disposition": `attachment; filename="playco-${slug}-${today}.csv"`,
       "cache-control": "no-store",
     },
   });

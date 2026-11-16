@@ -135,6 +135,56 @@ describe("parseCheckoutSession", () => {
       },
     });
 
+  it("ignores a completed session whose payment is still pending", () => {
+    // Arrange
+    const unpaid = session({ payment_status: "unpaid" });
+
+    // Act
+    const parsed = parseCheckoutSession(unpaid);
+
+    // Assert
+    expect(parsed).toBeNull();
+  });
+
+  it("settles a completed session marked paid, as card and PromptPay arrive", () => {
+    // Arrange
+    const paid = session({ payment_status: "paid" });
+
+    // Act
+    const parsed = parseCheckoutSession(paid);
+
+    // Assert
+    expect(parsed?.id).toBe("cs_test_123");
+  });
+
+  it("settles a delayed payment when it succeeds later", () => {
+    // Arrange
+    const later = JSON.stringify({
+      type: "checkout.session.async_payment_succeeded",
+      data: { object: { id: "cs_test_456", client_reference_id: null, amount_total: 25000, currency: "thb", payment_status: "paid" } },
+    });
+
+    // Act
+    const parsed = parseCheckoutSession(later);
+
+    // Assert
+    expect(parsed).toEqual({ id: "cs_test_456", clientReferenceId: null, amountTotal: 25000, currency: "thb" });
+  });
+
+  it("does not settle a delayed payment that failed", () => {
+    // Arrange
+    const failed = JSON.stringify({
+      type: "checkout.session.async_payment_failed",
+      data: { object: { id: "cs_test_789", amount_total: 25000, currency: "thb", payment_status: "unpaid" } },
+    });
+
+    // Act
+    const parsed = parseCheckoutSession(failed);
+
+    // Assert
+    expect(parsed).toBeNull();
+  });
+
   it("pulls the four fields the handler needs", () => {
     // Act
     const parsed = parseCheckoutSession(session());

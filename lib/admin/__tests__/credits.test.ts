@@ -7,7 +7,7 @@ import { PASS_REFERENCE_PRICE_THB } from "@/lib/pass/creditPrice";
  */
 
 /*
- * ~~150.~~ THE RATE IS 180 SINCE ROUND 35 v2, and these are written as the
+ * ~~150.~~ ~~180 (round 35 v2).~~ THE RATE IS 250 IN PLAYCO (Phase F), and these are written as the
  * CONSTANT rather than as literals wherever the literal would only be restating
  * it. The two that stay literal are the ones whose point IS the number: a
  * balance that does not divide, and the floor.
@@ -46,7 +46,7 @@ describe("creditsFromThb", () => {
     expect(creditsFromThb(RATE - 1)).toBe(0);
     expect(creditsFromThb(2 * RATE - 1)).toBe(1);
     // A ragged legacy balance, floored to what it can actually buy.
-    expect(creditsFromThb(4460)).toBe(24);
+    expect(creditsFromThb(4460)).toBe(17);
   });
 
   it("never goes negative", () => {
@@ -85,7 +85,7 @@ describe("adminWallet", () => {
      * has to be able to see. `remainderThb` is what the surface prints as
      * subtext — never instead of the credit count, always beside it.
      */
-    expect(adminWallet(4460)).toEqual({ credits: 24, remainderThb: 4460 });
+    expect(adminWallet(4460)).toEqual({ credits: 17, remainderThb: 4460 });
     expect(adminWallet(110)).toEqual({ credits: 0, remainderThb: 110 });
     expect(adminWallet(50)).toEqual({ credits: 0, remainderThb: 50 });
   });

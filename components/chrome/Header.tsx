@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/chrome/LanguageSwitcher";
+import { SERVED_LOCALES } from "@/lib/i18n/locales";
 import { appCapabilities } from "@/lib/db/capabilities";
 import { primaryNavLinks } from "@/lib/nav/links";
 import { initials } from "@/lib/roster/initials";
@@ -305,7 +306,7 @@ export async function Header({
           )}
 
           {/* Immediately right of the auth control, per §3.1a. */}
-          <LanguageSwitcher />
+          {SERVED_LOCALES.length > 1 && <LanguageSwitcher />}
         </nav>
       </div>
     </header>

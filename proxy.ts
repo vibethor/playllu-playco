@@ -1,6 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { legacyHostRedirect } from "@/lib/legacyHost";
 
 /** Query params that carry a magic-link credential worth rescuing. */
 const CREDENTIAL_PARAMS = ["code", "token_hash"] as const;
@@ -24,14 +23,7 @@ const AUTH_CALLBACK_PATH = "/auth/callback";
 export default async function proxy(request: NextRequest) {
   const url = new URL(request.url);
 
-  // The old address forwards, first and permanently — `lib/legacyHost.ts`.
-  const forward = legacyHostRedirect(
-    request.headers.get("host"),
-    url.pathname,
-    url.search,
-    process.env.NEXT_PUBLIC_SITE_URL,
-  );
-  if (forward) return NextResponse.redirect(forward, 308);
+  // PLAYCO, PHASE F: HrajFotbal's old-address redirect (`lib/legacyHost.ts`) does not apply to Playco.
 
   /*
    * Supabase validates `emailRedirectTo` against the project's redirect

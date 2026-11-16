@@ -14,8 +14,8 @@ import { DATE_LOCALE, formatGameDate, formatGameDateTime } from "@/lib/format";
  * What matters is that Czech is not English.
  */
 
-// A Wednesday in September, in Prague.
-const WHEN = "2026-09-09T16:30:00.000Z";
+// A Wednesday in September, in Bangkok.
+const WHEN = "2026-09-09T11:30:00.000Z";
 
 describe("DATE_LOCALE", () => {
   it("maps English to en-GB, so the day comes before the month", () => {
@@ -89,8 +89,8 @@ describe("formatGameDateTime", () => {
  * Node upgrade moves ICU's composition, this SHOULD fail and be looked at.
  */
 describe("full-name game dates (round 30, item 3)", () => {
-  // Sunday 13 September 2026, 18:30 in Prague.
-  const SUNDAY = "2026-09-13T16:30:00.000Z";
+  // Sunday 13 September 2026, 18:30 in Bangkok.
+  const SUNDAY = "2026-09-13T11:30:00.000Z";
 
   it("renders English as 'Sunday 13 September'", () => {
     expect(formatGameDate(SUNDAY, "en")).toBe("Sunday 13 September");

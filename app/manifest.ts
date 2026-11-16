@@ -20,7 +20,7 @@ const themeColors = (tailwindConfig.theme?.extend?.colors ?? {}) as Record<strin
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: strings.meta.title,
-    short_name: "Hraj Fotbal",
+    short_name: "Playco",
     description: strings.meta.description,
     start_url: "/games",
     display: "standalone",

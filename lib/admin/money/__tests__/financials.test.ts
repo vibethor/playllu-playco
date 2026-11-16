@@ -8,19 +8,19 @@ import { fakeServiceClient, type Tables } from "./fakeServiceClient";
  *
  * ~~Months are UTC~~ — "a booking an hour either side of midnight on the 1st
  * lands in a different month under either rule, and no reader is counting".
- * The owner is: a game paid at half past midnight on the 1st, Prague time,
+ * The owner is: a game paid at half past midnight on the 1st, Bangkok time,
  * was this month's money and the page filed it under last month. Every
- * period here is a Prague calendar month, the same as the stats windows.
+ * period here is a Bangkok calendar month, the same as the stats windows.
  */
 const holder = vi.hoisted(() => ({ client: null as unknown }));
 vi.mock("@/lib/supabase/clients", () => ({
   createServiceRoleSupabaseClient: () => holder.client,
 }));
 
-/** 00:30 on 1 November in Prague (CET, UTC+1). */
-const HALF_PAST_MIDNIGHT_NOV_1 = "2026-10-31T23:30:00.000Z";
-const MID_NOVEMBER = "2026-11-15T12:00:00.000Z";
-const MID_OCTOBER = "2026-10-15T12:00:00.000Z";
+/** 00:30 on 1 November in Bangkok (CET, UTC+1). */
+const HALF_PAST_MIDNIGHT_NOV_1 = "2026-10-31T17:30:00.000Z";
+const MID_NOVEMBER = "2026-11-15T06:00:00.000Z";
+const MID_OCTOBER = "2026-10-15T07:00:00.000Z";
 
 let tables: Tables;
 
@@ -35,20 +35,20 @@ function paidBooking(id: string, paidAt: string, priceThb = 180) {
 }
 
 describe("financialBounds", () => {
-  it("puts 00:30 on the 1st, Prague time, in that month", () => {
+  it("puts 00:30 on the 1st, Bangkok time, in that month", () => {
     // Act
     const bounds = financialBounds("this_month", HALF_PAST_MIDNIGHT_NOV_1);
 
-    // Assert — midnight in Prague, which is 23:00 UTC the evening before.
-    expect(bounds).toEqual({ from: "2026-10-31T23:00:00.000Z", to: "2026-11-30T23:00:00.000Z" });
+    // Assert — midnight in Bangkok, which is 23:00 UTC the evening before.
+    expect(bounds).toEqual({ from: "2026-10-31T17:00:00.000Z", to: "2026-11-30T17:00:00.000Z" });
   });
 
-  it("gives last month as the Prague month before, across the clock change", () => {
+  it("gives last month as the Bangkok month before, across a month boundary (inherited Prague clock-change case)", () => {
     // Act
     const bounds = financialBounds("last_month", MID_NOVEMBER);
 
     // Assert — October opens on summer time (UTC+2) and closes on winter time.
-    expect(bounds).toEqual({ from: "2026-09-30T22:00:00.000Z", to: "2026-10-31T23:00:00.000Z" });
+    expect(bounds).toEqual({ from: "2026-09-30T17:00:00.000Z", to: "2026-10-31T17:00:00.000Z" });
   });
 
   it("has no bounds for all time", () => {
@@ -85,7 +85,7 @@ describe("getFinancialsAt — revenue", () => {
 
   it("compares last month against the month before it", async () => {
     // Arrange
-    paidBooking("sep", "2026-09-20T12:00:00.000Z", 200);
+    paidBooking("sep", "2026-09-20T07:00:00.000Z", 200);
     paidBooking("oct", MID_OCTOBER, 300);
 
     // Act
@@ -98,9 +98,9 @@ describe("getFinancialsAt — revenue", () => {
 });
 
 describe("getFinancialsAt — revenue by week", () => {
-  it("puts 00:30 on the 8th, Prague time, in the second week", async () => {
-    // Arrange — 22:30 UTC on 7 October is 00:30 on the 8th in Prague (UTC+2).
-    paidBooking("b1", "2026-10-07T22:30:00.000Z");
+  it("puts 00:30 on the 8th, Bangkok time, in the second week", async () => {
+    // Arrange — 22:30 UTC on 7 October is 00:30 on the 8th in Bangkok (UTC+2).
+    paidBooking("b1", "2026-10-07T17:30:00.000Z");
 
     // Act
     const october = await getFinancialsAt("this_month", MID_OCTOBER);
@@ -109,9 +109,9 @@ describe("getFinancialsAt — revenue by week", () => {
     expect(october.weeks.map((w) => w.revenueThb)).toEqual([0, 180, 0, 0, 0]);
   });
 
-  it("keeps 23:30 on the 28th in the fourth week after the clocks go back", async () => {
-    // Arrange — 22:30 UTC on 28 October is 23:30 on the 28th in Prague (UTC+1).
-    paidBooking("b1", "2026-10-28T22:30:00.000Z");
+  it("keeps 23:30 on the 28th in the fourth week (inherited Prague clock-change case)", async () => {
+    // Arrange — 22:30 UTC on 28 October is 23:30 on the 28th in Bangkok (UTC+1).
+    paidBooking("b1", "2026-10-28T16:30:00.000Z");
 
     // Act
     const october = await getFinancialsAt("this_month", MID_OCTOBER);
@@ -122,10 +122,10 @@ describe("getFinancialsAt — revenue by week", () => {
 
   it("draws four weeks for a 28-day February", async () => {
     // Arrange
-    paidBooking("b1", "2026-02-27T12:00:00.000Z");
+    paidBooking("b1", "2026-02-27T06:00:00.000Z");
 
     // Act
-    const february = await getFinancialsAt("this_month", "2026-02-10T12:00:00.000Z");
+    const february = await getFinancialsAt("this_month", "2026-02-10T06:00:00.000Z");
 
     // Assert
     expect(february.weeks.map((w) => w.label)).toEqual(["W1", "W2", "W3", "W4"]);
@@ -249,14 +249,14 @@ describe("getFinancialsAt — the average per game", () => {
   it("counts a game that kicked off before the nightly sweep marked it played", async () => {
     // Arrange — production on 2026-11-08: #4 and #5 settled, #10 kicked off at
     // 17:00 and still "full". The owner: "we had more than two games … (3)".
-    settledGame("g5", "2026-10-31T14:30:00.000Z");
-    settledGame("g4", "2026-11-04T19:00:00.000Z");
-    tables.games!.push({ id: "g10", status: "full", starts_at: "2026-11-08T16:00:00.000Z" });
-    tables.games!.push({ id: "g13", status: "published", starts_at: "2026-11-11T19:00:00.000Z" });
-    tables.games!.push({ id: "gx", status: "cancelled", starts_at: "2026-11-03T19:00:00.000Z" });
+    settledGame("g5", "2026-10-31T08:30:00.000Z");
+    settledGame("g4", "2026-11-04T13:00:00.000Z");
+    tables.games!.push({ id: "g10", status: "full", starts_at: "2026-11-08T10:00:00.000Z" });
+    tables.games!.push({ id: "g13", status: "published", starts_at: "2026-11-11T13:00:00.000Z" });
+    tables.games!.push({ id: "gx", status: "cancelled", starts_at: "2026-11-03T13:00:00.000Z" });
 
     // Act — the evening of the 8th.
-    const allTime = await getFinancialsAt("all_time", "2026-11-08T21:30:00.000Z");
+    const allTime = await getFinancialsAt("all_time", "2026-11-08T15:30:00.000Z");
 
     // Assert — three played; the one ahead and the cancelled one are not.
     expect(allTime.gamesPlayed).toBe(3);
@@ -265,8 +265,8 @@ describe("getFinancialsAt — the average per game", () => {
   it("averages the settled games' own revenue, not money paid for games still ahead", async () => {
     // Arrange — one settled game that made 900; a week's upfront payments
     // for an upcoming one.
-    settledGame("g1", "2026-11-05T17:00:00.000Z");
-    tables.games!.push({ id: "g2", status: "published", starts_at: "2026-11-25T17:00:00.000Z" });
+    settledGame("g1", "2026-11-05T11:00:00.000Z");
+    tables.games!.push({ id: "g2", status: "published", starts_at: "2026-11-25T11:00:00.000Z" });
     for (let i = 0; i < 10; i += 1) paidBooking(`up${i}`, MID_NOVEMBER);
     holder.client = fakeServiceClient(tables, {
       game_economics: (args) =>
@@ -283,9 +283,9 @@ describe("getFinancialsAt — the average per game", () => {
 
   it("is the mean over every settled game in the month", async () => {
     // Arrange
-    settledGame("g1", "2026-11-05T17:00:00.000Z");
-    settledGame("g2", "2026-11-12T17:00:00.000Z");
-    settledGame("g0", "2026-10-29T17:00:00.000Z");
+    settledGame("g1", "2026-11-05T11:00:00.000Z");
+    settledGame("g2", "2026-11-12T11:00:00.000Z");
+    settledGame("g0", "2026-10-29T11:00:00.000Z");
     const revenue: Record<string, number> = { g0: 5000, g1: 900, g2: 1500 };
     holder.client = fakeServiceClient(tables, {
       game_economics: (args) =>
@@ -302,7 +302,7 @@ describe("getFinancialsAt — the average per game", () => {
 
   it("says nothing rather than guess when a game's own revenue cannot be read", async () => {
     // Arrange
-    settledGame("g1", "2026-11-05T17:00:00.000Z");
+    settledGame("g1", "2026-11-05T11:00:00.000Z");
     paidBooking("b1", MID_NOVEMBER);
 
     // Act
@@ -319,8 +319,8 @@ describe("getFinancialsAt — the recent Credit ledger", () => {
     // Arrange
     tables.players!.push({ id: "p1", nickname: "Artem" });
     tables.credit_ledger!.push(
-      { id: "l1", player_id: "p1", delta_thb: 750, reason: "topup", created_at: "2026-11-02T10:00:00Z" },
-      { id: "l2", player_id: "p1", delta_thb: -180, reason: "pass_expiry", created_at: "2026-11-01T10:00:00Z" },
+      { id: "l1", player_id: "p1", delta_thb: 750, reason: "topup", created_at: "2026-11-02T04:00:00Z" },
+      { id: "l2", player_id: "p1", delta_thb: -180, reason: "pass_expiry", created_at: "2026-11-01T04:00:00Z" },
     );
 
     // Act

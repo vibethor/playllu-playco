@@ -361,8 +361,8 @@ describe.each([
  * `lib/i18n/server.ts` walks, at the level the pure functions can be tested.
  */
 describe("the default locale", () => {
-  it("is Czech", () => {
-    expect(DEFAULT_LOCALE).toBe("cs");
+  it("is English in Playco (Czech in HrajFotbal)", () => {
+    expect(DEFAULT_LOCALE).toBe("en");
   });
 
   it("does not displace a browser preference", () => {
@@ -373,8 +373,8 @@ describe("the default locale", () => {
 
   it("applies only when nothing else has an opinion", () => {
     // Step 3. An unsupported language, or no header at all, lands here.
-    expect(localeFromAcceptLanguage("de-DE,de;q=0.9") ?? DEFAULT_LOCALE).toBe("cs");
-    expect(localeFromAcceptLanguage(null) ?? DEFAULT_LOCALE).toBe("cs");
+    expect(localeFromAcceptLanguage("de-DE,de;q=0.9") ?? DEFAULT_LOCALE).toBe("en");
+    expect(localeFromAcceptLanguage(null) ?? DEFAULT_LOCALE).toBe("en");
   });
 
   it("leaves ENGLISH as the fallback for missing copy, which is a different job", () => {

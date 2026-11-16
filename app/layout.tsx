@@ -1,4 +1,5 @@
 import { profilePhotoVersion } from "@/lib/storage/photoVersions";
+import { PreviewBar } from "@/components/chrome/PreviewBar";
 import type { Metadata, Viewport } from "next";
 import { Anton, Barlow_Condensed, JetBrains_Mono, Onest } from "next/font/google";
 import { NavPill } from "@/components/chrome/NavPill";
@@ -115,12 +116,12 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s — ${strings.brand.wordmarkLead} ${strings.brand.wordmarkAccent}`,
     },
     description: t.meta.description,
-    applicationName: "Hraj Fotbal",
+    applicationName: "Playco",
     manifest: "/manifest.webmanifest",
     appleWebApp: {
       capable: true,
       statusBarStyle: "black-translucent",
-      title: "Hraj Fotbal",
+      title: "Playco",
     },
   };
 }
@@ -179,6 +180,7 @@ export default async function RootLayout({
       </head>
       {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body className="min-h-full flex flex-col">
+        <PreviewBar />
         <LocaleProvider locale={locale} t={t}>
           <SessionProvider
             value={{

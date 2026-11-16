@@ -1,5 +1,6 @@
 "use client";
 
+import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import { useActionState, useState } from "react";
 import { createBookingAction, type BookingActionState } from "@/app/game/[id]/book/actions";
 import { FormError } from "@/components/form/FormError";
@@ -396,7 +397,7 @@ export function PaymentMethodChoice({
                 the two options below; this is an offer, and the round's rule
                 is that nothing blocks a booking to upsell.
               */}
-              {!creditCovers && (
+              {PASSES_ENABLED && !creditCovers && (
                 <Link
                   href="/pass"
                   data-testid="add-credits"

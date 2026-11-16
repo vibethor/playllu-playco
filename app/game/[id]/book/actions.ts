@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { withToast } from "@/lib/ux/toast";
 import { bookingEmailContext } from "@/lib/cron/context";
 import { dispatchEmail } from "@/lib/email/dispatch";
-import { buildSpdString, amountDueThb, paymentIban } from "@/lib/payments/spd";
 import { createServerSupabaseClient, createServiceRoleSupabaseClient } from "@/lib/supabase/clients";
 import { getSessionUser } from "@/lib/auth/session";
 import { getOwnCreditBalance } from "@/lib/booking/queries";
@@ -394,7 +393,6 @@ async function dispatchBookingEmails(result: BookingResult): Promise<void> {
       withIcs: true,
     });
 
-    const due = amountDueThb(booking.price_thb, booking.credit_applied_thb);
     await dispatchEmail({
       event: "booking_created",
       to: player.email,
@@ -402,15 +400,8 @@ async function dispatchBookingEmails(result: BookingResult): Promise<void> {
         ...context,
         instantConfirmed,
         variableSymbol: booking.payment_code ?? undefined,
-        spdString:
-          booking.payment_code && due > 0
-            ? buildSpdString({
-                iban: paymentIban(),
-                amountThb: due,
-                variableSymbol: booking.payment_code,
-                nickname: player.nickname,
-              })
-            : undefined,
+        // PLAYCO, PHASE F: no Czech bank QR (SPD) — players pay through Stripe; there is no IBAN.
+        spdString: undefined,
       },
     });
 

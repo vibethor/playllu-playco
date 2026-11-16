@@ -1,14 +1,16 @@
 /**
  * Datetime formatting for display.
  *
- * Every user-visible datetime renders in `Europe/Prague` on a 24-hour clock.
+ * Every user-visible datetime renders in the city's time zone (`lib/city/default.ts`) on a 24-hour clock.
  * Raw UTC must never reach a surface. The timezone is passed explicitly on
  * every call rather than relying on the host default — a formatter that falls
  * back to the host zone looks correct in local dev and renders wrong on
  * Vercel (UTC), which is exactly the bug this module exists to prevent.
  */
 
-export const DISPLAY_TIME_ZONE = "Europe/Prague";
+import { DEFAULT_CITY } from "@/lib/city/default";
+
+export const DISPLAY_TIME_ZONE: string = DEFAULT_CITY.timeZone;
 
 /**
  * THE ONE PLACE A LANGUAGE BECOMES A DATE CONVENTION (round 28, item 9).
@@ -105,7 +107,7 @@ export function formatGameDateTime(value: Date | string | number, locale?: DateL
  * The dash is an EN DASH (U+2013), not a hyphen: it is a range, and a hyphen
  * between two clock times reads as a compound word at small sizes on a phone.
  *
- * The end time is formatted through the same `Europe/Prague` formatter as the
+ * The end time is formatted through the same city time-zone formatter as the
  * start, so a game that runs across the DST boundary prints the wall-clock
  * times a player would actually see on the pitch rather than start + duration
  * arithmetic done in UTC.

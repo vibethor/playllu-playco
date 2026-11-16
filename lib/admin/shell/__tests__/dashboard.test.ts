@@ -9,7 +9,7 @@ import { memoryClient, type MemoryTables } from "./memoryPostgrest";
  * The dashboard counted every row with a login that was not deleted — which
  * still counted seed fixtures — while `lib/admin/playerScope.ts` is now the
  * one definition of a player. And "Revenue (month)" was a UTC month, so a
- * payment confirmed at half past midnight on the 1st, Prague time, landed in
+ * payment confirmed at half past midnight on the 1st, Bangkok time, landed in
  * the month before.
  *
  * These run `getAdminDashboard` against in-memory rows and assert what the
@@ -44,7 +44,7 @@ vi.mock("@/lib/admin/economics", () => ({
 
 const { getAdminDashboard } = await import("@/lib/admin/dashboard");
 
-const NOW = Date.parse("2026-11-08T12:00:00.000Z");
+const NOW = Date.parse("2026-11-08T06:00:00.000Z");
 
 function player(
   nickname: string,
@@ -63,11 +63,11 @@ function player(
 
 /** Two real players, one of them new — and one of each kind that is not a player. */
 const PLAYERS = [
-  player("Anna", { createdAt: "2026-11-06T09:00:00.000Z" }),
-  player("Boris", { createdAt: "2026-09-01T09:00:00.000Z" }),
-  player("Shadow", { auth: null, createdAt: "2026-11-07T09:00:00.000Z" }),
-  player("Gone", { deletedAt: "2026-11-07T10:00:00.000Z", createdAt: "2026-11-05T09:00:00.000Z" }),
-  player("SeedBot", { seed: true, createdAt: "2026-11-07T11:00:00.000Z" }),
+  player("Anna", { createdAt: "2026-11-06T03:00:00.000Z" }),
+  player("Boris", { createdAt: "2026-09-01T04:00:00.000Z" }),
+  player("Shadow", { auth: null, createdAt: "2026-11-07T03:00:00.000Z" }),
+  player("Gone", { deletedAt: "2026-11-07T04:00:00.000Z", createdAt: "2026-11-05T03:00:00.000Z" }),
+  player("SeedBot", { seed: true, createdAt: "2026-11-07T05:00:00.000Z" }),
 ];
 
 function upcomingGame(n: number) {
@@ -127,13 +127,13 @@ describe("the dashboard's player counts", () => {
 });
 
 describe("the dashboard's revenue this month", () => {
-  it("is the Prague calendar month, not the UTC one", async () => {
-    // Arrange — 23:30Z on 31 October is 00:30 on 1 November in Prague, and
+  it("is the Bangkok calendar month, not the UTC one", async () => {
+    // Arrange — 23:30Z on 31 October is 00:30 on 1 November in Bangkok, and
     // 23:30Z on 30 November is already 1 December there.
     state.tables.events = [
-      { event_type: "payment_confirmed", booking_id: "b-first-of-month", created_at: "2026-10-31T23:30:00.000Z" },
-      { event_type: "payment_confirmed", booking_id: "b-october", created_at: "2026-10-31T22:30:00.000Z" },
-      { event_type: "payment_confirmed", booking_id: "b-december", created_at: "2026-11-30T23:30:00.000Z" },
+      { event_type: "payment_confirmed", booking_id: "b-first-of-month", created_at: "2026-10-31T17:30:00.000Z" },
+      { event_type: "payment_confirmed", booking_id: "b-october", created_at: "2026-10-31T16:30:00.000Z" },
+      { event_type: "payment_confirmed", booking_id: "b-december", created_at: "2026-11-30T17:30:00.000Z" },
     ];
     state.tables.bookings = [
       { id: "b-first-of-month", price_thb: 200, credit_applied_thb: 0 },
@@ -146,13 +146,13 @@ describe("the dashboard's revenue this month", () => {
 
     // Assert
     expect(dashboard.revenueMonthThb).toBe(200);
-    expect(dashboard.window.monthFrom).toBe("2026-10-31T23:00:00.000Z");
+    expect(dashboard.window.monthFrom).toBe("2026-10-31T17:00:00.000Z");
   });
 
   it("does not count what a booking paid from Credits", async () => {
     // Arrange
     state.tables.events = [
-      { event_type: "payment_confirmed", booking_id: "b-party", created_at: "2026-11-03T18:00:00.000Z" },
+      { event_type: "payment_confirmed", booking_id: "b-party", created_at: "2026-11-03T12:00:00.000Z" },
     ];
     state.tables.bookings = [{ id: "b-party", price_thb: 500, credit_applied_thb: 200 }];
 
@@ -167,11 +167,11 @@ describe("the dashboard's revenue this month", () => {
     // Arrange — the owner, 2026-11-08: "revenue should count all the revenue
     // including game pass".
     state.tables.events = [
-      { event_type: "payment_confirmed", booking_id: "b-card", created_at: "2026-11-03T18:00:00.000Z" },
+      { event_type: "payment_confirmed", booking_id: "b-card", created_at: "2026-11-03T12:00:00.000Z" },
     ];
     state.tables.bookings = [{ id: "b-card", price_thb: 180, credit_applied_thb: 0 }];
     state.tables.credit_topups = [
-      { id: "t-pass", status: "confirmed", amount_thb: 840, received_amount_thb: 840, pass_games: 5, confirmed_at: "2026-11-05T10:00:00.000Z" },
+      { id: "t-pass", status: "confirmed", amount_thb: 840, received_amount_thb: 840, pass_games: 5, confirmed_at: "2026-11-05T04:00:00.000Z" },
       { id: "t-unpaid", status: "pending", amount_thb: 840, received_amount_thb: null, pass_games: 5, confirmed_at: null },
     ];
 
@@ -188,7 +188,7 @@ describe("the dashboard's upcoming games", () => {
     // Arrange — seven upcoming games with three seats each, and one past game.
     state.tables.games = [
       ...Array.from({ length: 7 }, (_, i) => upcomingGame(i + 1)),
-      { ...upcomingGame(0), id: "g-past", starts_at: "2026-11-01T18:00:00.000Z" },
+      { ...upcomingGame(0), id: "g-past", starts_at: "2026-11-01T12:00:00.000Z" },
     ];
     state.seats = new Map([...Array.from({ length: 7 }, (_, i) => [`g-${i + 1}`, 3] as const), ["g-past", 9]]);
 

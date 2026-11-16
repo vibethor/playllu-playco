@@ -104,6 +104,12 @@ export interface CheckoutSession {
  * booking as underpaid, and a missing one read as "skip the check" would seat
  * an unpaid one.
  */
+/** The events that settle a checkout: paid on completion, or paid later by a delayed method. */
+const SETTLING_EVENTS = new Set(["checkout.session.completed", "checkout.session.async_payment_succeeded"]);
+
+/** `payment_status` values that mean the money is there. */
+const PAID_STATUSES = new Set(["paid", "no_payment_required"]);
+
 export function parseCheckoutSession(payload: string): CheckoutSession | null {
   let event: unknown;
   try {
@@ -114,11 +120,22 @@ export function parseCheckoutSession(payload: string): CheckoutSession | null {
 
   if (typeof event !== "object" || event === null) return null;
   const record = event as Record<string, unknown>;
-  if (record.type !== "checkout.session.completed") return null;
+  if (!SETTLING_EVENTS.has(String(record.type))) return null;
 
   const data = record.data as Record<string, unknown> | undefined;
   const object = data?.object as Record<string, unknown> | undefined;
   if (!object || typeof object.id !== "string") return null;
+
+  /*
+   * PLAYCO: A COMPLETED SESSION IS NOT ALWAYS A PAID ONE. Card and PromptPay confirm in real time, so their
+   * `completed` arrives `paid`; a delayed method would arrive `unpaid` and settle later through
+   * `checkout.session.async_payment_succeeded`. Seating on an unpaid session would give away a seat for money that
+   * may never come. An absent status is treated as paid, which is what every earlier payload meant.
+   */
+  if (record.type === "checkout.session.completed" && typeof object.payment_status === "string"
+      && !PAID_STATUSES.has(object.payment_status)) {
+    return null;
+  }
 
   return {
     id: object.id,

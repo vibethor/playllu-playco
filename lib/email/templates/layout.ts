@@ -268,7 +268,7 @@ export function renderEmail(parts: EmailParts): RenderedEmail {
       line instanceof SafeHtml ? stripTags(line.value) : line,
     ),
     "",
-    "Hraj Fotbal · support@hrajfotbal.com",
+    "Playco · support@playllu.com",
     parts.footer,
   ]);
 

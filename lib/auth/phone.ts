@@ -4,6 +4,7 @@ import {
   type CountryCode,
 } from "libphonenumber-js/min";
 import { COUNTRY_CODES, isKnownCountry, type CountryOption } from "@/lib/auth/countries";
+import { DEFAULT_CITY } from "@/lib/city/default";
 
 /**
  * THE PHONE NUMBER, AS A COUNTRY AND A NATIONAL PART (round 41).
@@ -24,8 +25,8 @@ import { COUNTRY_CODES, isKnownCountry, type CountryOption } from "@/lib/auth/co
  * covers every country the signup list offers — a unit test says so.
  */
 
-/** Prague: the number most players will type is Czech. */
-export const DEFAULT_PHONE_COUNTRY = "CZ";
+/** The number most players will type is from the city's country (`lib/city/default.ts`). */
+export const DEFAULT_PHONE_COUNTRY: string = DEFAULT_CITY.phoneCountry;
 
 export interface PhoneCountryOption extends CountryOption {
   /** "+420" — the prefix the control shows beside the flag. */

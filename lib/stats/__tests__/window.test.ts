@@ -10,15 +10,15 @@ import {
  * REQ-ADMIN-006 — the day/week/month maths.
  *
  * Written against fixed UTC instants, so these hold whatever the host timezone
- * is. The DST cases are the ones worth having: Prague is UTC+1 or UTC+2
+ * is. (Inherited from Prague, where DST made these cases worth having; Bangkok is UTC+7 all year.) Prague is UTC+1 or UTC+2
  * depending on the date, and a window computed by adding a fixed offset is
  * wrong for a fortnight twice a year — silently, in a direction nobody checks.
  */
 
-/** The Prague wall-clock rendering of an ISO instant, for readable assertions. */
+/** The Bangkok wall-clock rendering of an ISO instant, for readable assertions. */
 function prague(iso: string): string {
   return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Prague",
+    timeZone: "Asia/Bangkok",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -31,21 +31,21 @@ function prague(iso: string): string {
 }
 
 describe("statRange — day", () => {
-  it("spans one Prague calendar day, midnight to midnight", () => {
-    // 2026-08-02 12:00Z is 14:00 in Prague (CEST).
-    const range = statRange("day", new Date("2026-08-02T12:00:00Z"));
+  it("spans one Bangkok calendar day, midnight to midnight", () => {
+    // 2026-08-02 12:00Z is 14:00 in Bangkok (CEST).
+    const range = statRange("day", new Date("2026-08-02T07:00:00Z"));
     expect(prague(range.from)).toBe("2026-08-02 00:00");
     expect(prague(range.to)).toBe("2026-08-03 00:00");
   });
 
   it("puts a late-evening instant on the day the players would name", () => {
-    // 22:30Z on the 2nd is 00:30 on the 3rd in Prague.
-    const range = statRange("day", new Date("2026-08-02T22:30:00Z"));
+    // 22:30Z on the 2nd is 00:30 on the 3rd in Bangkok.
+    const range = statRange("day", new Date("2026-08-02T17:30:00Z"));
     expect(prague(range.from)).toBe("2026-08-03 00:00");
   });
 
-  it("is right in winter, when Prague is UTC+1", () => {
-    const range = statRange("day", new Date("2026-01-15T12:00:00Z"));
+  it("is right in winter, (inherited winter case; Bangkok is UTC+7 all year)", () => {
+    const range = statRange("day", new Date("2026-01-15T06:00:00Z"));
     expect(prague(range.from)).toBe("2026-01-15 00:00");
     expect(prague(range.to)).toBe("2026-01-16 00:00");
   });
@@ -54,7 +54,7 @@ describe("statRange — day", () => {
 describe("statRange — week", () => {
   it("starts on Monday and runs seven days", () => {
     // 2026-08-05 is a Wednesday.
-    const range = statRange("week", new Date("2026-08-05T12:00:00Z"));
+    const range = statRange("week", new Date("2026-08-05T07:00:00Z"));
     expect(prague(range.from)).toBe("2026-08-03 00:00"); // Monday
     expect(prague(range.to)).toBe("2026-08-10 00:00"); // the next Monday
   });
@@ -63,48 +63,36 @@ describe("statRange — week", () => {
     // The failure this guards: a Sunday-start week would put Saturday and
     // Sunday fixtures in different weeks, which is not how a football weekend
     // is counted.
-    const range = statRange("week", new Date("2026-08-09T12:00:00Z")); // Sunday
+    const range = statRange("week", new Date("2026-08-09T07:00:00Z")); // Sunday
     expect(prague(range.from)).toBe("2026-08-03 00:00");
     expect(prague(range.to)).toBe("2026-08-10 00:00");
   });
 
-  it("spans a week correctly across the spring DST transition", () => {
-    // Prague springs forward on Sunday 2026-03-29. The week containing it
-    // starts Monday the 23rd and is 167 hours long, not 168.
-    const range = statRange("week", new Date("2026-03-25T12:00:00Z"));
-    expect(prague(range.from)).toBe("2026-03-23 00:00");
-    expect(prague(range.to)).toBe("2026-03-30 00:00");
-
-    const hours = (Date.parse(range.to) - Date.parse(range.from)) / 3_600_000;
-    expect(hours).toBe(167);
-  });
-
-  it("spans a week correctly across the autumn DST transition", () => {
-    // Prague falls back on Sunday 2026-10-25: that week is 169 hours.
-    const range = statRange("week", new Date("2026-10-21T12:00:00Z"));
-    expect(prague(range.from)).toBe("2026-10-19 00:00");
-    expect(prague(range.to)).toBe("2026-10-26 00:00");
-
-    const hours = (Date.parse(range.to) - Date.parse(range.from)) / 3_600_000;
-    expect(hours).toBe(169);
+  it("spans exactly 168 hours in March and October, because Bangkok has no clock change", () => {
+    // Prague's DST weeks (167 and 169 hours) do not exist here: Asia/Bangkok is UTC+7 all year.
+    for (const at of ["2026-03-25T06:00:00Z", "2026-10-21T07:00:00Z"]) {
+      const range = statRange("week", new Date(at));
+      const hours = (Date.parse(range.to) - Date.parse(range.from)) / 3_600_000;
+      expect(hours).toBe(168);
+    }
   });
 });
 
 describe("statRange — month", () => {
   it("spans one calendar month", () => {
-    const range = statRange("month", new Date("2026-08-15T12:00:00Z"));
+    const range = statRange("month", new Date("2026-08-15T07:00:00Z"));
     expect(prague(range.from)).toBe("2026-08-01 00:00");
     expect(prague(range.to)).toBe("2026-09-01 00:00");
   });
 
   it("rolls the year over in December", () => {
-    const range = statRange("month", new Date("2026-12-15T12:00:00Z"));
+    const range = statRange("month", new Date("2026-12-15T06:00:00Z"));
     expect(prague(range.from)).toBe("2026-12-01 00:00");
     expect(prague(range.to)).toBe("2027-01-01 00:00");
   });
 
   it("handles February in a non-leap year", () => {
-    const range = statRange("month", new Date("2026-02-10T12:00:00Z"));
+    const range = statRange("month", new Date("2026-02-10T06:00:00Z"));
     expect(prague(range.from)).toBe("2026-02-01 00:00");
     expect(prague(range.to)).toBe("2026-03-01 00:00");
   });
@@ -112,16 +100,16 @@ describe("statRange — month", () => {
 
 describe("range boundaries", () => {
   it("is half-open, so consecutive windows neither overlap nor leave a gap", () => {
-    const first = statRange("day", new Date("2026-08-02T12:00:00Z"));
-    const second = statRange("day", new Date("2026-08-03T12:00:00Z"));
+    const first = statRange("day", new Date("2026-08-02T07:00:00Z"));
+    const second = statRange("day", new Date("2026-08-03T07:00:00Z"));
     expect(first.to).toBe(second.from);
   });
 
   it("ends at the start of the next period, not at `now`", () => {
     // A bound at `now` would move on every refresh, and would exclude a game
     // kicking off later today — which belongs to today.
-    const range = statRange("day", new Date("2026-08-02T09:00:00Z"));
-    expect(Date.parse(range.to)).toBeGreaterThan(Date.parse("2026-08-02T09:00:00Z"));
+    const range = statRange("day", new Date("2026-08-02T04:00:00Z"));
+    expect(Date.parse(range.to)).toBeGreaterThan(Date.parse("2026-08-02T04:00:00Z"));
   });
 });
 

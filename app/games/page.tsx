@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import { ToastFromQuery } from "@/components/ToastFromQuery";
 import { EmptyState } from "@/components/EmptyState";
 import { DayPicker } from "@/components/game/DayPicker";
@@ -189,9 +190,11 @@ export default async function GamesPage({
 
       {/* Between the day-picker and the list, per §4.2. Someone scanning for a
           game is the person for whom pre-buying games is worth anything. */}
-      <div className="mt-6">
-        <PassPanel />
-      </div>
+      {PASSES_ENABLED && (
+        <div className="mt-6">
+          <PassPanel />
+        </div>
+      )}
 
       {games.length === 0 ? (
         <div className="mt-8">

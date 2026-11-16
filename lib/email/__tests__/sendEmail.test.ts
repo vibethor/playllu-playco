@@ -173,7 +173,7 @@ describe("sendEmail", () => {
       fetchSpy.mockResolvedValue({ ok: true, json: async () => ({ id: "email_mailbox" }) });
     });
 
-    it("sends from support@hrajfotbal.com when EMAIL_FROM is unset", async () => {
+    it("sends from support@playllu.com when EMAIL_FROM is unset", async () => {
       // Arrange
       delete process.env.EMAIL_FROM;
 
@@ -182,7 +182,7 @@ describe("sendEmail", () => {
 
       // Assert
       const [, init] = fetchSpy.mock.calls[0];
-      expect(JSON.parse(init.body).from).toBe("Hraj Fotbal <support@hrajfotbal.com>");
+      expect(JSON.parse(init.body).from).toBe("Playco <support@playllu.com>");
     });
 
     it("directs replies to support@ even when EMAIL_FROM is a no-reply address", async () => {
@@ -194,7 +194,7 @@ describe("sendEmail", () => {
 
       // Assert
       const [, init] = fetchSpy.mock.calls[0];
-      expect(JSON.parse(init.body).reply_to).toBe("support@hrajfotbal.com");
+      expect(JSON.parse(init.body).reply_to).toBe("support@playllu.com");
     });
 
     it("hands Resend a public file by its URL instead of inlining it", async () => {

@@ -5,6 +5,7 @@ import { resolveStrings } from "@/lib/i18n/resolve";
 import {
   DEFAULT_LOCALE,
   LOCALE_COOKIE,
+  SERVED_LOCALES,
   isLocale,
   localeFromAcceptLanguage,
   type Locale,
@@ -26,13 +27,14 @@ import {
 export const getLocale = cache(async (): Promise<Locale> => {
   const store = await cookies();
   const chosen = store.get(LOCALE_COOKIE)?.value;
-  if (isLocale(chosen)) return chosen;
+  if (isLocale(chosen) && SERVED_LOCALES.includes(chosen)) return chosen;
 
   // No cookie yet — a first arrival, usually from a link shared in WhatsApp.
   // The browser's own preference order is a better first guess than English,
   // and the switcher is there to overrule it.
   const header = (await headers()).get("accept-language");
-  return localeFromAcceptLanguage(header) ?? DEFAULT_LOCALE;
+  const guessed = localeFromAcceptLanguage(header);
+  return guessed && SERVED_LOCALES.includes(guessed) ? guessed : DEFAULT_LOCALE;
 });
 
 export const getStrings = cache(async (): Promise<Strings> => {

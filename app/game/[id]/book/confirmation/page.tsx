@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import { ToastFromQuery } from "@/components/ToastFromQuery";
 import Link from "next/link";
 import { requireCurrentPlayer } from "@/lib/auth/session";
@@ -238,33 +239,35 @@ export default async function ConfirmationPage({
               removed on the one screen whose job is to teach that a game is
               one credit.
             */}
-            <div data-testid="not-enough-credits" className="mt-5 rounded-card bg-surface p-5">
-              <p className="m-0 text-body-lg font-semibold text-bone">
-                {t.booking.notEnoughCreditsTitle}
-              </p>
-              <p className="mt-2 mb-0 text-body leading-relaxed text-muted">
-                {t.booking.notEnoughCreditsBody.replace(
-                  "{percent}",
-                  String(bestDiscountPercent(tiers)),
-                )}
-              </p>
-
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                <Link
-                  href="/pass"
-                  data-testid="get-credits"
-                  className="inline-flex min-h-11 items-center justify-center rounded-control bg-volt px-5 text-body-lg font-bold text-ink no-underline transition-colors hover:bg-volt-dim"
-                >
-                  {t.booking.getCredits}
-                </Link>
-                {/*
-                  ~~"Pay by QR for this game", the secondary route beside the
-                  offer.~~ REMOVED (round 13, item 6). There is no QR to jump
-                  to any more, and an anchor to a section that no longer
-                  renders is a link with nowhere to go.
-                */}
+            {PASSES_ENABLED && (
+              <div data-testid="not-enough-credits" className="mt-5 rounded-card bg-surface p-5">
+                <p className="m-0 text-body-lg font-semibold text-bone">
+                  {t.booking.notEnoughCreditsTitle}
+                </p>
+                <p className="mt-2 mb-0 text-body leading-relaxed text-muted">
+                  {t.booking.notEnoughCreditsBody.replace(
+                    "{percent}",
+                    String(bestDiscountPercent(tiers)),
+                  )}
+                </p>
+  
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <Link
+                    href="/pass"
+                    data-testid="get-credits"
+                    className="inline-flex min-h-11 items-center justify-center rounded-control bg-volt px-5 text-body-lg font-bold text-ink no-underline transition-colors hover:bg-volt-dim"
+                  >
+                    {t.booking.getCredits}
+                  </Link>
+                  {/*
+                    ~~"Pay by QR for this game", the secondary route beside the
+                    offer.~~ REMOVED (round 13, item 6). There is no QR to jump
+                    to any more, and an anchor to a section that no longer
+                    renders is a link with nowhere to go.
+                  */}
+                </div>
               </div>
-            </div>
+            )}
 
             {booking.payment_method === "cash" && (
               <p className="mt-4 rounded-card bg-surface p-4 text-[14px] leading-relaxed text-muted">

@@ -143,12 +143,11 @@ phone prefix and site name. No other location literal anywhere.
 9. **First data, through the admin panel:** Jachym's account made admin (one SQL line run by Jachym or by the agent
    on production, once), venues Swish Elite 50 (capacity 18) and Asoke (15), one volleyball game.
 10. **Banner:** every page shows a thin "Preview — test payments only" bar while `NEXT_PUBLIC_PREVIEW=1`.
-11. **Legal drafts:** replace HrajFotbal's Czech `/terms`, `/privacy` and `/cookies` with short Playco drafts
-    (Thailand, PDPA, seller = the owner of the Thai Stripe account, cancellation rule, no cash, wallet credit) in
-    `content/`, clearly marked DRAFT, for Jachym's approval.
+11. **Legal pages:** not touched by the agent. Jachym reviews the terms and privacy texts with his lawyer; until then
+    the inherited pages stay, and the preview bar stays on.
 
-Going from test to live payments (same day if Jachym wants): Jachym approves the legal drafts → removes the DRAFT
-mark → upgrades Vercel to Pro (the free plan's terms forbid commercial use) → pastes live Stripe keys and the live
+Going from test to live payments (after the company exists — Jachym's decision): the lawyer-reviewed legal texts
+are in place → Jachym upgrades Vercel to Pro (the free plan's terms forbid commercial use) → pastes live Stripe keys and the live
 webhook secret → sets `NEXT_PUBLIC_PREVIEW=0`. The agent registers the live webhook and checks one real booking.
 
 Done when: the Vercel address loads with the preview bar · sign-up and login work on a phone · an admin creates a
@@ -289,7 +288,11 @@ HrajFotbal's wallet counts credits as seats at one flat price (`credit_seat_pric
 
 1. A player has one balance per currency. A refunded cancellation returns what was paid for that seat, in that
    currency. Paying from the wallet spends up to the game's price; the rest is paid online in the same checkout.
-2. Restate booking, guest, cancel and admin-credit RPCs so none uses a flat seat price. Admin grants are amounts.
+2. Restate booking, guest, cancel and admin-credit RPCs so none uses a flat seat price.
+   **Also update the nine inherited SQL suites whose fixtures assume 180-baht seats** (left failing by Phase F's
+   250 price on purpose, listed in the Phase F pull request): `add_guests_after_booking`, `booking_cancel`,
+   `booking_create`, `booking_rpcs_b`, `credits_are_seats`, `credits_sixty_days`, `duration_pricing`, `game_pass`,
+   `pitch_costs`. Admin grants are amounts.
 3. **Keep the batch columns** (`batch_id`, `expires_at`) and the 60-day pass expiry: passes will come back later as a second kind of balance
    ("N games in city X, sport Y"). Hide `/pass` behind one flag; do not delete its tables or tests.
 4. Cancellation credit never expires: remove the 60-day expiry from wallet credit and its cron sweep. Keep the

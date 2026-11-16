@@ -1,5 +1,6 @@
 "use client";
 
+import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "@/components/Icon";
@@ -52,7 +53,7 @@ export function BottomTabBar() {
   const tabs: Tab[] = [
     // `/game/<id>` is the detail page — singular, and not a prefix of /games.
     { href: "/games", label: t.nav.games, icon: "balls", match: ["/games", "/game/"] },
-    { href: "/pass", label: t.nav.pass, icon: "ticket" },
+    ...(PASSES_ENABLED ? [{ href: "/pass", label: t.nav.pass, icon: "ticket" } as const] : []),
     { href: "/my-games", label: t.nav.myGames, icon: "list" },
     { href: "/account", label: t.nav.profileShort, icon: "user" },
   ];

@@ -21,20 +21,20 @@ import { resolveStrings } from "@/lib/i18n/resolve";
 
 describe("pragueDayKey", () => {
   it("returns an ISO-ordered key, so days sort lexicographically", () => {
-    expect(pragueDayKey("2026-08-03T17:30:00Z")).toBe("2026-08-03");
+    expect(pragueDayKey("2026-08-03T12:30:00Z")).toBe("2026-08-03");
   });
 
   it("uses the PRAGUE calendar day, not the UTC one", () => {
-    // 22:30 UTC on the 3rd is 00:30 on the 4th in Prague (CEST, UTC+2). The
+    // 22:30 UTC on the 3rd is 00:30 on the 4th in Bangkok (CEST, UTC+2). The
     // pitch's day is the product's day — a midnight kickabout belongs to the
     // date the players would name.
-    expect(pragueDayKey("2026-08-03T22:30:00Z")).toBe("2026-08-04");
+    expect(pragueDayKey("2026-08-03T17:30:00Z")).toBe("2026-08-04");
     // And the reverse near the start of the day.
-    expect(pragueDayKey("2026-08-03T00:30:00Z")).toBe("2026-08-03");
+    expect(pragueDayKey("2026-08-02T19:30:00Z")).toBe("2026-08-03");
   });
 
-  it("handles the winter offset too, where Prague is UTC+1", () => {
-    expect(pragueDayKey("2026-01-15T23:30:00Z")).toBe("2026-01-16");
+  it("handles the winter offset too, (inherited winter case; Bangkok is UTC+7 all year)", () => {
+    expect(pragueDayKey("2026-01-15T17:30:00Z")).toBe("2026-01-16");
   });
 
   it("refuses an unparseable instant rather than inventing a day", () => {
@@ -43,7 +43,7 @@ describe("pragueDayKey", () => {
 });
 
 describe("buildDayTabs", () => {
-  const now = "2026-08-03T09:00:00Z"; // Monday, 11:00 in Prague
+  const now = "2026-08-03T04:00:00Z"; // Monday, 11:00 in Bangkok
 
   /*
    * AMENDMENT A: a FIXED WEEK, today through today + 6, whether or not a day
@@ -61,12 +61,12 @@ describe("buildDayTabs", () => {
 
   it("keeps its width on a board with almost nothing on it", () => {
     // One game, still eight cells. This is the whole point of the amendment.
-    expect(buildDayTabs(["2026-08-05T17:00:00Z"], now)).toHaveLength(8);
+    expect(buildDayTabs(["2026-08-05T12:00:00Z"], now)).toHaveLength(8);
   });
 
   it("counts games per day, and zero is normal", () => {
     const tabs = buildDayTabs(
-      ["2026-08-03T17:00:00Z", "2026-08-03T19:00:00Z", "2026-08-05T17:00:00Z"],
+      ["2026-08-03T12:00:00Z", "2026-08-03T14:00:00Z", "2026-08-05T12:00:00Z"],
       now,
     );
     expect(tabs.map((tab) => tab.count)).toEqual([2, 0, 1, 0, 0, 0, 0, 0]);
@@ -107,16 +107,16 @@ describe("buildDayTabs", () => {
   });
 
   it("crosses a month boundary without repeating or skipping a date", () => {
-    const keys = buildDayTabs([], "2026-08-28T09:00:00Z").map((tab) => tab.key);
+    const keys = buildDayTabs([], "2026-08-28T04:00:00Z").map((tab) => tab.key);
     expect(new Set(keys).size).toBe(keys.length);
     expect(keys).toContain("2026-08-31");
     expect(keys).toContain("2026-09-01");
   });
 
   it("crosses the autumn DST change without repeating or skipping a date", () => {
-    // Prague falls back on 2026-10-25, a 25-hour day. A row built by adding
+    // (Inherited from Prague, which falls back; Bangkok has no DST and the case still holds.) Prague falls back on 2026-10-25, a 25-hour day. A row built by adding
     // 86,400,000ms to a local midnight lands twice on the 25th.
-    const keys = buildDayTabs([], "2026-10-22T09:00:00Z").map((tab) => tab.key);
+    const keys = buildDayTabs([], "2026-10-22T04:00:00Z").map((tab) => tab.key);
     expect(new Set(keys).size).toBe(keys.length);
     expect(keys).toContain("2026-10-24");
     expect(keys).toContain("2026-10-25");
@@ -124,8 +124,8 @@ describe("buildDayTabs", () => {
   });
 
   it("puts a late-evening game on the day the players would name it", () => {
-    // 22:30Z Monday is 00:30 Tuesday in Prague.
-    const tabs = buildDayTabs(["2026-08-03T22:30:00Z"], now);
+    // 22:30Z Monday is 00:30 Tuesday in Bangkok.
+    const tabs = buildDayTabs(["2026-08-03T17:30:00Z"], now);
     expect(tabs.find((tab) => tab.count > 0)!.key).toBe("2026-08-04");
   });
 
@@ -135,21 +135,21 @@ describe("buildDayTabs", () => {
    * being the eight-box strip returning under another name.
    */
   it("does not pretend to reach a game beyond the week", () => {
-    const tabs = buildDayTabs(["2026-09-20T17:00:00Z"], now);
+    const tabs = buildDayTabs(["2026-09-20T12:00:00Z"], now);
     expect(tabs).toHaveLength(8);
     expect(tabs.every((tab) => tab.count === 0)).toBe(true);
   });
 });
 
 describe("groupByDay", () => {
-  const now = "2026-08-03T09:00:00Z"; // Monday
+  const now = "2026-08-03T04:00:00Z"; // Monday
 
-  it("groups by Prague day, in kick-off order, with a heading per day", () => {
+  it("groups by Bangkok day, in kick-off order, with a heading per day", () => {
     const groups = groupByDay(
       [
-        { at: "2026-08-05T17:00:00Z" },
-        { at: "2026-08-03T17:00:00Z" },
-        { at: "2026-08-03T19:00:00Z" },
+        { at: "2026-08-05T12:00:00Z" },
+        { at: "2026-08-03T12:00:00Z" },
+        { at: "2026-08-03T14:00:00Z" },
       ],
       (item) => item.at,
       now,
@@ -165,7 +165,7 @@ describe("groupByDay", () => {
     // "Today" alone stops meaning anything once you have scrolled past it.
     // English is stated for the same reason as above — the default is Czech.
     const groups = groupByDay(
-      [{ at: "2026-08-03T17:00:00Z" }, { at: "2026-08-04T17:00:00Z" }],
+      [{ at: "2026-08-03T12:00:00Z" }, { at: "2026-08-04T12:00:00Z" }],
       (item) => item.at,
       now,
       strings,
@@ -180,7 +180,7 @@ describe("groupByDay", () => {
 
   it("puts a late-evening game under the day the players would name", () => {
     const groups = groupByDay(
-      [{ at: "2026-08-03T22:30:00Z" }],
+      [{ at: "2026-08-03T17:30:00Z" }],
       (item) => item.at,
       now,
       strings,
@@ -252,35 +252,35 @@ describe("resolveSelectedDay", () => {
 /**
  * HOW FAR AHEAD PLAYERS SEE GAMES (2026-11-02, the owner): eight days, today
  * included, so games can be scheduled further out and appear as their day
- * comes into range. Prague days, like everything else in this file.
+ * comes into range. Bangkok days, like everything else in this file.
  */
 describe("isWithinVisibleDays", () => {
-  // Monday 2 November 2026, 11:00 in Prague (CET, UTC+1).
-  const now = "2026-11-02T10:00:00Z";
+  // Monday 2 November 2026, 11:00 in Bangkok (CET, UTC+1).
+  const now = "2026-11-02T04:00:00Z";
 
   it("is eight days, today included", () => {
     expect(policy.schedule.visibleDays).toBe(8);
   });
 
   it("shows a game later today", () => {
-    expect(isWithinVisibleDays("2026-11-02T19:00:00Z", now)).toBe(true);
+    expect(isWithinVisibleDays("2026-11-02T13:00:00Z", now)).toBe(true);
   });
 
   it("shows a game late on the eighth day", () => {
-    // 23:30 on Monday 9 November in Prague.
-    expect(isWithinVisibleDays("2026-11-09T22:30:00Z", now)).toBe(true);
+    // 23:30 on Monday 9 November in Bangkok.
+    expect(isWithinVisibleDays("2026-11-09T16:30:00Z", now)).toBe(true);
   });
 
   it("hides a game on the ninth day, even while it is still the eighth in UTC", () => {
-    // 00:30 on Tuesday 10 November in Prague — 23:30 on the 9th in UTC.
-    expect(isWithinVisibleDays("2026-11-09T23:30:00Z", now)).toBe(false);
+    // 00:30 on Tuesday 10 November in Bangkok — 23:30 on the 9th in UTC.
+    expect(isWithinVisibleDays("2026-11-09T17:30:00Z", now)).toBe(false);
   });
 
-  it("counts today from Prague's date, not UTC's, just after midnight", () => {
-    // 00:30 Tuesday 3 November in Prague is still Monday in UTC; the eighth
+  it("counts today from Bangkok's date, not UTC's, just after midnight", () => {
+    // 00:30 Tuesday 3 November in Bangkok is still Monday in UTC; the eighth
     // day is then Tuesday 10 November.
-    const justAfterMidnight = "2026-11-02T23:30:00Z";
-    expect(isWithinVisibleDays("2026-11-10T20:00:00Z", justAfterMidnight)).toBe(true);
-    expect(isWithinVisibleDays("2026-11-11T08:00:00Z", justAfterMidnight)).toBe(false);
+    const justAfterMidnight = "2026-11-02T17:30:00Z";
+    expect(isWithinVisibleDays("2026-11-10T14:00:00Z", justAfterMidnight)).toBe(true);
+    expect(isWithinVisibleDays("2026-11-11T02:00:00Z", justAfterMidnight)).toBe(false);
   });
 });

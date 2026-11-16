@@ -11,7 +11,7 @@ import type { MetadataRoute } from "next";
  * it over.
  */
 
-const SITE_NAME = "Hraj Fotbal";
+const SITE_NAME = "Playco";
 
 /**
  * The home page's JSON-LD: a WebSite (the site name a result shows) and an
@@ -23,7 +23,7 @@ export function homeStructuredData(site: string) {
   return {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "WebSite", name: SITE_NAME, alternateName: "HrajFotbal", url },
+      { "@type": "WebSite", name: SITE_NAME, url },
       { "@type": "Organization", name: SITE_NAME, url, logo: `${site}/icons/icon-512.png` },
     ],
   };
@@ -51,7 +51,7 @@ export function robotsFor(site: string): MetadataRoute.Robots {
  * `/contact` and `/terms` are noindex (the owner kept them out of the
  * result's sub-links), so they are not listed either.
  */
-const PUBLIC_PATHS = ["/", "/games", "/pass", "/signup", "/privacy", "/cookies"];
+const PUBLIC_PATHS = ["/", "/games", "/signup", "/privacy", "/cookies"];
 
 export function sitemapFor(site: string): MetadataRoute.Sitemap {
   return PUBLIC_PATHS.map((path) => ({

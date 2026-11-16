@@ -29,4 +29,8 @@
  * and now calls the function. A price in four places is a price that will
  * disagree with itself.
  */
-export const PASS_REFERENCE_PRICE_THB = 180;
+/*
+ * PLAYCO, PHASE F: 250 — a standard Bangkok volleyball game. Moved with `public.credit_seat_price_thb()` in
+ * migration 20261116120000_playco_bangkok_defaults.sql. Phase 5 replaces flat seat prices with price rules.
+ */
+export const PASS_REFERENCE_PRICE_THB = 250;

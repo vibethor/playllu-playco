@@ -102,7 +102,11 @@ export const CHECKOUT_UI_MODE = "embedded_page";
  * `docs/REQUESTS.md` §6 for the owner's exact steps. Both halves, or a future
  * session created somewhere else re-inherits the defaults.
  */
-export const CHECKOUT_PAYMENT_METHOD_TYPES = ["card"] as const;
+/*
+ * PLAYCO: card and PromptPay (Thailand's QR transfer, THB only, confirmed in real time). PromptPay must also be
+ * switched on in the Thai Stripe account's dashboard (Settings → Payment methods).
+ */
+export const CHECKOUT_PAYMENT_METHOD_TYPES = ["card", "promptpay"] as const;
 
 /**
  * LINK IS OFF AS A WALLET, NOT ONLY AS A METHOD (round 36, item 1).

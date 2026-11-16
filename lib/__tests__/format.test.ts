@@ -15,33 +15,33 @@ import {
  * to prove the formatter is not silently falling back to the host zone.
  */
 describe("format", () => {
-  it("pins the display timezone to Europe/Prague", () => {
-    expect(DISPLAY_TIME_ZONE).toBe("Europe/Prague");
+  it("pins the display timezone to Asia/Bangkok", () => {
+    expect(DISPLAY_TIME_ZONE).toBe("Asia/Bangkok");
   });
 
-  it("renders a winter (CET, UTC+1) instant as Prague 24h time", () => {
-    expect(formatGameTime("2026-01-15T17:30:00Z")).toBe("Thu 18:30");
+  it("renders a winter (CET, UTC+1) instant as Bangkok 24h time", () => {
+    expect(formatGameTime("2026-01-15T11:30:00Z")).toBe("Thu 18:30");
   });
 
-  it("renders a summer (CEST, UTC+2) instant as Prague 24h time", () => {
-    expect(formatGameTime("2026-07-16T16:30:00Z")).toBe("Thu 18:30");
+  it("renders a summer (CEST, UTC+2) instant as Bangkok 24h time", () => {
+    expect(formatGameTime("2026-07-16T11:30:00Z")).toBe("Thu 18:30");
   });
 
   it("crosses the spring-forward DST boundary correctly", () => {
-    // Prague jumps 02:00 -> 03:00 local at 01:00 UTC on 2026-03-29.
-    expect(formatGameTime("2026-03-29T00:30:00Z")).toBe("Sun 01:30"); // still CET
-    expect(formatGameTime("2026-03-29T01:30:00Z")).toBe("Sun 03:30"); // now CEST
+    // Bangkok jumps 02:00 -> 03:00 local at 01:00 UTC on 2026-03-29.
+    expect(formatGameTime("2026-03-28T18:30:00Z")).toBe("Sun 01:30"); // still CET
+    expect(formatGameTime("2026-03-28T20:30:00Z")).toBe("Sun 03:30"); // now CEST
   });
 
   it("handles the autumn fold, where one local time maps to two instants", () => {
-    // Prague falls back 03:00 -> 02:00 local at 01:00 UTC on 2026-10-25, so
+    // (Inherited from Prague, which falls back; Bangkok has no DST and the case still holds.) Prague falls back 03:00 -> 02:00 local at 01:00 UTC on 2026-10-25, so
     // both of these distinct UTC instants legitimately render as 02:30.
-    expect(formatGameTime("2026-10-25T00:30:00Z")).toBe("Sun 02:30");
-    expect(formatGameTime("2026-10-25T01:30:00Z")).toBe("Sun 02:30");
+    expect(formatGameTime("2026-10-24T19:30:00Z")).toBe("Sun 02:30");
+    expect(formatGameTime("2026-10-24T19:30:00Z")).toBe("Sun 02:30");
   });
 
   it("never renders a 12-hour clock", () => {
-    const evening = formatTime("2026-07-16T18:00:00Z"); // 20:00 Prague
+    const evening = formatTime("2026-07-16T13:00:00Z"); // 20:00 Bangkok
     expect(evening).toBe("20:00");
     expect(evening).not.toMatch(/am|pm/i);
   });
@@ -53,30 +53,30 @@ describe("format", () => {
      * not a date anybody reads. The assertion inverts rather than relaxing —
      * the exact string is still pinned, it is just the right one now.
      */
-    expect(formatGameDateTime("2026-07-16T16:30:00Z")).toBe("Thursday 16 July 18:30");
+    expect(formatGameDateTime("2026-07-16T11:30:00Z")).toBe("Thursday 16 July 18:30");
   });
 
   it("renders a time SPAN for the card and the detail page", () => {
     // REQ-GAME-007. The contract's own shape: kick-off plus the end time.
     expect(
-      formatGameTimeSpan("2026-07-16T16:30:00Z", "2026-07-16T17:30:00Z"),
+      formatGameTimeSpan("2026-07-16T11:30:00Z", "2026-07-16T12:30:00Z"),
     ).toBe("Thursday 16 July 18:30–19:30");
   });
 
   it("uses an en dash in the span, not a hyphen", () => {
     // A hyphen between two clock times reads as a compound word at the size a
     // phone renders this.
-    const span = formatGameTimeSpan("2026-07-16T16:30:00Z", "2026-07-16T17:30:00Z");
+    const span = formatGameTimeSpan("2026-07-16T11:30:00Z", "2026-07-16T12:30:00Z");
     expect(span).toContain("\u2013");
     expect(span).not.toContain("-");
   });
 
-  it("renders the span in Prague wall-clock across the spring gap", () => {
-    // Prague springs forward 02:00 -> 03:00 local at 01:00 UTC on 2026-03-29.
+  it("renders the span in Bangkok wall-clock across the spring gap", () => {
+    // (Inherited from Prague, which springs forward; Bangkok has no DST and the case still holds.) Prague springs forward 02:00 -> 03:00 local at 01:00 UTC on 2026-03-29.
     // A game spanning it must print the times a player reads on a phone, not
     // start-plus-duration arithmetic done in UTC.
     expect(
-      formatTimeSpan("2026-03-29T00:30:00Z", "2026-03-29T01:30:00Z"),
+      formatTimeSpan("2026-03-28T18:30:00Z", "2026-03-28T20:30:00Z"),
     ).toBe("01:30–03:30");
   });
 

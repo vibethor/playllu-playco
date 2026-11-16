@@ -18,12 +18,12 @@ describe("the home page's structured data", () => {
 
     // Assert
     expect(graph).toContainEqual(
-      expect.objectContaining({ "@type": "WebSite", name: "Hraj Fotbal", url: `${SITE}/` }),
+      expect.objectContaining({ "@type": "WebSite", name: "Playco", url: `${SITE}/` }),
     );
     expect(graph).toContainEqual(
       expect.objectContaining({
         "@type": "Organization",
-        name: "Hraj Fotbal",
+        name: "Playco",
         url: `${SITE}/`,
         logo: `${SITE}/icons/icon-512.png`,
       }),
@@ -46,7 +46,9 @@ describe("the sitemap", () => {
   it("lists the public pages and none of the private ones", () => {
     const urls = sitemapFor(SITE).map((entry) => entry.url);
 
-    expect(urls).toEqual(expect.arrayContaining([`${SITE}/`, `${SITE}/games`, `${SITE}/pass`]));
+    expect(urls).toEqual(expect.arrayContaining([`${SITE}/`, `${SITE}/games`]));
+    // PLAYCO, PHASE F: no passes at launch, so /pass is not a public page.
+    expect(urls).not.toContain(`${SITE}/pass`);
     expect(urls.some((url) => /\/(admin|account|my-games|login|api)/.test(url))).toBe(false);
   });
 

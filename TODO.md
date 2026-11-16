@@ -6,11 +6,17 @@ Items 1 and 4 block today's preview (Phase F of `docs/EXECUTION_PLAN.md`). Nothi
 
 | # | What | Needed by | Notes |
 |---|---|---|---|
-| 1 | **Supabase:** rename the "Playco" org to "Playllu", upgrade it to Pro; the builder creates project `playco` (production, Singapore; no staging) — **blocks today** | Phase F (today) | 25 USD/month. One project serves every Asian city |
+| 1 | ~~Supabase: Playllu org on Pro~~ **done 16 Nov**; project `playco` (`ldjyayedrkwnozcdttdy`, Singapore) created | — | One project serves every Asian city |
 | 2 | ~~Thai Stripe account~~ **done 16 Nov** | — | Test keys go into Vercel (Jachym pastes). Still open: confirm with Stripe support that a foreign individual is accepted for live payments, and what happens when the company is registered |
 | 3 | Make the repositories private (`vibethor/playllu-playco`, `reneomuller/hrajfotbalek` is Oliver's) | **low priority** | Settings → General → Change visibility. Kept public for now by choice; no secret is ever committed |
 | 4 | **Vercel:** import this repo as project `playco` in your own account (free plan) | Phase F (today) | **Upgrade to Pro (one seat, 20 USD/month) before the first real payment**: the free plan's terms forbid commercial use and only run background jobs daily |
 | 5 | Domain | Phase 16 | One domain for every city |
+
+| 6 | **Register the company**; then Vercel Pro, live Stripe keys, live payments | before live payments | Proof of concept runs on test payments until then |
+
+| 7 | Make sure **support@playllu.com** and **privacy@playllu.com** reach you (the site now shows them) | before players use it | |
+| 8 | Playco's own **WhatsApp group / Instagram** links (the community panel is hidden until then) | when ready | |
+| 9 | **Email for real players:** Supabase's built-in email only reaches your project's team members and is rate-limited. Real sign-ups by email need a custom sender (e.g. Resend) on a domain you own; Google sign-in works without it | before players sign up by email | |
 
 ## Decisions
 
@@ -23,7 +29,7 @@ Items 1 and 4 block today's preview (Phase F of `docs/EXECUTION_PLAN.md`). Nothi
 
 | # | What | Needed by |
 |---|---|---|
-| 13 | Privacy notice (PDPA) and terms — agent drafts, you approve. The seller named must be the Stripe account owner | Phase 11 |
+| 13 | **Terms, privacy and cookies texts — reviewed with your lawyer** (the agent does not draft them). The seller named must be the Stripe account owner | before live payments |
 | 14 | A Thai speaker to review the translation | Phase 11 |
 | 15 | Prices, venues, venue costs, organisers, the Bangkok deal — entered in the admin panel | Phase 12 |
 | 16 | A written city-manager agreement (profit share, who owns the players, what needs your approval, how it ends) | before the second city |

@@ -47,8 +47,8 @@ export const COOKIES_VERSION_WITH_ANALYTICS = "2.1" as const;
  * `lib/strings.ts`: an address is the same string in every language.
  */
 export const OPERATOR_CONTACT = {
-  email: "support@hrajfotbal.com",
-  privacyEmail: "privacy@hrajfotbal.com",
+  email: "support@playllu.com",
+  privacyEmail: "privacy@playllu.com",
 } as const;
 
 /**

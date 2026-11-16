@@ -22,14 +22,25 @@ describe("priceForDurationThb", () => {
     expect(prices).toEqual(lengths.map(() => PASS_REFERENCE_PRICE_THB));
   });
 
-  it("is the standard game's 180 THB", () => {
+  it("is the standard Bangkok game's 250 THB", () => {
     // Arrange
-    const standardMinutes = 90;
+    const standardMinutes = 120;
 
     // Act
     const price = priceForDurationThb(standardMinutes);
 
     // Assert
-    expect(price).toBe(180);
+    expect(price).toBe(250);
+  });
+
+  it("prefills 300 THB for a game longer than two hours (the Sunday 3-hour game)", () => {
+    // Arrange
+    const sundayMinutes = 180;
+
+    // Act
+    const price = priceForDurationThb(sundayMinutes);
+
+    // Assert
+    expect(price).toBe(300);
   });
 });

@@ -25,7 +25,12 @@ import { PASS_REFERENCE_PRICE_THB } from "../pass/creditPrice.ts";
  * suggests the price", and so a future length-dependent price is an edit here
  * rather than a hunt for every caller.
  */
+/** PLAYCO, PHASE F: games longer than this prefill the long-game price (the 3-hour Sunday game). */
+export const LONG_GAME_THRESHOLD_MINUTES = 120;
+/** PLAYCO, PHASE F: what a long game prefills. Beach games are also 300; the organiser types it. */
+export const LONG_GAME_PRICE_THB = 300;
+
 export function priceForDurationThb(minutes: number | null | undefined): number {
-  void minutes;
+  if (minutes != null && minutes > LONG_GAME_THRESHOLD_MINUTES) return LONG_GAME_PRICE_THB;
   return PASS_REFERENCE_PRICE_THB;
 }

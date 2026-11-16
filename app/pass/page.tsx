@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import { PassTierCard } from "@/components/pass/PassTierCard";
 import { getSessionUser } from "@/lib/auth/session";
 import { listPassTiers } from "@/lib/pass/queries";
@@ -31,6 +33,7 @@ export const dynamic = "force-dynamic";
  * needs a session, and it says so.
  */
 export default async function PassPage() {
+  if (!PASSES_ENABLED) notFound();
   const t = await getStrings();
   const [tiers, user] = await Promise.all([listPassTiers(), getSessionUser()]);
 

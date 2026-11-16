@@ -38,7 +38,7 @@ export default function GlobalError({
       >
         <div data-testid="global-error" style={{ maxWidth: "420px" }}>
           <h1 style={{ fontSize: "24px", margin: 0, textTransform: "uppercase" }}>
-            Hraj Fotbal is having a moment
+            Playco is having a moment
           </h1>
           <p style={{ fontSize: "15px", lineHeight: 1.5, color: "#B8B8B8" }}>
             Something broke before the page could load. Reloading usually fixes

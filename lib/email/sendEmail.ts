@@ -24,7 +24,7 @@ export type EmailAttachment =
   | { filename: string; path: string; contentType: string };
 
 /** Used when `EMAIL_FROM` is unset. */
-export const DEFAULT_FROM = `Hraj Fotbal <${OPERATOR_CONTACT.email}>`;
+export const DEFAULT_FROM = `Playco <${OPERATOR_CONTACT.email}>`;
 
 export interface EmailPayload {
   to: string;
