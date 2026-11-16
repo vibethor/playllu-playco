@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BookingList } from "@/components/BookingList";
 import { formatGameDateTime } from "@/lib/format";
-import { getStrings } from "@/lib/i18n/server";
+import { getLocale, getStrings } from "@/lib/i18n/server";
 import type { PlayerHistory as History } from "@/lib/booking/history";
 import type { WaitlistedGame } from "@/lib/booking/queries";
 
@@ -26,6 +26,7 @@ export async function PlayerHistory({
   waitlisted?: WaitlistedGame[];
 }) {
   const t = await getStrings();
+  const locale = await getLocale();
 
   return (
     <>
@@ -91,7 +92,7 @@ export async function PlayerHistory({
                     </span>
                   </span>
                   <span className="text-xs text-bone/50">
-                    {formatGameDateTime(game.starts_at)}
+                    {formatGameDateTime(game.starts_at, locale)}
                   </span>
                 </Link>
               </li>
@@ -120,7 +121,7 @@ export async function PlayerHistory({
                   {game.venue}
                 </span>
                 <span className="text-xs text-bone/50">
-                  {formatGameDateTime(game.starts_at)}
+                  {formatGameDateTime(game.starts_at, locale)}
                 </span>
               </li>
             ))}

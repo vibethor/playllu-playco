@@ -71,7 +71,7 @@
   /* Thai needs more line height than Latin so tone marks and upper vowels never touch the line above. */
   :lang(th) body { line-height: 1.7; }
   /* Thai stacks vowel and tone marks on its consonants; tracking pulls them apart. The logo is Latin and keeps it. */
-  :lang(th) [class*="tracking-"]:not(.font-logo) { letter-spacing: normal; }
+  :lang(th) :is([class*="tracking-"], .text-eyebrow, .field-label):not(.font-logo) { letter-spacing: normal; }
 
   *,
   *::before,

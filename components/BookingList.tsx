@@ -6,7 +6,7 @@ import type { BookingWithGame } from "@/lib/booking/queries";
 import { refundCutoffHours } from "@/lib/policy/refundCutoff";
 import { formatThb, formatGameDateTime } from "@/lib/format";
 import { shouldRenderQr } from "@/lib/payments/spd";
-import { getStrings } from "@/lib/i18n/server";
+import { getLocale, getStrings } from "@/lib/i18n/server";
 
 export interface BookingListProps {
   rows: BookingWithGame[];
@@ -27,6 +27,7 @@ export async function BookingList({ rows }: BookingListProps) {
   const cutoffHours = await refundCutoffHours();
 
   const t = await getStrings();
+  const locale = await getLocale();
   if (rows.length === 0) {
     return (
       <EmptyState
@@ -71,7 +72,7 @@ export async function BookingList({ rows }: BookingListProps) {
 
             <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
               <span className="text-[12px] tracking-[1px] text-accent">
-                {formatGameDateTime(game.starts_at)}
+                {formatGameDateTime(game.starts_at, locale)}
               </span>
               {/*
                 ~~`Credit applied −150 THB`~~ REMOVED (round 13, item 9).

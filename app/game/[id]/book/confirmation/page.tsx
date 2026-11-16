@@ -173,7 +173,7 @@ export default async function ConfirmationPage({
         </h1>
 
         <div className="mt-3 text-[13px] tracking-[1px] text-accent">
-          {formatGameDateTime(game.starts_at)}
+          {formatGameDateTime(game.starts_at, locale)}
         </div>
 
         {/* Instant-confirmed outcomes: nothing to pay, so no payment block. */}

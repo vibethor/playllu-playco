@@ -114,7 +114,7 @@ export default async function BookPage({ params, searchParams }: BookPageProps) 
 
       <div className="mt-3 flex flex-wrap items-baseline gap-x-5 gap-y-2">
         <span className="text-[13px] tracking-[1px] text-accent">
-          {formatGameDateTime(game.starts_at)}
+          {formatGameDateTime(game.starts_at, await getLocale())}
         </span>
         <span className="text-[13px] text-muted">
           {formatThb(game.price_thb)}
