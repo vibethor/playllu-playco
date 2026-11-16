@@ -102,7 +102,7 @@ export async function PassTierCard({
         a filled volt pill here would outrank the per-game price, and the
         hierarchy this card exists to fix is exactly that — one loud thing.
 
-        `lifted` FOR THE FILL, `border-volt` OVER IT. The tag straddles the
+        `lifted` FOR THE FILL, `border-accent` OVER IT. The tag straddles the
         card's top edge, so its fill has to be the card's fill or the half
         sitting on the card reads as a darker notch cut out of it — which is
         what `bg-surface` became the moment item 2 lifted the card to
@@ -112,7 +112,7 @@ export async function PassTierCard({
       {mostPopular && (
         <span
           data-testid="pass-tier-popular"
-          className="lifted absolute -top-2 right-4 rounded-pill border-volt px-3 py-1 text-small font-semibold text-volt"
+          className="lifted absolute -top-2 right-4 rounded-pill border-accent px-3 py-1 text-small font-semibold text-accent"
         >
           {t.pass.tierMostPopular}
         </span>
@@ -124,7 +124,7 @@ export async function PassTierCard({
           differs between tiers and the one a reader is comparing. */}
       <p
         data-testid="pass-tier-per-game"
-        className="mt-2 mb-0 font-display text-[34px] leading-none text-volt"
+        className="mt-2 mb-0 font-display text-[34px] leading-none text-accent"
       >
         {t.pass.tierPerGame.replace("{amount}", formatThb(tier.perGameThb))}
       </p>

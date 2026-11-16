@@ -58,7 +58,7 @@ export function PhoneField({
       <div
         data-testid="phone-country"
         data-country={selected?.code ?? ""}
-        className="relative flex shrink-0 items-center gap-2 rounded-control border border-hairline-strong bg-surface pl-3 pr-8 text-base text-bone transition-colors focus-within:border-volt"
+        className="relative flex shrink-0 items-center gap-2 rounded-control border border-hairline-strong bg-surface pl-3 pr-8 text-base text-bone transition-colors focus-within:border-accent"
       >
         <CountryFlag code={selected?.code} size="profile" />
         <span data-testid="phone-dial" className="tabular-nums">

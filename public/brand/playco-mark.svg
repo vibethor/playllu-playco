@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Playco mark: two court corners and the ball. Midnight Navy #102C40, Electric Lime #DBFF00, Cloud White #F7FAFC. -->
+  <rect width="512" height="512" rx="112" fill="#102C40"/>
+  <path d="M120 232V120h112M392 280v112H280" fill="none" stroke="#DBFF00" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="256" cy="256" r="42" fill="#F7FAFC"/>
+</svg>

@@ -1,6 +1,6 @@
 import type { EmailAttachment } from "@/lib/email/sendEmail";
 import type { Locale } from "@/lib/i18n/locales";
-import tailwindConfig from "@/tailwind.config";
+import { BRAND, DARK } from "@/lib/brand/palette";
 
 /**
  * Shared email shell and the escaping primitive every template is built on.
@@ -87,21 +87,20 @@ export function textBody(lines: (string | null | undefined | false)[]): string {
  * ToS, that's enough"). The terms PDF still travels with every purchase.
  * ------------------------------------------------------------------------- */
 
-const theme = (tailwindConfig.theme?.extend?.colors ?? {}) as Record<string, string>;
 
 const C = {
-  ink: theme.ink ?? "#080808",
-  card: theme.surface ?? "#0F0F0F",
-  line: theme["surface-seg"] ?? "#242424",
-  bone: theme.bone ?? "#E9E7E0",
-  muted: theme.muted ?? "#9A9A9A",
-  faint: theme.faint ?? "#7E7E7E",
-  volt: theme.volt ?? "#C8FF00",
+  ink: BRAND.navy,
+  card: DARK.surface,
+  line: DARK.line,
+  bone: BRAND.cloud,
+  muted: DARK.muted,
+  faint: DARK.faint,
+  volt: BRAND.lime,
   white: "#FFFFFF",
 } as const;
 
-const BODY_FONT = "Onest,'Helvetica Neue',Helvetica,Arial,sans-serif";
-const DISPLAY_FONT = "Anton,'Arial Narrow','Helvetica Neue',Arial,sans-serif";
+const BODY_FONT = "'IBM Plex Sans Thai','Helvetica Neue',Helvetica,Arial,sans-serif";
+const DISPLAY_FONT = "Archivo,'Helvetica Neue',Arial,sans-serif";
 
 export interface EmailRow {
   label: string;
@@ -195,7 +194,7 @@ function receiptBlock(receipt: EmailReceipt): SafeHtml {
 
 /** The whole email, HTML and text, from its parts. */
 export function renderEmail(parts: EmailParts): RenderedEmail {
-  const badge = `${parts.baseUrl}/brand/hf-logo-96.png`;
+  const badge = `${parts.baseUrl}/brand/playco-mark-96.png`;
 
   const header = html`<tr><td class="px" style="padding:0 28px 22px"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="vertical-align:middle"><img src="${badge}" width="36" height="36" alt="Hraj Fotbal" style="display:block;border:0;border-radius:18px"></td><td style="vertical-align:middle;padding-left:10px;font-family:${BODY_FONT};font-size:13px;letter-spacing:3px;text-transform:uppercase;color:${C.bone}">Hraj <span style="color:${C.volt}">Fotbal</span></td></tr></table></td></tr>`;
 

@@ -86,8 +86,8 @@ export function AdminNav() {
             */
             className={`shrink-0 whitespace-nowrap rounded-pill border px-3 py-[6px] text-small font-semibold no-underline transition-colors ${
               current
-                ? "border-volt text-volt"
-                : "border-hairline-strong text-muted hover:border-volt hover:text-volt"
+                ? "border-accent text-accent"
+                : "border-hairline-strong text-muted hover:border-accent hover:text-accent"
             }`}
           >
             {link.label}

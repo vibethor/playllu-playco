@@ -46,7 +46,7 @@ export function WaitlistStatus({
 
   const skin = {
     waiting: "border-hairline-strong",
-    open: "border-hairline-volt bg-volt/[.06]",
+    open: "border-hairline-accent bg-volt/[.06]",
     absent: "border-hairline",
   }[tone];
 
@@ -59,7 +59,7 @@ export function WaitlistStatus({
       <h2
         data-testid="waitlist-status-title"
         className={`m-0 text-body-lg font-semibold ${
-          tone === "open" ? "text-volt" : "text-bone"
+          tone === "open" ? "text-accent" : "text-bone"
         }`}
       >
         {title}
@@ -96,7 +96,7 @@ export function WaitlistStatus({
           className={`mt-4 inline-flex min-h-11 items-center justify-center rounded-control px-5 text-body-lg font-bold no-underline transition-colors ${
             tone === "open"
               ? "bg-volt text-ink hover:bg-volt-dim"
-              : "border border-hairline-strong text-bone hover:border-hairline-volt"
+              : "border border-hairline-strong text-bone hover:border-hairline-accent"
           }`}
         >
           {action.label}

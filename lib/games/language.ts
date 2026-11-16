@@ -19,11 +19,17 @@
  * the backfill agree — there is no state where a pre-migration page and a
  * post-migration page disagree about an old game.
  */
-export const GAME_LANGUAGES = ["en-cs", "uk-ru"] as const;
+export const GAME_LANGUAGES = ["en-th", "en", "th", "en-cs", "uk-ru"] as const;
+
+/**
+ * PLAYCO: what the admin form offers (migration 20261117100000). The two HrajFotbal codes stay in `GAME_LANGUAGES`
+ * so an old row still renders, but nobody can pick them.
+ */
+export const SELECTABLE_GAME_LANGUAGES = ["en-th", "en", "th"] as const;
 
 export type GameLanguage = (typeof GAME_LANGUAGES)[number];
 
-export const DEFAULT_GAME_LANGUAGE: GameLanguage = "en-cs";
+export const DEFAULT_GAME_LANGUAGE: GameLanguage = "en-th";
 
 export function isGameLanguage(value: unknown): value is GameLanguage {
   return typeof value === "string" && (GAME_LANGUAGES as readonly string[]).includes(value);

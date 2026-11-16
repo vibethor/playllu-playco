@@ -49,7 +49,7 @@ export function RosterRow({
         <div className="min-w-0">
           <div className="flex min-w-0 flex-wrap items-baseline gap-x-2">
             {/* Player-supplied free text; JSX escapes it. */}
-            <span className="truncate text-body font-bold text-white">{booking.nickname}</span>
+            <span className="truncate text-body font-bold text-bone">{booking.nickname}</span>
             {/*
               THE PARTY IS PART OF THE NAME (round 11), not a row of its own. A
               party is ONE booking: one payment, one cancellation.
@@ -58,7 +58,7 @@ export function RosterRow({
               <span
                 data-testid="roster-party"
                 data-guests={booking.guestCount}
-                className="text-[12px] font-semibold text-volt-dim"
+                className="text-[12px] font-semibold text-accent-dim"
               >
                 {strings.admin.rosterParty.replace("{n}", String(booking.guestCount))}
               </span>

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import { AvatarRow } from "@/components/game/AvatarRow";
 import { CapacityBar } from "@/components/game/CapacityBar";
 import { CardBadges } from "@/components/game/CardBadges";
@@ -15,7 +16,7 @@ import type { RosterAvatar } from "@/lib/games/queries";
 import type { Database } from "@/lib/types/database";
 
 /** The single fallback, when a venue has no photograph of its own (R6). */
-const DEFAULT_PITCH = "/pitch-default.jpg";
+const DEFAULT_PITCH = "/venue-default.jpg"; // PLAYCO: sport-neutral navy fallback (rebrand)
 
 type GameRowData = Database["public"]["Tables"]["games"]["Row"];
 
@@ -287,7 +288,7 @@ export async function GameCard({
         */}
         <span
           data-testid="card-scrim"
-          className="absolute inset-0 bg-gradient-to-b from-ink/[.15] via-ink/[.45] via-50% to-ink to-70%"
+          className="absolute inset-0 bg-gradient-to-b from-ink/30 via-ink/60 via-45% to-page to-[78%]"
         />
         {/*
           TEXT PROTECTION, LOCAL TO THE TITLE LINE.
@@ -339,13 +340,14 @@ export async function GameCard({
         the darkest band and the middle of the card carried nothing.
       */}
       <span className="relative flex items-start justify-between gap-2">
-        <span data-testid="card-venue" className="min-w-0 flex-1 truncate text-body-lg font-bold leading-tight text-white">
+        <span data-testid="card-venue" className="line-clamp-2 min-w-0 flex-1 break-words pt-1 font-display text-[18px] font-bold leading-snug text-bone">
           {venueDisplayName(game.venue, pitchName)}
         </span>
         <CardBadges
           format={game.format}
           surface={game.surface}
           language={gameLanguageOf(game.language)}
+          layout="card"
         />
       </span>
 
@@ -372,8 +374,9 @@ export async function GameCard({
             taken from `.lifted` simply because this element states its own
             stroke; that part of the change stands on its own.
           */
-          className="min-w-0 shrink-0 truncate rounded-pill border-2 border-volt bg-surface-raised px-3 py-[6px] text-body-lg font-bold text-bone"
+          className="inline-flex min-w-0 shrink-0 items-center gap-2 rounded-pill border-[1.5px] border-bone/90 py-[5px] pl-3 pr-4 font-display text-[24px] font-bold leading-tight tabular-nums text-bone"
         >
+          <Icon name="clock" className="h-[18px] w-[18px] text-accent" />
           {formatTime(game.starts_at)}
         </span>
 
@@ -416,7 +419,7 @@ export async function GameCard({
       <span className="relative mt-2 flex items-center justify-between gap-3">
         {/* Absent at zero (§2.1) — a ring drawn around nobody is a question. */}
         {roster.length > 0 ? (
-          <AvatarRow players={roster} max={3} size="card" supabaseUrl={supabaseUrl} />
+          <AvatarRow players={roster} max={4} size="card" supabaseUrl={supabaseUrl} />
         ) : (
           <span />
         )}
@@ -441,9 +444,10 @@ export async function GameCard({
           <span
             aria-hidden
             data-testid="card-join-cue"
-            className="shrink-0 rounded-pill bg-volt px-4 py-1 text-body font-bold text-ink"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-pill bg-volt px-[18px] py-2 text-body font-bold text-ink"
           >
-            {t.games.cardJoinCue} →
+            {t.games.cardJoinCue}
+            <Icon name="arrowRight" className="h-4 w-4" />
           </span>
         )}
       </span>
@@ -463,7 +467,7 @@ export async function GameCard({
         data-testid="game-row"
         data-game-id={game.id}
         data-past="true"
-        className="game-box relative isolate block overflow-hidden rounded-card px-4 py-3 opacity-45"
+        className="theme-dark relative isolate block overflow-hidden rounded-card bg-ink p-[14px] opacity-45"
       >
         {body}
       </div>
@@ -476,7 +480,7 @@ export async function GameCard({
       data-testid="game-row"
       data-game-id={game.id}
       data-past="false"
-      className="game-box pressable relative isolate block overflow-hidden rounded-card px-4 py-3 no-underline"
+      className="theme-dark pressable relative isolate block overflow-hidden rounded-card bg-ink p-[14px] no-underline shadow-card"
     >
       {body}
     </Link>

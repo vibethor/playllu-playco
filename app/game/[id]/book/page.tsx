@@ -61,7 +61,7 @@ export default async function BookPage({ params, searchParams }: BookPageProps) 
         </p>
         <Link
           href="/games"
-          className="mt-6 inline-block text-[11px] uppercase tracking-eyebrow text-volt no-underline"
+          className="mt-6 inline-block text-[11px] uppercase tracking-eyebrow text-accent no-underline"
         >
           {t.games.backToGames}
         </Link>
@@ -108,12 +108,12 @@ export default async function BookPage({ params, searchParams }: BookPageProps) 
         {t.booking.backToGame}
       </Link>
 
-      <h1 className="mt-4 font-display text-section-title uppercase tracking-wide text-white">
+      <h1 className="mt-4 font-display text-section-title uppercase tracking-wide text-bone">
         {game.venue}
       </h1>
 
       <div className="mt-3 flex flex-wrap items-baseline gap-x-5 gap-y-2">
-        <span className="text-[13px] tracking-[1px] text-volt">
+        <span className="text-[13px] tracking-[1px] text-accent">
           {formatGameDateTime(game.starts_at)}
         </span>
         <span className="text-[13px] text-muted">

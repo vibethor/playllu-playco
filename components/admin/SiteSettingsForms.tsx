@@ -107,7 +107,7 @@ function NumberForm({
           type="number"
           inputMode="numeric"
           min={0}
-          className="field w-0 min-w-0 flex-1 font-display text-[22px] leading-none tabular-nums text-volt"
+          className="field w-0 min-w-0 flex-1 font-display text-[22px] leading-none tabular-nums text-accent"
           data-testid={`${testId}-input`}
           value={value}
           onChange={(event) => setValue(event.target.value)}
@@ -165,7 +165,7 @@ function PlayerOfMonthForm({
 function Result({ state, testId }: { state: SiteSettingState; testId: string }) {
   if (state.status === "saved") {
     return (
-      <p data-testid={testId} className="m-0 mt-2 text-small text-volt">
+      <p data-testid={testId} className="m-0 mt-2 text-small text-accent">
         {strings.admin.saved}
       </p>
     );

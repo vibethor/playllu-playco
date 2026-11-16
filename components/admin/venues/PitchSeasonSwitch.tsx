@@ -52,7 +52,7 @@ export function PitchSeasonSwitch({
       </form>
 
       {state.status === "saved" && state.season === current && (
-        <p role="status" data-testid="pitch-season-saved" className="mb-0 mt-3 text-small text-volt">
+        <p role="status" data-testid="pitch-season-saved" className="mb-0 mt-3 text-small text-accent">
           {copy.seasonSaved[current]}
         </p>
       )}
@@ -88,7 +88,7 @@ function Segments({ current }: { current: PitchSeason }) {
             data-testid={`pitch-season-${season}`}
             className={`min-h-11 min-w-[104px] rounded-pill border px-5 text-small font-semibold transition-colors disabled:cursor-wait ${
               chosen
-                ? "border-volt text-volt"
+                ? "border-accent text-accent"
                 : "border-transparent text-muted hover:text-bone active:text-bone"
             }`}
           >

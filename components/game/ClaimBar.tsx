@@ -169,7 +169,7 @@ export async function ClaimBar({
       // The player's own state replaces the price: what this game costs stopped
       // being the question the moment they paid it.
       left = (
-        <span data-testid="claim-bar-paid" className="shrink-0 text-body-lg font-bold text-volt">
+        <span data-testid="claim-bar-paid" className="shrink-0 text-body-lg font-bold text-accent">
           {t.booking.barPaid}
         </span>
       );

@@ -56,7 +56,7 @@ export default async function MyGamesPage({
 
   return (
     <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
-      <h1 className="m-0 font-display text-section-title uppercase tracking-wide text-white">
+      <h1 className="m-0 font-display text-section-title uppercase tracking-wide text-bone">
         {t.account.myGamesTitle}
       </h1>
 
@@ -78,7 +78,7 @@ export default async function MyGamesPage({
           <Link
             href="/games"
             data-testid="my-games-empty-cta"
-            className="mt-4 inline-block rounded-control bg-volt px-5 py-3 text-[15px] font-extrabold uppercase tracking-wide text-surface no-underline"
+            className="mt-4 inline-block rounded-control bg-volt px-5 py-3 text-[15px] font-extrabold uppercase tracking-wide text-ink no-underline"
           >
             {t.account.myGamesEmptyCta}
           </Link>

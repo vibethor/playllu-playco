@@ -68,7 +68,7 @@ export function MoneyPanel({
     >
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-small text-muted">{hub.revenue}</span>
-        <span data-testid="game-revenue" className="font-display text-[28px] leading-none tabular-nums text-white">
+        <span data-testid="game-revenue" className="font-display text-[28px] leading-none tabular-nums text-bone">
           {formatThb(economics.revenueThb)}
         </span>
       </div>
@@ -96,7 +96,7 @@ export function MoneyPanel({
               data-testid="pitch-cost-source"
               data-set-by-hand={pitch.setByHand ? "true" : "false"}
               className={`ml-2 rounded-pill border px-2 py-[1px] text-[10px] uppercase tracking-eyebrow ${
-                pitch.setByHand ? "border-hairline-volt text-volt" : "border-hairline text-faint"
+                pitch.setByHand ? "border-hairline-accent text-accent" : "border-hairline text-faint"
               }`}
             >
               {pitch.setByHand ? hub.pitchCostByHand : hub.pitchCostFromVenue}
@@ -109,7 +109,7 @@ export function MoneyPanel({
 
         {economics.profitThb !== null && (
           <>
-            <dt className="border-t border-hairline pt-2 font-semibold text-white">{hub.profit}</dt>
+            <dt className="border-t border-hairline pt-2 font-semibold text-bone">{hub.profit}</dt>
             <dd className="m-0 border-t border-hairline pt-2 text-right text-body font-bold">
               <SignedThb amount={economics.profitThb} testId="game-profit" />
             </dd>

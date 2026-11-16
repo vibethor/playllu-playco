@@ -215,10 +215,10 @@ export default async function AccountPage({
               // `/admin`, not `/admin/games` (round 14, item 8).
               href="/admin"
               data-testid="account-admin-link"
-              className="mt-8 flex min-h-11 items-center justify-between gap-3 rounded-control border border-hairline-strong px-4 text-body-lg font-semibold text-bone no-underline transition-colors hover:border-hairline-volt"
+              className="mt-8 flex min-h-11 items-center justify-between gap-3 rounded-control border border-hairline-strong px-4 text-body-lg font-semibold text-bone no-underline transition-colors hover:border-hairline-accent"
             >
               {t.nav.admin}
-              <span aria-hidden className="text-volt">→</span>
+              <span aria-hidden className="text-accent">→</span>
             </Link>
           )}
 
@@ -240,7 +240,7 @@ export default async function AccountPage({
               <Link
                 href="/pass"
                 data-testid="topup-cta"
-                className="rounded-control border border-hairline-volt px-4 py-2 text-[13px] font-bold uppercase tracking-wide text-volt no-underline transition hover:bg-volt/10"
+                className="rounded-control border border-hairline-accent px-4 py-2 text-[13px] font-bold uppercase tracking-wide text-accent no-underline transition hover:bg-volt/10"
               >
                 {t.account.topupCta}
               </Link>
@@ -315,7 +315,7 @@ export default async function AccountPage({
             tab — the wallet and the accomplishments — both announce
             themselves; this is the one that stopped doing so when it moved.
           */}
-          <h2 className="mt-12 mb-0 text-[17px] font-bold uppercase tracking-wide text-white">
+          <h2 className="mt-12 mb-0 text-[17px] font-bold uppercase tracking-wide text-bone">
             {t.profile.detailsTitle}
           </h2>
 
@@ -338,7 +338,7 @@ export default async function AccountPage({
             account actions — a setting about you, not an action on the
             account. Its own heading, for the reason the details block got one.
           */}
-          <h2 className="mt-12 mb-0 text-[17px] font-bold uppercase tracking-wide text-white">
+          <h2 className="mt-12 mb-0 text-[17px] font-bold uppercase tracking-wide text-bone">
             {t.profile.emailPrefsTitle}
           </h2>
           <div className="mt-4">
@@ -404,7 +404,7 @@ export default async function AccountPage({
               <button
                 type="submit"
                 data-testid="sign-out"
-                className="rounded-control border border-hairline-strong px-[14px] py-2 text-[13px] font-bold uppercase tracking-wide text-bone transition hover:border-volt hover:text-volt"
+                className="rounded-control border border-hairline-strong px-[14px] py-2 text-[13px] font-bold uppercase tracking-wide text-bone transition hover:border-accent hover:text-accent"
               >
                 {t.auth.signOut}
               </button>
@@ -451,7 +451,7 @@ export default async function AccountPage({
               <Link
                 href="/games"
                 data-testid="my-games-empty-cta"
-                className="mt-4 inline-block rounded-control bg-volt px-5 py-3 text-[15px] font-extrabold uppercase tracking-wide text-surface no-underline"
+                className="mt-4 inline-block rounded-control bg-volt px-5 py-3 text-[15px] font-extrabold uppercase tracking-wide text-ink no-underline"
               >
                 {t.account.myGamesEmptyCta}
               </Link>

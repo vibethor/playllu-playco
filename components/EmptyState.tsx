@@ -45,7 +45,7 @@ export function EmptyState({
   return (
     <div className="rounded-card bg-surface px-6 py-10 text-center">
       {/* The mark, quiet. Volt at this size reads as a wink, not an error. */}
-      <p className="m-0 text-[34px] font-extrabold italic leading-none tracking-[-1px] text-volt-dim opacity-40">
+      <p className="m-0 text-[34px] font-extrabold italic leading-none tracking-[-1px] text-accent-dim opacity-40">
         {strings.brand.monogramLead}
         {strings.brand.monogramAccent}
       </p>

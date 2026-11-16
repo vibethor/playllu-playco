@@ -16,7 +16,7 @@ export function SignedThb({
   testId?: string;
 }) {
   const rounded = Math.round(amount);
-  const tone = rounded > 0 ? "text-volt" : rounded < 0 ? "text-danger" : "text-muted";
+  const tone = rounded > 0 ? "text-accent" : rounded < 0 ? "text-danger" : "text-muted";
   const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "";
   return (
     <span data-testid={testId} data-amount={rounded} className={`tabular-nums ${tone} ${className}`}>

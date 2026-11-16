@@ -18,12 +18,12 @@ export function DashboardTile({ tile }: { tile: Tile }) {
     <Link
       href={tile.href}
       data-testid={tile.testId}
-      className="lifted flex min-w-0 flex-col rounded-card p-4 no-underline transition-colors hover:border-hairline-volt active:border-hairline-volt"
+      className="lifted flex min-w-0 flex-col rounded-card p-4 no-underline transition-colors hover:border-hairline-accent active:border-hairline-accent"
     >
-      <div className="text-[10px] font-semibold uppercase tracking-[1.5px] text-volt/80">
+      <div className="text-[10px] font-semibold uppercase tracking-[1.5px] text-accent/80">
         {tile.label}
       </div>
-      <div className="mt-3 whitespace-nowrap font-display text-[32px] leading-none tabular-nums text-volt">
+      <div className="mt-3 whitespace-nowrap font-display text-[32px] leading-none tabular-nums text-accent">
         {tile.value}
         {tile.unit && <span className="ml-1 text-[15px] tracking-wide">{tile.unit}</span>}
       </div>

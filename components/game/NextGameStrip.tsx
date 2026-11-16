@@ -72,7 +72,7 @@ export async function NextGameStrip({
         same reason: this is a titled list of the reader's own games, and there
         it is `text-[17px] font-bold uppercase`.
       */}
-      <h2 className="m-0 mb-2 text-[17px] font-bold uppercase tracking-wide text-white">
+      <h2 className="m-0 mb-2 text-[17px] font-bold uppercase tracking-wide text-bone">
         {t.games.nextGameStrip}
       </h2>
 
@@ -104,7 +104,7 @@ export async function NextGameStrip({
         data-testid="next-game-row"
         className="game-box flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 rounded-card px-4 py-3 no-underline transition-colors hover:bg-surface-raised"
       >
-        <span className="flex min-w-0 items-baseline gap-2 text-base font-bold text-white">
+        <span className="flex min-w-0 items-baseline gap-2 text-base font-bold text-bone">
           <span className="truncate">
             {pitchName ? `${game.venue} · ${pitchName}` : game.venue}
           </span>
@@ -114,11 +114,11 @@ export async function NextGameStrip({
             the row's end lands under the status on a second line, pointing at
             nothing.
           */}
-          <span aria-hidden className="shrink-0 text-volt">
+          <span aria-hidden className="shrink-0 text-accent">
             →
           </span>
         </span>
-        <span className="text-xs text-white/50">{formatGameDateTime(game.starts_at, locale)}</span>
+        <span className="text-xs text-bone/50">{formatGameDateTime(game.starts_at, locale)}</span>
         {/*
           THE STATUS, in the eyebrow the played rows use for attendance. For a
           game already booked, how full it is is the only thing that can still
@@ -134,7 +134,7 @@ export async function NextGameStrip({
         <span
           data-testid="next-game-status"
           className={`text-[11px] uppercase tracking-eyebrow ${
-            spotsLeft === 0 ? "text-white/40" : "text-volt"
+            spotsLeft === 0 ? "text-bone/40" : "text-accent"
           }`}
         >
           {/*

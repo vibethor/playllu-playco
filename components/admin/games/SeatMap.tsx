@@ -16,7 +16,7 @@ const DOT: Record<SeatCellKind, string> = {
   single: "bg-volt text-ink",
   pass: "bg-volt-dim text-ink",
   credit: "bg-volt/45 text-ink",
-  free: "bg-bone/30 text-white",
+  free: "bg-bone/30 text-bone",
   house: "bg-bone/15 text-bone",
   unpaid: "bg-warn text-ink",
   open: "border border-dashed border-hairline-strong",
@@ -53,7 +53,7 @@ export function SeatMap({
       title={hub.seatMapTitle}
       testId="game-seat-map"
       action={
-        <span className="text-small font-semibold tabular-nums text-white">
+        <span className="text-small font-semibold tabular-nums text-bone">
           {formatSeats(seatsTaken)}/{bar.capacity}
         </span>
       }

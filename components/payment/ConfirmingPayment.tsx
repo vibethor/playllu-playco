@@ -130,7 +130,7 @@ export function ConfirmingPayment({
     <section
       data-testid="payment-confirming"
       data-state={slow ? "slow" : "waiting"}
-      className="rounded-card border-2 border-hairline-volt bg-surface p-6"
+      className="rounded-card border-2 border-hairline-accent bg-surface p-6"
     >
       {/*
         THE SPINNER IS `aria-hidden` AND THE STATUS IS A LIVE REGION. A
@@ -142,12 +142,12 @@ export function ConfirmingPayment({
         <span
           aria-hidden="true"
           data-testid="payment-spinner"
-          className="mb-4 block h-8 w-8 animate-spin rounded-pill border-2 border-hairline border-t-volt"
+          className="mb-4 block h-8 w-8 animate-spin rounded-pill border-2 border-hairline border-t-accent"
         />
       )}
 
       <div role="status" aria-live="polite">
-        <h1 className="m-0 font-display text-section-title uppercase tracking-wide text-volt">
+        <h1 className="m-0 font-display text-section-title uppercase tracking-wide text-accent">
           {slow ? t.payment.slowTitle : t.payment.confirmingTitle}
         </h1>
         <p className="mt-3 mb-0 text-body leading-relaxed text-bone">
@@ -166,7 +166,7 @@ export function ConfirmingPayment({
         <Link
           href={fallbackHref}
           data-testid="payment-slow-link"
-          className="mt-6 inline-block text-[11px] uppercase tracking-eyebrow text-volt no-underline"
+          className="mt-6 inline-block text-[11px] uppercase tracking-eyebrow text-accent no-underline"
         >
           {slowLink}
         </Link>

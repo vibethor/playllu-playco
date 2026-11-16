@@ -25,11 +25,11 @@ export function KpiTile({
 }) {
   return (
     <div className="lifted flex flex-col rounded-card p-4 sm:p-5">
-      <div className="text-[10px] uppercase tracking-eyebrow text-volt-dim">{label}</div>
+      <div className="text-[10px] uppercase tracking-eyebrow text-accent-dim">{label}</div>
       <div
         data-testid={valueTestId}
         className={`mt-2 font-display leading-none tabular-nums ${size === "lg" ? "text-[34px]" : "text-[22px]"} ${
-          tone === "volt" ? "text-volt" : "text-white"
+          tone === "volt" ? "text-accent" : "text-bone"
         }`}
       >
         {value}

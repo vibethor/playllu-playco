@@ -2,7 +2,7 @@ import { adminPaymentBadge } from "@/lib/admin/paymentBadge";
 import type { BookingStatus, PaymentMethod } from "@/lib/types/database";
 
 const TONE = {
-  paid: "border-hairline-volt bg-volt/[.08] text-volt",
+  paid: "border-hairline-accent bg-volt/[.08] text-accent",
   // Round 42 — warn, the colour the seat bar and the seat map give unpaid.
   pending: "border-warn/50 text-warn",
   muted: "border-hairline text-faint",

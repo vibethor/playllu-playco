@@ -89,7 +89,7 @@ export function CancelBookingForm({
         className={
           variant === "bar"
             ? "flex min-h-11 items-center justify-center px-3 text-body-lg text-muted transition-colors hover:text-bone"
-            : "min-h-11 rounded-control border border-hairline-strong px-4 text-body text-muted transition-colors hover:border-hairline-volt"
+            : "min-h-11 rounded-control border border-hairline-strong px-4 text-body text-muted transition-colors hover:border-hairline-accent"
         }
       >
         {/*

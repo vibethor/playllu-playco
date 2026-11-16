@@ -398,7 +398,7 @@ export default async function GameDetailPage({ params, searchParams }: GamePageP
           data-testid="game-notes"
           className="mt-4 rounded-card bg-surface p-5"
         >
-          <h2 className="m-0 text-body-lg font-semibold text-white">
+          <h2 className="m-0 text-body-lg font-semibold text-bone">
             {t.games.notesLabel}
           </h2>
           <p className="mt-3 mb-0 whitespace-pre-line text-[14px] leading-relaxed text-bone">

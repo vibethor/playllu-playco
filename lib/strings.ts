@@ -189,8 +189,19 @@ export const strings = {
      * verb phrase and line two the two adverbs, which is where all three
      * languages break. A width-driven break would move it off the sentence.
      */
-    heroLine1: "Play football",
+    /*
+     * PLAYCO HERO (rebrand, Jachym's copy): eyebrow, then "Play volleyball. Anytime. Anywhere.", then the sub-line and
+     * one action. `heroLead` + `heroSport` are the first line split so the sport can be set in the accent;
+     * `heroLine1` is the same line whole, for the share image.
+     */
+    heroEyebrow: "Pickup games in Bangkok",
+    heroLead: "Play",
+    heroSport: "volleyball.",
+    heroLine1: "Play volleyball.",
     heroLine2: "Anytime. Anywhere.",
+    heroSub: "Book your spot in a minute and just show up. No team needed.",
+    heroCta: "Find a game",
+    heroPhotoCredit: "Photo: Spatialxplora, CC BY 4.0",
     vision:
       "One match that repeats itself. Find a game, claim your spot, show up.",
     scrollHint: "↓ SCROLL",
@@ -198,17 +209,17 @@ export const strings = {
       {
         index: "01",
         title: "Find a game",
-        body: "Matches near you, every week.",
+        body: "Games near you, every week.",
       },
       {
         index: "02",
         title: "Claim your spot",
-        body: "Secure your spot by paying a fee. We do the rest.",
+        body: "Pay online by card or PromptPay. We do the rest.",
       },
       {
         index: "03",
         title: "Come and play",
-        body: "Show up at the pitch and enjoy the game",
+        body: "Show up at the court and enjoy the game.",
       },
     ],
     nextMatchEyebrow: "//",
@@ -225,8 +236,8 @@ export const strings = {
     // Was "NEXT MATCH", one card. Three rows now — see the section comment in
     // app/page.tsx: one card could only ever answer "is there a game", and the
     // question a visitor arrives with is "is there a game I can make".
-    nextMatchesLabel: "Upcoming matches",
-    nextMatchesAll: "All games →",
+    nextMatchesLabel: "Upcoming games",
+    nextMatchesAll: "All games",
     potmTitle: "Player of the month",
     potmEmpty: "Nobody picked yet — could be you.",
     /*
@@ -234,7 +245,7 @@ export const strings = {
      * turns a pick into a reason. `{hours}` is already rounded to one decimal
      * by `pitchHours`; the string does no arithmetic.
      */
-    potmHours: "{hours} h on the pitch this month",
+    potmHours: "{hours} h on the court this month",
 
     community: {
       title: "Join our community",
@@ -248,7 +259,7 @@ export const strings = {
        * The handle is the destination.
        */
       instagram: "Instagram",
-      instagramUrl: "https://instagram.com/hrajfotbal",
+      instagramUrl: "https://instagram.com/",
       /*
        * TELEGRAM (round 13, item 19). A product's name is not a word, so both
        * keys join WhatsApp's and Instagram's in the intentionally-untranslated
@@ -259,9 +270,9 @@ export const strings = {
     },
 
     footer: {
-      wordmarkLead: "HRAJ",
-      wordmarkAccent: "FOTBAL",
-      city: "· PRAGUE",
+      wordmarkLead: "PLAY",
+      wordmarkAccent: "CO",
+      city: "· BANGKOK",
     },
   },
 
@@ -644,7 +655,7 @@ export const strings = {
       turf: "Turf",
       grass: "Grass",
       indoor: "Indoor",
-      sand: "Sand",
+      sand: "Beach",
     },
     // "2 subs per team" — renders beside the format when the organizer set it,
     // and nothing at all when they did not (§5.3a). It describes how the game
@@ -1792,10 +1803,13 @@ export const strings = {
       "That player is not an organizer. Make them one on their admin page first.",
     makeOrganizer: "Make organizer",
     revokeOrganizer: "Remove organizer",
-    languageLabel: "Language on the pitch",
-    languageEnCs: "English / Czech",
-    languageUkRu: "Ukrainian / Russian",
-    languageHint: "Shows as a flag pair on the game card, and picks which messaging app the organizer contact offers.",
+    languageLabel: "Language on the court",
+    languageEnTh: "English + Thai",
+    languageEn: "English",
+    languageTh: "Thai",
+    languageEnCs: "English / Czech (old)",
+    languageUkRu: "Ukrainian / Russian (old)",
+    languageHint: "Shows as round flags on the game card.",
     surfaceRequired: "Pick the surface — it shows on the game's card.",
     surfaceOptions: {
       turf: "Turf",

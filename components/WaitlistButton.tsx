@@ -31,7 +31,7 @@ function SubmitButton({ variant }: { variant: "panel" | "bar" }) {
       data-testid="join-waitlist"
       className={
         variant === "bar"
-          ? "flex min-h-[52px] shrink-0 items-center justify-center rounded-control border border-hairline-strong px-5 text-body-lg font-semibold text-bone transition-colors hover:border-hairline-volt disabled:opacity-60"
+          ? "flex min-h-[52px] shrink-0 items-center justify-center rounded-control border border-hairline-strong px-5 text-body-lg font-semibold text-bone transition-colors hover:border-hairline-accent disabled:opacity-60"
           : "w-full rounded-control bg-volt px-6 py-4 text-body-lg font-bold text-ink disabled:opacity-60"
       }
     >

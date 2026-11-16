@@ -101,13 +101,13 @@ export function SignupForm({
   if (state.status === "verify") {
     return (
       <div className="mt-8 flex flex-col gap-4">
-        <h2 className="m-0 font-display text-section-title uppercase tracking-wide text-white">
+        <h2 className="m-0 font-display text-section-title uppercase tracking-wide text-bone">
           {t.auth.verifyTitle}
         </h2>
-        <p className="m-0 text-sm text-white/75">
+        <p className="m-0 text-sm text-bone/75">
           {t.auth.verifyBody.replace("{email}", state.email ?? "")}
         </p>
-        <p className="m-0 text-xs text-white/50">{t.auth.verifyHint}</p>
+        <p className="m-0 text-xs text-bone/50">{t.auth.verifyHint}</p>
       </div>
     );
   }
@@ -200,7 +200,7 @@ export function SignupForm({
             <label
               key={level}
               /* p09 draws the three levels as capsules, not rounded squares. */
-            className="flex cursor-pointer items-center gap-2 rounded-pill border border-hairline-strong px-3 py-2 text-sm has-[:checked]:border-volt has-[:checked]:text-volt"
+            className="flex cursor-pointer items-center gap-2 rounded-pill border border-hairline-strong px-3 py-2 text-sm has-[:checked]:border-accent has-[:checked]:text-accent"
             >
               <input
                 key={`skill-${level}-${valuesKey}`}
@@ -346,7 +346,7 @@ export function SignupForm({
         disabled={pending}
         data-testid="signup-submit"
         /* `rounded-pill`, as p09 draws it. */
-        className="rounded-pill bg-volt px-4 py-[15px] text-cta font-extrabold uppercase tracking-wide text-surface transition disabled:opacity-50"
+        className="rounded-pill bg-volt px-4 py-[15px] text-cta font-extrabold uppercase tracking-wide text-ink transition disabled:opacity-50"
       >
         {pending ? t.common.loading : t.auth.createAccount}
       </button>

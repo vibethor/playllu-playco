@@ -75,7 +75,7 @@ export function ContactDialog({
             }}
           >
             <div className="lifted w-full max-w-[420px] rounded-card p-5">
-              <h2 className="m-0 font-display text-title uppercase tracking-wide text-white">
+              <h2 className="m-0 font-display text-title uppercase tracking-wide text-bone">
                 {t.siteFooter.contactTitle}
               </h2>
 
@@ -84,7 +84,7 @@ export function ContactDialog({
                   <li key={email}>
                     <a
                       href={`mailto:${email}`}
-                      className="text-body-lg font-semibold text-volt no-underline"
+                      className="text-body-lg font-semibold text-accent no-underline"
                     >
                       {email}
                     </a>
@@ -103,7 +103,7 @@ export function ContactDialog({
                     <li key={phone}>
                       <a
                         href={`tel:${phone.replace(/\s/g, "")}`}
-                        className="text-body-lg font-semibold text-volt no-underline"
+                        className="text-body-lg font-semibold text-accent no-underline"
                       >
                         {phone}
                       </a>
@@ -117,7 +117,7 @@ export function ContactDialog({
                 type="button"
                 onClick={() => setOpen(false)}
                 data-testid="contact-close"
-                className="mt-5 inline-flex min-h-11 items-center rounded-pill border-2 border-hairline-strong px-5 text-small font-bold uppercase tracking-wide text-bone transition-colors hover:border-volt hover:text-volt"
+                className="mt-5 inline-flex min-h-11 items-center rounded-pill border-2 border-hairline-strong px-5 text-small font-bold uppercase tracking-wide text-bone transition-colors hover:border-accent hover:text-accent"
               >
                 {t.common.close}
               </button>

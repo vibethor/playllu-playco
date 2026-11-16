@@ -78,7 +78,7 @@ export function ContactForm({
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <PendingButton label={strings.admin.siteContactSave} testId="contact-save" />
         {state.status === "saved" && (
-          <p data-testid="contact-saved" className="m-0 text-small text-volt">
+          <p data-testid="contact-saved" className="m-0 text-small text-accent">
             {strings.admin.siteContactSaved}
           </p>
         )}

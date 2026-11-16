@@ -47,7 +47,7 @@ function Submit({ label, testId }: { label: string; testId: string }) {
       type="submit"
       disabled={pending}
       data-testid={testId}
-      className="rounded-control border border-hairline-strong px-3 py-2 text-[11px] uppercase tracking-eyebrow text-bone transition-colors hover:border-volt hover:text-volt disabled:opacity-60"
+      className="rounded-control border border-hairline-strong px-3 py-2 text-[11px] uppercase tracking-eyebrow text-bone transition-colors hover:border-accent hover:text-accent disabled:opacity-60"
     >
       {pending ? strings.common.loading : label}
     </button>

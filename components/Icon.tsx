@@ -49,9 +49,43 @@ export type IconName =
   | "lockers"
   | "wifi"
   | "first_aid"
-  | "drinks";
+  | "drinks"
+  // Playco game card (rebrand): language on the court, the join arrow, and the surface tags.
+  | "globe"
+  | "arrowRight"
+  | "indoor"
+  | "outdoor"
+  | "beach"
+  | "turf";
 
 const PATHS: Record<IconName, React.ReactNode> = {
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3.5 9h17M3.5 15h17M12 3c2.5 2.4 3.8 5.4 3.8 9s-1.3 6.6-3.8 9c-2.5-2.4-3.8-5.4-3.8-9S9.5 5.4 12 3z" />
+    </>
+  ),
+  arrowRight: <path d="M4 12h15M13 6l6 6-6 6" />,
+  indoor: (
+    <>
+      <path d="M4 20V10.5L12 4l8 6.5V20" />
+      <path d="M2.5 20h19" />
+    </>
+  ),
+  outdoor: (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" />
+    </>
+  ),
+  beach: (
+    <>
+      <path d="M2.5 16c3-2 5.5 2 8.5 0s5.5-2 8.5 0" />
+      <path d="M2.5 20c3-2 5.5 2 8.5 0s5.5-2 8.5 0" />
+      <circle cx="16" cy="7.5" r="3" />
+    </>
+  ),
+  turf: <path d="M2.5 20h19M7 20c0-4-1.8-7.4-4-8.8M12 20c0-5.4.7-9.4 2.7-12.6M17 20c0-3.4 1.4-6 4-7.4" />,
   bell: (
     <>
       <path d="M18 8a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6" />

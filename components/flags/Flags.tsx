@@ -88,6 +88,17 @@ export function FlagGB(props: FlagProps) {
 }
 
 /** Czechia — white over red, with the blue hoist triangle. */
+/** Thailand: red, white, a double-width blue band, white, red. */
+export function FlagTH(props: FlagProps) {
+  return (
+    <svg {...svgProps(props)}>
+      <rect width="60" height="30" fill="#A51931" />
+      <rect y="5" width="60" height="20" fill="#F4F5F8" />
+      <rect y="10" width="60" height="10" fill="#2D2A4A" />
+    </svg>
+  );
+}
+
 export function FlagCZ(props: FlagProps) {
   return (
     <svg {...svgProps(props)}>

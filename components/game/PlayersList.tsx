@@ -77,7 +77,7 @@ export async function PlayersList({ rows, supabaseUrl, countries }: PlayersListP
       className="mt-4 rounded-card bg-surface p-5"
     >
       {/* WHITE (Section 4, item 6) — this section label was grey. */}
-      <h2 className="m-0 text-[10px] uppercase tracking-eyebrow text-white">
+      <h2 className="m-0 text-[10px] uppercase tracking-eyebrow text-bone">
         {t.games.playersTitle.replace("{count}", String(rows.length))}
       </h2>
 
@@ -256,7 +256,7 @@ async function Avatar({
       <span
         data-testid="roster-avatar"
         className={`flex h-[34px] w-[34px] shrink-0 items-center justify-center overflow-hidden rounded-pill bg-surface-avatar text-[12px] font-bold ${
-          !seat.isGuest && index % 3 === 0 ? "text-volt" : seat.isGuest ? "text-muted" : "text-bone"
+          !seat.isGuest && index % 3 === 0 ? "text-accent" : seat.isGuest ? "text-muted" : "text-bone"
         }`}
       >
         {photo ? (

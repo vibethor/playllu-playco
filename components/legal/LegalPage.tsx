@@ -33,7 +33,7 @@ export async function LegalPage({
         <p
           role="note"
           data-testid="legal-czech-notice"
-          className="m-0 mb-6 rounded-card bg-surface p-4 text-small text-white/80"
+          className="m-0 mb-6 rounded-card bg-surface p-4 text-small text-bone/80"
         >
           {t.legal.czechOnlyNotice}
         </p>
@@ -44,7 +44,7 @@ export async function LegalPage({
           href={pdfHref}
           download
           data-testid="legal-pdf"
-          className="mb-6 inline-flex min-h-11 items-center text-small text-volt underline-offset-4 hover:underline"
+          className="mb-6 inline-flex min-h-11 items-center text-small text-accent underline-offset-4 hover:underline"
         >
           {t.legal.downloadPdf}
         </a>
@@ -54,7 +54,7 @@ export async function LegalPage({
 
       <Link
         href="/games"
-        className="mt-10 inline-flex min-h-11 items-center text-small text-faint no-underline hover:text-volt-dim"
+        className="mt-10 inline-flex min-h-11 items-center text-small text-faint no-underline hover:text-accent-dim"
       >
         {t.legal.back}
       </Link>

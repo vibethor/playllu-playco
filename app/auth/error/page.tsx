@@ -31,7 +31,7 @@ export default async function AuthErrorPage({
   return (
     <main className="flex-1 flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm">
-        <h1 className="font-[family-name:var(--font-anton)] text-4xl uppercase tracking-tight">
+        <h1 className="font-display text-4xl uppercase tracking-tight">
           {t.auth.callbackErrorTitle}
         </h1>
         <p className="mt-3 text-sm opacity-70" role="alert">
@@ -51,7 +51,7 @@ export default async function AuthErrorPage({
 
         <a
           href="/login"
-          className="mt-8 inline-block rounded-control bg-volt px-4 py-[15px] text-cta font-extrabold uppercase tracking-wide text-surface no-underline"
+          className="mt-8 inline-block rounded-control bg-volt px-4 py-[15px] text-cta font-extrabold uppercase tracking-wide text-ink no-underline"
         >
           {t.auth.callbackRetry}
         </a>

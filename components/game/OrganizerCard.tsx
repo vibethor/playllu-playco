@@ -131,7 +131,7 @@ export async function OrganizerCard({
       className="mt-4 rounded-card bg-surface p-5"
     >
       {/* WHITE (Section 4, item 6) — these section labels were grey. */}
-      <div className="text-[10px] uppercase tracking-eyebrow text-white">
+      <div className="text-[10px] uppercase tracking-eyebrow text-bone">
         {t.games.organizerLabel}
       </div>
 
@@ -163,7 +163,7 @@ export async function OrganizerCard({
           */}
           <p
             data-testid="organizer-name"
-            className="m-0 min-w-0 truncate text-body-lg font-semibold text-white"
+            className="m-0 min-w-0 truncate text-body-lg font-semibold text-bone"
           >
             {name}
           </p>

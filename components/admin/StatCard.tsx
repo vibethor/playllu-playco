@@ -13,8 +13,8 @@
  * (Outstanding) say so in warn rather than volt.
  */
 const TONE = {
-  volt: "text-volt",
-  white: "text-white",
+  volt: "text-accent",
+  white: "text-bone",
   warn: "text-warn",
 } as const;
 
@@ -52,7 +52,7 @@ export function StatCard({
       */
       className={`lifted flex min-w-0 flex-col rounded-card p-4 sm:p-5 ${className}`}
     >
-      <div className="text-[10px] uppercase tracking-eyebrow text-volt-dim">{label}</div>
+      <div className="text-[10px] uppercase tracking-eyebrow text-accent-dim">{label}</div>
       {/*
         The headline and the sub-line carry their own hooks, so an assertion
         can read one number rather than scraping the card. Without them a

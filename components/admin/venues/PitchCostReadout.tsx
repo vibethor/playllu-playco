@@ -24,7 +24,7 @@ export function PitchCostReadout({ costs, season }: { costs: PitchCostPair; seas
             <dt className="text-muted">{copy.seasons[each]}</dt>
             <dd
               data-in-force={each === season ? "true" : "false"}
-              className={`m-0 tabular-nums ${each === season ? "font-semibold text-volt" : "text-bone"}`}
+              className={`m-0 tabular-nums ${each === season ? "font-semibold text-accent" : "text-bone"}`}
             >
               {formatThb(amounts[each])}
             </dd>

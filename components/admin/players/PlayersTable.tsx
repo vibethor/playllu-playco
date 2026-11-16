@@ -60,8 +60,8 @@ function SortHeader({ column, view, align = "left" }: { column: { key: PlayerSor
         href={playersHref({ ...view, sort: nextSort(view.sort, column.key) })}
         aria-label={t.sortBy.replace("{column}", column.label)}
         data-testid={`players-sort-${column.key}`}
-        className={`inline-flex items-center gap-1 text-[10px] uppercase tracking-eyebrow no-underline transition-colors hover:text-volt ${
-          active ? "text-volt" : "text-muted"
+        className={`inline-flex items-center gap-1 text-[10px] uppercase tracking-eyebrow no-underline transition-colors hover:text-accent ${
+          active ? "text-accent" : "text-muted"
         }`}
       >
         {column.label}
@@ -84,7 +84,7 @@ export function MobileSort({ view }: { view: View }) {
             href={playersHref({ ...view, sort: nextSort(view.sort, column.key) })}
             aria-current={active ? "true" : undefined}
             className={`inline-flex min-h-9 items-center gap-1 rounded-pill border px-3 text-[12px] font-semibold no-underline transition-colors ${
-              active ? "border-volt text-volt" : "border-hairline-strong text-muted hover:border-volt hover:text-volt"
+              active ? "border-accent text-accent" : "border-hairline-strong text-muted hover:border-accent hover:text-accent"
             }`}
           >
             {column.label}
@@ -175,7 +175,7 @@ export function PlayersTable({
                         <Link
                           href={`/admin/players/${player.id}`}
                           data-testid="admin-player-link"
-                          className="min-w-0 truncate text-body font-bold text-white no-underline after:absolute after:inset-0 after:content-['']"
+                          className="min-w-0 truncate text-body font-bold text-bone no-underline after:absolute after:inset-0 after:content-['']"
                         >
                           {player.nickname}
                         </Link>
@@ -219,7 +219,7 @@ export function PlayersTable({
 
                 <td role="cell" data-testid="player-games-played" className={`${CELL} md:text-right`}>
                   <CellLabel>{t.columns.played}</CellLabel>
-                  <span className={player.gamesPlayed > 0 ? "font-semibold text-white" : "text-faint"}>
+                  <span className={player.gamesPlayed > 0 ? "font-semibold text-bone" : "text-faint"}>
                     {player.gamesPlayed}
                   </span>
                 </td>
@@ -240,7 +240,7 @@ export function PlayersTable({
                     data-testid="player-balance"
                     data-balance={player.balanceThb}
                     data-credits={credits}
-                    className={`whitespace-nowrap text-small font-semibold tabular-nums ${credits > 0 ? "text-volt" : "text-faint"}`}
+                    className={`whitespace-nowrap text-small font-semibold tabular-nums ${credits > 0 ? "text-accent" : "text-faint"}`}
                   >
                     {creditsLabel(credits, "en", strings)}
                   </span>
@@ -260,7 +260,7 @@ export function PlayersTable({
                     data-testid="admin-player-edit"
                     tabIndex={-1}
                     aria-hidden
-                    className="relative flex h-6 w-6 items-center justify-center text-faint no-underline transition-colors hover:text-volt"
+                    className="relative flex h-6 w-6 items-center justify-center text-faint no-underline transition-colors hover:text-accent"
                   >
                     <svg viewBox="0 0 10 10" className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M3.5 2 6.5 5 3.5 8" />

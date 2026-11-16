@@ -44,7 +44,7 @@ export function EmailLanguagePreference({ current }: { current: Locale }) {
       </form>
 
       {state.status === "saved" && (
-        <p role="status" data-testid="email-locale-saved" className="mt-3 mb-0 text-small text-volt">
+        <p role="status" data-testid="email-locale-saved" className="mt-3 mb-0 text-small text-accent">
           {t.profile.emailLocaleSaved}
         </p>
       )}

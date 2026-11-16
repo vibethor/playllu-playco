@@ -77,7 +77,7 @@ function AmenitySection({
   return (
     <section data-testid={testId} className="mt-4 rounded-card bg-surface p-5">
       {/* WHITE (Section 4, item 6) — these were grey section labels. */}
-      <h2 className="m-0 text-body-lg font-semibold text-white">{title}</h2>
+      <h2 className="m-0 text-body-lg font-semibold text-bone">{title}</h2>
 
       <ul className="mt-4 grid list-none grid-cols-2 gap-x-4 gap-y-4 p-0">
         {items.map((item) => (
@@ -89,7 +89,7 @@ function AmenitySection({
           >
             {/* The tinted tile is what makes ten glyphs read as one set rather
                 than as ten drawings. */}
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-volt/[.10] text-volt">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-volt/[.10] text-accent">
               <Icon name={item.icon} className="h-[18px] w-[18px]" />
             </span>
             <span className="text-[14px] leading-tight text-bone">{item.label}</span>

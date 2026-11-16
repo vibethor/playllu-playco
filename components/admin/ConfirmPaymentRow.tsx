@@ -44,7 +44,7 @@ export function ConfirmPaymentRow({
         <div className="min-w-[160px] flex-1">
           {/* Nickname is player-supplied free text; JSX escapes it. */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-body font-bold text-white">{booking.nickname}</span>
+            <span className="text-body font-bold text-bone">{booking.nickname}</span>
             <PaymentBadge status={booking.status} method={booking.paymentMethod} />
           </div>
           <div className="mt-1 font-mono text-[11px] tracking-[1px] text-muted">
@@ -71,7 +71,7 @@ export function ConfirmPaymentRow({
                 min={0}
                 defaultValue={booking.amountDueThb}
                 data-testid="received-amount"
-                className="min-h-11 w-[110px] rounded-control border border-hairline-strong bg-surface px-3 py-2 text-[13px] tabular-nums text-bone outline-none focus:border-volt"
+                className="min-h-11 w-[110px] rounded-control border border-hairline-strong bg-surface px-3 py-2 text-[13px] tabular-nums text-bone outline-none focus:border-accent"
               />
             </label>
           )}
@@ -90,7 +90,7 @@ export function ConfirmPaymentRow({
         </button>
 
         {state.status === "confirmed" && (
-          <span data-testid="confirm-result" className="text-[12px] text-volt">
+          <span data-testid="confirm-result" className="text-[12px] text-accent">
             {state.wasExpired ? strings.admin.expiredCreditedNotice : strings.admin.paymentConfirmed}
             {state.creditIssuedThb ? (
               <>
@@ -124,7 +124,7 @@ function ConfirmButton({ showAmount }: { showAmount: boolean }) {
       type="submit"
       disabled={pending}
       data-testid="mark-paid"
-      className="min-h-11 rounded-control bg-volt px-5 text-[14px] font-extrabold uppercase tracking-wide text-surface disabled:opacity-60"
+      className="min-h-11 rounded-control bg-volt px-5 text-[14px] font-extrabold uppercase tracking-wide text-ink disabled:opacity-60"
     >
       {pending ? strings.common.loading : showAmount ? strings.admin.confirmReceived : strings.admin.markPaid}
     </button>

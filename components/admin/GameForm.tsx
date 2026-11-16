@@ -36,10 +36,10 @@ const INITIAL: AdminActionState = { status: "idle" };
  * name in the select) grows from its content instead of being pinned.
  */
 const FIELD =
-  "mt-1 min-h-11 w-full rounded-control border border-hairline-strong bg-surface px-3 py-2 text-[13px] text-bone outline-none transition-colors placeholder:text-faint focus:border-volt";
+  "mt-1 min-h-11 w-full rounded-control border border-hairline-strong bg-surface px-3 py-2 text-[13px] text-bone outline-none transition-colors placeholder:text-faint focus:border-accent";
 const LABEL = "block text-[10px] uppercase tracking-eyebrow text-muted";
 const HINT = "mt-1 text-[12px] leading-snug text-muted";
-const ERROR = "mt-1 text-[12px] text-volt";
+const ERROR = "mt-1 text-[12px] text-accent";
 
 /*
  * ROUND 42 — THE FORM IN SECTIONS. Every field is where it was in meaning and
@@ -52,7 +52,7 @@ const ERROR = "mt-1 text-[12px] text-volt";
  * the fieldset's top edge, and the content after it clears the float.
  */
 const GROUP = "min-w-0 rounded-card bg-surface p-4";
-const LEGEND = "float-left mb-3 w-full text-[10px] uppercase tracking-eyebrow text-volt-dim";
+const LEGEND = "float-left mb-3 w-full text-[10px] uppercase tracking-eyebrow text-accent-dim";
 const hub = strings.admin.gamesHub;
 
 /**
@@ -490,8 +490,12 @@ export function GameForm({
                     value={language}
                     onChange={(event) => setLanguage(gameLanguageOf(event.target.value))}
                   >
-                    <option value="en-cs">{strings.admin.languageEnCs}</option>
-                    <option value="uk-ru">{strings.admin.languageUkRu}</option>
+                    <option value="en-th">{strings.admin.languageEnTh}</option>
+                    <option value="en">{strings.admin.languageEn}</option>
+                    <option value="th">{strings.admin.languageTh}</option>
+                    {/* An old HrajFotbal code still shows on a game that carries it, so editing does not silently change it. */}
+                    {language === "en-cs" && <option value="en-cs">{strings.admin.languageEnCs}</option>}
+                    {language === "uk-ru" && <option value="uk-ru">{strings.admin.languageUkRu}</option>}
                   </select>
                 </div>
                 <p className={HINT}>{strings.admin.languageHint}</p>
@@ -673,7 +677,7 @@ export function GameForm({
         {!isEdit && <p className={`${HINT} md:mt-0`}>{strings.admin.createGameHint}</p>}
 
         {state.status === "saved" && (
-          <p data-testid="game-form-saved" className="m-0 text-[13px] text-volt">
+          <p data-testid="game-form-saved" className="m-0 text-[13px] text-accent">
             {strings.admin.saved}
           </p>
         )}
@@ -692,7 +696,7 @@ export function GameForm({
           <a
             href={`/admin/games/${state.createdGameId}`}
             data-testid="game-created-unpublished"
-            className="text-[13px] font-semibold text-volt no-underline"
+            className="text-[13px] font-semibold text-accent no-underline"
           >
             {strings.admin.createdNotPublished}
           </a>
@@ -709,7 +713,7 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
       type="submit"
       disabled={pending}
       data-testid="game-form-submit"
-      className="w-full shrink-0 rounded-control bg-volt px-6 py-4 text-cta font-extrabold uppercase tracking-wide text-surface disabled:opacity-60 md:w-auto md:min-w-[280px]"
+      className="w-full shrink-0 rounded-control bg-volt px-6 py-4 text-cta font-extrabold uppercase tracking-wide text-ink disabled:opacity-60 md:w-auto md:min-w-[280px]"
     >
       {pending
         ? strings.common.loading

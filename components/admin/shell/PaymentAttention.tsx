@@ -31,7 +31,7 @@ export function PaymentAttention({ rows }: { rows: PaymentAttentionRow[] }) {
       <p className="m-0 text-[10px] font-semibold uppercase tracking-eyebrow text-warn">
         {strings.admin.shell.attentionEyebrow}
       </p>
-      <h3 className="m-0 mt-1 font-display text-body-lg uppercase tracking-wide text-white">
+      <h3 className="m-0 mt-1 font-display text-body-lg uppercase tracking-wide text-bone">
         {strings.admin.attentionTitle.replace("{n}", String(rows.length))}
       </h3>
       <p className="m-0 mt-1 text-small leading-snug text-muted">{strings.admin.attentionLede}</p>
@@ -48,7 +48,7 @@ export function PaymentAttention({ rows }: { rows: PaymentAttentionRow[] }) {
               className="flex items-start justify-between gap-3 py-3 no-underline"
             >
               <div className="min-w-0">
-                <div className="truncate text-body font-semibold text-white">
+                <div className="truncate text-body font-semibold text-bone">
                   {row.nickname} · {row.venue}
                 </div>
                 <div className="mt-1 text-small text-muted">

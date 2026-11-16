@@ -1,8 +1,7 @@
 import type { MetadataRoute } from "next";
-import tailwindConfig from "@/tailwind.config";
+import { BRAND } from "@/lib/brand/palette";
 import { strings } from "@/lib/strings";
 
-const themeColors = (tailwindConfig.theme?.extend?.colors ?? {}) as Record<string, string>;
 
 /**
  * PWA manifest.
@@ -24,8 +23,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: strings.meta.description,
     start_url: "/games",
     display: "standalone",
-    background_color: themeColors.ink,
-    theme_color: themeColors.ink,
+    background_color: BRAND.navy,
+    theme_color: BRAND.navy,
     orientation: "portrait",
     icons: [
       {

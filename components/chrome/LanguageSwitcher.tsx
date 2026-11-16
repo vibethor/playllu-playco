@@ -176,7 +176,7 @@ export function LanguageSwitcher() {
           only the hit area grows to the floor this product states for
           everything else.
         */
-        className="flex min-h-11 items-center gap-1 rounded-pill border border-hairline-strong px-3 py-[6px] text-small text-bone transition hover:border-hairline-volt disabled:opacity-50"
+        className="flex min-h-11 items-center gap-1 rounded-pill border border-hairline-strong px-3 py-[6px] text-small text-bone transition hover:border-hairline-accent disabled:opacity-50"
       >
         <span aria-hidden>{FLAGS[active]}</span>
         {LOCALE_LABELS[active].short}
@@ -212,7 +212,7 @@ export function LanguageSwitcher() {
                   onKeyDown={(event) => onListKeyDown(event, index)}
                   data-testid={`locale-${locale}`}
                   className={`flex w-full items-center gap-2 rounded-pill px-2 py-2 text-left text-small transition ${
-                    isActive ? "bg-volt/[.12] text-volt" : "text-bone hover:bg-white/[.05]"
+                    isActive ? "bg-volt/[.12] text-accent" : "text-bone hover:bg-white/[.05]"
                   }`}
                 >
                   <span aria-hidden>{FLAGS[locale]}</span>

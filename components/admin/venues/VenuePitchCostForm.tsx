@@ -82,7 +82,7 @@ export function VenuePitchCostForm({
               data-testid={`venue-pitch-cost-${each}`}
               data-in-force={inForce ? "true" : "false"}
               className={`min-w-0 rounded-control border bg-surface p-3 ${
-                inForce ? "border-hairline-volt" : "border-hairline"
+                inForce ? "border-hairline-accent" : "border-hairline"
               }`}
             >
               <div className="flex min-h-6 items-center justify-between gap-2">
@@ -92,7 +92,7 @@ export function VenuePitchCostForm({
                 {inForce && (
                   <span
                     data-testid="venue-pitch-cost-in-force"
-                    className="rounded-pill border border-volt px-2 py-[1px] text-[10px] font-semibold uppercase tracking-wide text-volt"
+                    className="rounded-pill border border-accent px-2 py-[1px] text-[10px] font-semibold uppercase tracking-wide text-accent"
                   >
                     {copy.inForce}
                   </span>
@@ -133,7 +133,7 @@ export function VenuePitchCostForm({
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
         <PendingButton label={copy.costSave} testId="venue-pitch-cost-save" />
         {saved && (
-          <p role="status" data-testid="venue-pitch-cost-saved" className="m-0 text-small text-volt">
+          <p role="status" data-testid="venue-pitch-cost-saved" className="m-0 text-small text-accent">
             {copy.costSaved.replace("{amount}", formatThb(pitchCostInForce(saved, season)))}
           </p>
         )}

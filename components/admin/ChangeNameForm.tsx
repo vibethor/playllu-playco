@@ -107,7 +107,7 @@ export function ChangeNameForm({ playerId, name }: { playerId: string; name: str
       {state.status === "done" && (
         <p
           data-testid="name-changed"
-          className="mt-2 text-[11px] uppercase tracking-eyebrow text-volt-dim"
+          className="mt-2 text-[11px] uppercase tracking-eyebrow text-accent-dim"
         >
           {strings.admin.nameChanged}
         </p>

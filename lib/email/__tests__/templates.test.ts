@@ -116,7 +116,7 @@ describe("every email, in every language", () => {
 
     // Assert
     expect(email.html).toContain('<html lang="cs">');
-    expect(email.html).toContain(`${BASE_URL}/brand/hf-logo-96.png`);
+    expect(email.html).toContain(`${BASE_URL}/brand/playco-mark-96.png`);
     expect(email.html).toContain("Hraj <span");
   });
 

@@ -65,7 +65,7 @@ export async function PlayerOfMonthPanel({
           <div className="min-w-0">
             {/* `eyebrow` — the one uppercase style in the product (ruling B),
                 and the frame draws this one in volt rather than grey. */}
-            <h3 className="m-0 text-eyebrow font-semibold uppercase text-volt">
+            <h3 className="m-0 text-eyebrow font-semibold uppercase text-accent">
               {t.landing.potmTitle}
             </h3>
             {/*
@@ -76,7 +76,7 @@ export async function PlayerOfMonthPanel({
             */}
             <div
               data-testid="potm-nickname"
-              className="mt-1 truncate font-display text-page-title uppercase text-white"
+              className="mt-1 truncate font-display text-page-title uppercase text-bone"
             >
               {player.nickname}
             </div>
@@ -111,7 +111,7 @@ export async function PlayerOfMonthPanel({
           */}
           <span
             data-testid="potm-avatar"
-            className="flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-pill border-2 border-volt bg-surface-avatar text-[26px] font-bold text-volt"
+            className="flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-pill border-2 border-accent bg-surface-avatar text-[26px] font-bold text-accent"
           >
             {photo ? (
               /* 72px rendered, so 160 covers it at 2x (round 37, item 2). */
@@ -135,7 +135,7 @@ export async function PlayerOfMonthPanel({
           to a heading and a sentence.
         */
         <div>
-          <h3 className="m-0 text-eyebrow font-semibold uppercase text-volt">
+          <h3 className="m-0 text-eyebrow font-semibold uppercase text-accent">
             {t.landing.potmTitle}
           </h3>
           <p className="m-0 mt-2 max-w-[240px] text-[13px] text-muted">

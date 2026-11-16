@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/brand/Logo";
 import { LanguageSwitcher } from "@/components/chrome/LanguageSwitcher";
 import { SERVED_LOCALES } from "@/lib/i18n/locales";
 import { appCapabilities } from "@/lib/db/capabilities";
@@ -98,7 +99,7 @@ export async function Header({
   return (
     <header
       data-testid="site-header"
-      className="fixed inset-x-0 top-0 z-30 border-b border-hairline bg-ink/[.86] backdrop-blur-md"
+      className="fixed inset-x-0 top-0 z-30 border-b border-hairline bg-page/[.92] backdrop-blur-md"
     >
       {/*
         A THREE-PART GRID ABOVE `md`, so the link row is centred IN THE BAR
@@ -152,15 +153,7 @@ export async function Header({
             name in text~~ (round 12). Losing that label would leave a screen
             reader announcing an unnamed link to `/`.
           */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/brand/hf-logo-96.png"
-            alt=""
-            width={38}
-            height={38}
-            data-testid="brand-mark"
-            className="h-11 w-11 shrink-0 rounded-pill"
-          />
+          <Logo size={17} />
           {/*
             ~~THE WORDMARK ECHOES THE HERO, scaled for the header.~~
             THE MARK STANDS ALONE (round 12, item 2a).
@@ -224,7 +217,7 @@ export async function Header({
               key={link.href}
               href={link.href}
               data-testid={navTestId(link.href)}
-              className="text-body-lg font-semibold tracking-wide text-bone no-underline transition-colors hover:text-volt"
+              className="text-body-lg font-semibold tracking-wide text-bone no-underline transition-colors hover:text-accent"
             >
               {link.label}
             </Link>
@@ -276,7 +269,7 @@ export async function Header({
                 with it and the header row's own height is unchanged — the
                 controls beside it are already 44.
               */
-              className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-pill border-[1.5px] border-volt bg-surface-avatar text-small font-bold text-volt no-underline"
+              className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-pill border-[1.5px] border-accent bg-surface-avatar text-small font-bold text-accent no-underline"
             >
               {photo ? (
                 /* A plain <img>, like the roster avatars: a 34px circle from a
@@ -299,7 +292,7 @@ export async function Header({
             <Link
               href="/login"
               data-testid="nav-login"
-              className="rounded-control bg-volt px-[14px] py-2 text-body font-bold text-surface no-underline"
+              className="rounded-control bg-volt px-[14px] py-2 text-body font-bold text-ink no-underline"
             >
               {nav.logIn}
             </Link>

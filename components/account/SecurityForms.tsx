@@ -28,7 +28,7 @@ function Result({ state }: { state: SecurityActionState }) {
   return (
     <p
       role="status"
-      className={`text-sm ${state.status === "error" ? "text-red-400" : "text-volt"}`}
+      className={`text-sm ${state.status === "error" ? "text-red-400" : "text-accent"}`}
     >
       {state.message}
     </p>
@@ -48,7 +48,7 @@ export function ChangePasswordForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
-      <h3 className="m-0 text-base font-bold uppercase tracking-wide text-white">
+      <h3 className="m-0 text-base font-bold uppercase tracking-wide text-bone">
         {t.account.changePasswordTitle}
       </h3>
 
@@ -82,7 +82,7 @@ export function ChangePasswordForm() {
         type="submit"
         disabled={pending}
         data-testid="change-password"
-        className="rounded-control border border-hairline-volt px-4 py-3 text-cta font-extrabold uppercase tracking-wide text-volt transition disabled:opacity-50"
+        className="rounded-control border border-hairline-accent px-4 py-3 text-cta font-extrabold uppercase tracking-wide text-accent transition disabled:opacity-50"
       >
         {pending ? t.common.loading : t.account.changePasswordSubmit}
       </button>
@@ -143,7 +143,7 @@ export function ChangeEmailForm({ currentEmail = null }: { currentEmail?: string
         type="submit"
         disabled={pending}
         data-testid="change-email"
-        className="self-start rounded-pill border-2 border-hairline-volt px-5 py-3 text-cta font-extrabold uppercase tracking-wide text-volt transition disabled:opacity-50"
+        className="self-start rounded-pill border-2 border-hairline-accent px-5 py-3 text-cta font-extrabold uppercase tracking-wide text-accent transition disabled:opacity-50"
       >
         {pending ? t.common.loading : t.account.changeEmailSubmit}
       </button>

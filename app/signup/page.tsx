@@ -53,7 +53,7 @@ export default async function SignupPage({
     return (
       <main className="flex-1 flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-sm">
-          <h1 className="m-0 font-display text-page-title uppercase tracking-wide text-white">
+          <h1 className="m-0 font-display text-page-title uppercase tracking-wide text-bone">
             {t.auth.signupTitle}
           </h1>
           <p className="mt-3 text-body text-muted">{t.auth.signupLede}</p>
@@ -81,7 +81,7 @@ export default async function SignupPage({
             {t.auth.haveAccount}{" "}
             <Link
               href={`/login?next=${encodeURIComponent(next)}`}
-              className="font-bold text-volt no-underline"
+              className="font-bold text-accent no-underline"
             >
               {t.auth.loginTitle}
             </Link>
@@ -118,7 +118,7 @@ export default async function SignupPage({
     */
     <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
       <div className="w-full">
-        <h1 className="m-0 font-display text-page-title uppercase tracking-wide text-white">
+        <h1 className="m-0 font-display text-page-title uppercase tracking-wide text-bone">
           {t.auth.signupFinishTitle}
         </h1>
         <p className="mt-3 text-body text-muted">{t.auth.signupFinishLede}</p>

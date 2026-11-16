@@ -8,7 +8,7 @@ import type { Database } from "@/lib/types/database";
 type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
 
 const TONE_CLASS: Record<BadgeTone, string> = {
-  paid: "border-hairline-volt bg-volt/[.08] text-volt",
+  paid: "border-hairline-accent bg-volt/[.08] text-accent",
   pending: "border-hairline-strong text-bone",
   muted: "border-hairline text-faint",
 };
@@ -47,7 +47,7 @@ export async function YourBookingPanel({ booking }: { booking: BookingRow }) {
       className="mt-6 rounded-card bg-surface p-5"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className="m-0 text-[17px] font-bold uppercase tracking-wide text-white">
+        <h2 className="m-0 text-[17px] font-bold uppercase tracking-wide text-bone">
           {t.games.yourBookingTitle}
         </h2>
         <span

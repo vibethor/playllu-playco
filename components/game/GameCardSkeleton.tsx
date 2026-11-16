@@ -65,7 +65,7 @@ export async function GamesListSkeleton() {
   const t = await getStrings();
   return (
     <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
-      <h1 className="m-0 font-display text-section-title uppercase tracking-wide text-white">
+      <h1 className="m-0 font-display text-section-title uppercase tracking-wide text-bone">
         {t.games.listTitle}
       </h1>
 

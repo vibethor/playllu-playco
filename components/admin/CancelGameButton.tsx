@@ -54,7 +54,7 @@ export function CancelGameButton({
   if (state.status === "cancelled") {
     return (
       <div key="done" data-testid="cancel-game-result" className="rounded-card bg-surface p-5">
-        <div className="text-[17px] font-bold uppercase tracking-wide text-volt">{strings.admin.cancelGameDone}</div>
+        <div className="text-[17px] font-bold uppercase tracking-wide text-accent">{strings.admin.cancelGameDone}</div>
         <dl className="mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-[13px]">
           <dt className="text-muted">{strings.admin.cancelledBookings}</dt>
           <dd className="m-0 text-right tabular-nums text-bone">{state.bookingsCancelled}</dd>

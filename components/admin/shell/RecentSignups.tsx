@@ -26,7 +26,7 @@ export function RecentSignups({ signups }: { signups: DashboardSignup[] }) {
                 data-testid="dashboard-signup"
                 className="flex min-h-11 items-baseline justify-between gap-3 py-2.5 no-underline"
               >
-                <span className="min-w-0 truncate text-body font-semibold text-white">
+                <span className="min-w-0 truncate text-body font-semibold text-bone">
                   {signup.nickname}
                   {signup.playerNumber !== null && (
                     <span

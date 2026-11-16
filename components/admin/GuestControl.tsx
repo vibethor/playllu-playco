@@ -49,7 +49,7 @@ export function GuestControl({
         </form>
 
         <p className="m-0 flex min-w-0 items-baseline gap-2">
-          <span data-testid="guest-count" className="font-display text-[28px] leading-none tabular-nums text-volt">
+          <span data-testid="guest-count" className="font-display text-[28px] leading-none tabular-nums text-accent">
             {shown}
           </span>
           <span className="text-[12px] text-muted">{strings.admin.guestsCount}</span>
@@ -64,7 +64,7 @@ export function GuestControl({
 
       {seatsLeft <= 0 && <p className="mt-2 text-[12px] text-muted">{strings.admin.guestsNoRoom}</p>}
       {state.status === "saved" && (
-        <p data-testid="guests-saved" className="mt-2 text-[13px] text-volt">
+        <p data-testid="guests-saved" className="mt-2 text-[13px] text-accent">
           {strings.admin.guestsSaved}
         </p>
       )}
@@ -102,7 +102,7 @@ function StepButton({
       aria-label={label}
       title={label}
       data-testid={testId}
-      className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-pill border border-hairline-strong text-bone transition-colors hover:border-volt hover:text-volt disabled:cursor-not-allowed disabled:opacity-40"
+      className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-pill border border-hairline-strong text-bone transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
     >
       <svg aria-hidden viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
         <path d="M3 8h10" />

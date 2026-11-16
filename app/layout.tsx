@@ -1,11 +1,10 @@
 import { profilePhotoVersion } from "@/lib/storage/photoVersions";
 import { PreviewBar } from "@/components/chrome/PreviewBar";
 import type { Metadata, Viewport } from "next";
-import { Anton, Barlow_Condensed, JetBrains_Mono, Onest } from "next/font/google";
+import { Anuphan, Archivo, IBM_Plex_Sans_Thai, JetBrains_Mono, Montserrat } from "next/font/google";
 import { NavPill } from "@/components/chrome/NavPill";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { SessionProvider } from "@/components/SessionProvider";
-import { SiteBackground } from "@/components/SiteBackground";
 import { Suspense } from "react";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
@@ -19,61 +18,44 @@ import { EMPTY_BELL, getBellState } from "@/lib/notifications/queries";
 import { getCurrentPlayer } from "@/lib/auth/session";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 import { strings } from "@/lib/strings";
-import tailwindConfig from "@/tailwind.config";
+import { BRAND } from "@/lib/brand/palette";
 import "./globals.css";
 
-const themeColors = (tailwindConfig.theme?.extend?.colors ?? {}) as Record<string, string>;
 
 /** Display face for the hero and section titles. */
-const anton = Anton({
-  variable: "--font-anton",
-  subsets: ["latin", "latin-ext"],
-  weight: "400",
-  display: "swap",
-});
-
-/** Condensed italic used for CTAs, card titles and the wordmark. */
-const barlowCondensed = Barlow_Condensed({
-  variable: "--font-barlow-condensed",
-  subsets: ["latin", "latin-ext"],
-  weight: ["700", "800"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
-
-/**
- * Body copy — Onest.
- *
- * A TOKEN-LEVEL SWAP, the same two lines as every face change before it: the
- * font loaded here and the `sans` family in the config. Nothing else moves.
- *
- * CHOSEN FOR COVERAGE AS MUCH AS FOR CHARACTER, and that constraint removed
- * most of the shortlist. Space Grotesk, Sora, Outfit, Plus Jakarta Sans,
- * Figtree, Chivo, Familjen Grotesk and Schibsted Grotesk are all Latin-only —
- * every modern grotesque with the character being asked for turns out not to
- * ship Cyrillic, so none of them can be the body face of a product that
- * renders Russian.
- *
- * AND IT FIXES A LIVE DEFECT RATHER THAN ONLY CHANGING A LOOK. Archivo carries
- * `latin-ext`, so Czech diacritics were fine and nothing looked wrong — but it
- * has no Cyrillic at all, so every Russian string in the product was rendering
- * in a system fallback: a different face with different metrics, mid-sentence.
- * It stayed invisible because the committed strips were EN and CS only.
- *
- * `cyrillic-ext` is loaded alongside `cyrillic`: the base range covers Russian,
- * and the extended one costs little and covers the Cyrillic a pasted venue name
- * or a player's nickname can carry.
- *
- * Variable, so §1.4's four weights — 400 body, 500 small, 600 `body-lg`
- * default, 700 the spots figure — come from one file rather than four.
+/*
+ * PLAYCO TYPE. Display: Archivo, a wide athletic grotesque, run semi-expanded (`.font-display` in globals.css).
+ * Thai has no glyphs in Archivo, so the stacks fall through to Anuphan (drawn to sit with Latin). Text: IBM Plex
+ * Sans Thai, which carries Thai and Latin in one family. Logo: Montserrat, the typeface of the existing wordmark.
  */
-const onest = Onest({
-  variable: "--font-onest",
-  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
+const archivo = Archivo({
+  variable: "--font-archivo",
+  subsets: ["latin", "latin-ext", "vietnamese"],
+  axes: ["wdth"],
   display: "swap",
 });
 
-/** Eyebrows, counters and numeric labels. */
+const anuphan = Anuphan({
+  variable: "--font-anuphan",
+  subsets: ["thai", "latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
+
+const plexThai = IBM_Plex_Sans_Thai({
+  variable: "--font-plex-thai",
+  subsets: ["thai", "latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["700", "800"],
+  display: "swap",
+});
+
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin", "latin-ext"],
@@ -131,7 +113,7 @@ export async function generateMetadata(): Promise<Metadata> {
  * belongs on `viewport`, not `metadata` — Next warns and drops it otherwise.
  */
 export const viewport: Viewport = {
-  themeColor: themeColors.ink,
+  themeColor: BRAND.navy,
   colorScheme: "dark",
 };
 
@@ -162,7 +144,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${anton.variable} ${barlowCondensed.variable} ${onest.variable} ${jetbrainsMono.variable} h-full`}
+      className={`${archivo.variable} ${anuphan.variable} ${plexThai.variable} ${montserrat.variable} ${jetbrainsMono.variable} h-full`}
     >
       {/*
         CONSENT MODE BEFORE THE CONTAINER, AND INSIDE <head>. `beforeInteractive`
@@ -189,8 +171,6 @@ export default async function RootLayout({
               isAdmin: player?.is_admin ?? false,
             }}
           >
-            {/* Mounted once, here, so navigating never restarts the field. */}
-            <SiteBackground />
             <Header
               /*
                 THE BELL'S ROWS (round 7, item 5). Fetched only for a signed-in

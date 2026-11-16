@@ -43,7 +43,7 @@ export async function Footer() {
    * applied. The hit area grows around the text; nothing moves visually.
    */
   const linkClass =
-    "flex min-h-11 items-center text-small text-faint no-underline transition hover:text-volt-dim";
+    "flex min-h-11 items-center text-small text-faint no-underline transition hover:text-accent-dim";
 
   const links = [
     { href: "/terms", label: legal.termsTitle },

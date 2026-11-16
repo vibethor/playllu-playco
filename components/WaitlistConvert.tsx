@@ -53,7 +53,7 @@ export function WaitlistConvert({ gameId }: { gameId: string }) {
         </legend>
 
         <div className="flex flex-col gap-3">
-          <label className="flex cursor-pointer items-start gap-3 rounded-card bg-surface p-4 has-[:checked]:border-hairline-volt">
+          <label className="flex cursor-pointer items-start gap-3 rounded-card bg-surface p-4 has-[:checked]:border-hairline-accent">
             <input type="radio" name="method" value="qr" defaultChecked className="mt-1 accent-volt" />
             <span>
               <span className="block text-body-lg font-semibold text-bone">

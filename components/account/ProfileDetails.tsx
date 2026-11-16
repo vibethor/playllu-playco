@@ -136,7 +136,7 @@ export function ProfileDetails(props: ProfileDetailsProps) {
             <dt className="field-label m-0">{t.profile.email}</dt>
             <dd
               data-testid="profile-email"
-              className={`m-0 text-body-lg font-semibold ${props.email ? "text-white" : "text-faint"}`}
+              className={`m-0 text-body-lg font-semibold ${props.email ? "text-bone" : "text-faint"}`}
             >
               {props.email || t.profile.notSet}
             </dd>
@@ -146,7 +146,7 @@ export function ProfileDetails(props: ProfileDetailsProps) {
                 data-testid="change-email-link"
                 aria-expanded={changingEmail}
                 onClick={() => setChangingEmail((open) => !open)}
-                className="min-h-11 bg-transparent py-1 text-small font-semibold text-volt transition hover:text-bone"
+                className="min-h-11 bg-transparent py-1 text-small font-semibold text-accent transition hover:text-bone"
               >
                 {t.account.changeEmailLink}
               </button>
@@ -160,7 +160,7 @@ export function ProfileDetails(props: ProfileDetailsProps) {
         </dl>
 
         {state.status === "saved" && (
-          <p data-testid="profile-saved" className="mt-4 mb-0 text-small text-volt">
+          <p data-testid="profile-saved" className="mt-4 mb-0 text-small text-accent">
             {t.profile.saved}
           </p>
         )}
@@ -170,7 +170,7 @@ export function ProfileDetails(props: ProfileDetailsProps) {
           type="button"
           data-testid="edit-details"
           onClick={() => setEditing(true)}
-          className="mt-5 inline-flex min-h-11 items-center rounded-control border border-hairline-strong px-4 text-body font-semibold text-bone transition-colors hover:border-hairline-volt"
+          className="mt-5 inline-flex min-h-11 items-center rounded-control border border-hairline-strong px-4 text-body font-semibold text-bone transition-colors hover:border-hairline-accent"
         >
           {t.profile.editDetails}
         </button>
@@ -225,7 +225,7 @@ export function ProfileDetails(props: ProfileDetailsProps) {
                   defaultChecked={props.positions.includes(code)}
                   className="peer sr-only"
                 />
-                <span className="inline-flex min-h-11 items-center rounded-pill bg-surface-raised px-4 text-body text-bone transition-colors peer-checked:bg-volt peer-checked:text-ink peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-volt">
+                <span className="inline-flex min-h-11 items-center rounded-pill bg-surface-raised px-4 text-body text-bone transition-colors peer-checked:bg-volt peer-checked:text-ink peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent">
                   {t.profile.positions[code]}
                 </span>
               </label>
@@ -313,7 +313,7 @@ export function ProfileDetails(props: ProfileDetailsProps) {
 }
 
 const FIELD =
-  "w-full rounded-control bg-surface-raised px-4 py-3 text-body text-bone outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-volt";
+  "w-full rounded-control bg-surface-raised px-4 py-3 text-body text-bone outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
 function SaveButton() {
   const t = useStrings();
@@ -378,7 +378,7 @@ function Row({
       <dt className="field-label m-0">{label}</dt>
       <dd
         data-testid={`profile-${testId}`}
-        className={`m-0 text-body-lg font-semibold ${value ? "text-white" : "text-faint"}`}
+        className={`m-0 text-body-lg font-semibold ${value ? "text-bone" : "text-faint"}`}
       >
         {value || t.profile.notSet}
       </dd>

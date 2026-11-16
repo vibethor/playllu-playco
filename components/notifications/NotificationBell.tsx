@@ -102,7 +102,7 @@ export function NotificationBell({
           only the hit area grows to the floor this product states for
           everything else.
         */
-        className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-pill border border-hairline-strong bg-surface text-bone transition-colors hover:border-hairline-volt"
+        className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-pill border border-hairline-strong bg-surface text-bone transition-colors hover:border-hairline-accent"
       >
         <Icon name="bell" className="h-5 w-5" />
         {showDot && (
@@ -147,7 +147,7 @@ export function NotificationBell({
               className="lifted fixed right-gutter top-[68px] z-[60] max-h-[70vh] w-[min(360px,calc(100vw-2*22px))] overflow-y-auto rounded-card p-4 shadow-lift"
             >
               <div className="mb-3 flex items-baseline justify-between gap-3">
-                <h2 className="m-0 text-eyebrow font-semibold uppercase text-volt">
+                <h2 className="m-0 text-eyebrow font-semibold uppercase text-accent">
                   {t.notifications.title}
                 </h2>
 
@@ -232,7 +232,7 @@ export function NotificationBell({
                         a human chose those words in a language they meant,
                         and translating them was never on offer.
                       */}
-                      <div className="text-body font-semibold text-white">
+                      <div className="text-body font-semibold text-bone">
                         {item.kind ? t.notifications.kinds[item.kind].title : item.title}
                       </div>
                       <p className="m-0 mt-1 text-small leading-snug text-muted">

@@ -178,7 +178,7 @@ export default async function AdminGamePage({
                 <Link
                   href={`/game/${game.id}`}
                   data-testid="game-player-page"
-                  className="inline-flex min-h-11 shrink-0 items-center rounded-control border border-hairline-strong px-4 text-[11px] uppercase tracking-[1px] text-muted no-underline transition hover:border-hairline-volt hover:text-volt"
+                  className="inline-flex min-h-11 shrink-0 items-center rounded-control border border-hairline-strong px-4 text-[11px] uppercase tracking-[1px] text-muted no-underline transition hover:border-hairline-accent hover:text-accent"
                 >
                   {strings.admin.gamePublishedViewGame}
                 </Link>
@@ -187,7 +187,7 @@ export default async function AdminGamePage({
                 <a
                   href="#edit-game"
                   data-testid="game-edit-link"
-                  className="inline-flex min-h-11 shrink-0 items-center rounded-control border border-hairline-volt px-4 text-[11px] uppercase tracking-[1px] text-volt no-underline transition hover:border-volt"
+                  className="inline-flex min-h-11 shrink-0 items-center rounded-control border border-hairline-accent px-4 text-[11px] uppercase tracking-[1px] text-accent no-underline transition hover:border-accent"
                 >
                   {hub.editLink}
                 </a>
@@ -285,7 +285,7 @@ export default async function AdminGamePage({
         {/* House guests: seats for people with no account (round 11). */}
         {canEdit && (
           <section data-testid="guests-section" className="mt-5 border-t border-hairline pt-4">
-            <h3 className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-volt-dim">
+            <h3 className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-accent-dim">
               {strings.admin.guestsTitle}
             </h3>
             <p className="mt-2 max-w-[520px] text-[12px] leading-relaxed text-muted">{strings.admin.guestsLede}</p>
@@ -330,7 +330,7 @@ export default async function AdminGamePage({
             <Link
               href="/admin/venues"
               data-testid="edit-venue-link"
-              className="mt-4 inline-flex min-h-11 items-center rounded-pill border-2 border-hairline-volt px-4 text-small font-bold text-volt no-underline transition-colors hover:border-volt"
+              className="mt-4 inline-flex min-h-11 items-center rounded-pill border-2 border-hairline-accent px-4 text-small font-bold text-accent no-underline transition-colors hover:border-accent"
             >
               {strings.admin.venueEditLink}
             </Link>

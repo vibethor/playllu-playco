@@ -81,7 +81,7 @@ export function BuyPassButton({
           data-configured="false"
           className={
             variant === "quiet"
-              ? "inline-flex min-h-11 items-center justify-center rounded-pill border-2 border-volt px-5 text-small font-bold uppercase tracking-wide text-volt transition-colors hover:bg-volt/10"
+              ? "inline-flex min-h-11 items-center justify-center rounded-pill border-2 border-accent px-5 text-small font-bold uppercase tracking-wide text-accent transition-colors hover:bg-volt/10"
               : "inline-flex min-h-11 w-full items-center justify-center rounded-control bg-volt px-5 text-body-lg font-bold text-ink transition-colors hover:bg-volt-dim"
           }
         >
@@ -141,13 +141,13 @@ function Submit({
                and "quiet" was meant to keep it from outshouting the per-game
                price, not to make it disappear.
 
-               `border-volt` at full strength rather than `hairline-volt` (.30):
+               `border-accent` at full strength rather than `hairline-volt` (.30):
                this is the control, and .30 on `surface-raised` computes to
                roughly 2.4:1, under the 3:1 WCAG 1.4.11 asks of a non-text
                boundary. The hover state deepens the fill instead of changing
                the colour, so nothing about the button moves on hover.
             */
-            "inline-flex min-h-11 items-center justify-center rounded-control border border-volt bg-volt/[.08] px-5 text-body font-semibold text-volt transition-colors hover:bg-volt/[.16] disabled:opacity-60"
+            "inline-flex min-h-11 items-center justify-center rounded-control border border-accent bg-volt/[.08] px-5 text-body font-semibold text-accent transition-colors hover:bg-volt/[.16] disabled:opacity-60"
           : "w-full rounded-control bg-volt px-5 py-3 text-body-lg font-bold text-ink disabled:opacity-60"
       }
     >

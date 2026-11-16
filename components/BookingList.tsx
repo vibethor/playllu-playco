@@ -13,7 +13,7 @@ export interface BookingListProps {
 }
 
 const TONE_CLASS: Record<BadgeTone, string> = {
-  paid: "border-hairline-volt bg-volt/[.08] text-volt",
+  paid: "border-hairline-accent bg-volt/[.08] text-accent",
   pending: "border-hairline-strong text-bone",
   muted: "border-hairline text-faint",
 };
@@ -57,7 +57,7 @@ export async function BookingList({ rows }: BookingListProps) {
             <div className="flex items-baseline justify-between gap-3">
               <Link
                 href={`/game/${game.id}`}
-                className="text-[18px] font-bold uppercase tracking-wide text-white no-underline"
+                className="text-[18px] font-bold uppercase tracking-wide text-bone no-underline"
               >
                 {game.venue}
               </Link>
@@ -70,7 +70,7 @@ export async function BookingList({ rows }: BookingListProps) {
             </div>
 
             <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <span className="text-[12px] tracking-[1px] text-volt">
+              <span className="text-[12px] tracking-[1px] text-accent">
                 {formatGameDateTime(game.starts_at)}
               </span>
               {/*
@@ -123,7 +123,7 @@ export async function BookingList({ rows }: BookingListProps) {
               <Link
                 href={`/game/${game.id}/book/confirmation?booking=${booking.id}`}
                 data-testid="show-qr"
-                className="mt-4 block rounded-control border border-hairline-volt px-4 py-3 text-center text-[15px] font-bold uppercase tracking-wide text-volt no-underline"
+                className="mt-4 block rounded-control border border-hairline-accent px-4 py-3 text-center text-[15px] font-bold uppercase tracking-wide text-accent no-underline"
               >
                 {t.account.showQr}
               </Link>

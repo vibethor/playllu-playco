@@ -34,11 +34,11 @@ export function CapacityBar({
   const fill = TONE_FILL[spotsTone(bookedCount, capacity)];
 
   return (
-    <div data-testid="capacity-segments" className="flex gap-1">
+    <div data-testid="capacity-segments" className="flex gap-[3px]">
       {capacitySegments(bookedCount, capacity).map((isFilled, i) => (
         <i
           key={i}
-          className={`flex-1 rounded-[2px] ${size === "slim" ? "h-[7px]" : "h-[11px]"} ${
+          className={`flex-1 rounded-[3px] ${size === "slim" ? "h-[6px]" : "h-[10px]"} ${
             isFilled ? fill : "bg-surface-seg"
           }`}
         />

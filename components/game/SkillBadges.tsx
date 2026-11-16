@@ -44,7 +44,7 @@ export async function SkillBadges({
     style and this was never an eyebrow.
 
     WHAT STAYS DIFFERENT is the fill. `hairline-volt` on `volt/[.08]` against
-    the format badge's `border-volt` on `volt/[.12]`: same geometry, quieter
+    the format badge's `border-accent` on `volt/[.12]`: same geometry, quieter
     ink. Making them identical would erase the difference between "this is a
     6v6" and "this game is restricted", which is the one distinction on the row
     that changes what a reader can do.
@@ -56,7 +56,7 @@ export async function SkillBadges({
         <span
           key={level}
           data-testid={`skill-badge-${level}`}
-          className="badge-pill border-hairline-volt bg-volt/[.08] text-volt"
+          className="badge-pill border-hairline-accent bg-volt/[.08] text-accent"
         >
           {t.games.skillLevel[level]}
         </span>

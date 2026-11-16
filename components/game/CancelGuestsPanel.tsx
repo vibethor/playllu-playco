@@ -85,7 +85,7 @@ export function CancelGuestsPanel({
 
   return (
     <section data-testid="cancel-guests" className="mt-4 rounded-card bg-surface p-5">
-      <h2 className="m-0 text-[17px] font-bold uppercase tracking-wide text-white">
+      <h2 className="m-0 text-[17px] font-bold uppercase tracking-wide text-bone">
         {t.games.cancelGuests.title}
       </h2>
       <p className="mt-2 mb-0 text-body leading-relaxed text-muted">

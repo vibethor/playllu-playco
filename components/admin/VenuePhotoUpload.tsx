@@ -76,7 +76,7 @@ export function VenuePhotoUpload({
         <PhotoUpload target="venue" venueId={venueId} hasPhoto={hasPhoto}>
           <span
             data-testid="venue-photo-control"
-            className="inline-flex min-h-11 items-center rounded-control border border-hairline-strong px-4 text-small font-semibold text-volt transition-colors hover:border-hairline-volt active:border-hairline-volt"
+            className="inline-flex min-h-11 items-center rounded-control border border-hairline-strong px-4 text-small font-semibold text-accent transition-colors hover:border-hairline-accent active:border-hairline-accent"
           >
             {hasPhoto ? strings.admin.venuePhotoReplace : strings.admin.venuePhotoUpload}
           </span>

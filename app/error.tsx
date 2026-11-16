@@ -43,7 +43,7 @@ export default function RouteError({
   return (
     <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
       <div data-testid="route-error" className="lifted rounded-card p-6">
-        <h1 className="m-0 font-display text-section-title uppercase tracking-wide text-white">
+        <h1 className="m-0 font-display text-section-title uppercase tracking-wide text-bone">
           Something went wrong
         </h1>
         <p className="mt-3 mb-0 text-body leading-relaxed text-bone">

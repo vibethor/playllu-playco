@@ -90,7 +90,7 @@ export function ProfileStats({
         <div key={cell.key} data-testid={`profile-stat-${cell.key}`}>
           <div
             data-testid={`profile-stat-${cell.key}-value`}
-            className="font-display text-[30px] leading-none text-white"
+            className="font-display text-[30px] leading-none text-bone"
           >
             {format.format(cell.value)}
           </div>

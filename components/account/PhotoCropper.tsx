@@ -221,7 +221,7 @@ export function PhotoCropper({
         data-testid="photo-cropper"
         className="lifted fixed left-1/2 top-1/2 z-[71] w-[min(420px,calc(100vw-2*22px))] -translate-x-1/2 -translate-y-1/2 rounded-card p-5 shadow-lift"
       >
-        <h2 className="m-0 text-[17px] font-bold uppercase tracking-wide text-white">
+        <h2 className="m-0 text-[17px] font-bold uppercase tracking-wide text-bone">
           {t.account.cropTitle}
         </h2>
         <p className="mt-1 mb-4 text-[13px] leading-snug text-muted">
@@ -291,7 +291,7 @@ export function PhotoCropper({
             frame's box IS the crop, and it must stay exactly the aspect the
             constants say.
           */
-          className="relative w-full cursor-grab touch-none overflow-hidden rounded-card bg-ink ring-2 ring-volt ring-offset-1 ring-offset-black/60 active:cursor-grabbing"
+          className="relative w-full cursor-grab touch-none overflow-hidden rounded-card bg-ink ring-2 ring-accent ring-offset-1 ring-offset-black/60 active:cursor-grabbing"
         >
           {url && (
             /* eslint-disable-next-line @next/next/no-img-element */

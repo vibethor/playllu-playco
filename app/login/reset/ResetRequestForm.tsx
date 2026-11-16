@@ -72,7 +72,7 @@ export function ResetRequestForm({
           type="submit"
           disabled={pending}
           data-testid="request-code"
-          className="rounded-pill border-2 border-hairline-volt px-4 py-[15px] text-cta font-extrabold uppercase tracking-wide text-volt transition disabled:opacity-50"
+          className="rounded-pill border-2 border-hairline-accent px-4 py-[15px] text-cta font-extrabold uppercase tracking-wide text-accent transition disabled:opacity-50"
         >
           {pending ? t.common.loading : t.auth.forgotPasswordCta}
         </button>
@@ -153,7 +153,7 @@ function CodeForm({
           maxLength={8}
           data-testid="otp-input"
           placeholder={t.auth.otpPlaceholder}
-          className="rounded-control border border-hairline-strong bg-transparent px-4 py-3 text-center text-xl tracking-[8px] outline-none transition-colors focus:border-volt"
+          className="rounded-control border border-hairline-strong bg-transparent px-4 py-3 text-center text-xl tracking-[8px] outline-none transition-colors focus:border-accent"
         />
       </label>
 
@@ -161,7 +161,7 @@ function CodeForm({
         type="submit"
         disabled={pending}
         data-testid="otp-submit"
-        className="rounded-control border border-hairline-volt px-4 py-[15px] text-cta font-extrabold uppercase tracking-wide text-volt transition disabled:opacity-50"
+        className="rounded-control border border-hairline-accent px-4 py-[15px] text-cta font-extrabold uppercase tracking-wide text-accent transition disabled:opacity-50"
       >
         {pending ? t.common.loading : t.auth.otpSubmit}
       </button>

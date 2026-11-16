@@ -25,7 +25,7 @@ export default async function NotFound() {
 
   return (
     <main className="relative z-10 mx-auto flex w-full max-w-shell flex-1 flex-col items-start justify-center px-gutter pb-16 pt-24">
-      <p className="m-0 font-display text-hero leading-none text-volt">{notFound.code}</p>
+      <p className="m-0 font-display text-hero leading-none text-accent">{notFound.code}</p>
 
       <h1 className="mt-4 mb-0 font-display text-title text-bone">
         {notFound.title}
@@ -35,7 +35,7 @@ export default async function NotFound() {
 
       <Link
         href="/games"
-        className="mt-8 rounded-control bg-volt px-6 py-[15px] text-body-lg font-bold text-surface no-underline"
+        className="mt-8 rounded-control bg-volt px-6 py-[15px] text-body-lg font-bold text-ink no-underline"
       >
         {notFound.cta}
       </Link>

@@ -118,7 +118,7 @@ export function RemoveCreditForm({
         </p>
       )}
       {state.status === "granted" && (
-        <p data-testid="remove-credit-done" className="m-0 text-[12px] text-volt">
+        <p data-testid="remove-credit-done" className="m-0 text-[12px] text-accent">
           {typeof state.balanceThb === "number"
             ? strings.admin.removeCreditDone.replace(
                 "{balance}",
