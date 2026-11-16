@@ -6,9 +6,9 @@ None of these block the build before Phase 12 of `docs/EXECUTION_PLAN.md`.
 
 | # | What | Needed by | Notes |
 |---|---|---|---|
-| 1 | **Database: free a Supabase slot for `playco-staging`** | Phase 12 | 2 free projects per person. Pause/delete one, or put the Playco org on Pro (25 USD/month, that org only). Region: Singapore. One database serves every city in the region |
-| 2 | **Thai Stripe account** — verified and live before any real player can book (there is no cash fallback) | Phase 12 (test keys), 14 (live, soft launch) | Account selector → New account → Thailand. Ask Stripe support: is a foreign individual accepted, and what happens when the company is registered? |
-| 3 | Make this repository private | soon | Settings → General → Change visibility |
+| 1 | **Database: free a Supabase slot for `playco-staging`** — **blocks today's preview** | Phase F (today) | 2 free projects per person. Pause/delete one, or put the Playco org on Pro (25 USD/month, that org only). Region: Singapore. One database serves every city in the region |
+| 2 | ~~Thai Stripe account~~ **done 16 Nov** | — | Test keys go into Vercel (Jachym pastes). Still open: confirm with Stripe support that a foreign individual is accepted for live payments, and what happens when the company is registered |
+| 3 | Make the repositories private (`vibethor/playllu-playco`, `reneomuller/hrajfotbalek` is Oliver's) | **low priority** | Settings → General → Change visibility. Kept public for now by choice; no secret is ever committed |
 | 4 | Vercel project on this repo | Phase 12 | Pro before real payments (free plan is non-commercial) |
 | 5 | Domain | Phase 16 | One domain for every city |
 

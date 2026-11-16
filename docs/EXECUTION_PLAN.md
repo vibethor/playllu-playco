@@ -87,7 +87,7 @@ added only when latency or data law requires it.
 ## 4. The phases
 
 ```
-0 Tooling ─ 1 Money as amount+currency ─ 2 Cities and configuration ─ 3 Roles ─ 4 Sports per city
+F Fast-track preview (today) ─ 0 Tooling ─ 1 Money as amount+currency ─ 2 Cities and configuration ─ 3 Roles ─ 4 Sports per city
 ─┬─ 5 Prices, staff seats, venue costs ─┬─ 7 Wallet per currency ─ 8 Payments ─ 9 Deals and statements
  └─ 6 City and sport views ─────────────┘
 10 Recurring games, referral codes ─ 11 Languages, phone, legal ─ 12 Hosted database + deploy
@@ -104,6 +104,52 @@ Rules for every phase:
   They come from the city row. Phase 2 adds a test that greps for them; it must stay green in every later phase.
 - Every table a manager can reach has a `city_id` and every read and write is scoped by it.
 - Copy goes in `lib/strings.ts`. Leave `docs/upstream/` untouched.
+
+### Phase F — Fast track: Bangkok volleyball preview, live today (16 Nov 2026)
+
+Jachym wants the site online today. This phase runs **before Phase 0** and gets the current fork running on its
+Vercel address with Stripe **test** payments. It is a preview for the founders to click through, **not** the launch
+to players: there are no cities, roles or Thai yet, and the legal pages are still HrajFotbal's Czech texts.
+Phases 0–17 then continue on top of it; nothing here may be built in a way they would have to undo.
+
+Hard blocker: **the Supabase project must exist.** Without a database the site cannot run. If `playco-staging`
+cannot be created (free-project limit), stop and tell Jachym; do everything that does not need it first.
+
+Allowed shortcut, removed in Phase 2: one file `lib/city/default.ts` holding Bangkok's time zone, currency label,
+phone prefix and site name. No other location literal anywhere.
+
+1. **Build green:** `npx tsc --noEmit`, `npx vitest run`, `npm run build` all pass before and after.
+2. **Bangkok basics:** time zone `Asia/Bangkok` everywhere through `lib/city/default.ts` (and one SQL function
+   `app_timezone()`); site name, page titles, Open Graph text, manifest and email sender say "Playco"; English only
+   for today (`LOCALES = ["en"]`, delete `cs`/`ru`/`uk`); phone default +66; `vercel.json` region `sin1`.
+3. **Remove Prague-only paths a visitor can reach:** the Czech QR / IBAN payment, "pay at the court" and any cash
+   choice, the legacy-host redirect, the Telegram route, the `/pass` pages (hide behind `PASSES_ENABLED = false`).
+4. **Prices:** one new migration so `price_for_duration()` returns 250 for games up to 120 minutes and 300 for
+   longer ones, and the wallet's flat seat price is 250. (Phase 5 replaces this with price rules; beach 300 waits
+   for it.) A game form price stays read-only.
+5. **Stripe test mode:** embedded Checkout in `thb` with `payment_method_types: ["card", "promptpay"]`; the webhook
+   also handles `checkout.session.async_payment_succeeded`, `…async_payment_failed` and `…expired` (an unpaid QR
+   frees the seat). Env names: `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`
+   in `.env.example`; remove `PAYMENT_IBAN` and the payment-link variables. Never print or commit a key.
+6. **Cron on the free plan:** Vercel's free plan only allows daily cron jobs and fails the deploy otherwise. Change
+   `played-now` (every 5 minutes) to daily for today and note it in the PR; Phase 12 moves it to `pg_cron`.
+7. **Database:** create `playco-staging` in the Playco Supabase org, region `ap-southeast-1` (or use the one Jachym
+   names). Apply every migration in order. Run the SQL suites against it. Fix any `get_advisors` security finding.
+8. **Deploy:** a Vercel project on this repo (Jachym connects it if the agent cannot). Jachym pastes every env value
+   into Vercel himself. Supabase Auth: Site URL and redirect list = the Vercel address exactly; email templates
+   re-branded "Playco". Register the Stripe test webhook for `<vercel address>/api/stripe/webhook`.
+9. **First data, through the admin panel:** Jachym's account made admin (one SQL line run by Jachym or by the agent
+   on staging only), venues Swish Elite 50 (capacity 18) and Asoke (15), one volleyball game.
+10. **Banner:** every page shows a thin "Preview — test payments only" bar while `NEXT_PUBLIC_PREVIEW=1`.
+
+Done when: the Vercel address loads with the preview bar · sign-up and login work on a phone · an admin creates a
+volleyball game showing 250 THB and Bangkok time · one booking paid by Stripe test card and one by test PromptPay
+both reach `confirmed` through the webhook · a cancellation more than 8 hours ahead credits 250 to the wallet ·
+`npx tsc --noEmit`, `npx vitest run`, `npm run build` exit 0 · no secret in the diff.
+
+Not today, and the reason it is not "live to players": Thai, cities, roles, Bangkok legal texts, live Stripe keys,
+3-of-3 approval. Opening the site to real players needs Jachym's go after those (Phase 16), or a written decision
+from him to soft-launch one game earlier with live keys and the legal pages replaced.
 
 ### Phase 0 — Tooling
 
