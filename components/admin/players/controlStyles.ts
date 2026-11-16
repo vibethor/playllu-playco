@@ -11,23 +11,23 @@ const CHIP =
   "inline-flex min-h-11 items-center justify-center rounded-pill border px-4 text-small font-semibold transition-colors disabled:opacity-50";
 
 /** An everyday act. */
-export const chipQuiet = `${CHIP} border-hairline-strong text-bone hover:border-volt hover:text-volt`;
+export const chipQuiet = `${CHIP} border-hairline-strong text-bone hover:border-accent hover:text-accent`;
 
 /** The act that adds — make admin, give Credit. */
-export const chipVolt = `${CHIP} border-hairline-strong text-volt hover:border-volt`;
+export const chipVolt = `${CHIP} border-hairline-strong text-accent hover:border-accent`;
 
 /** The act that takes away, or cannot be undone. */
 export const chipDanger = `${CHIP} border-danger/60 text-danger hover:border-danger`;
 
 /** The press that commits a form. */
-export const chipPrimary = `${CHIP} border-volt bg-volt font-bold text-ink`;
+export const chipPrimary = `${CHIP} border-accent bg-volt font-bold text-ink`;
 
 /** The press that commits something destructive. */
 export const chipDangerSolid = `${CHIP} border-danger bg-danger font-bold text-ink`;
 
 /** A field inside a player-page form. */
 export const fieldInput =
-  "h-11 rounded-control border border-hairline-strong bg-surface px-3 text-body text-bone placeholder:text-faint focus:border-volt";
+  "h-11 rounded-control border border-hairline-strong bg-surface px-3 text-body text-bone placeholder:text-faint focus:border-accent";
 
 /** The label above such a field. */
 export const fieldLabel = "text-[10px] uppercase tracking-eyebrow text-muted";

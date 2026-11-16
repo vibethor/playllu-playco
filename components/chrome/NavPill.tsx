@@ -69,7 +69,7 @@ export function NavPill() {
   const tabs: Tab[] = [
     { href: "/", label: t.nav.homeShort, icon: "home", exact: true },
     // `/game/<id>` is the detail page — singular, and not a prefix of /games.
-    { href: "/games", label: t.nav.games, icon: "balls", match: ["/games", "/game/"] },
+    { href: "/games", label: t.nav.games, icon: "calendar", match: ["/games", "/game/"] },
     { href: "/account", label: t.nav.profileShort, icon: "user" },
   ];
 
@@ -104,7 +104,8 @@ export function NavPill() {
         `shadow-lift` STAYS. The one upward shadow in the product still says
         "content passes under this", which is now the only cue that it does.
       */
-      className="fixed inset-x-0 bottom-0 z-40 md:hidden"
+      // PLAYCO: a navy dark island — plain tabs, the active one in lime (rebrand).
+      className="theme-dark fixed inset-x-0 bottom-0 z-40 md:hidden"
     >
       {/*
         THE CELLS CARRY THE SURFACE NOW (redesign v2, round 1).
@@ -141,7 +142,7 @@ export function NavPill() {
         changes.
       */}
       <ul
-        className="m-0 flex list-none items-stretch gap-1.5 bg-surface px-3 pt-2 shadow-lift"
+        className="m-0 flex list-none items-stretch gap-1.5 border-t border-hairline bg-ink px-3 pt-1.5"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)" }}
       >
         {tabs.map((tab) => {
@@ -166,10 +167,8 @@ export function NavPill() {
                  * screen is 97px wide, so width was never the constraint;
                  * height is.
                  */
-                className={`flex min-h-11 flex-col items-center justify-center gap-[2px] rounded-card py-2 no-underline transition-colors ${
-                  active
-                    ? "bg-volt text-ink"
-                    : "bg-surface-raised text-muted hover:text-bone"
+                className={`flex min-h-11 flex-col items-center justify-center gap-[2px] py-1.5 no-underline transition-colors ${
+                  active ? "text-accent" : "text-muted hover:text-bone"
                 }`}
               >
                 <Icon name={tab.icon} className="h-[20px] w-[20px]" />

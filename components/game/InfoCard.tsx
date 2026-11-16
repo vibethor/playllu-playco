@@ -103,7 +103,7 @@ export async function InfoCard({
         there — the item's ordering half was already satisfied. What was
         missing was the presentation that makes the order legible.
       */}
-      <h2 className="m-0 mb-4 text-body-lg font-semibold text-white">
+      <h2 className="m-0 mb-4 text-body-lg font-semibold text-bone">
         {t.games.gameInfoTitle}
       </h2>
 
@@ -142,7 +142,7 @@ export async function InfoCard({
       */}
       <dl className="m-0 grid grid-cols-[minmax(84px,auto)_1fr] gap-x-4 gap-y-3">
         <dt className={FACT_LABEL}>{t.games.infoWhen}</dt>
-        <dd className="m-0 text-[15px] text-white">
+        <dd className="m-0 text-[15px] text-bone">
           {formatGameDate(game.starts_at, locale)}
           <span data-testid="game-time-span" className="mt-[2px] block text-small text-muted">
             {formatTimeSpan(game.starts_at, endsAt, locale)}
@@ -254,7 +254,7 @@ export async function InfoCard({
           instead of rendering nothing.
         */}
         <dt className={FACT_LABEL}>{t.games.infoDuration}</dt>
-        <dd data-testid="game-duration" className="m-0 text-[15px] text-white">
+        <dd data-testid="game-duration" className="m-0 text-[15px] text-bone">
           {t.games.practicalDurationValue.replace(
             "{minutes}",
             String(resolveDurationMinutes(game.duration_minutes)),
@@ -301,7 +301,7 @@ export async function InfoCard({
           target="_blank"
           rel="noopener noreferrer"
           data-testid="venue-open-map"
-          className="flex min-h-11 items-center gap-2 text-[15px] font-bold tracking-wide text-volt no-underline"
+          className="flex min-h-11 items-center gap-2 text-[15px] font-bold tracking-wide text-accent no-underline"
         >
           <Icon name="pin" className="h-[18px] w-[18px]" />
           {t.games.openMapFull}

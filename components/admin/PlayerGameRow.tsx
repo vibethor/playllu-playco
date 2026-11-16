@@ -9,7 +9,7 @@ const hub = strings.admin.playersHub;
 function stateOf(row: AdminPlayerGameRow): { label: string; tone: string } {
   const held = row.status === "reserved" || row.status === "confirmed";
   if (!held) return { label: strings.admin.status.cancelled, tone: "border-hairline-strong text-faint" };
-  if (row.finished) return { label: strings.admin.status.played, tone: "border-hairline-volt text-volt" };
+  if (row.finished) return { label: strings.admin.status.played, tone: "border-hairline-accent text-accent" };
   if (row.live) return { label: strings.games.playingNow, tone: "border-warn text-warn" };
   return { label: hub.gameBooked, tone: "border-hairline-strong text-bone" };
 }
@@ -33,7 +33,7 @@ export function PlayerGameRow({ row }: { row: AdminPlayerGameRow }) {
       <div className="min-w-[180px] flex-1">
         <Link
           href={`/admin/games/${row.gameId}`}
-          className="text-body font-bold text-white no-underline transition-colors hover:text-volt"
+          className="text-body font-bold text-bone no-underline transition-colors hover:text-accent"
         >
           {row.venue}
         </Link>

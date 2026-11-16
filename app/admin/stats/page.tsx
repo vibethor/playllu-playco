@@ -141,7 +141,7 @@ export default async function FinancialsPage({
           detail={
             delta === null ? undefined : (
               <span data-testid="revenue-delta">
-                <span className={delta >= 0 ? "font-bold text-volt" : "font-bold text-warn"}>
+                <span className={delta >= 0 ? "font-bold text-accent" : "font-bold text-warn"}>
                   {delta >= 0 ? "+" : "−"}
                   {Math.abs(delta)}%
                 </span>{" "}

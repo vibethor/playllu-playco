@@ -36,7 +36,7 @@ export function BreakdownBars({
             <div className="flex items-baseline justify-between gap-3 text-small">
               <span className="min-w-0 truncate text-bone">{row.label}</span>
               <span className="shrink-0 tabular-nums text-muted">
-                <span className="font-semibold text-white">{row.display ?? row.value}</span> · {percent}%
+                <span className="font-semibold text-bone">{row.display ?? row.value}</span> · {percent}%
               </span>
             </div>
             <div className="mt-[5px] h-[5px] w-full overflow-hidden rounded-pill bg-surface-seg">

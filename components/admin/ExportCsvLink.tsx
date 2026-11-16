@@ -29,7 +29,7 @@ export function ExportCsvLink({
       href={href}
       download
       data-testid={testId}
-      className="inline-flex min-h-11 shrink-0 items-center rounded-control border border-hairline-strong px-4 text-[11px] uppercase tracking-[1px] text-muted no-underline transition hover:border-hairline-volt hover:text-volt"
+      className="inline-flex min-h-11 shrink-0 items-center rounded-control border border-hairline-strong px-4 text-[11px] uppercase tracking-[1px] text-muted no-underline transition hover:border-hairline-accent hover:text-accent"
     >
       {strings.admin.exportCsv}
     </a>

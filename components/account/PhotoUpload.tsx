@@ -392,7 +392,7 @@ export function PhotoUpload({
         {target === "avatar" && (
           <span
             aria-hidden
-            className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-pill border-2 border-surface bg-volt text-[13px] leading-none text-surface"
+            className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-pill border-2 border-surface bg-volt text-[13px] leading-none text-ink"
           >
             ✎
           </span>
@@ -421,7 +421,7 @@ export function PhotoUpload({
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="inline-flex cursor-pointer items-center justify-center rounded-control border border-hairline-volt px-4 py-2 text-[13px] font-bold uppercase tracking-wide text-volt transition hover:bg-volt/10">
+      <label className="inline-flex cursor-pointer items-center justify-center rounded-control border border-hairline-accent px-4 py-2 text-[13px] font-bold uppercase tracking-wide text-accent transition hover:bg-volt/10">
         {input}
         {busy ? t.account.photoUploading : hasPhoto ? t.account.photoReplace : t.account.photoUpload}
       </label>

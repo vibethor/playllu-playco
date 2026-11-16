@@ -67,9 +67,9 @@ export function NotifyForm({
   return (
     <section
       data-testid={asOffer ? "notify-offer" : "notify-form"}
-      className={`rounded-card p-4 sm:p-5 ${asOffer ? "border-2 border-hairline-volt bg-surface-raised" : "lifted"}`}
+      className={`rounded-card p-4 sm:p-5 ${asOffer ? "border-2 border-hairline-accent bg-surface-raised" : "lifted"}`}
     >
-      <h3 className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-volt-dim">
+      <h3 className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-accent-dim">
         {asOffer ? strings.admin.notifyOfferTitle : strings.admin.notifyTitle}
       </h3>
       <p className="m-0 mt-2 text-small text-muted">
@@ -125,7 +125,7 @@ export function NotifyForm({
           )}
 
           {state.status === "sent" && (
-            <p data-testid="notify-sent" className="m-0 text-small text-volt">
+            <p data-testid="notify-sent" className="m-0 text-small text-accent">
               {strings.admin.notifySent}
             </p>
           )}

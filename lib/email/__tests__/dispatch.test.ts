@@ -17,7 +17,7 @@ vi.mock("@/lib/email/env", async () => {
   const env = (locale: "en" | "cs" | "ru" | "uk") => ({
     locale,
     t: resolveStrings(locale),
-    baseUrl: "https://www.hrajfotbal.com",
+    baseUrl: "https://playco.example",
     cutoffHours: 12,
   });
   return { emailEnv: async (locale: "en" | "cs" | "ru" | "uk") => env(locale), emailEnvFor: async () => env("en") };
@@ -33,8 +33,8 @@ const ctx: DispatchContext = {
   nickname: "Player_1",
   venue: "Pražačka",
   startsAt: "2026-07-25T16:00:00.000Z",
-  gameUrl: "https://hrajfotbal.com/game/abc",
-  accountUrl: "https://hrajfotbal.com/account",
+  gameUrl: "https://playco.example/game/abc",
+  accountUrl: "https://playco.example/account",
   amountDueThb: 150,
   variableSymbol: 2600000042,
   spdString: "SPD*1.0*",

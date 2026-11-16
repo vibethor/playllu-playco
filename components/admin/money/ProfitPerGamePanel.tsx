@@ -37,15 +37,15 @@ function StackLabel({ children }: { children: string }) {
 function Total({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="rounded-control bg-surface-raised px-3 py-3">
-      <dt className="text-[10px] uppercase tracking-eyebrow text-volt-dim">{label}</dt>
-      <dd className="m-0 mt-2 font-display text-[22px] leading-none tabular-nums text-white">
+      <dt className="text-[10px] uppercase tracking-eyebrow text-accent-dim">{label}</dt>
+      <dd className="m-0 mt-2 font-display text-[22px] leading-none tabular-nums text-bone">
         {children}
       </dd>
     </div>
   );
 }
 
-const TH = "px-3 py-2 text-[10px] font-normal uppercase tracking-eyebrow text-volt-dim";
+const TH = "px-3 py-2 text-[10px] font-normal uppercase tracking-eyebrow text-accent-dim";
 const NUMBER_CELL = "col-span-2 tabular-nums md:table-cell md:whitespace-nowrap md:px-3 md:py-3 md:text-right md:align-middle";
 
 function GameRow({ row }: { row: ProfitRow }) {
@@ -64,7 +64,7 @@ function GameRow({ row }: { row: ProfitRow }) {
       <td role="cell" className="order-1 col-span-4 min-w-0 md:table-cell md:py-3 md:pr-3 md:align-middle">
         <Link
           href={`/admin/games/${game.id}`}
-          className="block truncate text-body font-semibold text-white no-underline hover:text-volt"
+          className="block truncate text-body font-semibold text-bone no-underline hover:text-accent"
         >
           {game.venue}
         </Link>

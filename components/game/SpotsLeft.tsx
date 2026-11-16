@@ -35,7 +35,7 @@ import { getLocale, getStrings } from "@/lib/i18n/server";
  * from a red two-word label.~~ The bar is red too now — see `TONE_FILL`.
  */
 const TONE_TEXT: Record<SpotsTone, string> = {
-  plenty: "text-volt",
+  plenty: "text-bone",
   few: "text-warn",
   critical: "text-danger",
   full: "text-danger",
@@ -52,7 +52,7 @@ const TONE_TEXT: Record<SpotsTone, string> = {
  * would be pixel-identical.
  */
 export const TONE_FILL: Record<SpotsTone, string> = {
-  plenty: "bg-volt",
+  plenty: "bg-bone",
   few: "bg-warn",
   critical: "bg-danger",
   full: "bg-danger",
@@ -97,7 +97,7 @@ export async function SpotsLeft({
       className={` leading-none tracking-tight ${
         size === "hero"
           ? "font-display text-[40px]"
-          : "text-body-lg font-bold"
+          : "font-display text-[17px] font-bold"
       } ${TONE_TEXT[tone]}`}
     >
       {tone === "full"

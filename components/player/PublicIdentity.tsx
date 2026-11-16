@@ -64,7 +64,7 @@ export async function PublicIdentity({
     <section data-testid="public-identity" className="relative flex items-end gap-4">
       <span
         data-testid="public-avatar"
-        className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-pill border-2 border-volt bg-surface-avatar text-[26px] font-bold text-volt"
+        className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-pill border-2 border-accent bg-surface-avatar text-[26px] font-bold text-accent"
       >
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -79,7 +79,7 @@ export async function PublicIdentity({
       <div className="flex min-w-0 flex-col gap-[2px] pb-1">
         <h1
           data-testid="public-nickname"
-          className="m-0 truncate text-[26px] font-bold leading-tight text-white"
+          className="m-0 truncate text-[26px] font-bold leading-tight text-bone"
         >
           {nickname}
         </h1>

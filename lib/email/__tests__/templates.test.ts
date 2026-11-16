@@ -26,7 +26,7 @@ import { policy } from "@/lib/policy";
 
 const STARTS_AT = "2026-07-25T11:00:00.000Z"; // 18:00 Asia/Bangkok
 const HOSTILE = '<script>alert("xss")</script>';
-const BASE_URL = "https://www.hrajfotbal.com";
+const BASE_URL = "https://playco.example";
 
 function env(locale: Locale = "en"): EmailEnv {
   return { locale, t: resolveStrings(locale), baseUrl: BASE_URL, cutoffHours: 12 };
@@ -116,8 +116,23 @@ describe("every email, in every language", () => {
 
     // Assert
     expect(email.html).toContain('<html lang="cs">');
-    expect(email.html).toContain(`${BASE_URL}/brand/hf-logo-96.png`);
-    expect(email.html).toContain("Hraj <span");
+    expect(email.html).toContain(`${BASE_URL}/brand/playco-mark-96.png`);
+    expect(email.html).toContain(">Playco</td>");
+    expect(email.html).not.toMatch(/Hraj|hrajfotbal|Anton|Onest/);
+  });
+
+  /*
+   * PLAYCO: Thai stacks vowel and tone marks on its consonants; letter-spacing pulls them apart. The only spaced
+   * text left in a Thai email is the Latin wordmark and the digits of a code.
+   */
+  it("never letter-spaces Thai text", () => {
+    // Act
+    const htmls = all("th").map(({ email }) => email.html);
+
+    // Assert
+    const spaced = htmls.flatMap((h) => h.match(/letter-spacing:[1-9][^;"]*/g) ?? []);
+    const latinOnly = new Set(["letter-spacing:3px", "letter-spacing:8px"]); // wordmark, code digits
+    expect(spaced.filter((value) => !latinOnly.has(value))).toEqual([]);
   });
 
   it("escapes a hostile venue everywhere it appears", () => {
@@ -182,17 +197,16 @@ describe("the booking confirmation — the approved template", () => {
     expect(email.text).toContain(`„${resolveStrings("cs").booking.cantMakeIt}“`);
   });
 
-  it("adds the receipt, the terms box as ticked and the terms PDF when money moved", () => {
+  it("adds the receipt and the terms box as ticked when money moved, but no terms PDF until the Thai terms exist", () => {
     // Act
     const email = bookingConfirmedEmail({ ...game, places: 1, creditsPaid: 1, ics, receipt: paid }, env("en"));
 
     // Assert
-    expect(email.text).toContain("HF-E5F6G7H8");
+    expect(email.text).toContain("PC-E5F6G7H8");
     expect(email.text).toContain("180 THB");
     expect(email.text).toContain(paid.terms!.wording);
-    expect(email.attachments?.map((a) => a.filename)).toContain("Hraj-Fotbal-obchodni-podminky.pdf");
-    const pdf = email.attachments?.find((a) => a.filename.endsWith(".pdf"));
-    expect(pdf && "path" in pdf ? pdf.path : null).toBe(`${BASE_URL}/legal/obchodni-podminky.pdf`);
+    // PLAYCO: the inherited PDF is HrajFotbal's Czech terms; nothing is attached until TERMS_PDF_READY (lib/legal.ts).
+    expect(email.attachments?.some((a) => a.filename.endsWith(".pdf"))).toBe(false);
   });
 
   it("counts a party as places and guests", () => {
@@ -255,7 +269,7 @@ describe("a cancellation says why nothing came back", () => {
     const unpaid = cancellationCreditEmail({ ...game, creditsReturned: 0, outcome: "unpaid" }, env("en"));
 
     // Assert
-    expect(late.text).toContain("less than 12 hours before kick-off");
+    expect(late.text).toContain("less than 12 hours before the start");
     expect(late.text).not.toContain("Nothing had been paid");
     expect(unpaid.text).toContain("Nothing had been paid");
   });

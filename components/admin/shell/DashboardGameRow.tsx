@@ -35,7 +35,7 @@ export function DashboardGameRow({ row }: { row: Row }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="truncate text-body font-semibold text-white">{row.venue}</div>
+          <div className="truncate text-body font-semibold text-bone">{row.venue}</div>
           <div className="truncate text-small text-muted">
             {[formatGameDateTime(row.startsAt), row.format, row.organizer]
               .filter(Boolean)
@@ -47,12 +47,12 @@ export function DashboardGameRow({ row }: { row: Row }) {
             `booked / capacity` — the one number that decides whether an
             organizer has to do anything about this game today.
           */}
-          <div className="text-body font-bold tabular-nums text-volt">
+          <div className="text-body font-bold tabular-nums text-accent">
             <span data-testid="dashboard-game-capacity">
               {row.booked} / {row.capacity}
             </span>
           </div>
-          <div className={`text-small font-semibold ${live ? "text-volt" : "text-muted"}`}>
+          <div className={`text-small font-semibold ${live ? "text-accent" : "text-muted"}`}>
             {strings.admin.dashboardStatus[row.status] ?? row.status}
           </div>
         </div>
@@ -65,7 +65,7 @@ export function DashboardGameRow({ row }: { row: Row }) {
       {note && (
         <p
           data-testid="dashboard-break-even"
-          className={`m-0 mt-2 text-[12px] ${note.kind === "past" ? "text-volt-dim" : "text-faint"}`}
+          className={`m-0 mt-2 text-[12px] ${note.kind === "past" ? "text-accent-dim" : "text-faint"}`}
         >
           {note.kind === "past"
             ? strings.admin.shell.breakEvenPast

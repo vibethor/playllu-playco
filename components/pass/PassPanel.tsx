@@ -41,12 +41,12 @@ export async function PassPanel() {
         below the fold — which is the density criterion §2.1's geometry already
         spends most of.
       */
-      className="mt-3 flex items-center justify-between gap-3 rounded-card border border-hairline-volt bg-volt/[.10] px-5 py-4 no-underline transition-colors hover:bg-volt/[.16]"
+      className="mt-3 flex items-center justify-between gap-3 rounded-card border border-hairline-accent bg-volt/[.10] px-5 py-4 no-underline transition-colors hover:bg-volt/[.16]"
     >
       <span className="min-w-0">
         <span
           data-testid="pass-panel-title"
-          className="block truncate text-body-lg font-bold text-white"
+          className="block truncate text-body-lg font-bold text-bone"
         >
           {t.pass.panelTitle}
         </span>
@@ -78,7 +78,7 @@ export async function PassPanel() {
         aria-hidden
         data-testid="pass-panel-arrow"
         viewBox="0 0 44 16"
-        className="h-4 w-11 shrink-0 text-volt"
+        className="h-4 w-11 shrink-0 text-accent"
         fill="none"
         stroke="currentColor"
         strokeWidth={3}

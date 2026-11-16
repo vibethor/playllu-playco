@@ -71,7 +71,7 @@ export function CloseOutPanel({
       )}
 
       {settled && (
-        <p className="m-0 text-[17px] font-bold uppercase tracking-wide text-volt">{strings.admin.settled}</p>
+        <p className="m-0 text-[17px] font-bold uppercase tracking-wide text-accent">{strings.admin.settled}</p>
       )}
     </Panel>
   );

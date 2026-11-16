@@ -27,7 +27,7 @@ export function MoneySpentPanel({ spend }: { spend: PlayerSpend }) {
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:items-start">
         <div>
           <SectionHeading title={t.playerKpis.spent} />
-          <div data-testid="admin-player-spend-total" className="font-display text-[34px] leading-none tabular-nums text-volt">
+          <div data-testid="admin-player-spend-total" className="font-display text-[34px] leading-none tabular-nums text-accent">
             {formatThb(spend.totalThb)}
           </div>
           <p className="m-0 mt-2 max-w-[360px] text-[11px] leading-snug text-muted">{t.playerKpis.spentDetail}</p>

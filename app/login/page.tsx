@@ -47,7 +47,7 @@ export default async function LoginPage({
     */
     <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
       <div className="w-full">
-        <h1 className="m-0 font-display text-page-title uppercase tracking-wide text-white">
+        <h1 className="m-0 font-display text-page-title uppercase tracking-wide text-bone">
           {t.auth.loginTitle}
         </h1>
         <p className="mt-3 text-body text-muted">{t.auth.loginLede}</p>
@@ -109,13 +109,13 @@ export default async function LoginPage({
           capability, not before it.
         */}
         <div className="lifted mt-4 rounded-card p-5">
-          <p className="m-0 text-eyebrow font-semibold uppercase text-volt">
+          <p className="m-0 text-eyebrow font-semibold uppercase text-accent">
             {t.auth.noAccountLead}
           </p>
           <Link
             href={signupHref(params)}
             data-testid="login-signup-link"
-            className="mt-3 flex min-h-11 items-center justify-center rounded-pill border-2 border-hairline-strong px-4 py-3 text-cta font-bold text-bone no-underline transition-colors hover:border-hairline-volt"
+            className="mt-3 flex min-h-11 items-center justify-center rounded-pill border-2 border-hairline-strong px-4 py-3 text-cta font-bold text-bone no-underline transition-colors hover:border-hairline-accent"
           >
             {t.auth.createAccountCta}
           </Link>

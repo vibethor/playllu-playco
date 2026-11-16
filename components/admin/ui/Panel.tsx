@@ -24,7 +24,7 @@ export function Panel({
       {(title || action) && (
         <div className="mb-3 flex items-center justify-between gap-3">
           {title && (
-            <h2 className="text-[10px] font-normal uppercase tracking-eyebrow text-volt-dim">{title}</h2>
+            <h2 className="text-[10px] font-normal uppercase tracking-eyebrow text-accent-dim">{title}</h2>
           )}
           {action && <div className="shrink-0">{action}</div>}
         </div>

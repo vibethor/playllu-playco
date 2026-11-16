@@ -10,9 +10,9 @@ import { strings } from "@/lib/strings";
  */
 const CAPSULE =
   "flex min-h-11 items-center justify-center rounded-pill border-2 px-3 py-3 text-center text-[11px] font-bold uppercase tracking-[1.5px] no-underline transition-colors";
-const OUTLINED = `${CAPSULE} border-hairline-volt text-volt hover:border-volt active:border-volt`;
+const OUTLINED = `${CAPSULE} border-hairline-accent text-accent hover:border-accent active:border-accent`;
 /* Creating a game is what the panel is opened for most; it is the filled one. */
-const PRIMARY = `${CAPSULE} border-volt bg-volt text-ink hover:bg-volt-dim active:bg-volt-dim`;
+const PRIMARY = `${CAPSULE} border-accent bg-volt text-ink hover:bg-volt-dim active:bg-volt-dim`;
 
 /**
  * ALL FOUR OF p14's QUICK ACTIONS (round 10, item 1), and the two lists you go
@@ -54,10 +54,10 @@ export function QuickActions() {
             key={link.href}
             href={link.href}
             data-testid={link.testId}
-            className="flex min-h-11 items-center justify-between rounded-control border border-hairline-strong px-4 py-2.5 text-body font-semibold text-bone no-underline transition-colors hover:border-hairline-volt active:border-hairline-volt"
+            className="flex min-h-11 items-center justify-between rounded-control border border-hairline-strong px-4 py-2.5 text-body font-semibold text-bone no-underline transition-colors hover:border-hairline-accent active:border-hairline-accent"
           >
             {link.label}
-            <span aria-hidden="true" className="text-volt">
+            <span aria-hidden="true" className="text-accent">
               →
             </span>
           </Link>

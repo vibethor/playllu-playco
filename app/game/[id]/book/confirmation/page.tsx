@@ -81,7 +81,7 @@ export default async function ConfirmationPage({
         </p>
         <Link
           href={`/game/${gameId}`}
-          className="mt-6 inline-block text-[11px] uppercase tracking-eyebrow text-volt no-underline"
+          className="mt-6 inline-block text-[11px] uppercase tracking-eyebrow text-accent no-underline"
         >
           {t.booking.backToGame}
         </Link>
@@ -131,7 +131,7 @@ export default async function ConfirmationPage({
         {booking.status === "confirmed" ? (
           <div
             data-testid="booking-confirmed"
-            className="flex items-center gap-3 rounded-card border-2 border-volt bg-volt/[.08] px-5 py-4"
+            className="flex items-center gap-3 rounded-card border-2 border-accent bg-volt/[.08] px-5 py-4"
           >
             <span
               aria-hidden="true"
@@ -147,7 +147,7 @@ export default async function ConfirmationPage({
             <span
               data-testid="confirmed-headline"
               data-added={addedGuests > 0 ? String(addedGuests) : undefined}
-              className="font-display text-title uppercase leading-none tracking-wide text-volt"
+              className="font-display text-title uppercase leading-none tracking-wide text-accent"
             >
               {addedGuests > 0
                 ? pluralise(
@@ -163,17 +163,17 @@ export default async function ConfirmationPage({
             </span>
           </div>
         ) : (
-          <div className="text-[11px] uppercase tracking-eyebrow text-volt">
+          <div className="text-[11px] uppercase tracking-eyebrow text-accent">
             {t.booking.reserved}
           </div>
         )}
 
-        <h1 className="mt-4 font-display text-section-title uppercase tracking-wide text-white">
+        <h1 className="mt-4 font-display text-section-title uppercase tracking-wide text-bone">
           {game.venue}
         </h1>
 
-        <div className="mt-3 text-[13px] tracking-[1px] text-volt">
-          {formatGameDateTime(game.starts_at)}
+        <div className="mt-3 text-[13px] tracking-[1px] text-accent">
+          {formatGameDateTime(game.starts_at, locale)}
         </div>
 
         {/* Instant-confirmed outcomes: nothing to pay, so no payment block. */}
@@ -196,7 +196,7 @@ export default async function ConfirmationPage({
               player's own balance is in. The amount still owed below stays in
               crowns, because that is what a card is about to be charged.
             */}
-            <span data-testid="credit-applied" className="text-[13px] text-volt">
+            <span data-testid="credit-applied" className="text-[13px] text-accent">
               −
               {pluralise(
                 {
@@ -219,7 +219,7 @@ export default async function ConfirmationPage({
               </span>
               <span
                 data-testid="amount-due"
-                className="font-display text-[32px] leading-none text-volt"
+                className="font-display text-[32px] leading-none text-accent"
               >
                 {formatThb(amountDue)}
               </span>
@@ -297,14 +297,14 @@ export default async function ConfirmationPage({
         <a
           href={`/game/${game.id}/ics`}
           data-testid="ics-link"
-          className="mt-8 block rounded-control border border-hairline-volt px-6 py-4 text-center text-cta font-extrabold uppercase tracking-wide text-volt no-underline"
+          className="mt-8 block rounded-control border border-hairline-accent px-6 py-4 text-center text-cta font-extrabold uppercase tracking-wide text-accent no-underline"
         >
           {t.booking.addToCalendar}
         </a>
 
         <Link
           href={`/game/${game.id}`}
-          className="mt-8 inline-block text-[11px] uppercase tracking-eyebrow text-volt no-underline"
+          className="mt-8 inline-block text-[11px] uppercase tracking-eyebrow text-accent no-underline"
         >
           {t.booking.backToGame}
         </Link>

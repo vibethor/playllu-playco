@@ -141,13 +141,13 @@ export default async function AdminPlayersPage({
               defaultValue={q}
               placeholder={strings.admin.playerSearchPlaceholder}
               data-testid="player-search-input"
-              className="min-w-0 flex-1 rounded-control border-[1.5px] border-volt bg-surface px-4 py-3 text-body text-bone placeholder:text-faint"
+              className="min-w-0 flex-1 rounded-control border-[1.5px] border-accent bg-surface px-4 py-3 text-body text-bone placeholder:text-faint"
             />
             {q !== "" && (
               <Link
                 href={playersHref({ segment, sort, q: "" })}
                 data-testid="player-search-clear"
-                className="flex shrink-0 items-center rounded-control border border-hairline-strong px-4 text-small font-semibold text-muted no-underline transition-colors hover:border-volt hover:text-volt"
+                className="flex shrink-0 items-center rounded-control border border-hairline-strong px-4 text-small font-semibold text-muted no-underline transition-colors hover:border-accent hover:text-accent"
               >
                 {strings.admin.playerSearchClear}
               </Link>

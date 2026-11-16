@@ -32,7 +32,7 @@ export function LedgerPanel({ transactions }: { transactions: Transaction[] }) {
               className="flex items-center justify-between gap-3 border-b border-hairline py-3 last:border-b-0 last:pb-0"
             >
               <span className="min-w-0">
-                <span className="block truncate text-body font-semibold text-white">{tx.who}</span>
+                <span className="block truncate text-body font-semibold text-bone">{tx.who}</span>
                 <span className="block truncate text-small text-muted">
                   {tx.what} <span className="text-faint">· {formatDate(tx.at)}</span>
                 </span>
@@ -41,7 +41,7 @@ export function LedgerPanel({ transactions }: { transactions: Transaction[] }) {
                   than red — it is not a loss, it is a seat being used. */}
               <span
                 className={`shrink-0 whitespace-nowrap text-body font-bold tabular-nums ${
-                  tx.amountThb >= 0 ? "text-volt" : "text-muted"
+                  tx.amountThb >= 0 ? "text-accent" : "text-muted"
                 }`}
               >
                 {tx.amountThb >= 0 ? "+" : "−"}

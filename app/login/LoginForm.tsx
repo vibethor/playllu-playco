@@ -87,7 +87,7 @@ export function LoginForm({
           disabled={pending}
           data-testid="login-submit"
           /* `rounded-pill` — p08 draws every primary control as a capsule. */
-          className="rounded-pill bg-volt px-4 py-[15px] text-cta font-extrabold uppercase tracking-wide text-surface transition disabled:opacity-50"
+          className="rounded-pill bg-volt px-4 py-[15px] text-cta font-extrabold uppercase tracking-wide text-ink transition disabled:opacity-50"
         >
           {pending ? t.common.loading : t.auth.signInSubmit}
         </button>
@@ -115,7 +115,7 @@ export function LoginForm({
         <Link
           href={resetHref({ gameId, action, next })}
           data-testid="forgot-password-link"
-          className="text-small font-semibold text-volt no-underline transition-colors hover:text-bone"
+          className="text-small font-semibold text-accent no-underline transition-colors hover:text-bone"
         >
           {t.auth.forgotPasswordLink}
         </Link>

@@ -59,3 +59,6 @@ export const TERMS_RULES_ANCHOR = "pravidla";
 
 /** Where the terms are published as a PDF (the lawyer's brief, item 1.2). */
 export const TERMS_PDF_PATH = "/legal/obchodni-podminky.pdf";
+
+/** PLAYCO: false until the lawyer-reviewed Thai terms replace the inherited Czech PDF (see `termsAttachments`). */
+export const TERMS_PDF_READY = false;

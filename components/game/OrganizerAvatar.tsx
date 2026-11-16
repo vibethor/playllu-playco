@@ -30,7 +30,7 @@ export function OrganizerAvatar({
     <span
       data-testid="organizer-avatar"
       aria-hidden
-      className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-pill border-2 border-volt bg-surface-avatar text-[15px] font-bold text-volt"
+      className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-pill border-2 border-accent bg-surface-avatar text-[15px] font-bold text-accent"
     >
       {photoUrl ? (
         <Image

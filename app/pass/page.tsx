@@ -43,7 +43,7 @@ export default async function PassPage() {
           round 3 — the pass page was still on `section-title`, which clamps to
           24px at phone width and made this the one quiet title in the
           product. */}
-      <h1 className="m-0 font-display text-page-title uppercase tracking-wide text-white">
+      <h1 className="m-0 font-display text-page-title uppercase tracking-wide text-bone">
         {t.pass.title}
       </h1>
       <p className="mt-3 max-w-[520px] text-[14px] leading-relaxed text-muted">
@@ -75,7 +75,7 @@ export default async function PassPage() {
         /* A capsule with a `border-2` stroke: the frames give every outlined
            control both, and R11 forbids the sub-pixel widths this page never
            had but its neighbours did. */
-        className="mt-6 inline-flex rounded-pill border-2 border-hairline-volt px-4 py-2 text-body-lg font-semibold text-volt"
+        className="mt-6 inline-flex rounded-pill border-2 border-hairline-accent px-4 py-2 text-body-lg font-semibold text-accent"
       >
         {t.pass.creditEqualsGame}
       </p>
@@ -91,7 +91,7 @@ export default async function PassPage() {
           of luminance off the page, which is the exact problem `.lifted`
           exists to solve. */}
       <section className="lifted mt-10 rounded-card p-5">
-        <h2 className="m-0 font-display text-community-title uppercase text-white">
+        <h2 className="m-0 font-display text-community-title uppercase text-bone">
           {t.pass.howItWorks}
         </h2>
         <p className="mt-2 text-[14px] leading-relaxed text-bone">

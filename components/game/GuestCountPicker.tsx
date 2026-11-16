@@ -65,7 +65,7 @@ export function GuestCountPicker({
             onClick={() => onChange(n)}
             className={
               value === n
-                ? "rounded-control border-[1.5px] border-volt bg-volt px-4 py-2 text-body font-bold text-surface"
+                ? "rounded-control border-[1.5px] border-accent bg-volt px-4 py-2 text-body font-bold text-ink"
                 : "rounded-control border-[1.5px] border-hairline bg-transparent px-4 py-2 text-body font-bold text-bone"
             }
           >

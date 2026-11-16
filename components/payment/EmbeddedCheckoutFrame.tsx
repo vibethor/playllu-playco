@@ -58,7 +58,7 @@ export function EmbeddedCheckoutFrame({
         corners of a rounded panel, which is the single most obvious tell that
         something was pasted in.
       */
-      className="overflow-hidden rounded-card border border-hairline-volt bg-surface p-1"
+      className="overflow-hidden rounded-card border border-hairline-accent bg-surface p-1"
     >
       <EmbeddedCheckoutProvider stripe={stripe} options={{ clientSecret }}>
         <EmbeddedCheckout />

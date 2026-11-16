@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t.siteFooter.contact, robots: { index: false, follow: true } };
 }
 
-const LINK = "text-volt underline-offset-4 hover:underline";
+const LINK = "text-accent underline-offset-4 hover:underline";
 
 /**
  * `/contact` — Kontakt (the lawyer's brief, item 1.1).
@@ -106,7 +106,7 @@ export default async function ContactPage() {
 
       <Link
         href="/games"
-        className="mt-10 inline-flex min-h-11 items-center text-small text-faint no-underline hover:text-volt-dim"
+        className="mt-10 inline-flex min-h-11 items-center text-small text-faint no-underline hover:text-accent-dim"
       >
         {legal.back}
       </Link>

@@ -111,7 +111,7 @@ export default async function AdminPlayerPage({ params }: { params: Promise<{ id
           size="md"
           tone="white"
         >
-          <span data-testid="admin-player-came-back" className={figures.gamesPlayed >= CAME_BACK_GAMES ? "text-volt" : undefined}>
+          <span data-testid="admin-player-came-back" className={figures.gamesPlayed >= CAME_BACK_GAMES ? "text-accent" : undefined}>
             {cameBackLine(figures.gamesPlayed)}
           </span>
         </KpiTile>

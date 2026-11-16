@@ -75,7 +75,7 @@ describe("whatsAppShareUrl", () => {
     );
 
     // Assert
-    expect(text).toBe("⚽ Football on Sunday 1 November 15:00\n📍 Prazacka Football\n4 spots left – grab one 👉 https://www.hrajfotbal.com/game/42");
+    expect(text).toBe("Volleyball · Sunday 1 November 15:00\nPrazacka Football\n4 spots left – grab one https://www.hrajfotbal.com/game/42");
   });
 
   it("sends a full game's sharer to the waitlist", () => {
@@ -85,6 +85,6 @@ describe("whatsAppShareUrl", () => {
     );
 
     // Assert
-    expect(text).toContain("Full – join the waitlist 👉 https://www.hrajfotbal.com/game/7");
+    expect(text).toContain("Full – join the waitlist https://www.hrajfotbal.com/game/7");
   });
 });

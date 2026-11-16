@@ -6,7 +6,7 @@ import {
   plainSmallPrint,
   purchaseSmallPrint,
   receipt,
-  termsAttachment,
+  termsAttachments,
   type EmailEnv,
   type PaymentReceipt,
 } from "./parts";
@@ -58,7 +58,7 @@ export function creditsPurchasedEmail(props: CreditsPurchasedProps, env: EmailEn
     receipt: receipt(env, props.paid),
     smallPrint: purchaseSmallPrint(env),
     footer: copy.footer,
-    attachments: [termsAttachment(env)],
+    attachments: termsAttachments(env),
   });
 }
 

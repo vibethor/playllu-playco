@@ -68,7 +68,7 @@ export function VenueCard({
         >
           <VenueThumb url={photoUrl} />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-body font-semibold text-white">{venue.name}</span>
+            <span className="block truncate text-body font-semibold text-bone">{venue.name}</span>
             <span className="mt-[1px] block truncate text-[12px] text-muted">{subline}</span>
           </span>
           {costNow !== null && (
@@ -178,7 +178,7 @@ export function VenueCard({
 /** A group's eyebrow inside an open venue — the label every admin panel uses. */
 function SubHeading({ id, children }: { id: string; children: React.ReactNode }) {
   return (
-    <h4 id={id} className="m-0 mb-4 text-[10px] font-normal uppercase tracking-eyebrow text-volt-dim">
+    <h4 id={id} className="m-0 mb-4 text-[10px] font-normal uppercase tracking-eyebrow text-accent-dim">
       {children}
     </h4>
   );

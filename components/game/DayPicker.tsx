@@ -125,9 +125,9 @@ export function DayPicker({
     "flex h-16 w-14 shrink-0 flex-col items-center justify-center gap-[2px] rounded-control border no-underline transition-colors";
   const skin = (isSelected: boolean, hasGames: boolean) =>
     isSelected
-      ? "border-hairline-volt bg-volt text-ink"
+      ? "border-hairline-accent bg-volt text-ink"
       : hasGames
-        ? "border-hairline-strong text-bone hover:border-hairline-volt"
+        ? "border-hairline-strong text-bone hover:border-hairline-accent"
         : "border-hairline text-faint hover:border-hairline-strong";
 
   return (
@@ -158,8 +158,8 @@ export function DayPicker({
         */
         className={`${cell} text-[15px] font-semibold ${
           selected === null
-            ? "border-hairline-volt bg-volt text-ink"
-            : "border-hairline-strong text-muted hover:border-hairline-volt"
+            ? "border-hairline-accent bg-volt text-ink"
+            : "border-hairline-strong text-muted hover:border-hairline-accent"
         }`}
       >
         {allLabel}

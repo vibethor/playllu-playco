@@ -78,7 +78,7 @@ const ALL: Categories = { analytics: true, marketing: true };
 
 /** One look for all three answers — equal weight is the compliance property. */
 const ANSWER =
-  "min-h-11 flex-1 rounded-control border-[1.5px] border-hairline-strong bg-transparent px-4 py-3 text-body font-bold text-bone transition-colors hover:border-volt focus-visible:outline focus-visible:outline-2 focus-visible:outline-volt md:flex-none";
+  "min-h-11 flex-1 rounded-control border-[1.5px] border-hairline-strong bg-transparent px-4 py-3 text-body font-bold text-bone transition-colors hover:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent md:flex-none";
 
 export function CookieConsent() {
   const t = useStrings();
@@ -132,7 +132,7 @@ export function CookieConsent() {
       className="fixed inset-x-0 bottom-0 z-[60] max-h-[85vh] overflow-y-auto border-t border-hairline bg-surface p-gutter pb-[max(theme(spacing.gutter),env(safe-area-inset-bottom))] shadow-lift"
     >
       <div className="mx-auto flex max-w-shell flex-col gap-4">
-        <h2 id={titleId} className="m-0 text-[17px] font-bold uppercase tracking-wide text-white">
+        <h2 id={titleId} className="m-0 text-[17px] font-bold uppercase tracking-wide text-bone">
           {layer === "settings" ? t.consent.settingsTitle : t.consent.title}
         </h2>
 

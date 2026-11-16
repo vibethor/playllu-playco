@@ -92,7 +92,7 @@ export function RemovePlayerControl({
               data-testid="roster-remove-dialog"
               className="lifted fixed left-1/2 top-1/2 z-[61] w-[min(360px,calc(100vw-2*22px))] -translate-x-1/2 -translate-y-1/2 rounded-card p-5 shadow-lift"
             >
-              <h2 className="m-0 text-[17px] font-bold uppercase tracking-wide text-white">
+              <h2 className="m-0 text-[17px] font-bold uppercase tracking-wide text-bone">
                 {strings.admin.rosterRemoveConfirmTitle}
               </h2>
               <p className="mt-2 text-[13px] leading-relaxed text-bone">
@@ -167,7 +167,7 @@ function CreditSwitch({
         />
         <span
           aria-hidden
-          className={`relative h-6 w-11 shrink-0 rounded-pill transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-volt ${
+          className={`relative h-6 w-11 shrink-0 rounded-pill transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-accent ${
             checked ? "bg-volt" : "bg-surface-seg"
           }`}
         >

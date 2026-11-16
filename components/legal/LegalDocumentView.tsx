@@ -36,7 +36,7 @@ function Inline({ nodes }: { nodes: LegalInline[] }): ReactNode {
       <a
         key={node.key}
         href={node.href}
-        className="text-volt underline-offset-4 hover:underline"
+        className="text-accent underline-offset-4 hover:underline"
         {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       >
         <Inline nodes={node.children} />
@@ -57,7 +57,7 @@ function Header({
   const Title = level === "document" ? "h1" : "h2";
   return (
     <header className="flex flex-col gap-2 border-b border-hairline-strong pb-5">
-      <p className="m-0 text-eyebrow uppercase text-volt">
+      <p className="m-0 text-eyebrow uppercase text-accent">
         <Inline nodes={header.kicker} />
       </p>
       <Title
@@ -215,7 +215,7 @@ export function LegalDocumentView({
     <article
       lang="cs"
       data-testid="legal-document"
-      className="flex flex-col gap-4 text-body text-white/80"
+      className="flex flex-col gap-4 text-body text-bone/80"
     >
       <Part part={document.main} level="document" />
       {document.annexes.map((annex, index) => (

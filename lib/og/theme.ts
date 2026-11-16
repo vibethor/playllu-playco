@@ -1,4 +1,4 @@
-import tailwindConfig from "@/tailwind.config";
+import { BRAND, DARK } from "@/lib/brand/palette";
 
 /**
  * What both share cards draw with: the game card (`shareImage.tsx`) and the
@@ -10,19 +10,18 @@ import tailwindConfig from "@/tailwind.config";
  * FROM THE TOKEN TABLE, not retyped. A theme change therefore moves the cards
  * with it, which is the property the no-inline-hex rule exists to protect.
  */
-const themeColors = (tailwindConfig.theme?.extend?.colors ?? {}) as Record<string, string>;
 
 export const COLORS = {
-  volt: themeColors.volt,
-  ink: themeColors.ink,
-  bone: themeColors.bone,
-  muted: themeColors.muted,
-  faint: themeColors.faint,
-  surface: themeColors.surface,
-  surfaceSeg: themeColors["surface-seg"],
-  warn: themeColors.warn,
-  danger: themeColors.danger,
-  hairline: "rgba(255,255,255,.12)",
+  volt: BRAND.lime,
+  ink: BRAND.navy,
+  bone: BRAND.cloud,
+  muted: DARK.muted,
+  faint: DARK.faint,
+  surface: DARK.surface,
+  surfaceSeg: DARK.segment,
+  warn: DARK.warn,
+  danger: DARK.danger,
+  hairline: "rgba(247,250,252,.14)",
 };
 
 export const OG_SIZE = { width: 1200, height: 630 };

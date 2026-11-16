@@ -10,7 +10,7 @@ import {
   plainSmallPrint,
   playersRow,
   receipt,
-  termsAttachment,
+  termsAttachments,
   when,
   whenRow,
   whereRow,
@@ -70,7 +70,7 @@ export function bookingConfirmedEmail(props: BookingConfirmedProps, env: EmailEn
     footer: e.common.footerBooked,
     attachments: [
       ...(props.ics ? [props.ics] : []),
-      ...(props.receipt ? [termsAttachment(env)] : []),
+      ...(props.receipt ? termsAttachments(env) : []),
     ],
   });
 }

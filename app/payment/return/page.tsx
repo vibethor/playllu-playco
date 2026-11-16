@@ -140,7 +140,7 @@ export default async function PaymentReturnPage({
           data-testid="payment-return-unknown"
           className="rounded-card bg-surface p-6"
         >
-          <h1 className="m-0 font-display text-section-title uppercase tracking-wide text-white">
+          <h1 className="m-0 font-display text-section-title uppercase tracking-wide text-bone">
             {t.payment.returnUnknownTitle}
           </h1>
           <p className="mt-3 mb-0 text-body leading-relaxed text-muted">
@@ -149,7 +149,7 @@ export default async function PaymentReturnPage({
           <Link
             href="/account"
             data-testid="payment-return-profile"
-            className="mt-6 inline-block text-[11px] uppercase tracking-eyebrow text-volt no-underline"
+            className="mt-6 inline-block text-[11px] uppercase tracking-eyebrow text-accent no-underline"
           >
             {t.nav.profile}
           </Link>

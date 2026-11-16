@@ -48,7 +48,7 @@ export default async function SetPasswordPage({
     */
     <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
       <div className="w-full">
-        <h1 className="m-0 font-display text-page-title uppercase tracking-wide text-white">
+        <h1 className="m-0 font-display text-page-title uppercase tracking-wide text-bone">
           {t.auth.setPasswordTitle}
         </h1>
         <p className="mt-3 text-body text-muted">{t.auth.setPasswordLede}</p>

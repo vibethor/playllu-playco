@@ -57,14 +57,14 @@ export default async function CreditsAddedPage() {
   return (
     <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
       <div data-testid="credits-added" data-credits={credits}>
-        <div className="flex items-center gap-3 rounded-card border-2 border-volt bg-volt/[.08] px-5 py-4">
+        <div className="flex items-center gap-3 rounded-card border-2 border-accent bg-volt/[.08] px-5 py-4">
           <span
             aria-hidden="true"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-volt text-[20px] font-bold leading-none text-ink"
           >
             ✓
           </span>
-          <h1 className="m-0 font-display text-title uppercase leading-none tracking-wide text-volt">
+          <h1 className="m-0 font-display text-title uppercase leading-none tracking-wide text-accent">
             {t.pass.creditsAddedTitle}
           </h1>
         </div>

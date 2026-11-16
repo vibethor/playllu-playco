@@ -56,13 +56,13 @@ export async function CreditBalance({ balanceThb, batches = [] }: CreditBalanceP
       on the number, and it now reads as one.
     */
     <section className="rounded-card bg-surface p-4">
-      <h2 className="m-0 text-[11px] uppercase tracking-eyebrow text-volt-dim">
+      <h2 className="m-0 text-[11px] uppercase tracking-eyebrow text-accent-dim">
         {t.account.creditBalance}
       </h2>
 
       <div
         data-testid="credit-balance"
-        className="mt-1 font-display text-[34px] leading-none text-volt"
+        className="mt-1 font-display text-[34px] leading-none text-accent"
       >
         {creditsLabel(credits, locale, t)}
       </div>

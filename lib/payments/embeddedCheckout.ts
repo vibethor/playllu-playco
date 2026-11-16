@@ -181,6 +181,7 @@ export interface EmbeddedSessionInput {
 /** Stripe Checkout's own label languages, for the four this product speaks. */
 const STRIPE_LOCALE: Record<Locale, Stripe.Checkout.SessionCreateParams.Locale> = {
   en: "en",
+  th: "th",
   cs: "cs",
   ru: "ru",
   uk: "auto",

@@ -25,7 +25,7 @@
  *   - Anything about money. See `lib/i18n/README` note in `resolve.ts`.
  */
 
-export const LOCALES = ["en", "cs", "ru", "uk"] as const;
+export const LOCALES = ["en", "th", "cs", "ru", "uk"] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
@@ -57,10 +57,10 @@ export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "en";
 
 /**
- * PLAYCO, PHASE F: the languages a visitor can actually be served. English only until Thai lands (plan Phase 11);
- * the Czech, Russian and Ukrainian overlays stay in the tree, unserved, until then.
+ * PLAYCO: the languages a visitor can choose and be served — English and Thai. The Czech, Russian and Ukrainian
+ * overlays inherited from HrajFotbal stay in the tree, unserved (no route, cookie or browser header reaches them).
  */
-export const SERVED_LOCALES: readonly Locale[] = ["en"];
+export const SERVED_LOCALES: readonly Locale[] = ["en", "th"];
 
 /**
  * The cookie carrying the choice.
@@ -90,6 +90,7 @@ export const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
  */
 export const LOCALE_LABELS: Record<Locale, { short: string; full: string }> = {
   en: { short: "EN", full: "English" },
+  th: { short: "ไทย", full: "ไทย" },
   cs: { short: "CZ", full: "Čeština" },
   ru: { short: "RU", full: "Русский" },
   uk: { short: "UA", full: "Українська" },

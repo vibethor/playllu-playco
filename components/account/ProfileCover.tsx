@@ -100,7 +100,7 @@ export function ProfileCover({
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={coverUrl ?? "/pitch-default.jpg"}
+        src={coverUrl ?? "/venue-default.jpg"}
         alt=""
         aria-hidden
         data-testid="profile-cover-photo"
@@ -193,7 +193,7 @@ export function ProfileCover({
           */}
           <span
             data-testid="cover-upload-control"
-            className="flex h-9 items-center gap-2 rounded-pill border-2 border-volt bg-ink/70 px-4 text-small font-bold text-volt"
+            className="flex h-9 items-center gap-2 rounded-pill border-2 border-accent bg-ink/70 px-4 text-small font-bold text-accent"
           >
             {t.account.coverChange}
           </span>

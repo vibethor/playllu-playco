@@ -364,7 +364,7 @@ export default async function CheckoutPage({
         {t.booking.backToGame}
       </Link>
 
-      <h1 className="mt-4 font-display text-page-title uppercase tracking-wide text-white">
+      <h1 className="mt-4 font-display text-page-title uppercase tracking-wide text-bone">
         {t.payment.checkoutTitle}
       </h1>
 
@@ -377,7 +377,7 @@ export default async function CheckoutPage({
       */}
       <p
         data-testid="checkout-amount"
-        className="mt-2 font-display text-title uppercase leading-none text-volt"
+        className="mt-2 font-display text-title uppercase leading-none text-accent"
       >
         {formatThb(line.amountThb)}
       </p>

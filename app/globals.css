@@ -9,6 +9,70 @@
  */
 
 @layer base {
+  /*
+   * PLAYCO THEME — the values behind every colour token (tailwind.config.ts).
+   * `:root` is the light page; `.theme-dark` is a dark island (photo cards, hero, game banner, tab bar).
+   * Colours are "R G B" channels so Tailwind's opacity modifiers keep working.
+   */
+  :root {
+    --c-navy: 16 44 64;        /* #102C40 Midnight Navy */
+    --c-cloud: 247 250 252;    /* #F7FAFC Cloud White */
+    --c-lime: 219 255 0;       /* #DBFF00 Electric Lime */
+    --c-lime-dim: 195 228 0;   /* lime, pressed / hover */
+
+    --c-page: 247 250 252;
+    --c-surface: 255 255 255;
+    --c-surface-raised: 238 243 246;
+    --c-surface-avatar: 225 233 239;
+    --c-surface-seg: 220 228 234;
+    --surface-overlay: rgba(247, 250, 252, 0.94);
+
+    --c-bone: 16 44 64;        /* primary text: navy, 13.8:1 on Cloud White */
+    --c-muted: 75 98 116;      /* #4B6274, 6.3:1 */
+    --c-faint: 94 115 131;     /* #5E7383, 4.9:1 */
+    --c-accent: 16 44 64;      /* emphasis text/lines on light: navy (lime would vanish) */
+    --c-accent-dim: 75 98 116;
+
+    --hairline: rgba(16, 44, 64, 0.1);
+    --hairline-strong: rgba(16, 44, 64, 0.16);
+    --hairline-accent: rgba(16, 44, 64, 0.32);
+
+    --c-warn: 178 94 0;        /* #B25E00 on light */
+    --c-danger: 192 54 44;     /* #C0362C on light */
+  }
+
+  .theme-dark {
+    --c-page: 10 30 44;
+    --c-surface: 20 54 80;
+    --c-surface-raised: 26 61 87;
+    --c-surface-avatar: 35 68 91;
+    --c-surface-seg: 247 250 252;
+    --surface-overlay: rgba(10, 30, 44, 0.94);
+
+    --c-bone: 247 250 252;     /* Cloud White on navy */
+    --c-muted: 169 188 203;
+    --c-faint: 142 163 179;
+    --c-accent: 219 255 0;     /* lime on navy, 12.6:1 */
+    --c-accent-dim: 195 228 0;
+
+    --hairline: rgba(247, 250, 252, 0.12);
+    --hairline-strong: rgba(247, 250, 252, 0.2);
+    --hairline-accent: rgba(219, 255, 0, 0.4);
+
+    --c-warn: 255 170 76;      /* #FFAA4C on navy */
+    --c-danger: 255 122 112;   /* #FF7A70 on navy */
+    color: rgb(var(--c-bone));
+  }
+  /* Empty capacity segments on a dark island are Cloud White at low opacity, not a solid fill. */
+  .theme-dark .bg-surface-seg { background-color: rgb(var(--c-cloud) / 0.18); }
+
+  /* Archivo is drawn with a width axis; the display face runs semi-expanded. */
+  .font-display { font-stretch: 112%; }
+  /* Thai needs more line height than Latin so tone marks and upper vowels never touch the line above. */
+  :lang(th) body { line-height: 1.7; }
+  /* Thai stacks vowel and tone marks on its consonants; tracking pulls them apart. The logo is Latin and keeps it. */
+  :lang(th) :is([class*="tracking-"], .text-eyebrow, .field-label):not(.font-logo) { letter-spacing: normal; }
+
   *,
   *::before,
   *::after {
@@ -42,7 +106,7 @@
    * here live inside clipped cards.
    */
   :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-    outline: 2px solid theme("colors.volt");
+    outline: 2px solid rgb(var(--c-accent));
     outline-offset: 2px;
     border-radius: inherit;
   }
@@ -101,7 +165,7 @@
   }
 
   body {
-    @apply m-0 bg-ink text-bone font-sans antialiased overflow-x-hidden;
+    @apply m-0 bg-page text-bone font-sans antialiased overflow-x-hidden;
   }
 
   /**
@@ -126,12 +190,12 @@
    * a ring drawn on the element's own edge would disappear into the fill.
    */
   :focus-visible {
-    outline: 2px solid theme("colors.focus-ring");
+    outline: 2px solid rgb(var(--c-accent));
     outline-offset: 2px;
   }
 
   ::selection {
-    @apply bg-volt text-surface;
+    @apply bg-volt text-ink;
   }
 
   input {
@@ -281,7 +345,7 @@
    * white is a colour the contrast table does not know about.
    */
   .field {
-    @apply rounded-control border border-hairline-strong bg-surface px-4 py-3 text-base text-bone outline-none transition-colors placeholder:text-faint focus:border-volt;
+    @apply rounded-control border border-hairline-strong bg-surface px-4 py-3 text-base text-bone outline-none transition-colors placeholder:text-faint focus:border-accent;
   }
 
   .field-label {

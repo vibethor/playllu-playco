@@ -247,7 +247,7 @@ export function PaymentMethodChoice({
       disabled
         ? "cursor-not-allowed border-hairline bg-surface/60 opacity-60"
         : "cursor-pointer bg-surface " +
-          (activeChoice === value ? "border-volt" : "border-hairline-strong hover:border-hairline-volt"),
+          (activeChoice === value ? "border-accent" : "border-hairline-strong hover:border-hairline-accent"),
     ].join(" ");
 
   return (
@@ -283,8 +283,8 @@ export function PaymentMethodChoice({
                 className={[
                   "flex min-h-11 cursor-pointer items-center rounded-pill border-2 px-4 text-small font-bold transition-colors",
                   guests === n
-                    ? "border-volt text-volt"
-                    : "border-hairline-strong text-muted hover:border-hairline-volt",
+                    ? "border-accent text-accent"
+                    : "border-hairline-strong text-muted hover:border-hairline-accent",
                 ].join(" ")}
               >
                 <input
@@ -401,7 +401,7 @@ export function PaymentMethodChoice({
                 <Link
                   href="/pass"
                   data-testid="add-credits"
-                  className="mt-3 inline-flex min-h-11 items-center rounded-pill border-2 border-hairline-volt px-4 text-small font-bold text-volt no-underline transition-colors hover:border-volt"
+                  className="mt-3 inline-flex min-h-11 items-center rounded-pill border-2 border-hairline-accent px-4 text-small font-bold text-accent no-underline transition-colors hover:border-accent"
                 >
                   {t.booking.addCredits}
                 </Link>
@@ -461,7 +461,7 @@ export function PaymentMethodChoice({
               {seats > 1 && !embeddedCheckout && (
                 <span
                   data-testid="party-online-quantity"
-                  className="mt-2 block text-[13px] font-semibold leading-snug text-volt"
+                  className="mt-2 block text-[13px] font-semibold leading-snug text-accent"
                 >
                   {t.booking.partyOnlineQuantity.replace("{seats}", String(seats))}
                 </span>
@@ -530,7 +530,7 @@ export function PaymentMethodChoice({
           <Link
             href={`/game/${gameId}`}
             data-testid="booking-error-back"
-            className="text-body font-semibold text-volt no-underline"
+            className="text-body font-semibold text-accent no-underline"
           >
             {t.booking.backToGame}
           </Link>

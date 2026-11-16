@@ -15,184 +15,70 @@ const config: Config = {
     extend: {
       colors: {
         /*
-         * ============================================================
-         * v1.3, ruling A — the token table collapses, as ONE change
-         * ahead of any screen.
+         * PLAYCO THEME (rebrand): Midnight Navy #102C40, Cloud White #F7FAFC, Electric Lime #DBFF00.
          *
-         * Nine text greys become three, nine hairlines become three,
-         * six radii become three, four families become two. The
-         * complaint this answers is not a list of screens: it is
-         * "messy and hard to navigate", and the mechanism named in the
-         * analysis is a table that was a sampling of a reference
-         * rather than a system.
+         * Every colour is a CSS variable (app/globals.css), so one class means the right thing in both contexts:
+         * the light page (`:root`) and the dark islands — photo cards, the hero, the game banner, the tab bar —
+         * that carry `.theme-dark`. The old token NAMES stay (`volt`, `bone`, `ink`…) so the fork's components keep
+         * working; what they mean is defined below and in globals.css.
          *
-         * HOW THE RETIRING NAMES ARE HANDLED, and why they are still
-         * below. A token deleted here is a class that stops resolving
-         * in 83 files, and the call-site sweep is Phase 17 — so
-         * deleting now would leave two commits in which the product
-         * does not build. Instead every retiring name is kept as an
-         * ALIAS POINTING AT ITS SURVIVING VALUE. That has a property
-         * worth more than the tidiness it costs:
-         *
-         *   the appearance changes NOW, and the sweep changes nothing.
-         *
-         * Stage 0's whole job is that every screen changes appearance
-         * without any screen being redesigned, and this is what
-         * delivers it. Phase 17 then renames call sites with no visual
-         * effect at all, which makes its enormous diff reviewable —
-         * a strip taken before and after Phase 17 should be identical,
-         * and any difference is a mistake.
-         *
-         * The aliases are deleted in Phase 17/18, once nothing names
-         * them. Each is marked RETIRING.
-         * ============================================================
+         *   navy / cloud / lime  the three brand colours, constant in every context
+         *   volt                 lime as a FILL (buttons, selected states). Text on it is `ink`.
+         *   accent               emphasis TEXT and LINES: navy on the light page, lime on dark islands.
+         *                        Lime text on Cloud White is invisible, which is why `text-volt` became `text-accent`.
+         *   ink                  navy: text on lime, photo scrims, navy blocks
+         *   page / surface*      backgrounds (page, panels, raised, avatar, empty segment)
+         *   bone / muted / faint text: primary, secondary, tertiary
+         *   hairline*            lines
+         *   warn / danger        semantic only, never decorative
          */
+        navy: "rgb(var(--c-navy) / <alpha-value>)",
+        cloud: "rgb(var(--c-cloud) / <alpha-value>)",
+        lime: "rgb(var(--c-lime) / <alpha-value>)",
 
-        // --- Accent, unchanged -------------------------------------
-        volt: "#C8FF00",
-        "volt-dim": "#8FB800",
+        volt: "rgb(var(--c-lime) / <alpha-value>)",
+        "volt-dim": "rgb(var(--c-lime-dim) / <alpha-value>)",
+        accent: "rgb(var(--c-accent) / <alpha-value>)",
+        "accent-dim": "rgb(var(--c-accent-dim) / <alpha-value>)",
 
-        /*
-         * --- Surfaces: opaque now (F6) ----------------------------
-         *
-         * `surface` #0A0A0A -> #0F0F0F and `surface-raised`
-         * #0D0D0D -> #161616, and the translucent family collapses
-         * into them. v1.1.2 §8 already made panels MORE opaque
-         * because the pitch background was winning against the text
-         * on it; taking them solid finishes that argument rather than
-         * re-tuning it a third time.
-         *
-         * These two are the F6 delta and they are silent: the token
-         * names do not change, so no call site looks wrong. A port
-         * that kept the old values would compile, read correctly in
-         * review, and simply be the old design.
-         */
-        ink: "#080808",
-        surface: "#0F0F0F",
-        "surface-raised": "#161616",
-        // Roster avatar fill and the unfilled half of the capacity bar.
-        "surface-avatar": "#222222",
-        "surface-seg": "#242424",
+        ink: "rgb(var(--c-navy) / <alpha-value>)",
+        page: "rgb(var(--c-page) / <alpha-value>)",
+        surface: "rgb(var(--c-surface) / <alpha-value>)",
+        "surface-raised": "rgb(var(--c-surface-raised) / <alpha-value>)",
+        "surface-avatar": "rgb(var(--c-surface-avatar) / <alpha-value>)",
+        "surface-seg": "rgb(var(--c-surface-seg) / <alpha-value>)",
+        "surface-overlay": "var(--surface-overlay)",
+        // RETIRING -> surface.
+        "surface-card": "rgb(var(--c-surface) / <alpha-value>)",
+        "surface-card-strong": "rgb(var(--c-surface) / <alpha-value>)",
+        "surface-panel": "rgb(var(--c-surface) / <alpha-value>)",
 
-        /*
-         * THE ONE SURVIVING TRANSLUCENCY. Translucency retires from
-         * cards, and survives in exactly one place: the scrim over a
-         * venue photo, where there is something behind it worth
-         * seeing. A sweep that maps every `surface-*` to opaque
-         * `surface` puts a solid block on the photograph.
-         */
-        "surface-overlay": "rgba(10,10,10,.94)",
+        bone: "rgb(var(--c-bone) / <alpha-value>)",
+        muted: "rgb(var(--c-muted) / <alpha-value>)",
+        faint: "rgb(var(--c-faint) / <alpha-value>)",
+        // RETIRING -> bone / muted / faint.
+        chalk: "rgb(var(--c-bone) / <alpha-value>)",
+        "muted-dim": "rgb(var(--c-muted) / <alpha-value>)",
+        subtle: "rgb(var(--c-muted) / <alpha-value>)",
+        "footer-dim": "rgb(var(--c-muted) / <alpha-value>)",
+        dim: "rgb(var(--c-faint) / <alpha-value>)",
 
-        // RETIRING -> surface. Removed in Phase 17.
-        "surface-card": "#0F0F0F",
-        "surface-card-strong": "#0F0F0F",
-        "surface-panel": "#0F0F0F",
+        hairline: "var(--hairline)",
+        "hairline-strong": "var(--hairline-strong)",
+        "hairline-accent": "var(--hairline-accent)",
+        // RETIRING -> hairline / hairline-strong / hairline-accent.
+        "hairline-volt": "var(--hairline-accent)",
+        "hairline-soft": "var(--hairline)",
+        "hairline-chrome": "var(--hairline)",
+        "hairline-link": "var(--hairline-strong)",
+        "hairline-volt-soft": "var(--hairline-accent)",
+        "hairline-volt-strong": "var(--hairline-accent)",
 
-        /*
-         * --- Text: nine tones become three ------------------------
-         *
-         * `faint` moves #6F6F6F -> #7E7E7E, and it is a CONTRAST
-         * REPAIR rather than a taste change. #6F6F6F computes to
-         * roughly 3.8:1 on `surface` — under the 4.5:1 AA floor for
-         * normal text — and it is assigned to 11px and 13px styles
-         * carrying real content: the day-strip game count, the pass
-         * card's expiry line, and the claim bar's "Kicked off 19:00",
-         * which is the entire message of the bar in that state.
-         *
-         * WHY #7E7E7E AND NOT #8A8A8A. #8A8A8A clears AA comfortably
-         * at 5.6:1 and is the wrong answer: the analysis names
-         * #9A9A9A/#8A8A8A as THE example of two greys that are the
-         * same colour at 390px, and `muted` is #9A9A9A. Fixing the
-         * contrast by recreating the exact pair this round exists to
-         * delete would be a fix that undoes the ruling it is made
-         * under. #7E7E7E is as low as the floor allows (#7B7B7B is
-         * 4.5:1 exactly), which buys the widest separation from
-         * `muted` that still clears it — 28 levels rather than 16.
-         *
-         * The band is narrow, and that is the real finding: with
-         * `muted` at ~6.8:1 and the floor at 4.5:1 a third tone has
-         * about 30 levels of room. The rule that keeps it a distinct
-         * step: `faint` is for genuinely tertiary text, never for the
-         * only statement of a fact. Where a faint line is the only
-         * place something is said, it renders at `small`, not
-         * `eyebrow`. If a fourth tone is ever proposed, this band is
-         * the argument against it.
-         */
-        bone: "#E9E7E0",
-        muted: "#9A9A9A",
-        faint: "#7E7E7E",
-
-        // RETIRING -> bone / muted / faint. Removed in Phase 17.
-        chalk: "#E9E7E0",
-        "muted-dim": "#9A9A9A",
-        subtle: "#9A9A9A",
-        "footer-dim": "#9A9A9A",
-        dim: "#7E7E7E",
-
-        /*
-         * --- Hairlines: nine become three -------------------------
-         *
-         * Two silent deltas live here, and only one of them is in the
-         * analysis.
-         *
-         * `hairline-volt` .18 -> .30 is F5, called out precisely so it
-         * would not be discovered at implementation time: a port that
-         * preserves .18 compiles, keeps the token, and leaves every
-         * selected state in the product too faint to read as selected.
-         * .30 is today's `hairline-volt-strong`.
-         *
-         * `hairline-strong` .12 -> .14 is NOT in the analysis and was
-         * found while measuring the change surface. It absorbs today's
-         * `hairline-link` value, which makes the lazy migration
-         * (link -> strong) accidentally correct while `hairline-strong`'s
-         * own 39 existing call sites quietly darken. Small, and it is
-         * the secondary-button outline on every screen.
-         */
-        hairline: "rgba(255,255,255,.08)",
-        "hairline-strong": "rgba(255,255,255,.14)",
-        "hairline-volt": "rgba(200,255,0,.30)",
-
-        // RETIRING -> the three above. Removed in Phase 17.
-        "hairline-soft": "rgba(255,255,255,.08)",
-        "hairline-chrome": "rgba(255,255,255,.08)",
-        "hairline-link": "rgba(255,255,255,.14)",
-        "hairline-volt-soft": "rgba(200,255,0,.30)",
-        "hairline-volt-strong": "rgba(200,255,0,.30)",
-
-        /*
-         * --- Focus: a new token, and it is not a hairline ----------
-         *
-         * `hairline-volt` at .30 over `surface-raised` computes to
-         * roughly 2.4:1 — below the 3:1 WCAG 1.4.11 requires of a
-         * non-text indicator — and it was the only focus affordance
-         * the spec named. A focus ring is a different job from a
-         * selected outline: selection is a property of the thing,
-         * focus is a property of where the keyboard is. Full-opacity
-         * volt, 2px, with a 2px offset so it stays legible on a
-         * volt-filled control where a ring on its own edge would
-         * vanish.
-         */
-        "focus-ring": "#C8FF00",
-        /*
-         * THE SPOTS-LEFT LADDER (v1.2 §5.5). Volt at rest, amber when a game is
-         * filling, red when it is nearly gone — the number and the bar take the
-         * same colour, because two things saying the same thing in two colours
-         * is two things to reconcile.
-         *
-         * Volt stays the "plenty" rung rather than a true green: the reference
-         * uses green because green is its brand, and ours is volt. Substituting
-         * a second green here would put two accents on one row.
-         *
-         * Both are chosen for legibility against #0A0A0A rather than for being
-         * canonical orange and red — this is the one place the palette carries
-         * meaning rather than character, so contrast wins.
-         */
-        warn: "#FFA31A",
-        danger: "#FF5A4E",
-        // External brand
+        "focus-ring": "rgb(var(--c-accent) / <alpha-value>)",
+        warn: "rgb(var(--c-warn) / <alpha-value>)",
+        danger: "rgb(var(--c-danger) / <alpha-value>)",
         whatsapp: "#25D366",
         instagram: "#E1306C",
-        // Telegram's brand blue (round 13, item 19).
         telegram: "#229ED9",
       },
       /*
@@ -220,27 +106,13 @@ const config: Config = {
        */
       fontFamily: {
         /*
-         * THE FALLBACK IS THE BODY FACE, AND IT WAS NOT (round 22, item 5c).
-         *
-         * Anton ships no Cyrillic, so every display line in Russian — and now
-         * in Ukrainian — is drawn by whatever comes next in this stack. The
-         * hero's own comment in `app/page.tsx` has said since round 13 that it
-         * "sets in the body face"; the stack said `sans-serif`, which is
-         * whatever the phone happens to have. A Cyrillic hero was therefore
-         * rendering in a system font with system metrics, one step away from
-         * the product's typography, and no screenshot review would name it
-         * because it looks like a font rather than like a bug.
-         *
-         * Onest carries `cyrillic` and `cyrillic-ext` (see `app/layout.tsx`),
-         * which is the whole reason it was chosen, so it can do this job. The
-         * generic stays last for the case where neither loads.
-         *
-         * LATIN IS UNAFFECTED: Anton has those glyphs and wins for them. Per
-         * character, not per element — which is what makes one stack correct
-         * for four languages.
+         * PLAYCO: display = Archivo (semi-expanded, see `.font-display` in globals.css) with Anuphan for Thai;
+         * text = IBM Plex Sans Thai (Thai + Latin) with Anuphan as a fallback; logo = Montserrat (the typeface of
+         * the brand's existing wordmark), used only by the logo component.
          */
-        display: ["var(--font-anton)", "var(--font-onest)", "sans-serif"],
-        sans: ["var(--font-onest)", "system-ui", "sans-serif"],
+        display: ["var(--font-archivo)", "var(--font-anuphan)", "system-ui", "sans-serif"],
+        sans: ["var(--font-plex-thai)", "var(--font-anuphan)", "system-ui", "sans-serif"],
+        logo: ["var(--font-montserrat)", "system-ui", "sans-serif"],
         mono: ["var(--font-jetbrains-mono)", "monospace"],
       },
 
@@ -484,6 +356,7 @@ const config: Config = {
        */
       boxShadow: {
         lift: "0 -8px 24px rgba(0,0,0,.6)",
+        card: "0 1px 2px rgba(16,44,64,.10), 0 10px 26px rgba(16,44,64,.14)",
       },
       backgroundImage: {
         "page-vignette":
@@ -504,6 +377,10 @@ const config: Config = {
         instagram: "linear-gradient(45deg,#F9CE34,#EE2A7B,#6228D7)",
       },
       keyframes: {
+        heroDrift: {
+          "0%": { transform: "scale(1) translate3d(0,0,0)" },
+          "100%": { transform: "scale(1.07) translate3d(-1.5%,-1%,0)" },
+        },
         pulseRing: {
           "0%": { transform: "scale(.6)", opacity: ".7" },
           "100%": { transform: "scale(2.3)", opacity: "0" },
@@ -522,6 +399,7 @@ const config: Config = {
         },
       },
       animation: {
+        "hero-drift": "heroDrift 24s ease-in-out infinite alternate",
         blink: "blink 3s infinite",
         drift: "drift 6s linear infinite",
         floatY: "floatY 2.4s ease-in-out infinite",

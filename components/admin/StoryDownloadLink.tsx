@@ -24,8 +24,8 @@ export function StoryDownloadLink({
       data-testid={testId}
       className={
         emphasis
-          ? "inline-flex min-h-11 shrink-0 items-center rounded-control border border-volt px-4 text-[13px] font-bold uppercase tracking-wide text-volt no-underline"
-          : "inline-flex min-h-11 shrink-0 items-center rounded-control border border-hairline-strong px-4 text-[11px] uppercase tracking-[1px] text-muted no-underline transition hover:border-hairline-volt hover:text-volt"
+          ? "inline-flex min-h-11 shrink-0 items-center rounded-control border border-accent px-4 text-[13px] font-bold uppercase tracking-wide text-accent no-underline"
+          : "inline-flex min-h-11 shrink-0 items-center rounded-control border border-hairline-strong px-4 text-[11px] uppercase tracking-[1px] text-muted no-underline transition hover:border-hairline-accent hover:text-accent"
       }
     >
       {strings.admin.storyDownload}

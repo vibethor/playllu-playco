@@ -23,7 +23,7 @@ export function RemovePhotoButton({ playerId }: { playerId: string }) {
     return (
       <p
         data-testid="photo-removed"
-        className="m-0 flex min-h-11 items-center text-[11px] uppercase tracking-eyebrow text-volt-dim"
+        className="m-0 flex min-h-11 items-center text-[11px] uppercase tracking-eyebrow text-accent-dim"
       >
         {strings.admin.photoRemoved}
       </p>

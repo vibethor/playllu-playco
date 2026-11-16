@@ -51,7 +51,7 @@ export async function AvailabilityCard({
         <span
           data-testid="urgency-label"
           className={` text-[10px] uppercase tracking-[2px] ${
-            urgency === "full" ? "text-faint" : "text-volt-dim"
+            urgency === "full" ? "text-faint" : "text-accent-dim"
           }`}
         >
           {urgencyLabel(urgency, t)}

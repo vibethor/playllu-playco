@@ -52,7 +52,7 @@ type VenueRow = Database["public"]["Tables"]["venues"]["Row"];
  */
 
 /** R6's single default, the same file the list card carries. */
-const DEFAULT_PITCH = "/pitch-default.jpg";
+const DEFAULT_PITCH = "/venue-default.jpg"; // PLAYCO: sport-neutral navy fallback (rebrand)
 
 export async function GameHero({
   venue,
@@ -162,7 +162,7 @@ export async function GameHero({
          against. Reversing that is the owner's call, not a side effect of a
          crop item.
       */
-      className="relative -mx-gutter overflow-hidden px-gutter pb-5 pt-36"
+      className="theme-dark relative -mx-gutter overflow-hidden px-gutter pb-5 pt-36"
     >
       {/*
         THE BAND'S BACKGROUND, and it is `aria-hidden` scenery: the alt text
@@ -261,12 +261,12 @@ export async function GameHero({
           href="/games"
           data-testid="game-back"
           aria-label={t.games.backToGames}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-pill border border-hairline-strong bg-surface-overlay text-bone no-underline transition hover:border-hairline-volt"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-pill border border-hairline-strong bg-surface-overlay text-bone no-underline transition hover:border-hairline-accent"
         >
           <Icon name="arrowLeft" className="h-5 w-5" />
         </Link>
 
-        <h1 className="m-0 min-w-0 font-display text-page-title uppercase leading-none tracking-wide text-white">
+        <h1 className="m-0 min-w-0 font-display text-page-title uppercase leading-none tracking-wide text-bone">
           {venue}
         </h1>
       </div>

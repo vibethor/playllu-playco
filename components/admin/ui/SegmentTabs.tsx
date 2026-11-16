@@ -44,13 +44,13 @@ export function SegmentTabs({
             data-testid={`${testId}-${tab.key}`}
             className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-pill border px-3 py-[6px] text-small font-semibold no-underline transition-colors ${
               isCurrent
-                ? "border-volt text-volt"
-                : "border-hairline-strong text-muted hover:border-volt hover:text-volt"
+                ? "border-accent text-accent"
+                : "border-hairline-strong text-muted hover:border-accent hover:text-accent"
             }`}
           >
             {tab.label}
             {tab.count !== undefined && (
-              <span className={`tabular-nums ${isCurrent ? "text-volt" : "text-faint"}`}>{tab.count}</span>
+              <span className={`tabular-nums ${isCurrent ? "text-accent" : "text-faint"}`}>{tab.count}</span>
             )}
           </Link>
         );

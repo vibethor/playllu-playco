@@ -50,7 +50,7 @@ export function OperationsSection({
     <section data-testid="money-operations" className="mt-10 border-t border-hairline pt-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="m-0 font-display text-section-title uppercase tracking-wide text-white">
+          <h2 className="m-0 font-display text-section-title uppercase tracking-wide text-bone">
             {copy.operationsTitle}
           </h2>
           <p className="mt-1 text-small text-muted">{copy.money.operationsLede}</p>

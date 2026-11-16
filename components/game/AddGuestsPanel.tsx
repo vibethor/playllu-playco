@@ -104,7 +104,7 @@ export function AddGuestsPanel({
       data-testid="add-guests"
       className="mt-4 rounded-card bg-surface p-5"
     >
-      <h2 className="m-0 text-[17px] font-bold uppercase tracking-wide text-white">
+      <h2 className="m-0 text-[17px] font-bold uppercase tracking-wide text-bone">
         {t.games.addGuests.title}
       </h2>
       <p className="mt-2 mb-0 text-body leading-relaxed text-muted">
@@ -137,7 +137,7 @@ export function AddGuestsPanel({
       */}
       <p
         data-testid="add-guests-cost"
-        className="mt-3 mb-0 font-display text-title uppercase leading-none text-volt"
+        className="mt-3 mb-0 font-display text-title uppercase leading-none text-accent"
       >
         {affordable
           ? t.games.addGuests.costCredits
@@ -173,7 +173,7 @@ export function AddGuestsPanel({
             type="submit"
             disabled={!affordable}
             data-testid="add-guests-credit"
-            className="w-full rounded-control bg-volt px-4 py-3 text-body font-bold text-surface disabled:opacity-40"
+            className="w-full rounded-control bg-volt px-4 py-3 text-body font-bold text-ink disabled:opacity-40"
           >
             {t.booking.payWithCredit}
           </button>
@@ -209,7 +209,7 @@ export function AddGuestsPanel({
             <button
               type="submit"
               data-testid="add-guests-online"
-              className="w-full rounded-control border-[1.5px] border-volt bg-transparent px-4 py-3 text-body font-bold text-volt"
+              className="w-full rounded-control border-[1.5px] border-accent bg-transparent px-4 py-3 text-body font-bold text-accent"
             >
               {t.games.addGuests.payOnline}
             </button>

@@ -1,4 +1,5 @@
 import type { Database } from "@/lib/types/database";
+import { SITE_NAME } from "@/lib/city/default";
 import { gameEndsAt } from "@/lib/games/duration";
 import { strings } from "@/lib/strings";
 
@@ -65,7 +66,7 @@ export function gameEventSchema({
 }: GameEventSchemaInput): Record<string, unknown> {
   // "6v6 football · Prazacka". The format leads when the game has one, because
   // that is the thing a player scanning results is deciding on.
-  const brand = `${strings.brand.wordmarkLead} ${strings.brand.wordmarkAccent}`;
+  const brand = SITE_NAME;
   const name = game.format
     ? `${game.format} · ${venueName} · ${brand}`
     : `${venueName} · ${brand}`;

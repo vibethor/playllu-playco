@@ -25,7 +25,7 @@
  */
 export function DayHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 data-testid="day-heading" className="m-0 mb-3 text-body-lg font-semibold text-white">
+    <h2 data-testid="day-heading" className="m-0 mb-3 text-body-lg font-semibold text-bone">
       {children}
     </h2>
   );

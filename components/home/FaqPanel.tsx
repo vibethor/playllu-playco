@@ -60,7 +60,7 @@ export async function FaqPanel() {
       // the sampled values.
       className="lifted w-full rounded-card p-[22px]"
     >
-      <h3 className="m-0 mb-3 font-display text-community-title uppercase text-white">
+      <h3 className="m-0 mb-3 font-display text-community-title uppercase text-bone">
         {t.faq.title}
       </h3>
 
@@ -79,8 +79,8 @@ export async function FaqPanel() {
           >
             <details className="group">
               <summary className="cursor-pointer list-none py-[10px] text-[13px] font-bold text-bone marker:content-none">
-                <span className="mr-2 text-volt group-open:hidden">+</span>
-                <span className="mr-2 hidden text-volt group-open:inline">−</span>
+                <span className="mr-2 text-accent group-open:hidden">+</span>
+                <span className="mr-2 hidden text-accent group-open:inline">−</span>
                 {item.q}
               </summary>
               <p className="m-0 pb-[10px] pl-5 text-[13px] leading-relaxed text-muted">

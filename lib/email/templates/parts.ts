@@ -10,7 +10,7 @@ import {
 import type { Locale } from "@/lib/i18n/locales";
 import { pluralise } from "@/lib/i18n/plural";
 import { fillTemplate } from "@/lib/i18n/template";
-import { OPERATOR_CONTACT, TERMS_PDF_PATH, TERMS_RULES_ANCHOR } from "@/lib/legal";
+import { OPERATOR_CONTACT, TERMS_PDF_PATH, TERMS_PDF_READY, TERMS_RULES_ANCHOR } from "@/lib/legal";
 import { creditCount } from "@/lib/legal/purchaseSummary";
 import type { Strings } from "@/lib/strings";
 import { emailLink, html, join, type EmailReceipt, type EmailRow, type SafeHtml } from "./layout";
@@ -147,13 +147,13 @@ export function bookingSmallPrint(env: EmailEnv, { purchase }: { purchase: boole
   return [
     common.noWithdrawal,
     join([rules, html`. `, questionsLine(env)]),
-    ...(purchase ? [common.termsAttached] : []),
+    ...(purchase && TERMS_PDF_READY ? [common.termsAttached] : []),
   ];
 }
 
 /** The small print under a Credit purchase: where to write, and the attached terms. */
 export function purchaseSmallPrint(env: EmailEnv): (string | SafeHtml)[] {
-  return [questionsLine(env), env.t.emails.common.termsAttached];
+  return TERMS_PDF_READY ? [questionsLine(env), env.t.emails.common.termsAttached] : [questionsLine(env)];
 }
 
 /** Questions only — every other email. */
@@ -166,7 +166,7 @@ function stamp(env: EmailEnv, at: string): string {
 }
 
 export function orderNumber(orderId: string): string {
-  return `HF-${orderId.replace(/[^a-zA-Z0-9]/g, "").slice(-8).toUpperCase()}`;
+  return `PC-${orderId.replace(/[^a-zA-Z0-9]/g, "").slice(-8).toUpperCase()}`;
 }
 
 export function receipt(env: EmailEnv, paid: PaymentReceipt): EmailReceipt {
@@ -193,13 +193,19 @@ export function receipt(env: EmailEnv, paid: PaymentReceipt): EmailReceipt {
 }
 
 /**
- * The terms as they stand today, attached to every purchase (Texty 5.1).
- * By URL: Resend fetches it, so the PDF need not travel in the function bundle.
+ * The terms attached to every purchase (Texty 5.1). By URL: Resend fetches it.
+ *
+ * PLAYCO: EMPTY UNTIL THE THAI TERMS EXIST. The inherited PDF is HrajFotbal's Czech terms (a Czech seller, Czech law)
+ * and must not go out with a Playco receipt. When the lawyer-reviewed Thai PDF is in `public/legal/`, set
+ * `TERMS_PDF_READY` in lib/legal.ts and the attachment comes back.
  */
-export function termsAttachment(env: EmailEnv): EmailAttachment {
-  return {
-    filename: "Hraj-Fotbal-obchodni-podminky.pdf",
-    path: `${env.baseUrl}${TERMS_PDF_PATH}`,
-    contentType: "application/pdf",
-  };
+export function termsAttachments(env: EmailEnv): EmailAttachment[] {
+  if (!TERMS_PDF_READY) return [];
+  return [
+    {
+      filename: "Playco-terms.pdf",
+      path: `${env.baseUrl}${TERMS_PDF_PATH}`,
+      contentType: "application/pdf",
+    },
+  ];
 }

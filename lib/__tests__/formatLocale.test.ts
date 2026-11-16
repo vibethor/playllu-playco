@@ -23,8 +23,8 @@ describe("DATE_LOCALE", () => {
     expect(DATE_LOCALE.en).toBe("en-GB");
   });
 
-  it("covers all four of the product's languages", () => {
-    expect(Object.keys(DATE_LOCALE).sort()).toEqual(["cs", "en", "ru", "uk"]);
+  it("covers every language the product carries, Thai included", () => {
+    expect(Object.keys(DATE_LOCALE).sort()).toEqual(["cs", "en", "ru", "th", "uk"]);
   });
 });
 

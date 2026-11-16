@@ -56,7 +56,7 @@ export function PendingButton({
   const skin =
     variant === "primary"
       ? "bg-volt text-ink hover:bg-volt-dim active:bg-volt-dim"
-      : "border border-hairline-strong text-bone hover:border-hairline-volt active:border-hairline-volt";
+      : "border border-hairline-strong text-bone hover:border-hairline-accent active:border-hairline-accent";
 
   return (
     <button

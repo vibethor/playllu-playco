@@ -86,13 +86,14 @@ export async function generateMetadata({ params }: GamePageProps): Promise<Metad
   }
 
   const { game } = result;
-  const title = `${game.venue} — ${formatGameDateTime(game.starts_at)}`;
+  const locale = await getLocale();
+  const title = `${game.venue} — ${formatGameDateTime(game.starts_at, locale)}`;
   // Same ladder the page renders, so the WhatsApp preview and the page it
   // links to never disagree about how urgent the game is.
   const description = `${spotsLeftLabel(
     result.bookedCount,
     game.capacity,
-    await getLocale(),
+    locale,
     t,
   )} · ${formatThb(
     game.price_thb,
@@ -398,7 +399,7 @@ export default async function GameDetailPage({ params, searchParams }: GamePageP
           data-testid="game-notes"
           className="mt-4 rounded-card bg-surface p-5"
         >
-          <h2 className="m-0 text-body-lg font-semibold text-white">
+          <h2 className="m-0 text-body-lg font-semibold text-bone">
             {t.games.notesLabel}
           </h2>
           <p className="mt-3 mb-0 whitespace-pre-line text-[14px] leading-relaxed text-bone">

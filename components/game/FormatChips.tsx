@@ -45,7 +45,7 @@ export async function FormatChips({
       {format && (
         <span
           data-testid="game-format"
-          className={`rounded-pill bg-volt px-2 py-1 ${text} font-bold tracking-[1px] text-surface`}
+          className={`rounded-pill bg-volt px-2 py-1 ${text} font-bold tracking-[1px] text-ink`}
         >
           {format}
         </span>

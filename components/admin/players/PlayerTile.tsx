@@ -13,7 +13,7 @@ export function PlayerTile({ nickname, photoUrl }: { nickname: string; photoUrl:
     <span
       aria-hidden
       data-testid="admin-player-tile"
-      className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-control border border-hairline-volt bg-volt/[.08] text-small font-bold text-volt"
+      className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-control border border-hairline-accent bg-volt/[.08] text-small font-bold text-accent"
     >
       {photoUrl ? (
         /* eslint-disable-next-line @next/next/no-img-element */

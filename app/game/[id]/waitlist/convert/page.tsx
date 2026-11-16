@@ -6,7 +6,7 @@ import { requireCurrentPlayer } from "@/lib/auth/session";
 import { formatThb, formatGameDateTime } from "@/lib/format";
 import { getGameById } from "@/lib/games/queries";
 import { isOnWaitlist } from "@/lib/booking/waitlistConvert";
-import { getStrings } from "@/lib/i18n/server";
+import { getLocale, getStrings } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -57,13 +57,13 @@ export default async function WaitlistConvertPage({
         {t.booking.backToGame}
       </Link>
 
-      <h1 className="mt-4 font-display text-section-title uppercase tracking-wide text-white">
+      <h1 className="mt-4 font-display text-section-title uppercase tracking-wide text-bone">
         {game.venue}
       </h1>
 
       <div className="mt-3 flex flex-wrap items-baseline gap-x-5 gap-y-2">
-        <span className="text-[13px] tracking-[1px] text-volt">
-          {formatGameDateTime(game.starts_at)}
+        <span className="text-[13px] tracking-[1px] text-accent">
+          {formatGameDateTime(game.starts_at, await getLocale())}
         </span>
         <span className="text-[13px] text-muted">
           {formatThb(game.price_thb)}

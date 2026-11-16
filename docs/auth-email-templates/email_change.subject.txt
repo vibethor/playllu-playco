@@ -1,0 +1,1 @@
+{{ $l := "en" }}{{ if .Data.consent_locale }}{{ $l = .Data.consent_locale }}{{ end }}{{ if .Data.email_locale }}{{ $l = .Data.email_locale }}{{ end }}{{ if eq $l "th" }}ยืนยันอีเมลใหม่ของคุณ{{ else }}Confirm your new email address{{ end }}

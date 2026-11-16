@@ -1,3 +1,4 @@
+import { Icon, type IconName } from "@/components/Icon";
 import { LanguagePill } from "@/components/game/LanguagePill";
 import type { GameLanguage } from "@/lib/games/language";
 import { getStrings } from "@/lib/i18n/server";
@@ -38,62 +39,66 @@ import type { GameSurface } from "@/lib/types/database";
  * the hierarchy the two-colour split above exists to draw. Same geometry, same
  * padding, same radius — different ink.
  */
+const SURFACE_ICON: Record<GameSurface, IconName> = {
+  indoor: "indoor",
+  sand: "beach",
+  turf: "turf",
+  grass: "turf",
+};
+
 export async function CardBadges({
   format,
   surface,
   language,
+  layout = "inline",
 }: {
   format: string | null;
-  /**
-   * Rendered only when no `language` is given (round 18, item 2).
-   *
-   * THE SURFACE PILL LEFT THE LIST CARD. It answers "what am I playing on",
-   * which is a thing you check once when you decide to come; the LANGUAGE
-   * answers "will I be able to talk to anyone", which is what somebody
-   * scanning a list of games is actually filtering on. Two secondary pills
-   * beside the format badge is one more than the row can carry at 390px, so
-   * the card takes the one that decides whether you tap.
-   *
-   * Surface is not lost — it moved to the game detail, where the fact list has
-   * room to state it in full. Round 18 item 2.
-   */
   surface: GameSurface | null;
-  /**
-   * The game's language pair. Present on the list card, absent on the detail's
-   * fact list — which is what selects between the two pills above.
-   */
   language?: GameLanguage;
+  /**
+   * PLAYCO: `card` is the list card's right-hand cluster from the reference design — the format pill and the
+   * language pill on one row, the surface tag under them. `inline` is everything else (the game page's facts).
+   */
+  layout?: "inline" | "card";
 }) {
   const t = await getStrings();
   if (!format && !surface && !language) return null;
 
+  const formatPill = format && (
+    <span
+      data-testid="game-format"
+      className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-pill bg-cloud px-2.5 text-small font-semibold text-navy"
+    >
+      <Icon name="users" className="h-4 w-4" />
+      {format}
+    </span>
+  );
+  const surfaceTag = surface && (
+    <span
+      data-testid="game-surface"
+      className="inline-flex h-[22px] shrink-0 items-center gap-1 rounded-pill border border-hairline-strong bg-page/40 px-2 text-[11px] font-medium text-bone"
+    >
+      <Icon name={SURFACE_ICON[surface]} className="h-3.5 w-3.5" />
+      {t.games.surface[surface]}
+    </span>
+  );
+
+  if (layout === "card") {
+    return (
+      <div data-testid="card-badges" className="flex shrink-0 flex-col items-end gap-1.5">
+        <div className="flex items-center gap-1.5">
+          {formatPill}
+          {language && <LanguagePill language={language} />}
+        </div>
+        {surfaceTag}
+      </div>
+    );
+  }
+
   return (
     <div data-testid="card-badges" className="flex shrink-0 flex-wrap items-center gap-1">
-      {format && (
-        <span
-          data-testid="game-format"
-          className="badge-pill border-volt bg-volt/[.12] text-volt"
-        >
-          {format}
-        </span>
-      )}
-      {/*
-        ONE SECONDARY PILL, AND WHICH ONE DEPENDS ON THE SURFACE IT IS ON. The
-        list card passes `language` and gets flags; the detail's fact list
-        passes `surface` and gets the word. Never both — see the `surface` prop.
-      */}
-      {language ? (
-        <LanguagePill language={language} />
-      ) : (
-        surface && (
-          <span
-            data-testid="game-surface"
-            className="badge-pill border-hairline-strong bg-surface-raised text-bone"
-          >
-            {t.games.surface[surface]}
-          </span>
-        )
-      )}
+      {formatPill}
+      {language ? <LanguagePill language={language} /> : surfaceTag}
     </div>
   );
 }

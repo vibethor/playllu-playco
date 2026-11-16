@@ -13,8 +13,8 @@ import type { GameStatus } from "@/lib/types/database";
  */
 const TONE: Record<GameStatus, string> = {
   draft: "border-hairline text-faint",
-  published: "border-hairline-volt text-volt",
-  full: "border-volt text-volt",
+  published: "border-hairline-accent text-accent",
+  full: "border-accent text-accent",
   played: "border-hairline-strong text-bone",
   settled: "border-hairline text-muted",
   cancelled: "border-danger/40 text-danger",

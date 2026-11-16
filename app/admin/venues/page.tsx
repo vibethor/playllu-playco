@@ -109,7 +109,7 @@ export default async function AdminVenuesPage() {
           <div className="mb-3 flex items-baseline justify-between gap-3 px-1">
             <h3
               id="venues-list-heading"
-              className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-volt-dim"
+              className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-accent-dim"
             >
               {strings.admin.pitch.listHeading.replace("{count}", String(venues.length))}
             </h3>

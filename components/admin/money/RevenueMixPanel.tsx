@@ -34,7 +34,7 @@ function Average({ label, thb, testId }: { label: string; thb: number | null; te
   return (
     <div>
       <dt className="text-[12px] text-muted">{label}</dt>
-      <dd data-testid={testId} className="m-0 mt-1 font-display text-[26px] leading-none tabular-nums text-white">
+      <dd data-testid={testId} className="m-0 mt-1 font-display text-[26px] leading-none tabular-nums text-bone">
         {thb === null ? "—" : formatThb(thb)}
       </dd>
     </div>
@@ -78,7 +78,7 @@ export function RevenueMixPanel({ mix }: { mix: RevenueMix }) {
 
       {mix.totalThb > 0 && (
         <div className="mt-5 border-t border-hairline pt-4">
-          <div className="text-[10px] uppercase tracking-eyebrow text-volt-dim">{copy.avgPerSeat}</div>
+          <div className="text-[10px] uppercase tracking-eyebrow text-accent-dim">{copy.avgPerSeat}</div>
           <dl className="m-0 mt-3 grid grid-cols-2 gap-4">
             <Average label={copy.avgSingle} thb={mix.avgSingleThb} testId="money-avg-single" />
             <Average label={copy.avgPass} thb={mix.avgPassThb} testId="money-avg-pass" />

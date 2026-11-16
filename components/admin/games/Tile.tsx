@@ -23,10 +23,10 @@ export function Tile({
 }) {
   return (
     <div data-testid={testId} className="lifted min-w-0 rounded-card p-4 md:p-5">
-      <div className="text-[10px] uppercase tracking-eyebrow text-volt-dim">{label}</div>
+      <div className="text-[10px] uppercase tracking-eyebrow text-accent-dim">{label}</div>
       <div
         data-testid={valueTestId}
-        className="mt-2 truncate font-display text-[clamp(24px,7vw,34px)] leading-none tabular-nums text-volt"
+        className="mt-2 truncate font-display text-[clamp(24px,7vw,34px)] leading-none tabular-nums text-accent"
       >
         {value}
       </div>

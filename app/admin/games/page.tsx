@@ -97,7 +97,7 @@ export default async function AdminGamesPage({
             <Link
               href="/admin/games/new"
               data-testid="new-game"
-              className="inline-flex min-h-11 items-center rounded-control bg-volt px-5 text-[15px] font-extrabold uppercase tracking-wide text-surface no-underline"
+              className="inline-flex min-h-11 items-center rounded-control bg-volt px-5 text-[15px] font-extrabold uppercase tracking-wide text-ink no-underline"
             >
               {strings.admin.newGame}
             </Link>
@@ -144,8 +144,8 @@ export default async function AdminGamesPage({
             aria-current={sort === key ? "true" : undefined}
             className={
               sort === key
-                ? "rounded-pill border border-volt bg-volt/[.10] px-3 py-1 text-[11px] uppercase tracking-eyebrow text-volt no-underline"
-                : "rounded-pill border border-hairline px-3 py-1 text-[11px] uppercase tracking-eyebrow text-muted no-underline transition-colors hover:border-volt hover:text-volt"
+                ? "rounded-pill border border-accent bg-volt/[.10] px-3 py-1 text-[11px] uppercase tracking-eyebrow text-accent no-underline"
+                : "rounded-pill border border-hairline px-3 py-1 text-[11px] uppercase tracking-eyebrow text-muted no-underline transition-colors hover:border-accent hover:text-accent"
             }
           >
             {strings.admin.sortKeys[key]}

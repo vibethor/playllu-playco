@@ -121,7 +121,7 @@ export function VenueAmenities({
             {group.keys.map((key) => (
               <label
                 key={key}
-                className="flex min-h-11 min-w-0 cursor-pointer items-center gap-2 rounded-control border border-hairline bg-surface px-3 text-[13px] text-bone transition-colors hover:border-hairline-strong has-[:checked]:border-hairline-volt has-[:checked]:text-white"
+                className="flex min-h-11 min-w-0 cursor-pointer items-center gap-2 rounded-control border border-hairline bg-surface px-3 text-[13px] text-bone transition-colors hover:border-hairline-strong has-[:checked]:border-hairline-accent has-[:checked]:text-bone"
               >
                 <input
                   type="checkbox"
@@ -155,7 +155,7 @@ export function VenueAmenities({
           {strings.admin.venueAmenitiesSubmit}
         </button>
         {saved && (
-          <span data-testid="amenities-saved" role="status" className="text-small text-volt">
+          <span data-testid="amenities-saved" role="status" className="text-small text-accent">
             {strings.admin.saved}
           </span>
         )}
@@ -166,7 +166,7 @@ export function VenueAmenities({
           role="alert"
           data-testid="amenities-error"
           data-error-code={errorCode ?? undefined}
-          className="text-[12px] text-volt"
+          className="text-[12px] text-accent"
         >
           {error}
           {errorCode && (

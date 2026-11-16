@@ -147,7 +147,7 @@ export async function AvatarRow({
           "data-testid": isYou ? "avatar-you" : "avatar",
           className: `-ml-2 flex items-center justify-center overflow-hidden rounded-pill border-2 font-bold ${dim} ${
               isYou
-                ? "border-volt bg-surface-avatar text-volt"
+                ? "border-accent bg-surface-avatar text-accent"
                 : `border-surface-raised bg-surface-avatar ${
                     /*
                       THE VOLT ROTATION SKIPS GUESTS. "Every third initials
@@ -156,7 +156,7 @@ export async function AvatarRow({
                       identify makes the anonymous half of the row the loud
                       half.
                     */
-                    !player.isGuest && i % 3 === 0 ? "text-volt" : "text-muted"
+                    !player.isGuest && i % 3 === 0 ? "text-accent" : "text-muted"
                   }`
             }`,
         };

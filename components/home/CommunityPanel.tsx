@@ -45,7 +45,7 @@ export async function CommunityPanel({
     <div
       data-testid="community-panel"
       /*
-        `lifted rounded-card`, replacing `rounded-[20px] border-hairline-volt
+        `lifted rounded-card`, replacing `rounded-[20px] border-hairline-accent
         bg-surface` (redesign v2, round 3).
 
         THE FRAME'S PANEL EDGE IS NEUTRAL, not volt. Sampled off p01 it is
@@ -64,7 +64,7 @@ export async function CommunityPanel({
         (round 30, item 8), which makes this a reversal of a reversal. The
         lineage, because two flips without one is how a third happens:
 
-          REDESIGN v2 ROUND 3 replaced `rounded-[20px] border-hairline-volt
+          REDESIGN v2 ROUND 3 replaced `rounded-[20px] border-hairline-accent
             bg-surface` with `.lifted rounded-card` — the neutral panel edge
             sampled off p01 — on the reasoning that "a volt edge on a panel
             that is not selected, not focused and not a call to action spends
@@ -72,7 +72,7 @@ export async function CommunityPanel({
           ROUND 25 (item 4) overruled that premise: this IS a call to action,
             every tile is a link out, and it was the only invitation left on
             the page once round 23 removed the hero's button. It borrowed the
-            Game Pass banner's `border-hairline-volt bg-volt/[.10]`.
+            Game Pass banner's `border-hairline-accent bg-volt/[.10]`.
           ROUND 30 (item 8) — THE OWNER'S RULING: visual consistency wins.
 
         ROUND 25'S ARGUMENT IS NOT REFUTED and does not need to be. It was a
@@ -91,7 +91,7 @@ export async function CommunityPanel({
       {/* Uppercase, as p01 draws it — §1.4 marks the display steps "Upper". */}
       <h3
         data-testid="community-heading"
-        className="m-0 mb-[6px] font-display text-community-title uppercase text-white"
+        className="m-0 mb-[6px] font-display text-community-title uppercase text-bone"
       >
         {community.title}
       </h3>
@@ -147,10 +147,10 @@ export async function CommunityPanel({
             <div key={stat.key} data-testid={`stat-${stat.key}`}>
               <div
                 data-testid={`stat-${stat.key}-value`}
-                className="font-display text-[34px] leading-none text-volt"
+                className="font-display text-[34px] leading-none text-accent"
               >
                 {stat.value}
-                <span className="text-volt-dim">+</span>
+                <span className="text-accent-dim">+</span>
               </div>
               {/* `tracking-[1.5px]` — see ProfileStats. At `eyebrow`'s 3px
                   "GAMES EVERY WEEK" wraps in a half-width column and p01

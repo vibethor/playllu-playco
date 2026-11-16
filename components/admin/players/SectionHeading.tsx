@@ -20,7 +20,7 @@ export function SectionHeading({
   return (
     <div className="mb-3">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-volt-dim">{title}</h3>
+        <h3 className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-accent-dim">{title}</h3>
         {action && <div className="shrink-0">{action}</div>}
       </div>
       {lede && <p className="m-0 mt-1 max-w-[560px] text-small text-muted">{lede}</p>}

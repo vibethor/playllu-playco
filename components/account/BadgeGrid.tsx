@@ -48,7 +48,7 @@ export function BadgeGrid({ badges, t }: { badges: Badge[]; t: Strings }) {
   return (
     <section data-testid="badge-grid" className="mt-8">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="m-0 text-body-lg font-semibold text-white">
+        <h2 className="m-0 text-body-lg font-semibold text-bone">
           {t.profile.accomplishmentsTitle}
         </h2>
         <span data-testid="badge-count" className="text-small text-muted">
@@ -77,7 +77,7 @@ export function BadgeGrid({ badges, t }: { badges: Badge[]; t: Strings }) {
             <span
               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control border ${
                 badge.earned
-                  ? "border-hairline-volt text-volt"
+                  ? "border-hairline-accent text-accent"
                   : "border-hairline text-faint"
               }`}
             >

@@ -20,7 +20,7 @@ export function BreakEvenLine({
 
   if (outlook.kind === "covered") {
     return (
-      <span data-testid={testId} data-outlook="covered" className="text-volt">
+      <span data-testid={testId} data-outlook="covered" className="text-accent">
         {hub.breakEvenCovered}
       </span>
     );

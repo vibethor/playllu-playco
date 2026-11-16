@@ -36,7 +36,7 @@ export function GrantCreditForm({ playerId }: { playerId: string }) {
   }
 
   return (
-    <form action={formAction} className="w-full space-y-3 rounded-card border border-hairline-volt p-4">
+    <form action={formAction} className="w-full space-y-3 rounded-card border border-hairline-accent p-4">
       <input type="hidden" name="playerId" value={playerId} />
 
       <div className="flex flex-wrap items-end gap-3">
@@ -87,7 +87,7 @@ export function GrantCreditForm({ playerId }: { playerId: string }) {
       </label>
 
       {state.status === "granted" && (
-        <p data-testid="grant-done" className="text-[12px] text-volt">
+        <p data-testid="grant-done" className="text-[12px] text-accent">
           {strings.admin.grantDone}
           {/*
             THE OUTCOME IS READ BACK IN CREDITS (round 31, item 3), because the

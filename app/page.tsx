@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Logo } from "@/components/brand/Logo";
+import Image from "next/image";
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { CommunityPanel } from "@/components/home/CommunityPanel";
@@ -133,6 +135,41 @@ export default async function LandingPage() {
 
       {/* NAV is the shared `chrome/Header`, rendered once from the root layout. */}
 
+      {/*
+        THE HERO (rebrand). A full-bleed venue photograph, slowly drifting, under a navy scrim, with Jachym's copy:
+        eyebrow, "Play volleyball. Anytime. Anywhere.", one sentence, one action. A dark island (`theme-dark`), so
+        `text-bone` is Cloud White and `text-accent` is lime here. The photo is a placeholder for the background
+        video (TODO.md); it is credited in the corner because its licence (CC BY 4.0) asks for it.
+      */}
+      <section data-testid="home-hero" className="theme-dark relative isolate overflow-hidden">
+        <Image
+          src="/hero-default.jpg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="-z-20 animate-hero-drift object-cover motion-reduce:animate-none"
+        />
+        <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/60 via-ink/75 to-page" />
+        <div className="mx-auto flex max-w-shell flex-col items-start gap-4 px-gutter pb-10 pt-[calc(theme(spacing.nav)+40px)] md:pb-16 md:pt-[calc(theme(spacing.nav)+96px)]">
+          <p className="m-0 text-eyebrow font-semibold uppercase tracking-eyebrow text-muted">{landing.heroEyebrow}</p>
+          <h1 data-testid="hero-headline" className="m-0 font-display text-[clamp(40px,9vw,72px)] font-extrabold leading-[1.02] tracking-tight text-bone">
+            {landing.heroLead} <span className="text-accent">{landing.heroSport}</span>
+            <br />
+            {landing.heroLine2}
+          </h1>
+          <p className="m-0 max-w-[34ch] text-body-lg text-muted">{landing.heroSub}</p>
+          <Link
+            href="/games"
+            data-testid="hero-cta"
+            className="mt-2 inline-flex min-h-12 items-center gap-2 rounded-pill bg-volt px-6 text-body-lg font-bold text-ink no-underline transition-colors hover:bg-volt-dim"
+          >
+            {landing.heroCta}
+            <span aria-hidden>→</span>
+          </Link>
+        </div>
+        <span className="absolute bottom-2 right-3 text-[10px] text-faint">{landing.heroPhotoCredit}</span>
+      </section>
       <div className="relative z-10 mx-auto w-full max-w-shell px-gutter">
         {/*
           HERO — SIZED TO ITS CONTENT (ruling J: at least 25% shorter).
@@ -162,86 +199,8 @@ export default async function LandingPage() {
           hero also lost its own CTA in round 23, so `pb-10` was sized for a
           button that is no longer there.
         */}
-        <section className="flex flex-col pb-4 pt-24 text-center">
-          <div className="flex flex-col items-center justify-center">
-            {/*
-              THE SLOGAN IS THE HERO, AND IT TRANSLATES (round 13, item 2).
-
-              THE LINEAGE, because this element has now moved twice:
-
-                ~~Phase 1: the WORDMARK at hero scale, slogan beneath it as an
-                italic volt sub-line.~~
-                ~~Round 3: the slogan replaced it — p01 draws no wordmark in
-                the hero, and the header carried the name eighty pixels above.~~
-                ~~Round 12 (item 2b, R29): `HRAJ FOTBAL.` came back as line
-                one, untranslated in every language, rendered from `t.brand`
-                so the overlays could not reach it. The header had just lost
-                its wordmark, so the hero was the only place the name was
-                written.~~
-                Round 13: THE OWNER REVERSED IT. The hero is the slogan again
-                and the slogan TRANSLATES.
-
-              The header still keeps the mark alone — item 2a stands — so the
-              name is now written nowhere in the chrome, and that is the
-              decision rather than an oversight: the roundel IS the name, and
-              the largest type on the page is better spent telling a
-              first-time visitor what the site is for, in their own language.
-
-              WHAT COMES BACK WITH IT is the Russian display-face fallback.
-              Anton ships no Cyrillic, so the Russian hero sets in the body
-              face — accepted under the sentence-boundary break rule, which is
-              the rule that actually protects the reading: every sentence must
-              fit on a row, so a greedy breaker can only split inside one that
-              does not, and three rows reading "ИГРАЙ В ФУТБОЛ. / КОГДА
-              УГОДНО. / ГДЕ УГОДНО." is the copy's own punctuation.
-
-              THE PERIOD AFTER LINE ONE IS DRAWN HERE, IN VOLT, exactly as the
-              frame draws it. It is not in the string, or it would render in
-              ink as well.
-
-              `uppercase` IS THE FRAME AND IT IS WITHIN RULING B: §1.4 marks
-              the `hero` step "Upper", which is the step this is set in.
-            */}
-            <h1
-              data-testid="hero-headline"
-              className="m-0 font-display text-hero uppercase text-white"
-            >
-              {landing.heroLine1}
-              <span className="text-volt">.</span>
-              <br />
-              <span className="text-volt">{landing.heroLine2}</span>
-            </h1>
-
-            {/*
-              THE GREY SUB-LINE IS GONE (Section 2, item 2).
-
-              `landing.vision` — "One match that repeats itself. Find a game,
-              claim your spot, show up." — sat under the tagline and said what
-              the three step cards below it say in more detail. The sentence
-              splitting that solved its orphan problem goes with it; the helper
-              is removed rather than left unused, because a dead helper is a
-              render site nobody knows about.
-            */}
-
-            {/*
-              ~~Primary CTA — "Find a game", a volt capsule under the slogan.~~
-              REMOVED (round 23, item 4).
-
-              THE PAGE HAD TWO BUTTONS TO THE SAME PLACE. This one sent the
-              reader to `/games` before showing them a single game, and the
-              "All games" button under the upcoming list sent them to `/games`
-              after showing them three. With the list now directly beneath the
-              hero, the first button asked somebody to leave a page they had
-              not started reading.
-
-              ITS CLOTHING SURVIVES IT. The surviving button takes this one's
-              exact treatment — `rounded-pill`, `text-cta`, `font-extrabold`,
-              `px-[26px] py-[15px]` — because the frame's one action is a full
-              capsule sized to its label, and that was always the better
-              drawing of it. What changed is which label wears it.
-            */}
-
-          </div>
+        <section className="flex flex-col pb-4 pt-8 text-center">
+          
 
           {/*
             HOW IT WORKS — BACK WHERE IT WAS, closing the hero.
@@ -296,29 +255,17 @@ export default async function LandingPage() {
         */}
         <div id="next-match" className="flex flex-col pt-8">
           <section className="pb-3 pt-[10px]">
-            <div className="mb-[14px] flex items-baseline gap-3">
-              <div className="text-[10px] tracking-eyebrow text-volt-dim">
-                {landing.nextMatchEyebrow}
-              </div>
-              {/*
-                `text-community-title`, NOT `text-page-title` (round 24, item 3).
-
-                ~~The twin of `/games`'s UPCOMING GAMES — both frames draw the
-                same 32px Anton caps, and the two headings name the same
-                content on two surfaces.~~ That reasoning compared this heading
-                to one on ANOTHER PAGE, where nothing sits beside it. Round 23
-                moved the games section up the home page, and it now shares a
-                column with JOIN OUR COMMUNITY and QUESTIONS — which are
-                `community-title`. Three headings on one page at two sizes read
-                as one of them being a mistake.
-
-                The `/games` heading is untouched: it is still a page title on a
-                page it titles. This one stopped being that when it stopped
-                being alone.
-              */}
-              <h2 className="m-0 font-display text-community-title uppercase tracking-wide text-white">
+            <div className="mb-[14px] flex items-baseline justify-between gap-3">
+              <h2 className="m-0 font-display text-[22px] font-bold tracking-tight text-bone">
                 {landing.nextMatchesLabel}
               </h2>
+              <Link
+                href="/games"
+                data-testid="next-matches-all"
+                className="text-small font-semibold text-bone underline underline-offset-4 hover:text-accent"
+              >
+                {landing.nextMatchesAll}
+              </Link>
             </div>
 
             {/*
@@ -399,7 +346,7 @@ export default async function LandingPage() {
               THE PAGE'S ONE ACTION, IN THE HERO BUTTON'S CLOTHES (round 23,
               item 4). It inherits the removed "Find a game" pill's dimensions
               and treatment exactly — `rounded-pill`, `text-cta`,
-              `font-extrabold`, `px-[26px] py-[15px]`, `text-surface` on volt —
+              `font-extrabold`, `px-[26px] py-[15px]`, `text-ink` on volt —
               and keeps its own label. A capsule sized to its label is what the
               frame draws for the one thing it wants pressed, and there is now
               only one such thing on this page.
@@ -407,15 +354,7 @@ export default async function LandingPage() {
               IT STILL RENDERS AT ZERO, which ruling J requires: a visitor who
               arrives on an empty week must still be able to reach the board.
             */}
-            <div className="mt-5 flex justify-center">
-              <Link
-                href="/games"
-                data-testid="next-matches-all"
-                className="inline-flex min-h-11 items-center gap-[9px] rounded-pill bg-volt px-[26px] py-[15px] text-cta font-extrabold tracking-wide text-surface no-underline transition-colors hover:bg-volt-dim"
-              >
-                {landing.nextMatchesAll}
-              </Link>
-            </div>
+            
           </section>
 
           {/*
@@ -444,7 +383,7 @@ export default async function LandingPage() {
               >
                 <div
                   aria-hidden
-                  className="font-display text-[26px] leading-none text-volt"
+                  className="font-display text-[26px] leading-none text-accent"
                 >
                   {step.index}
                 </div>
@@ -524,13 +463,8 @@ export default async function LandingPage() {
               The mark reading `muted` made the brand the quietest thing in
               its own footer.
             */}
-            <div className="text-[14px] font-bold tracking-wide text-white">
-              {landing.footer.wordmarkLead}{" "}
-              <span className="text-volt-dim">
-                {landing.footer.wordmarkAccent}
-              </span>{" "}
-              {landing.footer.city}
-            </div>
+            <Logo size={13} />
+            <span className="text-small font-semibold tracking-wide text-muted">{landing.footer.city}</span>
           </footer>
         </div>
       </div>

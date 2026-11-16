@@ -51,14 +51,14 @@ export function PitchCostForm({
           placeholder={costThb === null ? undefined : String(costThb)}
           onChange={(event) => setValue(event.target.value)}
           data-testid="pitch-cost-input"
-          className="min-h-11 w-full min-w-0 flex-1 rounded-control border border-hairline-strong bg-surface px-3 py-2 text-[13px] tabular-nums text-bone outline-none transition-colors placeholder:text-faint focus:border-volt"
+          className="min-h-11 w-full min-w-0 flex-1 rounded-control border border-hairline-strong bg-surface px-3 py-2 text-[13px] tabular-nums text-bone outline-none transition-colors placeholder:text-faint focus:border-accent"
         />
         <SaveButton />
       </div>
       <p className="mt-1 text-[12px] leading-snug text-muted">{hub.pitchCostHint}</p>
 
       {state.status === "saved" && (
-        <p data-testid="pitch-cost-saved" className="mt-2 text-[12px] text-volt">
+        <p data-testid="pitch-cost-saved" className="mt-2 text-[12px] text-accent">
           {hub.pitchCostSaved}
         </p>
       )}
@@ -78,7 +78,7 @@ function SaveButton() {
       type="submit"
       disabled={pending}
       data-testid="pitch-cost-save"
-      className="inline-flex min-h-11 shrink-0 items-center rounded-control border border-hairline-volt px-4 text-[13px] font-bold text-volt transition-colors hover:border-volt disabled:opacity-60"
+      className="inline-flex min-h-11 shrink-0 items-center rounded-control border border-hairline-accent px-4 text-[13px] font-bold text-accent transition-colors hover:border-accent disabled:opacity-60"
     >
       {pending ? strings.common.loading : hub.pitchCostSave}
     </button>

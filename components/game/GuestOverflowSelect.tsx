@@ -60,7 +60,7 @@ export function GuestOverflowSelect({
       data-active={active ? "true" : "false"}
       className={[
         "relative inline-flex min-h-11 items-center rounded-pill border-2 transition-colors",
-        active ? "border-volt text-volt" : "border-hairline-strong text-muted",
+        active ? "border-accent text-accent" : "border-hairline-strong text-muted",
       ].join(" ")}
     >
       <select

@@ -20,7 +20,7 @@ type Tone = "quiet" | "volt" | "danger";
 
 const TONE: Record<Tone, string> = {
   quiet: "border-hairline-strong text-muted",
-  volt: "border-hairline-volt text-volt",
+  volt: "border-hairline-accent text-accent",
   danger: "border-danger/60 text-danger",
 };
 

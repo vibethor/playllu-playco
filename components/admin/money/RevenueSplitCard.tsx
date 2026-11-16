@@ -19,12 +19,12 @@ export function RevenueSplitCard({ split }: { split: RevenueSplit }) {
 
   return (
     <div data-testid="financials-revenue-split" className="lifted flex min-w-0 flex-col rounded-card p-4 sm:p-5">
-      <div className="text-[10px] uppercase tracking-eyebrow text-volt-dim">{copy.splitLabel}</div>
+      <div className="text-[10px] uppercase tracking-eyebrow text-accent-dim">{copy.splitLabel}</div>
       <dl className="m-0 mt-2 flex flex-col gap-2">
         {lines.map((line) => (
           <div key={line.key} data-testid={`revenue-split-${line.key}`} className="min-w-0">
             <dt className="text-[11px] text-muted">{line.label}</dt>
-            <dd className="m-0 font-display text-[length:clamp(18px,5vw,24px)] leading-none tabular-nums text-volt">
+            <dd className="m-0 font-display text-[length:clamp(18px,5vw,24px)] leading-none tabular-nums text-accent">
               {formatThb(line.thb)}
             </dd>
           </div>

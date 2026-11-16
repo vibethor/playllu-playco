@@ -81,7 +81,7 @@ export function ProfileTabs({ selected, t }: { selected: ProfileTab; t: Strings 
             */
             className={`-mb-px border-b-2 pb-3 text-body-lg font-semibold no-underline transition-colors ${
               isSelected
-                ? "border-volt text-white"
+                ? "border-accent text-bone"
                 : "border-transparent text-muted hover:text-bone"
             }`}
           >

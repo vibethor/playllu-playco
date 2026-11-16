@@ -64,8 +64,8 @@ function Submit({
     "inline-flex min-h-11 items-center rounded-control px-5 text-[14px] font-extrabold uppercase tracking-wide transition-colors disabled:opacity-60";
   const skin =
     tone === "primary"
-      ? "bg-volt text-surface"
-      : "border border-hairline-strong bg-transparent text-bone hover:border-hairline-volt hover:text-volt";
+      ? "bg-volt text-ink"
+      : "border border-hairline-strong bg-transparent text-bone hover:border-hairline-accent hover:text-accent";
 
   return (
     <button type="submit" disabled={pending} data-testid={testId} className={`${base} ${skin}`}>

@@ -64,7 +64,7 @@ export function GameRow({
     /* The waitlist depth is the expansion-trigger sensor (REQ-UI-018), and it
        renders only WHEN THERE IS A QUEUE — a sensor, not a column of zeroes. */
     game.waitlistCount > 0 && (
-      <span key="waiting" data-testid="admin-waitlist-depth" className="text-volt">
+      <span key="waiting" data-testid="admin-waitlist-depth" className="text-accent">
         {strings.admin.waitlistLabel} {game.waitlistCount}
       </span>
     ),
@@ -109,14 +109,14 @@ export function GameRow({
 
         <span className="min-w-0">
           {/* `venue` is admin-supplied free text; JSX escapes it. */}
-          <span className="block truncate text-body font-semibold text-white">{game.venue}</span>
+          <span className="block truncate text-body font-semibold text-bone">{game.venue}</span>
           <span className="mt-[1px] block truncate text-[12px] tabular-nums text-muted">
             {formatGameDateTime(game.starts_at)} · {formatThb(game.price_thb)}
           </span>
         </span>
 
         <span className="flex flex-col items-end gap-[6px] md:col-start-4 md:row-start-1">
-          <span data-testid="admin-game-capacity" className="text-body font-bold tabular-nums text-volt">
+          <span data-testid="admin-game-capacity" className="text-body font-bold tabular-nums text-accent">
             {game.activeCount}/{game.capacity}
           </span>
           <StatusChip status={game.status} testId="admin-game-status" />

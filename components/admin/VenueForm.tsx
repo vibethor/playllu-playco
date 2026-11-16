@@ -91,7 +91,7 @@ export function VenueForm({
                 target="_blank"
                 rel="noopener noreferrer"
                 data-testid="venue-map-link"
-                className="inline-flex shrink-0 items-center gap-1 text-[12px] font-semibold text-volt no-underline hover:underline"
+                className="inline-flex shrink-0 items-center gap-1 text-[12px] font-semibold text-accent no-underline hover:underline"
               >
                 <Icon name="pin" className="h-[14px] w-[14px]" />
                 {strings.admin.pitch.openMap}
@@ -124,7 +124,7 @@ export function VenueForm({
               id={`address-${key}`}
               name="address"
               maxLength={120}
-              placeholder="Dubečská 9, Praha 10"
+              placeholder="Sukhumvit Soi 50, Phra Khanong, Bangkok 10260"
               defaultValue={venue?.address ?? ""}
               data-testid="venue-address-input"
               className="field mt-1 w-full"
@@ -165,7 +165,7 @@ export function VenueForm({
           testId={isEdit ? "venue-save" : "venue-create"}
         />
         {(state.status === "saved" || state.status === "created") && (
-          <p data-testid="venue-saved" role="status" className="m-0 text-small text-volt">
+          <p data-testid="venue-saved" role="status" className="m-0 text-small text-accent">
             {state.status === "created" ? strings.admin.venueCreated : strings.admin.venueSaved}
           </p>
         )}

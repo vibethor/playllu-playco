@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BookingList } from "@/components/BookingList";
 import { formatGameDateTime } from "@/lib/format";
-import { getStrings } from "@/lib/i18n/server";
+import { getLocale, getStrings } from "@/lib/i18n/server";
 import type { PlayerHistory as History } from "@/lib/booking/history";
 import type { WaitlistedGame } from "@/lib/booking/queries";
 
@@ -26,6 +26,7 @@ export async function PlayerHistory({
   waitlisted?: WaitlistedGame[];
 }) {
   const t = await getStrings();
+  const locale = await getLocale();
 
   return (
     <>
@@ -35,7 +36,7 @@ export async function PlayerHistory({
             {t.account.gamesPlayedLabel}
           </p>
           <p
-            className="m-0 font-display text-3xl text-volt"
+            className="m-0 font-display text-3xl text-accent"
             data-testid="games-played"
           >
             {history.gamesPlayed}
@@ -46,7 +47,7 @@ export async function PlayerHistory({
       </section>
 
       <section className="mt-10">
-        <h2 className="m-0 mb-4 text-[17px] font-bold uppercase tracking-wide text-white">
+        <h2 className="m-0 mb-4 text-[17px] font-bold uppercase tracking-wide text-bone">
           {t.account.upcomingTitle}
         </h2>
         <BookingList rows={history.upcoming} />
@@ -67,7 +68,7 @@ export async function PlayerHistory({
       */}
       {waitlisted.length > 0 && (
         <section className="mt-10" data-testid="waitlisted-section">
-          <h2 className="m-0 mb-4 text-[17px] font-bold uppercase tracking-wide text-white">
+          <h2 className="m-0 mb-4 text-[17px] font-bold uppercase tracking-wide text-bone">
             {t.account.waitlistTitle}
           </h2>
           <ul className="flex list-none flex-col gap-2 p-0" data-testid="waitlisted-games">
@@ -84,14 +85,14 @@ export async function PlayerHistory({
                   data-testid="waitlisted-game"
                   className="game-box flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 rounded-card px-4 py-3 no-underline transition-colors hover:bg-surface-raised"
                 >
-                  <span className="flex min-w-0 items-baseline gap-2 text-base font-bold text-white">
+                  <span className="flex min-w-0 items-baseline gap-2 text-base font-bold text-bone">
                     <span className="truncate">{game.venue}</span>
-                    <span aria-hidden className="shrink-0 text-volt">
+                    <span aria-hidden className="shrink-0 text-accent">
                       →
                     </span>
                   </span>
-                  <span className="text-xs text-white/50">
-                    {formatGameDateTime(game.starts_at)}
+                  <span className="text-xs text-bone/50">
+                    {formatGameDateTime(game.starts_at, locale)}
                   </span>
                 </Link>
               </li>
@@ -101,12 +102,12 @@ export async function PlayerHistory({
       )}
 
       <section className="mt-10">
-        <h2 className="m-0 mb-4 text-[17px] font-bold uppercase tracking-wide text-white">
+        <h2 className="m-0 mb-4 text-[17px] font-bold uppercase tracking-wide text-bone">
           {t.account.pastTitle}
         </h2>
 
         {history.past.length === 0 ? (
-          <p className="m-0 text-sm text-white/50" data-testid="past-empty">
+          <p className="m-0 text-sm text-bone/50" data-testid="past-empty">
             {t.account.pastEmpty}
           </p>
         ) : (
@@ -116,11 +117,11 @@ export async function PlayerHistory({
                 key={booking.id}
                 className="flex flex-wrap items-baseline justify-between gap-2 border-b border-hairline py-3"
               >
-                <span className="text-base font-bold text-white">
+                <span className="text-base font-bold text-bone">
                   {game.venue}
                 </span>
-                <span className="text-xs text-white/50">
-                  {formatGameDateTime(game.starts_at)}
+                <span className="text-xs text-bone/50">
+                  {formatGameDateTime(game.starts_at, locale)}
                 </span>
               </li>
             ))}
