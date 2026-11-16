@@ -107,13 +107,13 @@ Rules for every phase:
 
 ### Phase F — Fast track: Bangkok volleyball preview, live today (16 Nov 2026)
 
-Jachym wants the site online today. This phase runs **before Phase 0** and gets the current fork running on its
-Vercel address with Stripe **test** payments. It is a preview for the founders to click through, **not** the launch
-to players: there are no cities, roles or Thai yet, and the legal pages are still HrajFotbal's Czech texts.
+Jachym wants the site online today and taking payments soon. This phase runs **before Phase 0** and gets the
+current fork running on its Vercel address against the **production** database (there is no staging — Jachym's
+decision). It ends with test payments working; live payments follow when the steps at the end of this phase are done.
 Phases 0–17 then continue on top of it; nothing here may be built in a way they would have to undo.
 
-Hard blocker: **the Supabase project must exist.** Without a database the site cannot run. If `playco-staging`
-cannot be created (free-project limit), stop and tell Jachym; do everything that does not need it first.
+Hard blocker: **the Supabase project `playco` must exist** (Playllu org, Pro). Without a database the site cannot
+run. If it cannot be created, stop and tell Jachym; do everything that does not need it first.
 
 Allowed shortcut, removed in Phase 2: one file `lib/city/default.ts` holding Bangkok's time zone, currency label,
 phone prefix and site name. No other location literal anywhere.
@@ -133,23 +133,31 @@ phone prefix and site name. No other location literal anywhere.
    in `.env.example`; remove `PAYMENT_IBAN` and the payment-link variables. Never print or commit a key.
 6. **Cron on the free plan:** Vercel's free plan only allows daily cron jobs and fails the deploy otherwise. Change
    `played-now` (every 5 minutes) to daily for today and note it in the PR; Phase 12 moves it to `pg_cron`.
-7. **Database:** create `playco-staging` in the Playco Supabase org, region `ap-southeast-1` (or use the one Jachym
-   names). Apply every migration in order. Run the SQL suites against it. Fix any `get_advisors` security finding.
+7. **Database:** create `playco` in the Playllu Supabase org, region `ap-southeast-1` (or use the one Jachym names).
+   Run the full migration set and the SQL suites on the local Postgres first; then apply every migration in order
+   to `playco`. Do **not** run the SQL test suites against production (they create rows). Fix any `get_advisors`
+   security finding.
 8. **Deploy:** a Vercel project on this repo (Jachym connects it if the agent cannot). Jachym pastes every env value
    into Vercel himself. Supabase Auth: Site URL and redirect list = the Vercel address exactly; email templates
    re-branded "Playco". Register the Stripe test webhook for `<vercel address>/api/stripe/webhook`.
 9. **First data, through the admin panel:** Jachym's account made admin (one SQL line run by Jachym or by the agent
-   on staging only), venues Swish Elite 50 (capacity 18) and Asoke (15), one volleyball game.
+   on production, once), venues Swish Elite 50 (capacity 18) and Asoke (15), one volleyball game.
 10. **Banner:** every page shows a thin "Preview — test payments only" bar while `NEXT_PUBLIC_PREVIEW=1`.
+11. **Legal drafts:** replace HrajFotbal's Czech `/terms`, `/privacy` and `/cookies` with short Playco drafts
+    (Thailand, PDPA, seller = the owner of the Thai Stripe account, cancellation rule, no cash, wallet credit) in
+    `content/`, clearly marked DRAFT, for Jachym's approval.
+
+Going from test to live payments (same day if Jachym wants): Jachym approves the legal drafts → removes the DRAFT
+mark → upgrades Vercel to Pro (the free plan's terms forbid commercial use) → pastes live Stripe keys and the live
+webhook secret → sets `NEXT_PUBLIC_PREVIEW=0`. The agent registers the live webhook and checks one real booking.
 
 Done when: the Vercel address loads with the preview bar · sign-up and login work on a phone · an admin creates a
 volleyball game showing 250 THB and Bangkok time · one booking paid by Stripe test card and one by test PromptPay
 both reach `confirmed` through the webhook · a cancellation more than 8 hours ahead credits 250 to the wallet ·
 `npx tsc --noEmit`, `npx vitest run`, `npm run build` exit 0 · no secret in the diff.
 
-Not today, and the reason it is not "live to players": Thai, cities, roles, Bangkok legal texts, live Stripe keys,
-3-of-3 approval. Opening the site to real players needs Jachym's go after those (Phase 16), or a written decision
-from him to soft-launch one game earlier with live keys and the legal pages replaced.
+Not in this phase: Thai, cities, roles. They follow in Phases 0–11 on the live site, one pull request at a time.
+HQ's company rule asks for 3-of-3 founder approval before players see the site; that is Jachym's call.
 
 ### Phase 0 — Tooling
 
@@ -362,7 +370,7 @@ Done when: coverage test passes for `th` · a unit test formats `081 234 5678` a
 
 Needs from Jachym: a Supabase project slot, a Vercel project on this repo, Stripe test keys pasted into Vercel.
 
-1. `playco-staging`, region `ap-southeast-1`. Apply every migration; run the suites; fix `get_advisors` findings.
+1. Production project `playco` (already created in Phase F). Apply new migrations after `npm run test:db` passes; fix `get_advisors` findings.
 2. Supabase Auth: Site URL and redirect list match `NEXT_PUBLIC_SITE_URL` exactly; Google login; branded templates.
 3. Vercel: env variables (Jachym pastes), region `sin1`.
 4. Cron: the 5-minute job does not run on Vercel's free plan. Move frequent jobs to Supabase `pg_cron` calling the
@@ -400,7 +408,7 @@ Every Bangkok volleyball game in Playco. Live database and live Stripe keys are 
 launch; this adds the domain, 3-of-3 approval in HQ, WhatsApp groups point to Playco.
 
 ### Phase 17 — The second city (the proof)
-On staging, with no code change and no deploy: approve an application → a draft city in another currency and time
+On production, with a test city that never goes public (deleted or paused at the end), no code change and no deploy: approve an application → a draft city in another currency and time
 zone → the manager signs in with the login Playllu created, enables football, adds a venue, a price and a weekly series → set the city
 live → a test player books and pays → the statement shows the manager's share → pause the city.
 **If any step needs a developer, the phase that owns it is not finished.** Write the steps up as
@@ -444,12 +452,12 @@ Stripe docs (PromptPay, multiple accounts, Organizations).
 
 ## 5b. Accounts and hosting (decided 16 Nov 2026)
 
-- **Supabase:** one org, renamed from "Playco" to **"Playllu"**, on Pro. Projects: `playco-staging` now, `playco`
-  (live) at launch, both region `ap-southeast-1`. **One project serves every Asian city** (Bangkok, Jakarta, Bali, Ho
+- **Supabase:** one org, renamed from "Playco" to **"Playllu"**, on Pro. One project, `playco` (production, no
+  staging), region `ap-southeast-1`. **One project serves every Asian city** (Bangkok, Jakarta, Bali, Ho
   Chi Minh City…). A second region (Europe, Middle East) is a new project in the same org, added only when needed.
   `hrajfotbal-staging` (HrajFotbal's test copy, which also holds HQ) stays where it is.
-- **Vercel:** one project `playco` on one domain for every city. It belongs in a Vercel team owned by Playllu
-  (Jachym), not in a personal account. HQ and HrajFotbal currently deploy from Oliver's personal Vercel account;
+- **Vercel:** one project `playco` on one domain for every city, in Jachym's own Vercel account (free plan while
+  testing; **Pro for one seat, 20 USD/month, before the first real payment** — the free plan forbids commercial use). HQ and HrajFotbal currently deploy from Oliver's personal Vercel account;
   moving them is a separate decision.
 - **Payments per country:** Thailand — the Thai Stripe account. Indonesia and Vietnam — Stripe does not, as far as is
   known, serve businesses there; a regional provider (e.g. Xendit) behind the Phase 8 interface is the likely route.

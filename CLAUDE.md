@@ -18,7 +18,9 @@ this file says otherwise. Read it once.
 
 ## 1. Hard rules
 
-1. **Staging first.** Build and verify against the staging Supabase project. Live only at the launch gate.
+1. **One production database, no staging** (Jachym's decision, 16 Nov). Every migration is tested on the local
+   throwaway Postgres (`npm run test:db`) before it touches production. Additive migrations only; anything
+   destructive (drop, rename, rewrite of data) is stopped and asked about first.
 2. **Jachym approves every change** (code, schema, Stripe, launch). Going live to players also needs 3-of-3 in HQ
    Approvals.
 3. **Every state change is a `SECURITY DEFINER` plpgsql RPC** with `search_path = ''`; no client writes; authorization
@@ -35,7 +37,8 @@ this file says otherwise. Read it once.
 8. **Players belong to Playllu.** Revoking a role ends access and keeps all history. No export below platform admin.
 9. **Secrets** are never printed, committed or pasted into chat. Jachym pastes values into Vercel. Every variable is
    in `.env.example`.
-10. **Stripe:** test mode until the launch gate. Any change to a live Stripe account needs Jachym.
+10. **Stripe:** prove every payment change with test keys first; Jachym swaps in live keys himself. Any change
+    to the live Stripe account needs Jachym.
 11. **HQ reads, never writes** (`supabase/roles/hq_readonly.sql`, named columns, no email / phone / auth ids).
 12. **Policy windows are values in `lib/policy.ts`.** Cancel any time; refund to the wallet up to the cutoff.
 13. **Keep the column, hide the feature.** Passes, subscriptions, referral rewards and city brands come later;
