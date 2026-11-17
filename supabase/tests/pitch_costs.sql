@@ -73,6 +73,14 @@ returns integer language sql as $$
   select cost_thb from public.game_pitch_costs where game_id = p_game
 $$;
 
+-- --- the seat price this suite's money is written in -------------------------
+-- Every amount below is HrajFotbal's 180 a seat; Playco's seat price is 300
+-- (20261117150000). Seat counts are credit ÷ seat price, so the price is pinned
+-- to the suite's own for this transaction (rolled back at the end). The rules
+-- under test do not depend on which price it is.
+create or replace function public.credit_seat_price_thb()
+returns integer language sql immutable set search_path = '' as $$ select 180 $$;
+
 -- --- fixtures ----------------------------------------------------------------
 
 insert into auth.users (id, email)
@@ -169,11 +177,13 @@ select pg_temp.ok(public.pitch_season() = 'summer', 'the season is summer', publ
 
 -- =============================================================================
 -- A GAME KEEPS THE PRICE IT WAS CREATED WITH
+-- (one-hour games: Playco prices a court per hour, so an hour costs exactly the
+-- venue price this suite was written against; venue_cost_per_hour.sql covers length)
 -- =============================================================================
 
 insert into public.games (id, venue, venue_id, starts_at, capacity, price_thb, status, duration_minutes) values
   ('94245000-0000-0000-0000-0000000000a1', 'R42P North', '94245000-0000-0000-0000-0000000000c1',
-   now() + interval '3 days', 14, 180, 'published', 90);
+   now() + interval '3 days', 14, 180, 'published', 60);
 
 select pg_temp.ok(pg_temp.cost('94245000-0000-0000-0000-0000000000a1') = 900,
   'a game created in summer takes the venue''s summer price',
@@ -185,9 +195,9 @@ reset role;
 
 insert into public.games (id, venue, venue_id, starts_at, capacity, price_thb, status, duration_minutes) values
   ('94245000-0000-0000-0000-0000000000a2', 'R42P North', '94245000-0000-0000-0000-0000000000c1',
-   now() + interval '4 days', 14, 180, 'published', 90),
+   now() + interval '4 days', 14, 180, 'published', 60),
   ('94245000-0000-0000-0000-0000000000a0', 'R42P Nowhere', null,
-   now() + interval '4 days', 14, 180, 'published', 90);
+   now() + interval '4 days', 14, 180, 'published', 60);
 
 select pg_temp.ok(pg_temp.cost('94245000-0000-0000-0000-0000000000a1') = 900,
   'switching to winter leaves an existing game at the price it was made with');
@@ -256,7 +266,7 @@ select pg_temp.ok(pg_temp.cost('94245000-0000-0000-0000-0000000000a2') = 1200,
 --   P9  cancelled in time, refunded                      0
 --   P10 cancelled late by card, kept                   180 kept
 --   P11 removed by an admin without a refund, on a
---       12-game pass bought for 1800                   150 kept
+--       10-game pass bought for 1500                   150 kept
 --   P12 a seed booking                                   0 free
 --   + one house guest                                    0
 -- =============================================================================
@@ -264,7 +274,7 @@ select pg_temp.ok(pg_temp.cost('94245000-0000-0000-0000-0000000000a2') = 1200,
 insert into public.games (id, venue, venue_id, starts_at, capacity, price_thb, status,
                           duration_minutes, guest_count) values
   ('94245000-0000-0000-0000-0000000000e1', 'R42P South', '94245000-0000-0000-0000-0000000000c2',
-   now() - interval '2 days', 14, 180, 'played', 90, 1);
+   now() - interval '2 days', 14, 180, 'played', 60, 1);
 
 -- P1 — card
 insert into public.bookings (id, game_id, player_id, status, payment_method, payment_code,
@@ -355,13 +365,14 @@ values ('booking_cancelled', '4e450000-0000-0000-0000-000000000010', '94245000-0
         '4bb45000-0000-0000-0000-000000000010',
         jsonb_build_object('credit_issued_thb', 0, 'forfeited_thb', 180, 'previous_status', 'confirmed'));
 
--- P11 — on a 12-game pass for 1800, removed by an admin who returned nothing
+-- P11 — on a 10-game pass for 1500, removed by an admin who returned nothing
+-- (Playco sells 5 / 10 / 20-game passes; HrajFotbal's 12-game tier is gone)
 insert into public.credit_topups (id, player_id, amount_thb, payment_code, status,
                                   received_amount_thb, confirmed_at, pass_games)
 values ('7b450000-0000-0000-0000-000000000011', '4e450000-0000-0000-0000-000000000011',
-        1800, 9424500011, 'confirmed', 1800, now() - interval '25 days', 12);
+        1500, 9424500011, 'confirmed', 1500, now() - interval '25 days', 10);
 insert into public.credit_ledger (id, player_id, delta_thb, reason, created_at, expires_at)
-values ('1e450000-0000-0000-0000-000000000011', '4e450000-0000-0000-0000-000000000011', 2160,
+values ('1e450000-0000-0000-0000-000000000011', '4e450000-0000-0000-0000-000000000011', 1800,
         'topup', now() - interval '25 days', now() + interval '35 days');
 insert into public.bookings (id, game_id, player_id, status, payment_method, payment_code,
                              price_thb, credit_applied_thb)
