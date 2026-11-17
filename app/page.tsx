@@ -138,8 +138,9 @@ export default async function LandingPage() {
       {/*
         THE HERO (rebrand). A full-bleed venue photograph, slowly drifting, under a navy scrim, with Jachym's copy:
         eyebrow, "Play volleyball. Anytime. Anywhere.", one sentence, one action. A dark island (`theme-dark`), so
-        `text-bone` is Cloud White and `text-accent` is lime here. The photo is a placeholder for the background
-        video (TODO.md); it is credited in the corner because its licence (CC BY 4.0) asks for it.
+        `text-bone` is Cloud White and `text-accent` is lime here. The photo is a volleyball spike at the net
+        (owner, 17 Nov 2026: "an action volleyball play", in place of the hall photo that read as a basketball court),
+        generated for Playco, so it needs no credit line. A background video may replace it later (TODO.md).
       */}
       <section data-testid="home-hero" className="theme-dark relative isolate overflow-hidden">
         <Image
@@ -150,7 +151,7 @@ export default async function LandingPage() {
           sizes="100vw"
           className="-z-20 animate-hero-drift object-cover motion-reduce:animate-none"
         />
-        <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/60 via-ink/75 to-page" />
+        <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/50 via-ink/65 to-page" />
         <div className="mx-auto flex max-w-shell flex-col items-start gap-4 px-gutter pb-10 pt-[calc(theme(spacing.nav)+40px)] md:pb-16 md:pt-[calc(theme(spacing.nav)+96px)]">
           <p className="m-0 text-eyebrow font-semibold uppercase tracking-eyebrow text-muted">{landing.heroEyebrow}</p>
           <h1 data-testid="hero-headline" className="m-0 font-display text-[clamp(40px,9vw,72px)] font-extrabold leading-[1.02] tracking-tight text-bone">
@@ -168,7 +169,6 @@ export default async function LandingPage() {
             <span aria-hidden>→</span>
           </Link>
         </div>
-        <span className="absolute bottom-2 right-3 text-[10px] text-faint">{landing.heroPhotoCredit}</span>
       </section>
       <div className="relative z-10 mx-auto w-full max-w-shell px-gutter">
         {/*

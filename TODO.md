@@ -32,7 +32,7 @@ Items 1 and 4 block today's preview (Phase F of `docs/EXECUTION_PLAN.md`). Nothi
 |---|---|---|
 | 13 | **Terms, privacy and cookies texts — reviewed with your lawyer** (the agent does not draft them). The seller named must be the Stripe account owner | before live payments |
 | 14 | A Thai speaker to review the translation (`lib/i18n/th.ts`, marked as machine translation) — site and emails | before launch |
-| 18 | **Your own hero photo or video** for the home page (today a CC BY placeholder hall photo with a credit line, `public/hero-default.jpg`) and a default court photo (`public/venue-default.jpg` is a generated navy court motif) | before launch |
+| 18 | **Your own hero photo or video** for the home page (today an AI-generated volleyball spike, `public/hero-default.jpg`, 1536×864) and a default court photo (`public/venue-default.jpg` is a generated navy court motif) | before launch |
 | 19 | **Venue photos**: upload in Admin → Venues → edit (the card falls back to the navy court motif without one) | before launch |
 | 15 | Prices, venues, venue costs, organisers, the Bangkok deal — entered in the admin panel | Phase 12 |
 | 16 | A written city-manager agreement (profit share, who owns the players, what needs your approval, how it ends) | before the second city |
