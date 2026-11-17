@@ -7,7 +7,6 @@ import { CardBadges } from "@/components/game/CardBadges";
 import { venueDisplayName } from "@/lib/venues/displayName";
 import { SpotsLeft } from "@/components/game/SpotsLeft";
 import { formatTime } from "@/lib/format";
-import { gameLanguageOf } from "@/lib/games/language";
 import { venuePhotoUrl } from "@/lib/storage/avatar";
 import { gamePath } from "@/lib/games/link";
 import { venuePhotoVersion } from "@/lib/storage/photoVersions";
@@ -23,15 +22,11 @@ type GameRowData = Database["public"]["Tables"]["games"]["Row"];
 export type GameCardGame = Pick<
   GameRowData,
   "id" | "game_number" | "venue" | "starts_at" | "capacity" | "format" | "surface" | "duration_minutes"
-> & {
-  /**
-   * The language pair (round 18, item 2). Optional because `games.language`
-   * arrives with round 18's migration and every card must render before the
-   * owner applies it — `gameLanguageOf` turns absence into `en-cs`, which is
-   * the column's default and what every existing game has always been.
-   */
-  language?: unknown;
-};
+>;
+/*
+ * ~~`language`~~ — the card no longer shows the game's languages (owner, 17 Nov 2026: "remove the languages from the
+ * game card … just keep it in the game information once you click on it"). The game page reads them itself.
+ */
 
 /**
  * THE canonical game card (v1.3 §2.1, ruling E).
@@ -328,7 +323,7 @@ export async function GameCard({
       {/*
         THE ANATOMY (owner, 17 Nov 2026):
 
-          venue (two lines max)      · game type + language / format
+          venue (two lines max)      · format, game type
           time pill, faces           · Join → | Playing now
           capacity bar               · spots left
 
@@ -336,20 +331,15 @@ export async function GameCard({
       */}
       {/*
         EVERY CARD ONE HEIGHT (owner, 17 Nov 2026: "the second game is a little bit bigger than the one above … make
-        sure all the game cards are the same size"). The title row has a fixed floor (two lines of venue, or the
-        badge column with its format pill), the time row a fixed height, and the Join cue moved up onto the time
+        sure all the game cards are the same size"). The title row has a fixed floor (two lines of venue), the time row
+        a fixed height, and the Join cue moved up onto the time
         row, so a card no longer grows by a row when it can be joined.
       */}
       <span className="relative flex min-h-[62px] items-start justify-between gap-2">
         <span data-testid="card-venue" className="line-clamp-2 min-w-0 flex-1 break-words pt-1 font-display text-[18px] font-bold leading-snug text-bone">
           {venueDisplayName(game.venue, pitchName)}
         </span>
-        <CardBadges
-          format={game.format}
-          surface={game.surface}
-          language={gameLanguageOf(game.language)}
-          layout="card"
-        />
+        <CardBadges format={game.format} surface={game.surface} layout="card" />
       </span>
 
       <span className="relative mt-2 flex h-10 items-center justify-between gap-2">

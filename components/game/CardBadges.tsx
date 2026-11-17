@@ -1,6 +1,4 @@
 import { Icon, type IconName } from "@/components/Icon";
-import { LanguagePill } from "@/components/game/LanguagePill";
-import type { GameLanguage } from "@/lib/games/language";
 import { getStrings } from "@/lib/i18n/server";
 import type { GameSurface } from "@/lib/types/database";
 
@@ -57,34 +55,29 @@ const SURFACE_ICON: Record<GameSurface, IconName> = {
 export async function CardBadges({
   format,
   surface,
-  language,
   layout = "inline",
 }: {
   format: string | null;
   surface: GameSurface | null;
-  language?: GameLanguage;
   /**
-   * PLAYCO: `card` is the list card's right-hand cluster from the reference design — the format pill and the
-   * language pill on one row, the surface tag under them. `inline` is everything else (the game page's facts).
+   * PLAYCO: `card` is the list card's top-right pair, the format and the game type at one size. `inline` is the game
+   * page's Format row.
    */
   layout?: "inline" | "card";
 }) {
   const t = await getStrings();
-  if (!format && !surface && !language) return null;
+  if (!format && !surface) return null;
 
   /*
-   * THE LIST CARD'S CLUSTER (owner, 17 Nov 2026, after a HrajFotbal screenshot, then "make the beach pill the same as
-   * the format pill in terms of size, and the languages … 30 to 40% smaller"):
+   * THE LIST CARD'S PAIR (owner, 17 Nov 2026, after a HrajFotbal screenshot, then "make the beach pill the same as the
+   * format pill in terms of size", then "remove the languages from the game card"):
    *
-   *   [ 5v5 ]  [ Beach ]          the format leads and the game type sits on the far right, the two at ONE size;
-   *              (🌐|🇬🇧)          the languages, the least important fact, are a small pill CENTRED under the
-   *                               game type.
+   *   [ 5v5 ]  [ Beach ]          the format leads and the game type sits on the far right, the two at ONE size.
    *
-   * ONE ACCENT. Lime is the format alone; the game type wears the same dark glass as the languages pill, so the two
-   * equal pills still read in order. They share one minimum width, so Indoor and Beach line up down a list.
+   * ONE ACCENT. Lime is the format alone; the game type wears dark glass, so the two equal pills still read in order.
+   * They share one minimum width, so Indoor and Beach line up down a list. The languages are on the game page only.
    */
   if (layout === "card") {
-    if (!surface && !language && !format) return null;
     return (
       <div data-testid="card-badges" className="flex shrink-0 items-start gap-1.5">
         {format && (
@@ -96,19 +89,14 @@ export async function CardBadges({
             {format}
           </span>
         )}
-        {(surface || language) && (
-          <div data-testid="card-badges-type" className="flex flex-col items-center gap-1.5">
-            {surface && (
-              <span
-                data-testid="game-surface"
-                className={`${CARD_PILL} border border-hairline-strong bg-page/60 text-bone`}
-              >
-                <Icon name={SURFACE_ICON[surface]} className="h-3.5 w-3.5" />
-                {t.games.surface[surface]}
-              </span>
-            )}
-            {language && <LanguagePill language={language} size="card" />}
-          </div>
+        {surface && (
+          <span
+            data-testid="game-surface"
+            className={`${CARD_PILL} border border-hairline-strong bg-page/60 text-bone`}
+          >
+            <Icon name={SURFACE_ICON[surface]} className="h-3.5 w-3.5" />
+            {t.games.surface[surface]}
+          </span>
         )}
       </div>
     );
@@ -136,7 +124,7 @@ export async function CardBadges({
   return (
     <div data-testid="card-badges" className="flex shrink-0 flex-wrap items-center gap-1">
       {formatPill}
-      {language ? <LanguagePill language={language} /> : surfaceTag}
+      {surfaceTag}
     </div>
   );
 }
