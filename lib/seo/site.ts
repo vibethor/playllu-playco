@@ -46,17 +46,45 @@ export function robotsFor(site: string): MetadataRoute.Robots {
 }
 
 /**
- * The public pages a search engine should know about. Game pages are not
- * listed: they live a week and are reached from the games list, which is.
- * `/contact` and `/terms` are noindex (the owner kept them out of the
- * result's sub-links), so they are not listed either.
+ * The public pages a search engine should know about. `/contact` and `/terms`
+ * are noindex (the owner kept them out of the result's sub-links), so they are
+ * not listed.
+ *
+ * GAME PAGES ARE LISTED (Playco, 17 Nov 2026, Jachym: "have Google index our
+ * public pages"). ~~Game pages are not listed: they live a week~~ — a week is
+ * exactly the window a search for "volleyball Bangkok this week" has, so every
+ * upcoming game the games list shows is in the sitemap too. The route passes
+ * them in; this stays pure.
  */
-const PUBLIC_PATHS = ["/", "/games", "/signup", "/privacy", "/cookies"];
+const PUBLIC_PATHS = ["/", "/games", "/signup", "/privacy", "/cookies"] as const;
 
-export function sitemapFor(site: string): MetadataRoute.Sitemap {
-  return PUBLIC_PATHS.map((path) => ({
-    url: path === "/" ? `${site}/` : `${site}${path}`,
-    changeFrequency: path === "/" || path === "/games" ? "daily" : "monthly",
-    priority: path === "/" ? 1 : path === "/games" ? 0.9 : 0.5,
+/** Where each kind of page sits in the sitemap: how often it changes, how much it matters. */
+const SITEMAP_RANK = {
+  home: { changeFrequency: "daily", priority: 1 },
+  games: { changeFrequency: "daily", priority: 0.9 },
+  game: { changeFrequency: "daily", priority: 0.7 },
+  pass: { changeFrequency: "weekly", priority: 0.6 },
+  other: { changeFrequency: "monthly", priority: 0.5 },
+} as const satisfies Record<string, { changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"]; priority: number }>;
+
+export interface SitemapOptions {
+  /** Whether game passes are on sale (`PASSES_ENABLED`): `/pass` is then a public page. */
+  passes?: boolean;
+  /** The upcoming games the games list shows. */
+  games?: readonly { id: string; startsAt: string }[];
+}
+
+export function sitemapFor(site: string, options: SitemapOptions = {}): MetadataRoute.Sitemap {
+  const { passes = false, games = [] } = options;
+  const pages: MetadataRoute.Sitemap = PUBLIC_PATHS.map((path) => {
+    if (path === "/") return { url: `${site}/`, ...SITEMAP_RANK.home };
+    if (path === "/games") return { url: `${site}${path}`, ...SITEMAP_RANK.games };
+    return { url: `${site}${path}`, ...SITEMAP_RANK.other };
+  });
+  const pass: MetadataRoute.Sitemap = passes ? [{ url: `${site}/pass`, ...SITEMAP_RANK.pass }] : [];
+  const gamePages: MetadataRoute.Sitemap = games.map((game) => ({
+    url: `${site}/game/${encodeURIComponent(game.id)}`,
+    ...SITEMAP_RANK.game,
   }));
+  return [...pages, ...pass, ...gamePages];
 }

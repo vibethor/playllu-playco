@@ -47,9 +47,7 @@ describe("the sitemap", () => {
     const urls = sitemapFor(SITE).map((entry) => entry.url);
 
     expect(urls).toEqual(expect.arrayContaining([`${SITE}/`, `${SITE}/games`]));
-    // PLAYCO, PHASE F: no passes at launch, so /pass is not a public page.
-    expect(urls).not.toContain(`${SITE}/pass`);
-    expect(urls.some((url) => /\/(admin|account|my-games|login|api)/.test(url))).toBe(false);
+    expect(urls.some((url) => /\/(admin|account|my-games|login|api|payment)/.test(url))).toBe(false);
   });
 
   it("leaves out Kontakt and Obchodní podmínky, which are noindex — kept out of the result's sub-links", () => {
@@ -57,6 +55,51 @@ describe("the sitemap", () => {
 
     expect(urls).not.toContain(`${SITE}/contact`);
     expect(urls).not.toContain(`${SITE}/terms`);
+  });
+
+  it("lists the game pass page while passes are on sale", () => {
+    // Act
+    const urls = sitemapFor(SITE, { passes: true }).map((entry) => entry.url);
+
+    // Assert
+    expect(urls).toContain(`${SITE}/pass`);
+  });
+
+  it("leaves the game pass page out while passes are switched off", () => {
+    // Act
+    const urls = sitemapFor(SITE, { passes: false }).map((entry) => entry.url);
+
+    // Assert
+    expect(urls).not.toContain(`${SITE}/pass`);
+  });
+
+  it("lists every upcoming game's page, so a search engine finds a game the week it is played", () => {
+    // Arrange
+    const games = [
+      { id: "7d3c1f2a-0000-4000-8000-000000000001", startsAt: "2026-11-19T12:00:00Z" },
+      { id: "7d3c1f2a-0000-4000-8000-000000000002", startsAt: "2026-11-22T10:00:00Z" },
+    ];
+
+    // Act
+    const entries = sitemapFor(SITE, { games });
+
+    // Assert
+    expect(entries.map((entry) => entry.url)).toEqual(
+      expect.arrayContaining(games.map((game) => `${SITE}/game/${game.id}`)),
+    );
+  });
+
+  it("marks a game page as changing daily, below the games list", () => {
+    // Arrange
+    const game = { id: "7d3c1f2a-0000-4000-8000-000000000003", startsAt: "2026-11-19T12:00:00Z" };
+
+    // Act
+    const entry = sitemapFor(SITE, { games: [game] }).find((e) => e.url === `${SITE}/game/${game.id}`);
+    const gamesList = sitemapFor(SITE).find((e) => e.url === `${SITE}/games`);
+
+    // Assert
+    expect(entry?.changeFrequency).toBe("daily");
+    expect(entry?.priority).toBeLessThan(gamesList?.priority ?? 0);
   });
 });
 

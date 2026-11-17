@@ -79,7 +79,8 @@ Bangkok (the first city — these are data, entered in admin, listed here so the
   1,200 / 600 · Pachyderm 1,500 · Cruzeiro 1,200 · Asoke (beach, outdoor) 1,200. Must agree with HQ's
   `src/data/seed/reference.ts`.
 - Organisers: Steven (hard-court volleyball), Sofi (beach volleyball), Jachym (basketball).
-- Deal: volleyball 50% of profit, losses split 50/50. Reference month 11 Oct–8 Nov: 9 games, 28,750 revenue,
+- Deal: volleyball 50% of profit; **Playllu covers losses** — a loss never comes out of the organiser's cut (Jachym,
+  17 Nov 2026; matches HQ's rule since 15 Nov). Reference month 11 Oct–8 Nov: 9 games, 28,750 revenue,
   20,400 venues, +8,350 profit, 4,175 share.
 - Payments: Thai Stripe account (card + PromptPay).
 
