@@ -40,13 +40,21 @@ import type { Strings } from "@/lib/strings";
 export type ProfileTab = "overview" | "games";
 
 /** Anything unrecognised is the overview, including a repeated `?tab=`. */
-export function parseProfileTab(value: string | string[] | undefined): ProfileTab {
+export function parseProfileTab(
+  value: string | string[] | undefined,
+): ProfileTab {
   if (value === "games") return "games";
   // `?tab=settings` is an old bookmark. Its content is on the overview now.
   return "overview";
 }
 
-export function ProfileTabs({ selected, t }: { selected: ProfileTab; t: Strings }) {
+export function ProfileTabs({
+  selected,
+  t,
+}: {
+  selected: ProfileTab;
+  t: Strings;
+}) {
   const tabs: { key: ProfileTab; href: string; label: string }[] = [
     { key: "overview", href: "/account", label: t.profile.tabOverview },
     { key: "games", href: "/account?tab=games", label: t.profile.tabGames },
@@ -60,7 +68,11 @@ export function ProfileTabs({ selected, t }: { selected: ProfileTab; t: Strings 
     <nav
       data-testid="profile-tabs"
       aria-label={t.account.title}
-      className="mt-6 flex gap-5 border-b border-hairline"
+      /*
+        PLAYCO (owner, 17 Nov 2026): a two-button segmented control, not underlined text, with room above it so it
+        no longer sits against the profile header. Full width on a phone, each half a tap target.
+      */
+      className="mt-8 grid w-full grid-cols-2 gap-1 rounded-pill bg-surface-raised p-1 sm:inline-grid sm:w-auto"
     >
       {tabs.map((tab) => {
         const isSelected = tab.key === selected;
@@ -75,14 +87,12 @@ export function ProfileTabs({ selected, t }: { selected: ProfileTab; t: Strings 
             data-selected={isSelected ? "true" : "false"}
             aria-current={isSelected ? "page" : undefined}
             /*
-              `-mb-px` pulls the link's own bottom border onto the nav's, so the
-              selected underline REPLACES the hairline rather than sitting a
-              pixel below it and drawing a double rule.
+              A filled pill for the tab you are on (Midnight Navy, Cloud White text), plain text for the other.
             */
-            className={`-mb-px border-b-2 pb-3 text-body-lg font-semibold no-underline transition-colors ${
+            className={`flex min-h-11 items-center justify-center rounded-pill px-6 text-body font-semibold no-underline transition-colors ${
               isSelected
-                ? "border-accent text-bone"
-                : "border-transparent text-muted hover:text-bone"
+                ? "bg-ink text-cloud"
+                : "text-muted hover:bg-surface hover:text-bone"
             }`}
           >
             {tab.label}

@@ -3,7 +3,6 @@ import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ToastFromQuery } from "@/components/ToastFromQuery";
-import { BadgeGrid } from "@/components/account/BadgeGrid";
 import { CreditBalance } from "@/components/CreditBalance";
 import { CreditBatches } from "@/components/account/CreditBatches";
 import { PlayerHistory } from "@/components/account/PlayerHistory";
@@ -36,7 +35,6 @@ import {
 } from "@/lib/booking/queries";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 import { listMyBatches } from "@/lib/pass/queries";
-import { playerBadges } from "@/lib/profile/badges";
 import { profileStats } from "@/lib/profile/stats";
 import { playersMetFor } from "@/lib/profile/playersMet";
 import { appCapabilities } from "@/lib/db/capabilities";
@@ -148,7 +146,6 @@ export default async function AccountPage({
     : null;
 
   const stats = profileStats(bookings);
-  const badges = playerBadges({ ...stats, playersMet }, t);
   const history = splitHistory(bookings);
 
   const deletionHref =
@@ -318,7 +315,7 @@ export default async function AccountPage({
             The page now runs wallet -> who you are -> what you have earned ->
             your details -> the account actions on them.
           */}
-          <BadgeGrid badges={badges} t={t} />
+          {/* PLAYCO (owner, 17 Nov 2026): no accomplishments on the profile. BadgeGrid stays in the code. */}
 
           {/*
             A HEADING, WHICH IT DID NOT NEED AS A TAB AND DOES NOW.

@@ -58,3 +58,47 @@ describe("ProfileCover", () => {
     expect(html).toMatch(/<img[^>]*src="[^"]*covers\/jay\.jpg/);
   });
 });
+
+/**
+ * OVERVIEW / MY GAMES LOOK LIKE BUTTONS (owner, 17 Nov 2026: "too close to the section above, make it look more like a
+ * button"). A two-button segmented control with room above it, the selected tab filled.
+ */
+describe("ProfileTabs", () => {
+  it("draws the two tabs as buttons in one rounded control", async () => {
+    // Arrange
+    const { ProfileTabs } = await import("@/components/account/ProfileTabs");
+
+    // Act
+    const html = renderToStaticMarkup(<ProfileTabs selected="overview" t={strings} />);
+    const nav = html.match(/^<nav[^>]*>/)![0];
+
+    // Assert
+    expect(nav).toContain("rounded-pill");
+    expect(nav).not.toContain("border-b");
+  });
+
+  it("fills the selected tab and leaves the other one plain", async () => {
+    // Arrange
+    const { ProfileTabs } = await import("@/components/account/ProfileTabs");
+
+    // Act
+    const html = renderToStaticMarkup(<ProfileTabs selected="games" t={strings} />);
+    const selected = html.match(/<a[^>]*data-selected="true"[^>]*>/)![0];
+    const other = html.match(/<a[^>]*data-selected="false"[^>]*>/)![0];
+
+    // Assert
+    expect(selected).toContain("bg-ink");
+    expect(other).not.toContain("bg-ink");
+  });
+
+  it("leaves clear room above itself", async () => {
+    // Arrange
+    const { ProfileTabs } = await import("@/components/account/ProfileTabs");
+
+    // Act
+    const nav = renderToStaticMarkup(<ProfileTabs selected="overview" t={strings} />).match(/^<nav[^>]*>/)![0];
+
+    // Assert
+    expect(nav).toMatch(/\bmt-(8|10|12)\b/);
+  });
+});
