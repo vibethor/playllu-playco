@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { CookiePolicyDraft } from "@/components/legal/CookiePolicyDraft";
+import { gtmEnabled } from "@/lib/analytics/gtm";
+import { cookiePolicyDraft } from "@/lib/content/cookiePolicyDraft";
 import { OPERATOR_CONTACT } from "@/lib/legal";
 import type { LegalDocumentName } from "@/lib/content/legalDocuments";
 import { getStrings } from "@/lib/i18n/server";
@@ -30,6 +33,24 @@ export async function LegalPage({
   void pdfHref;
   void annexAnchor;
   const title = { terms: t.legal.termsTitle, privacy: t.legal.privacyTitle, cookies: t.legal.cookiesTitle }[name];
+  /*
+   * THE COOKIE POLICY IS AN ENGLISH DRAFT (Jachym, 17 Nov 2026), shown so the page explains the banner while the
+   * lawyer reviews it. Terms and privacy keep the review notice: no legal text is invented for them.
+   */
+  if (name === "cookies") {
+    return (
+      <main className="relative z-10 mx-auto w-full max-w-content px-gutter pb-16 pt-24">
+        <h1 className="m-0 font-display text-page-title font-bold text-bone">{title}</h1>
+        <CookiePolicyDraft draft={cookiePolicyDraft({ analytics: gtmEnabled() })} />
+        <Link
+          href="/games"
+          className="mt-10 inline-flex min-h-11 items-center text-small text-faint no-underline hover:text-accent-dim"
+        >
+          {t.legal.back}
+        </Link>
+      </main>
+    );
+  }
   return (
     <main className="relative z-10 mx-auto w-full max-w-content px-gutter pb-16 pt-24">
       <h1 className="m-0 font-display text-page-title font-bold text-bone">{title}</h1>

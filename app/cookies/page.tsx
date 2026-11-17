@@ -8,7 +8,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * `/cookies` — Zásady používání cookies, version 2.0.
+ * `/cookies` — Playco's cookie policy: an English draft awaiting legal review (`lib/content/cookiePolicyDraft.ts`).
  *
  * WHERE THE COOKIE BANNER WENT. The site sets only necessary cookies (sign-in,
  * language, Stripe at payment), which need no consent, so the lawyer's brief
