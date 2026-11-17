@@ -65,25 +65,35 @@ export async function CardBadges({
   if (!format && !surface && !language) return null;
 
   /*
-   * THE LIST CARD SAYS INDOOR OR BEACH, NOT THE FORMAT (owner, 17 Nov 2026: "on the game card it should say if
-   * it's indoor or beach volleyball with a tag"; the format "should not be on the game card but on the game info").
-   * The game type takes the format pill's place beside the language; the format and its team split are on the
-   * game page (InfoCard).
+   * THE LIST CARD'S CLUSTER (owner, 17 Nov 2026). The game type, Indoor or Beach, is the tag beside the language;
+   * the format comes back underneath as a SMALL pill ("I can't see the format if it's 6v6 or 5v5 … add the format
+   * below the languages, like a small pill"). Indoor and Beach are one fixed width, so cards line up down the list.
    */
   if (layout === "card") {
-    if (!surface && !language) return null;
+    if (!surface && !language && !format) return null;
     return (
-      <div data-testid="card-badges" className="flex shrink-0 items-center gap-1.5">
-        {surface && (
+      <div data-testid="card-badges" className="flex shrink-0 flex-col items-end gap-1.5">
+        <div className="flex items-center gap-1.5">
+          {surface && (
+            <span
+              data-testid="game-surface"
+              className="inline-flex h-7 w-[96px] shrink-0 items-center justify-center gap-1.5 rounded-pill bg-cloud text-small font-semibold text-navy"
+            >
+              <Icon name={SURFACE_ICON[surface]} className="h-4 w-4" />
+              {t.games.surface[surface]}
+            </span>
+          )}
+          {language && <LanguagePill language={language} />}
+        </div>
+        {format && (
           <span
-            data-testid="game-surface"
-            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-pill bg-cloud px-2.5 text-small font-semibold text-navy"
+            data-testid="game-format"
+            className="inline-flex h-[22px] shrink-0 items-center gap-1 rounded-pill bg-ink/80 px-2 text-[11px] font-semibold tabular-nums text-bone ring-1 ring-inset ring-bone/25"
           >
-            <Icon name={SURFACE_ICON[surface]} className="h-4 w-4" />
-            {t.games.surface[surface]}
+            <Icon name="users" className="h-3.5 w-3.5 text-accent" />
+            {format}
           </span>
         )}
-        {language && <LanguagePill language={language} />}
       </div>
     );
   }

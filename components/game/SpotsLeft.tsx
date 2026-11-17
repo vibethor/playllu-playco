@@ -69,7 +69,7 @@ export async function SpotsLeft({
 }: {
   bookedCount: number;
   capacity: number;
-  size?: "row" | "hero";
+  size?: "row" | "hero" | "card";
 }) {
   const t = await getStrings();
   const tone = spotsTone(bookedCount, capacity);
@@ -97,7 +97,9 @@ export async function SpotsLeft({
       className={` leading-none tracking-tight ${
         size === "hero"
           ? "font-display text-[40px]"
-          : "font-display text-[17px] font-bold"
+          : size === "card"
+            ? "font-display text-[14px] font-bold"
+            : "font-display text-[17px] font-bold"
       } ${TONE_TEXT[tone]}`}
     >
       {tone === "full"
