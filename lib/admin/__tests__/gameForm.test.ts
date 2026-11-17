@@ -28,7 +28,7 @@ const VALID = {
    * "Not specified", which is why production's one upcoming game drew no
    * surface badge — the fact was skippable, so it was skipped.
    */
-  surface: "turf",
+  surface: "indoor",
 };
 
 describe("parseGameForm", () => {
@@ -40,7 +40,7 @@ describe("parseGameForm", () => {
     expect(result.values.capacity).toBe(14);
     expect(result.values.priceThb).toBe(200);
     expect(result.values.format).toBeNull();
-    expect(result.values.surface).toBe("turf");
+    expect(result.values.surface).toBe("indoor");
     expect(result.values.notes).toBeNull();
     // The Phase 2 fields default to "not stated", which is a real answer.
     expect(result.values.durationMinutes).toBeNull();
@@ -195,11 +195,19 @@ describe("parseGameForm", () => {
     expect(result.fieldErrors.surface).toBe(strings.admin.surfaceRequired);
   });
 
-  it("keeps a known surface", () => {
-    const result = parseGameForm(form({ ...VALID, surface: "turf" }));
+  it("keeps a known game type", () => {
+    const result = parseGameForm(form({ ...VALID, surface: "sand" }));
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.values.surface).toBe("turf");
+    expect(result.values.surface).toBe("sand");
+  });
+
+  // PLAYCO (owner, 17 Nov 2026): the game type is indoor or sand; HrajFotbal's turf is no longer a choice.
+  it("refuses a football surface as the game type", () => {
+    const result = parseGameForm(form({ ...VALID, surface: "turf" }));
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.fieldErrors.surface).toBe(strings.admin.surfaceRequired);
   });
 
   it("bounds notes at the same length the CHECK does", () => {

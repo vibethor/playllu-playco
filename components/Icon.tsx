@@ -50,6 +50,11 @@ export type IconName =
   | "wifi"
   | "first_aid"
   | "drinks"
+  // Playco volleyball amenities (17 Nov 2026, migration 20261117170000).
+  | "organizer"
+  | "snacks"
+  | "changing_rooms"
+  | "towel_rental"
   // Playco game card (rebrand): language on the court, the join arrow, and the surface tags.
   | "globe"
   | "arrowRight"
@@ -175,11 +180,14 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M12.2 8.6V4.4a1.6 1.6 0 0 1 3.2 0v4.6M15.4 9.2V6.6a1.6 1.6 0 0 1 3.2 0V15a6 6 0 0 1-1.4 3.9L16 21" />
     </>
   ),
+  // A volleyball (Playco): three curved seams, not a football's pentagons.
   balls: (
     <>
       <circle cx="12" cy="12" r="9" />
-      <path d="m12 7.4 3.6 2.6-1.4 4.2H9.8L8.4 10z" />
-      <path d="M12 3.2V7.4M20.6 10.2 15.6 10M18 19.4l-3.8-5.2M6 19.4l3.8-5.2M3.4 10.2l5-0.2" />
+      <path d="M12 3c2.6 2.6 3.6 5.6 3 9" />
+      <path d="M15 12c-3.2 1.6-6.4 1.8-9.6.6" />
+      <path d="M15 12c1.8 3.2 2 6.2 1 8.4" />
+      <path d="M8.2 4c-.6 3.6.2 6.4 2.4 8.4" />
     </>
   ),
   water: <path d="M12 3.2s6 6.4 6 10.2a6 6 0 0 1-12 0c0-3.8 6-10.2 6-10.2z" />,
@@ -224,6 +232,38 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <rect x="2.8" y="6" width="18.4" height="13" rx="3" />
       <path d="M12 10v5M9.5 12.5h5" />
       <path d="M8.6 6V4.8a1.8 1.8 0 0 1 1.8-1.8h3.2a1.8 1.8 0 0 1 1.8 1.8V6" />
+    </>
+  ),
+
+  // --- Playco volleyball amenities -------------------------------------------
+  // A whistle: the organizer who runs the game.
+  organizer: (
+    <>
+      <path d="M3 13.5a5.5 5.5 0 0 0 11 0V10h7V7H9a6 6 0 0 0-6 6.5z" />
+      <circle cx="8.5" cy="13.5" r="1.6" />
+      <path d="M14 7V4.5" />
+    </>
+  ),
+  // A cookie.
+  snacks: (
+    <>
+      <path d="M20.6 13.4A9 9 0 1 1 10.6 3.4a3 3 0 0 0 4 4 3 3 0 0 0 6 6z" />
+      <path d="M8.5 9.5h.01M8 14.5h.01M12.5 12.5h.01M13 17h.01M16.5 15.5h.01" />
+    </>
+  ),
+  // A clothes hanger.
+  changing_rooms: (
+    <>
+      <path d="M10 6a2 2 0 1 1 2 2v1.6" />
+      <path d="m12 9.6-8.4 6a1.4 1.4 0 0 0 .8 2.4h15.2a1.4 1.4 0 0 0 .8-2.4z" />
+    </>
+  ),
+  // A folded towel on a rail.
+  towel_rental: (
+    <>
+      <path d="M3 5h18" />
+      <path d="M6 5v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V5" />
+      <path d="M6 13h12M9 16h6" />
     </>
   ),
 };

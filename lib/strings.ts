@@ -666,6 +666,8 @@ export const strings = {
     // "2 subs per team" — renders beside the format when the organizer set it,
     // and nothing at all when they did not (§5.3a). It describes how the game
     // is run; it constrains no booking.
+    // PLAYCO (owner, 17 Nov 2026): more teams than fit on the court take turns. lib/games/teams.ts
+    teamsRotating: "{teams} teams of {perTeam}, rotating",
     subsPerTeamOne: "{n} sub per team",
     subsPerTeamFew: "{n} subs per team",
     subsPerTeamMany: "{n} subs per team",
@@ -799,17 +801,17 @@ export const strings = {
      * (migration 38) and an icon in `components/Icon.tsx` — three places, one
      * list, and widening any of them means widening all three.
      */
+    // PLAYCO (owner, 17 Nov 2026): the volleyball list; see lib/venues/amenities.ts.
     amenities: {
-      bibs: "Bibs provided",
-      gloves: "Goalkeeper gloves",
-      balls: "Game balls",
-      water: "Water",
-      drinks: "Drinks",
+      balls: "Volleyballs",
+      organizer: "Game organizer",
       showers: "Showers",
-      lockers: "Lockers",
       parking: "Parking",
+      drinks: "Drinks",
+      snacks: "Snacks",
+      changing_rooms: "Changing rooms",
       wifi: "WiFi",
-      first_aid: "First aid",
+      towel_rental: "Towel rental",
     },
 
     practicalTitle: "Game information",
@@ -1751,7 +1753,7 @@ export const strings = {
     venueImageHint:
       "A file under public/venues/, e.g. prazacka.jpg.",
     // --- venue photograph (§5.4, migration 34) --------------------------------
-    venueAmenitiesIncluded: "What's included",
+    venueAmenitiesIncluded: "What the venue provides",
     venueAmenitiesPitch: "Venue amenities",
     venueAmenitiesTitle: "What this venue provides",
     venueAmenitiesHint:
@@ -1792,8 +1794,9 @@ export const strings = {
      * round 16 item 10: optional meant the surface badge never rendered on the
      * one upcoming game production had, because nobody had said what it was.
      */
-    surfaceLabel: "Surface",
-    surfaceNone: "Choose a surface",
+    // PLAYCO (owner, 17 Nov 2026): the surface field is the game type, indoor or sand.
+    surfaceLabel: "Game type",
+    surfaceNone: "Choose indoor or sand",
     /* Round 18 item 2. Admin is English by ruling R22, so the option labels
        are English words for the pairs — the FLAGS are the format the owner
        asked for and a native <select> cannot hold an SVG, so the pill above
@@ -1828,12 +1831,12 @@ export const strings = {
     languageEnCs: "English / Czech (old)",
     languageUkRu: "Ukrainian / Russian (old)",
     languageHint: "Shows as round flags on the game card.",
-    surfaceRequired: "Pick the surface — it shows on the game's card.",
+    surfaceRequired: "Pick indoor or sand — it shows on the game's card.",
     surfaceOptions: {
       turf: "Turf",
       grass: "Grass",
       indoor: "Indoor",
-      sand: "Sand",
+      sand: "Sand (beach)",
     },
     notesLabel: "Notes (optional)",
     notesHint: "Gate codes, parking, what to bring.",

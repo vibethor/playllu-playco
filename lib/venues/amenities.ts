@@ -31,26 +31,39 @@ import { strings, type Strings } from "@/lib/strings";
  * argument was about the COLUMN, and the column is unchanged: still one array,
  * still one CHECK, still one grid's worth of data.
  */
-export const INCLUDED_AMENITIES = ["bibs", "gloves", "balls", "water", "drinks"] as const;
+/*
+ * PLAYCO, VOLLEYBALL (owner, 17 Nov 2026): what the venue provides is "balls, game organizer"; its amenities are
+ * "showers, parking, drinks, snacks, changing rooms, wifi, towel rental". HrajFotbal's football values (bibs,
+ * gloves, water, lockers, first aid) stay valid in the database so no venue row breaks, but are no longer offered
+ * or shown (migration 20261117170000).
+ */
+export const INCLUDED_AMENITIES = ["balls", "organizer"] as const;
 
-/** WHAT THE PITCH HAS — "what will it be like when I get there". */
-export const PITCH_AMENITIES = ["showers", "lockers", "parking", "wifi", "first_aid"] as const;
+/** WHAT THE VENUE HAS — "what will it be like when I get there". */
+export const PITCH_AMENITIES = [
+  "showers",
+  "parking",
+  "drinks",
+  "snacks",
+  "changing_rooms",
+  "wifi",
+  "towel_rental",
+] as const;
 
 export const AMENITIES = [...INCLUDED_AMENITIES, ...PITCH_AMENITIES] as const;
 
 export type Amenity = (typeof AMENITIES)[number];
 
 const ICONS: Record<Amenity, IconName> = {
-  bibs: "bibs",
-  gloves: "gloves",
   balls: "balls",
-  water: "water",
-  drinks: "drinks",
+  organizer: "organizer",
   showers: "showers",
-  lockers: "lockers",
   parking: "parking",
+  drinks: "drinks",
+  snacks: "snacks",
+  changing_rooms: "changing_rooms",
   wifi: "wifi",
-  first_aid: "first_aid",
+  towel_rental: "towel_rental",
 };
 
 export interface AmenityItem {
