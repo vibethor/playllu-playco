@@ -21,6 +21,8 @@ import {
 } from "@/lib/admin/venues/pitchCosts";
 import type { PitchSeason } from "@/lib/types/database";
 import { strings } from "@/lib/strings";
+import { venuePhotoObjectToRemove } from "@/lib/admin/venues/photo";
+import { VENUE_PHOTOS_BUCKET } from "@/lib/storage/avatar";
 
 /**
  * Turn whatever is in the map field into something Maps can actually find
@@ -216,9 +218,22 @@ export async function deleteVenueAction(
   if (!venueId) return { status: "error", message: strings.admin.deleteVenueFailed };
 
   const supabase = await createServerSupabaseClient();
+  // Read before the row goes: the photo's key lives on it.
+  const { data: photoRow } = await supabase.from("venues").select("image_path").eq("id", venueId).maybeSingle();
   const { error } = await supabase.rpc("admin_delete_venue", { p_venue_id: venueId });
 
   if (error) return { status: "error", message: toAdminErrorMessage(error.message) };
+
+  /*
+   * THE PHOTO GOES WITH THE VENUE (17 Nov 2026). The row was deleted and the file stayed in the public bucket with
+   * nothing pointing at it. Admins may delete from `venue-photos` (storage policy `venue_photos_admin_delete`).
+   * Best effort: the venue is already gone, so a failed cleanup is logged, not reported as a failed delete.
+   */
+  const photoKey = venuePhotoObjectToRemove(photoRow?.image_path);
+  if (photoKey) {
+    const { error: removeError } = await supabase.storage.from(VENUE_PHOTOS_BUCKET).remove([photoKey]);
+    if (removeError) console.error("venue photo cleanup failed", photoKey, removeError.message);
+  }
 
   // A venue reaches every card that names it, so the whole layout is stale.
   revalidatePath("/", "layout");

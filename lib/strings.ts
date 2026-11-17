@@ -1761,6 +1761,8 @@ export const strings = {
     venuePhotoTitle: "Venue photo",
     venuePhotoUpload: "Upload a photo",
     venuePhotoReplace: "Replace the photo",
+    venuePhotoUploading: "Uploading the photo…",
+    venuePhotoSaved: "Photo saved",
     venuePhotoHint:
       "Landscape, taken at the venue. It shows on every game card and game page here. Up to 4 MB, jpg/png/webp.",
     venuePhotoBadType: "That is not a jpg, png or webp.",
