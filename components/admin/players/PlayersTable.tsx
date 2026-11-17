@@ -121,10 +121,15 @@ export function PlayersTable({
 
   return (
     <div className="lifted overflow-hidden rounded-card">
+      {/*
+        SEVEN COLUMNS DO NOT ALWAYS FIT the admin column, so below ~820px the table scrolls sideways inside its card
+        rather than squeezing the player's name and tags into a sliver (owner, 17 Nov 2026).
+      */}
+      <div className="md:overflow-x-auto">
       <table
         role="table"
         data-testid="players-table"
-        className="block w-full md:grid md:grid-cols-[minmax(220px,1fr)_repeat(5,max-content)_auto] md:gap-x-5"
+        className="block w-full md:grid md:min-w-[820px] md:grid-cols-[minmax(220px,1fr)_repeat(5,max-content)_auto] md:gap-x-4"
       >
         <caption className="sr-only">
           {t.tableCaption
@@ -133,7 +138,7 @@ export function PlayersTable({
             .replace("{direction}", directionWord(view.sort))}
         </caption>
         <thead role="rowgroup" className="hidden md:contents">
-          <tr role="row" className="border-b border-hairline px-5 md:col-span-full md:grid md:grid-cols-subgrid md:gap-x-5">
+          <tr role="row" className="border-b border-hairline px-5 md:col-span-full md:grid md:grid-cols-subgrid md:gap-x-4">
             <SortHeader column={SORTABLE[0]!} view={view} />
             <SortHeader column={SORTABLE[1]!} view={view} />
             <SortHeader column={SORTABLE[2]!} view={view} align="right" />
@@ -157,7 +162,7 @@ export function PlayersTable({
                 role="row"
                 data-testid="admin-player-row"
                 data-player-id={player.id}
-                className="relative grid grid-cols-4 gap-x-2 gap-y-3 border-t border-hairline px-4 py-3 transition-colors first:border-t-0 focus-within:bg-surface-seg hover:bg-surface-seg md:col-span-full md:grid-cols-subgrid md:items-center md:gap-x-5 md:gap-y-0 md:px-5"
+                className="relative grid grid-cols-4 gap-x-2 gap-y-3 border-t border-hairline px-4 py-3 transition-colors first:border-t-0 focus-within:bg-surface-seg hover:bg-surface-seg md:col-span-full md:grid-cols-subgrid md:items-center md:gap-x-4 md:gap-y-0 md:px-5"
               >
                 <td role="cell" className="col-span-3 min-w-0 md:col-span-1">
                   <div className="flex min-w-0 items-center gap-3">
@@ -281,6 +286,7 @@ export function PlayersTable({
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
