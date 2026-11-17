@@ -46,6 +46,13 @@ import type { DayTab } from "@/lib/games/days";
  * The window is a calendar rather than a list of what exists, and a calendar
  * that omits its empty days is one a reader cannot count along.
  *
+ * PLAYCO (owner, 16 Nov 2026): AN EMPTY DAY IS NOT TAPPABLE. It used to link to
+ * an empty list; now it is a plain cell marked `aria-disabled`, and every cell
+ * that IS tappable (`All` and each day with games) carries a darker edge, so the
+ * row says where a game is waiting before anyone taps. A selected day stays a
+ * link even when empty (reachable from an old `?day=` URL), so tapping it again
+ * still clears the filter.
+ *
  * WHAT THE v1.3 SKIN CHANGED, and nothing else did: `rounded-chip` is gone
  * with the six-radius table (ruling A) and these are `pill`; the mono face is
  * reserved for the variabilní symbol (§1.4) so the label is `sans`; and the
@@ -123,12 +130,14 @@ export function DayPicker({
   */
   const cell =
     "flex h-16 w-14 shrink-0 flex-col items-center justify-center gap-[2px] rounded-control border no-underline transition-colors";
+  /** The edge of a cell you can tap: Midnight Navy at 45%, against 10% on an empty day. */
+  const TAPPABLE_EDGE = "border-[1.5px] border-bone/45 hover:border-bone/80";
   const skin = (isSelected: boolean, hasGames: boolean) =>
     isSelected
       ? "border-hairline-accent bg-volt text-ink"
       : hasGames
-        ? "border-hairline-strong text-bone hover:border-hairline-accent"
-        : "border-hairline text-faint hover:border-hairline-strong";
+        ? `${TAPPABLE_EDGE} text-bone`
+        : "cursor-default border-hairline text-faint/70";
 
   return (
     <nav
@@ -159,7 +168,7 @@ export function DayPicker({
         className={`${cell} text-[15px] font-semibold ${
           selected === null
             ? "border-hairline-accent bg-volt text-ink"
-            : "border-hairline-strong text-muted hover:border-hairline-accent"
+            : `${TAPPABLE_EDGE} text-bone`
         }`}
       >
         {allLabel}
@@ -168,6 +177,29 @@ export function DayPicker({
       {tabs.map((tab) => {
         const isSelected = tab.key === selected;
         const hasGames = tab.count > 0;
+        const content = (
+          <DayCellContent
+            tab={tab}
+            isSelected={isSelected}
+            hasGames={hasGames}
+          />
+        );
+
+        if (!hasGames && !isSelected) {
+          return (
+            <span
+              key={tab.key}
+              data-testid="day-tab"
+              data-day={tab.key}
+              data-selected="false"
+              data-empty="true"
+              aria-disabled="true"
+              className={`${cell} ${skin(false, false)}`}
+            >
+              {content}
+            </span>
+          );
+        }
 
         return (
           <Link
@@ -182,38 +214,56 @@ export function DayPicker({
             aria-current={isSelected ? "page" : undefined}
             className={`${cell} ${skin(isSelected, hasGames)}`}
           >
-            {/*
-              UPPER, and ruling B does not reach in here (owner's amendment):
-              a calendar cell is data display rather than a heading, and the
-              abbreviation style is the original's.
-            */}
-            <span
-              className={`whitespace-nowrap text-[9px] uppercase ${
-                isSelected ? "text-ink/70" : hasGames ? "text-muted" : "text-faint"
-              }`}
-            >
-              {tab.weekday}
-            </span>
-            <span className="text-[19px] font-bold leading-none">{tab.dayOfMonth}</span>
-            {/*
-              The dot marks a day with football on it — a fixed-height slot
-              rather than a conditional element, so every cell is the same size
-              and the row of numerals stays on one baseline.
-
-              EVERY DAY IS A LINK NOW, including an empty one (amendment A):
-              tapping it shows the list's empty state, which is a real answer
-              rather than a dead control.
-            */}
-            <span
-              aria-hidden
-              data-testid="day-tab-dot"
-              className={`h-[3px] w-[3px] rounded-pill ${
-                hasGames ? (isSelected ? "bg-ink" : "bg-volt") : "bg-transparent"
-              }`}
-            />
+            {content}
           </Link>
         );
       })}
     </nav>
+  );
+}
+
+/** Weekday over date over the game dot: the same inside a link and inside a disabled cell. */
+function DayCellContent({
+  tab,
+  isSelected,
+  hasGames,
+}: {
+  tab: DayTab;
+  isSelected: boolean;
+  hasGames: boolean;
+}) {
+  return (
+    <>
+      {/*
+        UPPER, and ruling B does not reach in here (owner's amendment):
+        a calendar cell is data display rather than a heading, and the
+        abbreviation style is the original's.
+      */}
+      <span
+        className={`whitespace-nowrap text-[9px] uppercase ${
+          isSelected ? "text-ink/70" : hasGames ? "text-muted" : "text-faint"
+        }`}
+      >
+        {tab.weekday}
+      </span>
+      <span className="text-[19px] font-bold leading-none">
+        {tab.dayOfMonth}
+      </span>
+      {/*
+        The dot marks a day with football on it — a fixed-height slot
+        rather than a conditional element, so every cell is the same size
+        and the row of numerals stays on one baseline.
+
+        ~~EVERY DAY IS A LINK NOW, including an empty one (amendment A).~~
+        Playco: only a day with games is a link (see the note at the top).
+      */}
+      <span
+        aria-hidden
+        data-testid="day-tab-dot"
+        className={`h-[3px] w-[3px] rounded-pill ${
+          hasGames ? (isSelected ? "bg-ink" : "bg-volt") : "bg-transparent"
+        }`}
+      />
+    </>
   );
 }
