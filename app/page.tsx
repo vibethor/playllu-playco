@@ -140,8 +140,8 @@ export default async function LandingPage() {
         eyebrow, "Play volleyball. Anytime. Anywhere.", one sentence, one action. A dark island (`theme-dark`), so
         `text-bone` is Cloud White and `text-accent` is lime here. The photo is a volleyball spike at the net
         (owner, 17 Nov 2026: "an action volleyball play", in place of the hall photo that read as a basketball court),
-        generated for Playco, so it needs no credit line, and graded into the brand colours (navy shadows, lime ball, cool
-        court; `scripts/grade-hero-photo.py`). A background video may replace it later (TODO.md).
+        generated for Playco in the brand colours (navy hall and court, lime shirts, ball and line), so it needs no credit
+        line. `scripts/prepare-hero-photo.py` paints out the logos the generator drew and adds headroom over the ball. A background video may replace it later (TODO.md).
       */}
       <section data-testid="home-hero" className="theme-dark relative isolate overflow-hidden">
         <Image
@@ -150,7 +150,8 @@ export default async function LandingPage() {
           fill
           priority
           sizes="100vw"
-          className="-z-20 animate-hero-drift object-cover motion-reduce:animate-none"
+          /* On a phone the frame is cropped to a tall strip: centre it on the spiker and the ball, right of middle. */
+          className="-z-20 animate-hero-drift object-cover object-[66%_center] motion-reduce:animate-none md:object-center"
         />
         <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/50 via-ink/65 to-page" />
         <div className="mx-auto flex max-w-shell flex-col items-start gap-4 px-gutter pb-10 pt-[calc(theme(spacing.nav)+40px)] md:pb-16 md:pt-[calc(theme(spacing.nav)+96px)]">
