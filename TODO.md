@@ -23,7 +23,7 @@ Items 1 and 4 block today's preview (Phase F of `docs/EXECUTION_PLAN.md`). Nothi
 
 | # | Question | Needed by |
 |---|---|---|
-| 11 | Referral reward (who gets what, when) | after launch |
+| 11 | **Referral reward**: who gets what, and when (e.g. a free game for both once the friend plays their first paid game). Codes are live and every referral is recorded (`players.referred_by`, `referral_recorded` events), so a reward can be paid for past referrals too | before promoting referrals |
 | 12 | Per new country: how does Playllu take payments there? (the first question for a prospective manager) | each city |
 
 ## Content and people

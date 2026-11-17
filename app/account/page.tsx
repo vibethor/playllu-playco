@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ToastFromQuery } from "@/components/ToastFromQuery";
 import { CreditBalance } from "@/components/CreditBalance";
+import { ReferralCodeCard } from "@/components/account/ReferralCodeCard";
 import { CreditBatches } from "@/components/account/CreditBatches";
 import { PlayerHistory } from "@/components/account/PlayerHistory";
 import { ProfileDetails } from "@/components/account/ProfileDetails";
@@ -27,6 +28,7 @@ import {
   splitPhone,
 } from "@/lib/auth/phone";
 import { getSessionUser, requireCurrentPlayer } from "@/lib/auth/session";
+import { siteUrl } from "@/lib/site";
 import { splitHistory } from "@/lib/booking/history";
 import {
   getOwnCreditBalance,
@@ -258,6 +260,16 @@ export default async function AccountPage({
               </Link>
             )}
           </div>
+
+          {/* PLAYCO (owner, 17 Nov 2026): your referral code, one click to copy. */}
+          {player.referral_code && (
+            <div className="mt-6">
+              <ReferralCodeCard
+                code={player.referral_code}
+                inviteUrl={`${await siteUrl()}/signup?ref=${player.referral_code}`}
+              />
+            </div>
+          )}
 
           {/*
             EVERYTHING THAT WAS UNDER "Settings" (round 16, item 14).

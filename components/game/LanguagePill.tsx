@@ -1,5 +1,12 @@
 import { Icon } from "@/components/Icon";
-import { FlagCZ, FlagGB, FlagRU, FlagTH, FlagUA } from "@/components/flags/Flags";
+import {
+  FlagCZ,
+  FlagGB,
+  FlagRU,
+  FlagTH,
+  FlagUA,
+} from "@/components/flags/Flags";
+import { RoundFlag } from "@/components/flags/RoundFlag";
 import type { GameLanguage } from "@/lib/games/language";
 
 /**
@@ -18,8 +25,6 @@ const FLAGS = {
   "uk-ru": [FlagUA, FlagRU],
 } as const;
 
-const CIRCLE_PX = 18;
-
 export function LanguagePill({ language }: { language: GameLanguage }) {
   return (
     <span
@@ -31,14 +36,7 @@ export function LanguagePill({ language }: { language: GameLanguage }) {
       <span aria-hidden className="h-3.5 w-px bg-hairline-strong" />
       <span className="inline-flex items-center gap-1">
         {FLAGS[language].map((Flag, index) => (
-          <span
-            key={index}
-            data-testid="language-pill-half"
-            className="relative shrink-0 overflow-hidden rounded-full ring-1 ring-cloud/60"
-            style={{ width: CIRCLE_PX, height: CIRCLE_PX }}
-          >
-            <Flag cover className="absolute inset-0 h-full w-full" />
-          </span>
+          <RoundFlag key={index} Flag={Flag} testId="language-pill-half" />
         ))}
       </span>
     </span>

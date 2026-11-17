@@ -2,11 +2,8 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { LanguageSwitcher } from "@/components/chrome/LanguageSwitcher";
 import { SERVED_LOCALES } from "@/lib/i18n/locales";
-import { appCapabilities } from "@/lib/db/capabilities";
 import { primaryNavLinks } from "@/lib/nav/links";
 import { initials } from "@/lib/roster/initials";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
-import type { BellState } from "@/lib/notifications/queries";
 import { avatarUrl } from "@/lib/storage/avatar";
 import { getStrings } from "@/lib/i18n/server";
 
@@ -66,7 +63,6 @@ function navTestId(href: string): string {
 }
 
 export async function Header({
-  bell,
   nickname,
   isAdmin,
   photoPath = null,
@@ -74,8 +70,6 @@ export async function Header({
 }: {
   nickname: string | null;
   isAdmin: boolean;
-  /** The bell's rows and unread count — see lib/notifications/queries.ts. */
-  bell: BellState;
   /** `players.photo_path` for the signed-in player, when they have one. */
   photoPath?: string | null;
   /**
@@ -86,8 +80,6 @@ export async function Header({
   photoVersion?: string | null;
 }) {
   const t = await getStrings();
-  // Round 16 item 13 — see `lib/db/capabilities.ts`. Deduped per request.
-  const capabilities = await appCapabilities();
   const { nav } = t;
   const signedIn = nickname !== null;
   const photo = avatarUrl(
@@ -233,21 +225,9 @@ export async function Header({
         */}
         <nav className="flex shrink-0 items-center justify-end gap-2">
           {/*
-            THE BELL, LEFT OF THE AVATAR (p10, p12, p14, p16 — every signed-in
-            frame draws it there). Rendered only for a signed-in player, and
-            the component itself renders nothing when the store is unreachable,
-            so an unmigrated deployment shows the header it always had.
+            NO BELL (owner, 17 Nov 2026: "we don't need them in Thailand"). The notification store and its RPCs stay;
+            only the header control and its per-page fetch are gone. NotificationBell is kept for when it returns.
           */}
-          {signedIn && (
-            <NotificationBell
-              items={bell.items}
-              unread={bell.unread}
-              available={bell.available}
-              /* Round 16 item 13 — hidden until the migration exists. */
-              canDismiss={capabilities.dismissNotifications}
-              canDismissOne={capabilities.dismissOneNotification}
-            />
-          )}
           {signedIn ? (
             <Link
               href="/account"

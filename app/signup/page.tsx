@@ -1,3 +1,4 @@
+import { normaliseReferralCode } from "@/lib/referrals/code";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -34,12 +35,17 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; ref?: string }>;
 }) {
   const t = await getStrings();
   const locale = await getLocale();
   const params = await searchParams;
-  const next = params.next && params.next.startsWith("/") ? params.next : "/games";
+  const next =
+    params.next && params.next.startsWith("/") ? params.next : "/games";
+  // PLAYCO: an invite link carries the friend's code (`/signup?ref=K7M2QX`); the box shows it, tidied up.
+  const referralCode = normaliseReferralCode(params.ref);
+  const defaultReferral =
+    referralCode.ok && referralCode.code ? referralCode.code : "";
 
   const user = await getSessionUser();
   const existing = user ? await getCurrentPlayer() : null;
@@ -72,6 +78,7 @@ export default async function SignupPage({
             phoneCountries={phoneCountries}
             defaultPhoneCountry={DEFAULT_PHONE_COUNTRY}
             defaultEmailLocale={locale}
+            defaultReferral={defaultReferral}
             mode="create"
           />
 
@@ -135,6 +142,7 @@ export default async function SignupPage({
           phoneCountries={phoneCountries}
           defaultPhoneCountry={DEFAULT_PHONE_COUNTRY}
           defaultEmailLocale={locale}
+          defaultReferral={defaultReferral}
           mode="finish"
         />
       </div>

@@ -409,6 +409,11 @@ export const strings = {
     tosTermsLink: "Terms and Conditions",
     tosRulesLink: "Community and Game Rules",
     tosRequired: "Please accept the terms to continue.",
+    // PLAYCO (17 Nov 2026): an optional referral code at sign-up.
+    referralLabel: "Referral code (optional)",
+    referralHint: "Got a code from a friend? Enter it here.",
+    referralInvalid: "That isn't a referral code. Check it, or leave the box empty.",
+    referralUnknown: "We don't know that code. Check it, or leave the box empty.",
     privacyHowLink: "How we handle your data",
     marketingLabel: "I agree to receive marketing material by email.",
     /** Round 41 — the language a player's emails are written in. */
@@ -1350,6 +1355,13 @@ export const strings = {
     creditEmpty: "No credit yet.",
     showQr: "Show payment QR",
     creditHint: "Credit is applied automatically to your next booking.",
+    // PLAYCO (17 Nov 2026): your referral code, on your profile.
+    referralTitle: "Your referral code",
+    referralBody: "Share it with friends. They enter it when they create their account.",
+    referralCopy: "Copy",
+    referralCopied: "Copied",
+    referralCopyLink: "Copy invite link",
+    referralCopyFailed: "Couldn't copy. Select the code and copy it.",
     historyTitle: "Your history",
     gamesPlayedLabel: "Games played",
     upcomingTitle: "Coming up",

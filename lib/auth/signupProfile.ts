@@ -21,6 +21,7 @@
 import { normaliseCountry } from "@/lib/auth/countries";
 import { validateNickname } from "@/lib/auth/nickname";
 import { TERMS_VERSION } from "@/lib/legal";
+import { normaliseReferralCode } from "@/lib/referrals/code";
 
 export const SKILL_LEVELS = ["beginner", "intermediate", "advanced"] as const;
 export type SkillLevel = (typeof SKILL_LEVELS)[number];
@@ -48,6 +49,8 @@ export interface SignupProfile {
 /** Everything the form collects, including the secret that is never stored. */
 export interface SignupSubmission extends SignupProfile {
   password: string;
+  /** PLAYCO: the friend's referral code, tidied up, or null when the box was left empty. */
+  referralCode: string | null;
 }
 
 /** Mirrors the organizer phone bounds the admin form has used since Phase 13. */
@@ -61,7 +64,8 @@ export type SignupField =
   | "country"
   | "skill"
   | "phone"
-  | "tos";
+  | "tos"
+  | "referral";
 
 export type SignupParse =
   | { ok: true; value: SignupSubmission }
@@ -75,7 +79,8 @@ export type SignupErrorCode =
   | "SKILL_REQUIRED"
   | "PHONE_REQUIRED"
   | "PHONE_INVALID"
-  | "TOS_REQUIRED";
+  | "TOS_REQUIRED"
+  | "REFERRAL_INVALID";
 
 /**
  * Deliberately loose, exactly as in Phase 1: real validation is "did the mail
@@ -100,7 +105,10 @@ function checked(value: FormDataEntryValue | null | undefined): boolean {
 }
 
 export function isSkillLevel(value: unknown): value is SkillLevel {
-  return typeof value === "string" && (SKILL_LEVELS as readonly string[]).includes(value);
+  return (
+    typeof value === "string" &&
+    (SKILL_LEVELS as readonly string[]).includes(value)
+  );
 }
 
 /**
@@ -116,12 +124,17 @@ export function parseSignupForm(form: {
   get(name: string): FormDataEntryValue | null;
 }): SignupParse {
   const email = str(form.get("email")).toLowerCase();
-  if (!looksLikeEmail(email)) return { ok: false, field: "email", code: "EMAIL_INVALID" };
+  if (!looksLikeEmail(email))
+    return { ok: false, field: "email", code: "EMAIL_INVALID" };
 
   const nickname = validateNickname(str(form.get("nickname")));
-  if (!nickname.valid) return { ok: false, field: "nickname", code: "NICKNAME_INVALID" };
+  if (!nickname.valid)
+    return { ok: false, field: "nickname", code: "NICKNAME_INVALID" };
 
-  const password = typeof form.get("password") === "string" ? String(form.get("password")) : "";
+  const password =
+    typeof form.get("password") === "string"
+      ? String(form.get("password"))
+      : "";
   if (password.length < PASSWORD_MIN_LENGTH) {
     return { ok: false, field: "password", code: "PASSWORD_TOO_SHORT" };
   }
@@ -130,7 +143,8 @@ export function parseSignupForm(form: {
   if (!country) return { ok: false, field: "country", code: "COUNTRY_INVALID" };
 
   const skill = str(form.get("skill"));
-  if (!isSkillLevel(skill)) return { ok: false, field: "skill", code: "SKILL_REQUIRED" };
+  if (!isSkillLevel(skill))
+    return { ok: false, field: "skill", code: "SKILL_REQUIRED" };
 
   /*
    * REQUIRED SINCE ROUND 7, item 7.
@@ -155,15 +169,25 @@ export function parseSignupForm(form: {
    * keystroke and a paste of a paragraph.
    */
   const phoneRaw = str(form.get("phone"));
-  if (phoneRaw === "") return { ok: false, field: "phone", code: "PHONE_REQUIRED" };
-  if (phoneRaw.length < PHONE_MIN_LENGTH || phoneRaw.length > PHONE_MAX_LENGTH) {
+  if (phoneRaw === "")
+    return { ok: false, field: "phone", code: "PHONE_REQUIRED" };
+  if (
+    phoneRaw.length < PHONE_MIN_LENGTH ||
+    phoneRaw.length > PHONE_MAX_LENGTH
+  ) {
     return { ok: false, field: "phone", code: "PHONE_INVALID" };
   }
   const phone = phoneRaw;
 
   // ONE required legal box since round 40 (the lawyer's Texty 2.2). The privacy
   // policy is a link beneath it: processing rests on the contract, not consent.
-  if (!checked(form.get("tos"))) return { ok: false, field: "tos", code: "TOS_REQUIRED" };
+  if (!checked(form.get("tos")))
+    return { ok: false, field: "tos", code: "TOS_REQUIRED" };
+
+  // PLAYCO: optional. Whether the code belongs to someone is checked by the action, against the database.
+  const referral = normaliseReferralCode(str(form.get("referral")));
+  if (!referral.ok)
+    return { ok: false, field: "referral", code: "REFERRAL_INVALID" };
 
   return {
     ok: true,
@@ -176,6 +200,7 @@ export function parseSignupForm(form: {
       phone,
       marketingOptIn: checked(form.get("marketing")),
       tosVersion: TERMS_VERSION,
+      referralCode: referral.code,
     },
   };
 }
@@ -189,7 +214,9 @@ export function parseSignupForm(form: {
  * so this bag is readable by anyone holding the session — which is the player
  * themselves, and only facts they just typed about themselves.
  */
-export function signupMetadata(submission: SignupSubmission): Record<string, unknown> {
+export function signupMetadata(
+  submission: SignupSubmission,
+): Record<string, unknown> {
   return {
     nickname: submission.nickname,
     country: submission.country,
@@ -204,6 +231,8 @@ export function signupMetadata(submission: SignupSubmission): Record<string, unk
     // overload (CLAUDE.md: a substitution can land in a function nothing calls).
     tos_accepted: true,
     gdpr_consent: true,
+    // PLAYCO: recorded by record_my_referrer once the profile exists (after email confirmation).
+    referral_code: submission.referralCode,
   };
 }
 
@@ -234,16 +263,19 @@ export function profileFromMetadata(
   if (!isSkillLevel(metadata.skill_level)) return null;
 
   const tosVersion =
-    typeof metadata.tos_version === "string" && metadata.tos_version.trim() !== ""
+    typeof metadata.tos_version === "string" &&
+    metadata.tos_version.trim() !== ""
       ? metadata.tos_version.trim()
       : null;
   if (!tosVersion) return null;
 
-  if (metadata.tos_accepted !== true || metadata.gdpr_consent !== true) return null;
+  if (metadata.tos_accepted !== true || metadata.gdpr_consent !== true)
+    return null;
 
-  const phone = typeof metadata.phone === "string" && metadata.phone.trim() !== ""
-    ? metadata.phone.trim()
-    : null;
+  const phone =
+    typeof metadata.phone === "string" && metadata.phone.trim() !== ""
+      ? metadata.phone.trim()
+      : null;
 
   return {
     email,
