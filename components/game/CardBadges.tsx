@@ -65,34 +65,43 @@ export async function CardBadges({
   if (!format && !surface && !language) return null;
 
   /*
-   * THE LIST CARD'S CLUSTER (owner, 17 Nov 2026). The game type, Indoor or Beach, is the tag beside the language;
-   * the format comes back underneath as a SMALL pill ("I can't see the format if it's 6v6 or 5v5 … add the format
-   * below the languages, like a small pill"). Indoor and Beach are one fixed width, so cards line up down the list.
+   * THE LIST CARD'S CLUSTER (owner, 17 Nov 2026, after a HrajFotbal screenshot):
+   *
+   *   [ 5v5 ]  [ Beach ]          the format leads: lime, the height of the languages pill, the one bright thing
+   *            [ 🌐 | 🇬🇧 ]        up here; the game type is the small quiet pill on the far right, and the
+   *                               languages sit CENTRED under it, not right-aligned.
+   *
+   * ONE ACCENT. The game type was a white pill and the format a navy one with a lime icon: three treatments in one
+   * corner ("too many colours … a little bit too hectic"). Now lime is the format alone, and the game type wears the
+   * same dark glass as the languages pill. Indoor and Beach keep one fixed width so cards line up down a list.
    */
   if (layout === "card") {
     if (!surface && !language && !format) return null;
     return (
-      <div data-testid="card-badges" className="flex shrink-0 flex-col items-end gap-1.5">
-        <div className="flex items-center gap-1.5">
-          {surface && (
-            <span
-              data-testid="game-surface"
-              className="inline-flex h-7 w-[96px] shrink-0 items-center justify-center gap-1.5 rounded-pill bg-cloud text-small font-semibold text-navy"
-            >
-              <Icon name={SURFACE_ICON[surface]} className="h-4 w-4" />
-              {t.games.surface[surface]}
-            </span>
-          )}
-          {language && <LanguagePill language={language} />}
-        </div>
+      <div data-testid="card-badges" className="flex shrink-0 items-start gap-1.5">
         {format && (
           <span
             data-testid="game-format"
-            className="inline-flex h-[22px] shrink-0 items-center gap-1 rounded-pill bg-ink/80 px-2 text-[11px] font-semibold tabular-nums text-bone ring-1 ring-inset ring-bone/25"
+            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-pill bg-volt px-2.5 text-small font-bold tabular-nums text-ink"
           >
-            <Icon name="users" className="h-3.5 w-3.5 text-accent" />
+            <Icon name="users" className="h-4 w-4" />
             {format}
           </span>
+        )}
+        {(surface || language) && (
+          <div data-testid="card-badges-type" className="flex flex-col items-center gap-1.5">
+            {surface && (
+              <span
+                data-testid="game-surface"
+                /* `mt-0.5` puts its middle on the format pill's middle (28px beside 24px). */
+                className="mt-0.5 inline-flex h-6 w-[84px] shrink-0 items-center justify-center gap-1 rounded-pill border border-hairline-strong bg-page/60 text-[12px] font-semibold text-bone"
+              >
+                <Icon name={SURFACE_ICON[surface]} className="h-3.5 w-3.5" />
+                {t.games.surface[surface]}
+              </span>
+            )}
+            {language && <LanguagePill language={language} />}
+          </div>
         )}
       </div>
     );
