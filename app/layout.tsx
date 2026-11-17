@@ -1,13 +1,7 @@
 import { profilePhotoVersion } from "@/lib/storage/photoVersions";
 import { PreviewBar } from "@/components/chrome/PreviewBar";
 import type { Metadata, Viewport } from "next";
-import {
-  Anuphan,
-  Archivo,
-  IBM_Plex_Sans_Thai,
-  JetBrains_Mono,
-  Montserrat,
-} from "next/font/google";
+import localFont from "next/font/local";
 import { NavPill } from "@/components/chrome/NavPill";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { SessionProvider } from "@/components/SessionProvider";
@@ -22,49 +16,57 @@ import { consentBootstrapScript, gtmContainerId } from "@/lib/analytics/gtm";
 import { Header } from "@/components/chrome/Header";
 import { getCurrentPlayer } from "@/lib/auth/session";
 import { getLocale, getStrings } from "@/lib/i18n/server";
-import { strings } from "@/lib/strings";
 import { BRAND } from "@/lib/brand/palette";
 import { SITE_NAME } from "@/lib/city/default";
 import "./globals.css";
 
-/** Display face for the hero and section titles. */
+
 /*
  * PLAYCO TYPE. Display: Archivo, a wide athletic grotesque, run semi-expanded (`.font-display` in globals.css).
  * Thai has no glyphs in Archivo, so the stacks fall through to Anuphan (drawn to sit with Latin). Text: IBM Plex
  * Sans Thai, which carries Thai and Latin in one family. Logo: Montserrat, the typeface of the existing wordmark.
+ *
+ * SELF-HOSTED (app/fonts, SIL Open Font License, licences beside the files). With next/font/google every build
+ * downloads the fonts from Google, and on 16 Nov a production build failed when one download did not arrive. The
+ * files are Google's own, subset to Latin, Latin Extended and Thai (plus arrows), as WOFF2. Variable fonts keep
+ * their axes: Archivo's width axis is what `font-stretch: 112%` uses, so its face declares the range.
  */
-const archivo = Archivo({
+const archivo = localFont({
+  src: [{ path: "./fonts/Archivo-Variable.woff2", weight: "100 900", style: "normal" }],
   variable: "--font-archivo",
-  subsets: ["latin", "latin-ext", "vietnamese"],
-  axes: ["wdth"],
+  declarations: [{ prop: "font-stretch", value: "62% 125%" }],
   display: "swap",
 });
 
-const anuphan = Anuphan({
+const anuphan = localFont({
+  src: [{ path: "./fonts/Anuphan-Variable.woff2", weight: "100 700", style: "normal" }],
   variable: "--font-anuphan",
-  subsets: ["thai", "latin"],
-  weight: ["500", "600", "700"],
   display: "swap",
+  preload: false, // Thai fallback for display text; fetched only when a page shows Thai
 });
 
-const plexThai = IBM_Plex_Sans_Thai({
+const plexThai = localFont({
+  src: [
+    { path: "./fonts/IBMPlexSansThai-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/IBMPlexSansThai-Medium.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/IBMPlexSansThai-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/IBMPlexSansThai-Bold.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-plex-thai",
-  subsets: ["thai", "latin"],
-  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const montserrat = Montserrat({
+const montserrat = localFont({
+  src: [{ path: "./fonts/Montserrat-Variable.woff2", weight: "100 900", style: "normal" }],
   variable: "--font-montserrat",
-  subsets: ["latin"],
-  weight: ["700", "800"],
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const jetbrainsMono = localFont({
+  src: [{ path: "./fonts/JetBrainsMono-Variable.woff2", weight: "100 800", style: "normal" }],
   variable: "--font-jetbrains-mono",
-  subsets: ["latin", "latin-ext"],
   display: "swap",
+  preload: false,
 });
 
 /**
