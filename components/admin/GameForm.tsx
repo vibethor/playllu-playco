@@ -18,6 +18,7 @@ import { LanguagePill } from "@/components/game/LanguagePill";
 import { gameLanguageOf, type GameLanguage } from "@/lib/games/language";
 import { priceForDurationThb } from "@/lib/games/price";
 import { phoneAfterOrganizerChange } from "@/lib/admin/organizerPhone";
+import { openNativePicker } from "@/lib/forms/nativePicker";
 import { strings } from "@/lib/strings";
 import type { Database, GameSurface, SkillLevel } from "@/lib/types/database";
 
@@ -138,7 +139,10 @@ export function GameForm({
   defaultOrganizerName?: string;
   /** Whether `games.language` exists yet (round 18, item 2). */
   canSetLanguage?: boolean;
-  /** Whether `organizer_telegram` exists yet (round 19, item 2). */
+  /**
+   * Whether to offer the organizer's Telegram handle (round 19, item 2). PLAYCO: no page passes it any more
+   * (owner, 17 Nov 2026: "not useful in Asia"), so the field is gone and the contact button stays WhatsApp.
+   */
   canSetTelegram?: boolean;
   /**
    * Round 42 — the players an admin can pick as organizer, or absent before
@@ -326,8 +330,14 @@ export function GameForm({
               <input
                 id="startsAt"
                 type="datetime-local"
-                className={FIELD}
+                /*
+                  THE CALENDAR OPENS ON A CLICK ANYWHERE IN THE FIELD (owner, 17 Nov 2026), and its icon is drawn for
+                  a LIGHT field. The site declares `color-scheme: dark`, so the browser painted the picker icon white
+                  on this white box and it looked like a field you had to type into.
+                */
+                className={`${FIELD} [color-scheme:light]`}
                 data-testid="starts-at"
+                onClick={(event) => openNativePicker(event.currentTarget)}
                 value={startsAtLocal}
                 onChange={(event) => {
                   const value = event.target.value;

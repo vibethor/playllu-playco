@@ -124,7 +124,7 @@ export function PlayersTable({
       <table
         role="table"
         data-testid="players-table"
-        className="block w-full md:grid md:grid-cols-[minmax(0,1fr)_repeat(5,max-content)_auto] md:gap-x-6"
+        className="block w-full md:grid md:grid-cols-[minmax(220px,1fr)_repeat(5,max-content)_auto] md:gap-x-5"
       >
         <caption className="sr-only">
           {t.tableCaption
@@ -133,14 +133,16 @@ export function PlayersTable({
             .replace("{direction}", directionWord(view.sort))}
         </caption>
         <thead role="rowgroup" className="hidden md:contents">
-          <tr role="row" className="border-b border-hairline px-5 md:col-span-full md:grid md:grid-cols-subgrid md:gap-x-6">
+          <tr role="row" className="border-b border-hairline px-5 md:col-span-full md:grid md:grid-cols-subgrid md:gap-x-5">
             <SortHeader column={SORTABLE[0]!} view={view} />
             <SortHeader column={SORTABLE[1]!} view={view} />
             <SortHeader column={SORTABLE[2]!} view={view} align="right" />
             <SortHeader column={SORTABLE[3]!} view={view} />
             <SortHeader column={SORTABLE[4]!} view={view} align="right" />
-            <th role="columnheader" scope="col" className="py-3 text-right text-[10px] font-normal uppercase tracking-eyebrow text-muted">
-              {t.columns.bookings}
+            <th role="columnheader" scope="col" className="py-3 text-right font-normal">
+              <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-eyebrow text-muted">
+                {t.columns.bookings}
+              </span>
             </th>
             <td aria-hidden className="py-3" />
           </tr>
@@ -155,13 +157,18 @@ export function PlayersTable({
                 role="row"
                 data-testid="admin-player-row"
                 data-player-id={player.id}
-                className="relative grid grid-cols-4 gap-x-2 gap-y-3 border-t border-hairline px-4 py-3 transition-colors first:border-t-0 focus-within:bg-surface-seg hover:bg-surface-seg md:col-span-full md:grid-cols-subgrid md:items-center md:gap-x-6 md:gap-y-0 md:px-5"
+                className="relative grid grid-cols-4 gap-x-2 gap-y-3 border-t border-hairline px-4 py-3 transition-colors first:border-t-0 focus-within:bg-surface-seg hover:bg-surface-seg md:col-span-full md:grid-cols-subgrid md:items-center md:gap-x-5 md:gap-y-0 md:px-5"
               >
                 <td role="cell" className="col-span-3 min-w-0 md:col-span-1">
                   <div className="flex min-w-0 items-center gap-3">
                     <PlayerTile nickname={player.nickname} photoUrl={photo} />
                     <div className="min-w-0">
-                      <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
+                      {/*
+                        NAME, THEN TAGS, THEN EMAIL (owner, 17 Nov 2026: "the player view spacing is a bit off"). The
+                        tags shared the name's line and wrapped one per line in a narrow column, the widest of them
+                        spilling into "Joined".
+                      */}
+                      <div className="flex min-w-0 items-baseline gap-x-2">
                         {player.playerNumber !== null && (
                           <span
                             data-testid="admin-player-number"
@@ -179,6 +186,8 @@ export function PlayersTable({
                         >
                           {player.nickname}
                         </Link>
+                      </div>
+                      <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1 empty:hidden">
                         <PlayerTags player={player} />
                         {player.id === actingId && (
                           /* Your own row. Rights cannot be changed on yourself —

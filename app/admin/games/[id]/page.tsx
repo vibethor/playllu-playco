@@ -350,7 +350,6 @@ export default async function AdminGamePage({
               organizer={organizer}
               defaultOrganizerName={admin.nickname}
               canSetLanguage={capabilities.gameLanguage}
-              canSetTelegram={capabilities.organizerTelegram}
               organizerPlayers={capabilities.organizerPlayer ? organizerPlayers : undefined}
             />
           </Panel>
@@ -367,9 +366,16 @@ export default async function AdminGamePage({
       {(canCancel || capabilities.adminDelete) && (
         <Panel title={hub.dangerTitle} testId="game-danger" className="mt-4">
           {canCancel && <p className="m-0 mb-4 max-w-[560px] text-[12px] leading-snug text-muted">{hub.dangerLede}</p>}
-          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
+          {/*
+            A WRAPPING ROW, NOT A TWO-COLUMN GRID (owner, 17 Nov 2026: "the buttons are overlapping", desktop). The grid
+            was `minmax(0,1fr) auto`: when Delete showed its refusal ("Players are still booked…") the auto column grew
+            to that sentence's full width and squeezed Cancel to nothing, so its label and its whole confirm form were
+            drawn one word per line on top of Delete. Each control now keeps its own width and wraps below the other
+            when it needs the room.
+          */}
+          <div className="flex flex-wrap items-start gap-4">
             {canCancel && (
-              <div className="min-w-0">
+              <div className="min-w-0 max-w-full">
                 <CancelGameButton
                   gameId={game.id}
                   venue={game.venue}
@@ -378,7 +384,7 @@ export default async function AdminGamePage({
               </div>
             )}
             {capabilities.adminDelete && (
-              <div>
+              <div className="min-w-0 max-w-full">
                 <DeleteControl
                   action={deleteGameAction}
                   hiddenFields={{ gameId: game.id }}

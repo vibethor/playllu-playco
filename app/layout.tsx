@@ -1,5 +1,4 @@
 import { profilePhotoVersion } from "@/lib/storage/photoVersions";
-import { PreviewBar } from "@/components/chrome/PreviewBar";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { NavPill } from "@/components/chrome/NavPill";
@@ -170,7 +169,8 @@ export default async function RootLayout({
       </head>
       {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body className="min-h-full flex flex-col">
-        <PreviewBar />
+        {/* ~~<PreviewBar />~~ REMOVED (owner, 17 Nov 2026): the "preview, test payments" strip sat behind the hero and
+            showed as a thin line when a phone over-scrolled. Stripe test mode is visible on the checkout itself. */}
         <LocaleProvider locale={locale} t={t}>
           <SessionProvider
             value={{

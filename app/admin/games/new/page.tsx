@@ -94,7 +94,6 @@ export default async function NewGamePage({
           venues={pickableVenues(venues, null)}
           defaultOrganizerName={admin.nickname}
           canSetLanguage={capabilities.gameLanguage}
-          canSetTelegram={capabilities.organizerTelegram}
           organizerPlayers={capabilities.organizerPlayer ? organizerPlayers : undefined}
           defaultOrganizerPlayerId={admin.id}
         />
