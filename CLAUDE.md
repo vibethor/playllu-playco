@@ -58,7 +58,7 @@ Platform:
 - **Wallet credit** from a cancellation never expires. A purchased game pass expires 60 days after purchase.
 - **Staff logins** (managers, organisers) are created by Playllu, with a limited view. They work in Playco's admin
   panel at launch and in Playllu HQ later (plan Phase 18): keep admin logic in RPCs and query modules, not components.
-- **Levels** are shown, not enforced. **No passes** at launch. **Referral code** per player, recorded at sign-up;
+- **Levels** are shown, not enforced. **No passes** at launch. **Referral code** per player (6 random characters, no 0/O/1/I/L; shown on the profile with one-click copy and an invite link `/signup?ref=`), recorded at sign-up;
   no reward yet.
 - **City managers** are invited or approved by Playllu and paid a profit share: 50% of profit and 50% of a loss as standard. They
   may bring their own organisers. Big decisions are discussed with Playllu; day-to-day growth is theirs.

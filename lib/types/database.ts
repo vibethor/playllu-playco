@@ -365,6 +365,10 @@ export interface Database {
           banned_at?: string | null;
           /** Round 40 — set when the account was deleted (anonymised); absent before the migration. */
           deleted_at?: string | null;
+          /** PLAYCO: six random characters, unique, given on insert. */
+          referral_code: string;
+          referred_by: string | null;
+          referred_at: string | null;
         };
         Insert: {
           id?: string;
@@ -1109,6 +1113,18 @@ export interface Database {
           p_online?: boolean;
         };
         Returns: BookingResult;
+      };
+
+      /** PLAYCO: does a referral code belong to a player? Callable before sign-up. */
+      referral_code_exists: {
+        Args: { p_code: string };
+        Returns: boolean;
+      };
+
+      /** PLAYCO: record who referred the signed-in player; false when ignored (unknown, own, or already set). */
+      record_my_referrer: {
+        Args: { p_code: string };
+        Returns: boolean;
       };
 
       /** Admin/service-role act-on-behalf entry point. */

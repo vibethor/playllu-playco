@@ -33,6 +33,8 @@ export interface SubmittedValues {
   emailLocale: string;
   tos: boolean;
   marketing: boolean;
+  /** PLAYCO: the referral code as typed. */
+  referral: string;
 }
 
 /** A checkbox is present in the payload only when it was ticked. */
@@ -56,5 +58,6 @@ export function submittedValues(formData: FormData): SubmittedValues {
     emailLocale: text(formData, "email_locale"),
     tos: ticked(formData, "tos"),
     marketing: ticked(formData, "marketing"),
+    referral: text(formData, "referral"),
   };
 }
