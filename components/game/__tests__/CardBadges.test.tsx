@@ -22,7 +22,7 @@ describe("CardBadges on a list card", () => {
     expect(html).toContain(strings.games.surface.sand);
   });
 
-  it("draws Indoor and Beach at one fixed width", async () => {
+  it("draws Indoor and Beach at one width", async () => {
     // Act
     const beach = tag(renderToStaticMarkup(await CardBadges({ format: null, surface: "sand", layout: "card" })), "game-surface");
     const indoor = tag(renderToStaticMarkup(await CardBadges({ format: null, surface: "indoor", layout: "card" })), "game-surface");
@@ -38,7 +38,7 @@ describe("CardBadges on a list card", () => {
    * around the same size as the languages … make it stand out a bit more", the game type "a bit smaller … all the
    * way to the right", and the languages "under the newly placed beach or indoor … centered".
    */
-  it("puts the format first, as a lime pill the height of the languages pill", async () => {
+  it("puts the format first, as the lime pill", async () => {
     // Act
     const html = renderToStaticMarkup(
       await CardBadges({ format: "6v6", surface: "indoor", language: "en", layout: "card" }),
@@ -51,14 +51,34 @@ describe("CardBadges on a list card", () => {
     expect(html.indexOf('data-testid="game-format"')).toBeLessThan(html.indexOf('data-testid="game-surface"'));
   });
 
-  it("makes the game type the smaller, quiet pill", async () => {
+  /*
+   * ONE SIZE FOR THE TWO PILLS, SMALLER LANGUAGES (owner, 17 Nov 2026): "make the beach pill the same as the format
+   * pill in terms of size, and the languages … a bit smaller because it's not so important … like 30 to 40% smaller,
+   * so it's still clear and you can read it".
+   */
+  it("draws the game type at the format pill's size, in the quieter ink", async () => {
     // Act
     const html = renderToStaticMarkup(await CardBadges({ format: "6v6", surface: "indoor", layout: "card" }));
 
     // Assert
+    const format = tag(html, "game-format");
     const surface = tag(html, "game-surface");
-    expect(surface).not.toContain("h-7");
-    expect(surface).not.toContain("bg-cloud");
+    const size = (s: string) => s.match(/(?<![\w-])(h-\d+|text-small|(?:min-)?w-\[\d+px\])(?![\w-])/g)?.sort();
+    expect(size(surface)).toEqual(size(format));
+    expect(surface).not.toContain("bg-volt");
+  });
+
+  it("draws the languages about a third smaller on the card", async () => {
+    // Act
+    const card = renderToStaticMarkup(await CardBadges({ format: null, surface: "indoor", language: "en-th", layout: "card" }));
+    const page = renderToStaticMarkup(await CardBadges({ format: null, surface: null, language: "en-th" }));
+
+    // Assert
+    const height = (html: string) => Number(tag(html, "language-pill").match(/\bh-\[(\d+)px\]|\bh-(\d+)\b/)?.slice(1).find(Boolean) ?? NaN);
+    const px = (html: string) => (tag(html, "language-pill").includes("h-[") ? height(html) : height(html) * 4);
+    const ratio = px(card) / px(page);
+    expect(ratio).toBeGreaterThanOrEqual(0.6);
+    expect(ratio).toBeLessThanOrEqual(0.7);
   });
 
   it("centres the languages under the game type", async () => {
