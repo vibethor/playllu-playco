@@ -15,7 +15,10 @@ import { useStrings } from "@/components/LocaleProvider";
 import { LOCALE_LABELS, SERVED_LOCALES, type Locale } from "@/lib/i18n/locales";
 import { LinkedText } from "@/components/form/LinkedText";
 import { TERMS_RULES_ANCHOR } from "@/lib/legal";
-import { PhoneField, type PhoneCountryChoice } from "@/components/form/PhoneField";
+import {
+  PhoneField,
+  type PhoneCountryChoice,
+} from "@/components/form/PhoneField";
 
 const initialState: SignupFormState = { status: "idle" };
 
@@ -49,6 +52,7 @@ export function SignupForm({
   phoneCountries,
   defaultPhoneCountry,
   defaultEmailLocale,
+  defaultReferral = "",
   mode = "create",
 }: {
   next: string;
@@ -58,6 +62,8 @@ export function SignupForm({
   defaultPhoneCountry: string;
   /** Round 41 — the language the site is showing: the browser's, unless chosen. */
   defaultEmailLocale: Locale;
+  /** PLAYCO: a friend's referral code from an invite link (`?ref=`), shown in the optional box. */
+  defaultReferral?: string;
   mode?: "create" | "finish";
 }) {
   const t = useStrings();
@@ -114,7 +120,10 @@ export function SignupForm({
 
   return (
     /* p09's card: one lifted box holding the whole field stack. */
-    <form action={formAction} className="lifted mt-6 flex flex-col gap-5 rounded-card p-5">
+    <form
+      action={formAction}
+      className="lifted mt-6 flex flex-col gap-5 rounded-card p-5"
+    >
       <input type="hidden" name="next" value={next} />
 
       {creating ? (
@@ -130,7 +139,10 @@ export function SignupForm({
               placeholder={t.auth.emailPlaceholder}
               className={FIELD_CLASS}
             />
-            <FieldError show={state.field === "email"} message={state.message} />
+            <FieldError
+              show={state.field === "email"}
+              message={state.message}
+            />
           </label>
 
           <label className="flex flex-col gap-2">
@@ -144,7 +156,10 @@ export function SignupForm({
               className={FIELD_CLASS}
             />
             <span className="text-xs opacity-50">{t.auth.passwordHint}</span>
-            <FieldError show={state.field === "password"} message={state.message} />
+            <FieldError
+              show={state.field === "password"}
+              message={state.message}
+            />
           </label>
         </>
       ) : null}
@@ -200,7 +215,7 @@ export function SignupForm({
             <label
               key={level}
               /* p09 draws the three levels as capsules, not rounded squares. */
-            className="flex cursor-pointer items-center gap-2 rounded-pill border border-hairline-strong px-3 py-2 text-sm has-[:checked]:border-accent has-[:checked]:text-accent"
+              className="flex cursor-pointer items-center gap-2 rounded-pill border border-hairline-strong px-3 py-2 text-sm has-[:checked]:border-accent has-[:checked]:text-accent"
             >
               <input
                 key={`skill-${level}-${valuesKey}`}
@@ -254,6 +269,24 @@ export function SignupForm({
         <FieldError show={state.field === "phone"} message={state.message} />
       </div>
 
+      {/* PLAYCO (17 Nov 2026): a friend's referral code, optional; pre-filled from an invite link. */}
+      <label className="flex flex-col gap-2">
+        <span className={LABEL_CLASS}>{t.auth.referralLabel}</span>
+        <input
+          type="text"
+          name="referral"
+          defaultValue={v?.referral ?? defaultReferral}
+          maxLength={12}
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          data-testid="signup-referral"
+          className={`${FIELD_CLASS} uppercase tracking-[0.2em]`}
+        />
+        <span className="text-xs opacity-50">{t.auth.referralHint}</span>
+        <FieldError show={state.field === "referral"} message={state.message} />
+      </label>
+
       {/*
         THE LEGAL ACT, APART FROM THE PREFERENCE (round 40, the lawyer's Texty
         2.2). ~~Two boxes, terms and privacy.~~ One required box carries the
@@ -270,7 +303,9 @@ export function SignupForm({
         label says exactly what it is.
       */}
       <fieldset className="flex flex-col gap-3 rounded-card border border-hairline-strong p-4">
-        <legend className={`px-2 ${LABEL_CLASS}`}>{t.auth.legalGroupLabel}</legend>
+        <legend className={`px-2 ${LABEL_CLASS}`}>
+          {t.auth.legalGroupLabel}
+        </legend>
 
         <label className="flex items-start gap-3 text-sm">
           <input
@@ -285,7 +320,10 @@ export function SignupForm({
               template={t.auth.tosAgreement}
               links={{
                 terms: { href: "/terms", label: t.auth.tosTermsLink },
-                rules: { href: `/terms#${TERMS_RULES_ANCHOR}`, label: t.auth.tosRulesLink },
+                rules: {
+                  href: `/terms#${TERMS_RULES_ANCHOR}`,
+                  label: t.auth.tosRulesLink,
+                },
               }}
             />
           </span>

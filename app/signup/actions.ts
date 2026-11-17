@@ -73,6 +73,8 @@ async function messageFor(code: SignupErrorCode): Promise<string> {
       return t.auth.phoneInvalid;
     case "TOS_REQUIRED":
       return t.auth.tosRequired;
+    case "REFERRAL_INVALID":
+      return t.auth.referralInvalid;
   }
 }
 
@@ -106,6 +108,20 @@ export async function startSignup(
   const next = String(formData.get("next") ?? "/games");
   const supabase = await createServerSupabaseClient();
 
+  // PLAYCO: a referral code must belong to someone before the account is made, so a typo is caught while the
+  // person is still on the form (record_my_referrer would silently ignore it later).
+  if (
+    submission.referralCode &&
+    !(await referralCodeExists(supabase, submission.referralCode))
+  ) {
+    return {
+      status: "error",
+      field: "referral",
+      message: t.auth.referralUnknown,
+      values: submittedValues(formData),
+    };
+  }
+
   // Same callback the magic link uses, so verification lands on the shared
   // post-auth path — funnel event, shadow claim, resume — rather than on a
   // second route that would have to reimplement all three.
@@ -134,7 +150,10 @@ export async function startSignup(
     // whether "confirm email" is on, so the check is on substance rather than
     // an exact string.
     const detail = error.message.toLowerCase();
-    if (detail.includes("already registered") || detail.includes("already exists")) {
+    if (
+      detail.includes("already registered") ||
+      detail.includes("already exists")
+    ) {
       return {
         status: "error",
         field: "email",
@@ -162,7 +181,8 @@ export async function startSignup(
   // profile can be written now and the player never sees a waiting room.
   if (data.session) {
     const written = await writeProfileFromMetadata();
-    if (written.ok) redirect(signedUpDestination(next.startsWith("/") ? next : "/games"));
+    if (written.ok)
+      redirect(signedUpDestination(next.startsWith("/") ? next : "/games"));
     return {
       status: "error",
       field: written.field,
@@ -245,9 +265,15 @@ export async function writeProfileFromMetadata(): Promise<ProfileWriteResult> {
 
   const metadata = user.user_metadata as Record<string, unknown> | null;
   await recordSignupConsents(supabase, {
-    locale: isLocale(metadata?.consent_locale) ? metadata.consent_locale : await getLocale(),
+    locale: isLocale(metadata?.consent_locale)
+      ? metadata.consent_locale
+      : await getLocale(),
     marketingOptIn: profile.marketingOptIn,
   });
+  await recordReferrer(
+    supabase,
+    typeof metadata?.referral_code === "string" ? metadata.referral_code : null,
+  );
   return { ok: true };
 }
 
@@ -273,7 +299,15 @@ export async function finishSignup(
   // address from the session and a placeholder secret it will not look at.
   const proxy = new FormData();
   const composed = withComposedPhone(formData);
-  for (const key of ["nickname", "country", "skill", "phone", "tos", "marketing"]) {
+  for (const key of [
+    "nickname",
+    "country",
+    "skill",
+    "phone",
+    "tos",
+    "marketing",
+    "referral",
+  ]) {
     const value = composed.get(key);
     if (value !== null) proxy.set(key, value);
   }
@@ -286,6 +320,18 @@ export async function finishSignup(
       status: "error",
       field: parsed.field,
       message: await messageFor(parsed.code),
+      values: submittedValues(formData),
+    };
+  }
+
+  if (
+    parsed.value.referralCode &&
+    !(await referralCodeExists(supabase, parsed.value.referralCode))
+  ) {
+    return {
+      status: "error",
+      field: "referral",
+      message: t.auth.referralUnknown,
       values: submittedValues(formData),
     };
   }
@@ -347,13 +393,15 @@ export async function finishSignup(
     locale: await getLocale(),
     marketingOptIn: parsed.value.marketingOptIn,
   });
+  await recordReferrer(supabase, parsed.value.referralCode);
 
   // Round 41: this path (Google, or a session from before the form) never put
   // the email language into the metadata at `signUp()`, so it goes in now.
   const { error: localeError } = await supabase.auth.updateUser({
     data: { email_locale: await chosenEmailLocale(formData) },
   });
-  if (localeError) console.error("saving the email language failed", localeError.message);
+  if (localeError)
+    console.error("saving the email language failed", localeError.message);
 
   const next = String(formData.get("next") ?? "/games");
   // The account exists from here: the landing page reports `sign_up` once.
@@ -364,4 +412,31 @@ export async function finishSignup(
 async function chosenEmailLocale(formData: FormData): Promise<Locale> {
   const chosen = formData.get("email_locale");
   return isLocale(chosen) ? chosen : getLocale();
+}
+
+type ServerSupabase = Awaited<ReturnType<typeof createServerSupabaseClient>>;
+
+/** PLAYCO: does this referral code belong to a player? A lookup failure counts as "no", so the form says so. */
+async function referralCodeExists(
+  supabase: ServerSupabase,
+  code: string,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc("referral_code_exists", {
+    p_code: code,
+  });
+  if (error) console.error("referral_code_exists failed", error.message);
+  return data === true;
+}
+
+/**
+ * PLAYCO: who referred this new player. Best effort, after the profile exists: an unknown code, your own code or a
+ * second code is ignored by record_my_referrer itself, and a failure never blocks the sign-up.
+ */
+async function recordReferrer(
+  supabase: ServerSupabase,
+  code: string | null,
+): Promise<void> {
+  if (!code) return;
+  const { error } = await supabase.rpc("record_my_referrer", { p_code: code });
+  if (error) console.error("record_my_referrer failed", error.message);
 }

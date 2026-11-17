@@ -58,7 +58,8 @@ Platform:
 - **Wallet credit** from a cancellation never expires. A purchased game pass expires 60 days after purchase.
 - **Staff logins** (managers, organisers) are created by Playllu, with a limited view. They work in Playco's admin
   panel at launch and in Playllu HQ later (plan Phase 18): keep admin logic in RPCs and query modules, not components.
-- **Levels** are shown, not enforced. **Referral code** per player, recorded at sign-up; no reward yet.
+- **Levels** are shown, not enforced. **Referral code** per player (6 random characters, no 0/O/1/I/L; shown on the profile with one-click copy and
+  an invite link `/signup?ref=`), recorded at sign-up; no reward yet.
 - **Game passes** (Jachym, 16 Nov 2026): 5 / 10 / 20 games for 1,150 / 2,200 / 4,000 THB (rows in `pass_tiers`).
   One credit = one spot in any game, 250 or 300 THB; guests cost one credit each; pass credits expire 60 days
   after purchase. "Most popular" marks the 10-game pass.

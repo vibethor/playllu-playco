@@ -240,3 +240,42 @@ describe("profileFromMetadata", () => {
     expect(profileFromMetadata({ ...good, phone: "   " }, "a@b.com")?.phone).toBeNull();
   });
 });
+
+/** PLAYCO (17 Nov 2026): an optional referral code at sign-up. */
+describe("the referral code at sign-up", () => {
+  it("is optional: no box, or an empty one, is no code", () => {
+    // Act
+    const parsed = parseSignupForm(form({ referral: "  " }));
+
+    // Assert
+    expect(parsed.ok && parsed.value.referralCode).toBe(null);
+  });
+
+  it("is tidied up the way a person types it", () => {
+    // Act
+    const parsed = parseSignupForm(form({ referral: "k7m-2qx" }));
+
+    // Assert
+    expect(parsed.ok && parsed.value.referralCode).toBe("K7M2QX");
+  });
+
+  it("refuses a code that cannot exist, on its own field", () => {
+    // Act
+    const parsed = parseSignupForm(form({ referral: "K7M2Q0" }));
+
+    // Assert
+    expect(parsed).toEqual({ ok: false, field: "referral", code: "REFERRAL_INVALID" });
+  });
+
+  it("travels with the account until the profile is written", () => {
+    // Arrange
+    const parsed = parseSignupForm(form({ referral: "K7M2QX" }));
+    if (!parsed.ok) throw new Error("fixture should parse");
+
+    // Act
+    const metadata = signupMetadata(parsed.value);
+
+    // Assert
+    expect(metadata.referral_code).toBe("K7M2QX");
+  });
+});
