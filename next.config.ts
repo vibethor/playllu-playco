@@ -35,6 +35,16 @@ const supabaseStorage = (() => {
 })();
 
 const nextConfig: NextConfig = {
+  /*
+   * ONE ID PER DEPLOYMENT, SO AN OLD TAB RELOADS INSTEAD OF HANGING (owner, 16-17 Nov 2026: adding a venue and
+   * saving a game "keeps loading"). Both saves landed in the database within a second, minutes after a new
+   * production build went live: the admin page was still the previous build, the new build answered with module
+   * ids that page did not have, and the button waited for them for ever. With a `deploymentId`, Next.js sees the
+   * mismatch and does a full reload (docs: next-config-js/deploymentId). `VERCEL_DEPLOYMENT_ID` is a Vercel system
+   * variable, present at build time on every deployment; locally it is unset and nothing changes.
+   */
+  deploymentId: process.env.VERCEL_DEPLOYMENT_ID || undefined,
+
   /**
    * Ship `content/` with the server bundle.
    *
