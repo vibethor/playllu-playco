@@ -10,6 +10,8 @@ import { effectivePitchName, venueDisplayName } from "@/lib/venues/displayName";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 import { pluralise } from "@/lib/i18n/plural";
 import type { Database } from "@/lib/types/database";
+import { teamSetup } from "@/lib/games/teams";
+import { fillTemplate } from "@/lib/i18n/template";
 
 type VenueRow = Database["public"]["Tables"]["venues"]["Row"];
 type GameRow = Database["public"]["Tables"]["games"]["Row"];
@@ -56,6 +58,7 @@ export async function InfoCard({
     | "allowed_skill_levels"
     | "duration_minutes"
     | "pitch_name"
+    | "capacity"
   > & {
     /** Round 18 item 3. Optional until the migration lands — see
      *  `gameLanguageOf`, which turns absence into the column's own default. */
@@ -71,6 +74,7 @@ export async function InfoCard({
 }) {
   const t = await getStrings();
   const locale = await getLocale();
+  const teams = teamSetup(game.format, game.capacity);
 
   /*
    * WHERE THE BUTTON GOES IS `venueMapsHref`'S DECISION, not this component's
@@ -194,6 +198,15 @@ export async function InfoCard({
             <dt className={FACT_LABEL}>{t.games.infoFormat}</dt>
             <dd className="m-0 flex flex-wrap items-center gap-2">
               <CardBadges format={game.format} surface={game.surface} />
+              {/* PLAYCO (owner, 17 Nov 2026): "it says 5v5 but it's 3 teams rotation" — said here, not on the card. */}
+              {teams?.rotating && (
+                <span data-testid="game-teams" className="text-small text-muted">
+                  {fillTemplate(t.games.teamsRotating, {
+                    teams: String(teams.teams),
+                    perTeam: String(teams.perTeam),
+                  })}
+                </span>
+              )}
               {game.subs_per_team !== null && (
                 <span data-testid="game-subs" className="text-small text-muted">
                   {pluralise(

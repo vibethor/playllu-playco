@@ -64,6 +64,30 @@ export async function CardBadges({
   const t = await getStrings();
   if (!format && !surface && !language) return null;
 
+  /*
+   * THE LIST CARD SAYS INDOOR OR BEACH, NOT THE FORMAT (owner, 17 Nov 2026: "on the game card it should say if
+   * it's indoor or beach volleyball with a tag"; the format "should not be on the game card but on the game info").
+   * The game type takes the format pill's place beside the language; the format and its team split are on the
+   * game page (InfoCard).
+   */
+  if (layout === "card") {
+    if (!surface && !language) return null;
+    return (
+      <div data-testid="card-badges" className="flex shrink-0 items-center gap-1.5">
+        {surface && (
+          <span
+            data-testid="game-surface"
+            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-pill bg-cloud px-2.5 text-small font-semibold text-navy"
+          >
+            <Icon name={SURFACE_ICON[surface]} className="h-4 w-4" />
+            {t.games.surface[surface]}
+          </span>
+        )}
+        {language && <LanguagePill language={language} />}
+      </div>
+    );
+  }
+
   const formatPill = format && (
     <span
       data-testid="game-format"
@@ -82,18 +106,6 @@ export async function CardBadges({
       {t.games.surface[surface]}
     </span>
   );
-
-  if (layout === "card") {
-    return (
-      <div data-testid="card-badges" className="flex shrink-0 flex-col items-end gap-1.5">
-        <div className="flex items-center gap-1.5">
-          {formatPill}
-          {language && <LanguagePill language={language} />}
-        </div>
-        {surfaceTag}
-      </div>
-    );
-  }
 
   return (
     <div data-testid="card-badges" className="flex shrink-0 flex-wrap items-center gap-1">

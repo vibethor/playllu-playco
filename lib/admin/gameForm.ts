@@ -19,7 +19,12 @@ import type { GameSurface, SkillLevel } from "@/lib/types/database";
  * see, and guessing at it here would be a race.
  */
 
-export const SURFACES: GameSurface[] = ["turf", "grass", "indoor", "sand"];
+/*
+ * PLAYCO: THE GAME TYPE, INDOOR OR SAND (owner, 17 Nov 2026: "I would change that surface to game type and include
+ * sand and indoor as an option"). The column and its CHECK still allow HrajFotbal's turf and grass, so no row is
+ * rewritten; the form offers, and accepts, only these two.
+ */
+export const SURFACES: GameSurface[] = ["indoor", "sand"];
 
 /** Mirrors `games_format_format`. */
 /**
