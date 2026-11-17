@@ -140,7 +140,8 @@ export default async function LandingPage() {
         eyebrow, "Play volleyball. Anytime. Anywhere.", one sentence, one action. A dark island (`theme-dark`), so
         `text-bone` is Cloud White and `text-accent` is lime here. The photo is a volleyball spike at the net
         (owner, 17 Nov 2026: "an action volleyball play", in place of the hall photo that read as a basketball court),
-        generated for Playco, so it needs no credit line. A background video may replace it later (TODO.md).
+        generated for Playco, so it needs no credit line, and graded into the brand colours (navy shadows, lime ball, cool
+        court; `scripts/grade-hero-photo.py`). A background video may replace it later (TODO.md).
       */}
       <section data-testid="home-hero" className="theme-dark relative isolate overflow-hidden">
         <Image
