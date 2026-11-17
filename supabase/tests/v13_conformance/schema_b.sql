@@ -76,10 +76,14 @@ exception
   when others then return 'error:' || sqlstate;
 end $$;
 
--- A player to hang ledger rows on, created inside the transaction.
+-- A player to hang ledger rows on, created inside the transaction — made here, not borrowed from the seed, so the
+-- suite runs on an empty database too.
+insert into auth.users (id, email) values ('a0000000-0000-0000-0000-0000000013b1', 'schema-b@test.invalid');
+insert into public.players (id, nickname, email, auth_user_id) values
+  ('aaaa0000-0000-0000-0000-0000000013b1', 'TstSchemaB', 'schema-b@test.invalid',
+   'a0000000-0000-0000-0000-0000000013b1');
 create temp table _fx (player_id uuid) on commit drop;
-insert into _fx
-select id from public.players where is_seed limit 1;
+insert into _fx values ('aaaa0000-0000-0000-0000-0000000013b1');
 
 -- Negative control, on the same terms as schema_a: prove col() can say ABSENT,
 -- so a genuinely missing column fails rather than passing silently.
@@ -89,7 +93,7 @@ select pg_temp.ok(
 
 select pg_temp.ok(
   (select count(*) from _fx) = 1,
-  'fixture: a seed player exists to hang ledger rows on');
+  'fixture: a player exists to hang ledger rows on');
 
 -- =============================================================================
 -- 1. The two v2.5 columns, both nullable
@@ -157,8 +161,7 @@ select pg_temp.ok(
  * not create is a suite that passes or fails by accident.
  */
 insert into public.credit_ledger (player_id, delta_thb, reason, note)
-select p.id, 180, 'admin_grant', 'conformance fixture'
-  from public.players p where p.auth_user_id is not null order by p.created_at limit 1;
+select player_id, public.credit_seat_price_thb(), 'admin_grant', 'conformance fixture' from _fx;
 
 select pg_temp.ok(
   (select count(*) from public.credit_ledger
@@ -502,7 +505,11 @@ select pg_temp.ok(
   'credit_reason carries topup, added ahead of the migration that writes it');
 
 -- =============================================================================
--- 11. pass_tiers — five real tiers, pegged at 150
+-- 11. pass_tiers — Playco's three tiers, pegged at the credit rate
+--
+-- 5, 10 and 20 games (Jachym, 16–17 Nov 2026; CLAUDE.md). HrajFotbal had five
+-- (5, 8, 12, 15, 20). Typed on purpose: this pins the ladder, so an accidental
+-- change to it fails here.
 --
 -- The 1-game tier is DELETED FROM THE TABLE rather than filtered out of the
 -- page, and the difference matters: a filtered page is one query away from
@@ -510,14 +517,14 @@ select pg_temp.ok(
 -- =============================================================================
 
 select pg_temp.ok(
-  (select count(*) from public.pass_tiers) = 5,
-  'pass_tiers holds exactly five rows',
+  (select count(*) from public.pass_tiers) = 3,
+  'pass_tiers holds exactly three rows',
   (select 'count: ' || count(*)::text from public.pass_tiers));
 
 select pg_temp.ok(
   (select array_agg(games order by games) from public.pass_tiers)
-    = array[5, 8, 12, 15, 20],
-  'the five tiers are 5, 8, 12, 15 and 20 games',
+    = array[5, 10, 20],
+  'the three tiers are 5, 10 and 20 games',
   (select array_agg(games order by games)::text from public.pass_tiers));
 
 select pg_temp.ok(

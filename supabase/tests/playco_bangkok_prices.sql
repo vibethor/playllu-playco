@@ -107,20 +107,22 @@ insert into public.games (id, venue, starts_at, capacity, price_thb, status, dur
   ('9b000000-0000-0000-0000-000000000001', 'Swish Elite 50', now() + interval '7 days', 18,
    public.price_for_duration(120), 'published', 120);
 
-select pg_temp.ok(public.price_for_duration(120) = 250, 'a 2-hour game prefills 250 THB');
+-- 300 THB for every game (Jachym, 17 Nov 2026; was 250, with 300 for the beach and the Sunday game). Typed here on
+-- purpose: this suite pins the Bangkok rule, so an accidental price change fails it.
+select pg_temp.ok(public.price_for_duration(120) = 300, 'a 2-hour game prefills 300 THB');
 select pg_temp.ok(public.price_for_duration(180) = 300, 'the 3-hour Sunday game prefills 300 THB');
-select pg_temp.ok(public.credit_seat_price_thb() = 250, 'one wallet credit is worth one 250 THB seat');
+select pg_temp.ok(public.credit_seat_price_thb() = 300, 'one wallet credit is worth one 300 THB seat');
 select pg_temp.ok(public.app_timezone() = 'Asia/Bangkok', 'SQL formats datetimes in Bangkok time');
 select pg_temp.ok(
   (select g.city || '/' || g.brand from public.games g where g.id = '9b000000-0000-0000-0000-000000000001') = 'bangkok/playco',
   'a new game is stamped bangkok / playco');
 
--- 250 in the wallet books the 250 game outright.
-insert into public.credit_ledger (player_id, delta_thb, reason) values ('aaaa0000-0000-0000-0000-00000000000a', 250, 'admin_grant');
+-- 300 in the wallet books the 300 game outright.
+insert into public.credit_ledger (player_id, delta_thb, reason) values ('aaaa0000-0000-0000-0000-00000000000a', 300, 'admin_grant');
 select pg_temp.act_as('a0000000-0000-0000-0000-0000000000a1');
 select pg_temp.ok(
   (select (public.create_booking('9b000000-0000-0000-0000-000000000001', 'cash')).payment_method) = 'credit',
-  'a wallet holding 250 books the game from credit');
+  'a wallet holding 300 books the game from credit');
 reset role;
 select pg_temp.ok(
   (select coalesce(sum(delta_thb), 0) from public.credit_ledger where player_id = 'aaaa0000-0000-0000-0000-00000000000a') = 0,
@@ -129,13 +131,13 @@ select pg_temp.ok(
   (select status::text from public.bookings where player_id = 'aaaa0000-0000-0000-0000-00000000000a') = 'confirmed',
   'the booking is confirmed');
 
--- Cancelling a week ahead (well outside the 8-hour cutoff) returns the seat to the wallet.
+-- Cancelling a week ahead (well outside the 12-hour cutoff) returns the seat to the wallet.
 select pg_temp.act_as('a0000000-0000-0000-0000-0000000000a1');
 select public.cancel_booking((select id from public.bookings where player_id = 'aaaa0000-0000-0000-0000-00000000000a'));
 reset role;
 select pg_temp.ok(
-  (select coalesce(sum(delta_thb), 0) from public.credit_ledger where player_id = 'aaaa0000-0000-0000-0000-00000000000a') = 250,
-  'cancelling in time puts 250 back in the wallet');
+  (select coalesce(sum(delta_thb), 0) from public.credit_ledger where player_id = 'aaaa0000-0000-0000-0000-00000000000a') = 300,
+  'cancelling in time puts 300 back in the wallet');
 
 select seq, label, case when passed then 'PASS' else 'FAIL' end, detail from _results order by seq;
 select count(*) filter (where passed), count(*) filter (where not passed),

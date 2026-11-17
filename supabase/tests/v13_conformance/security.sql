@@ -235,25 +235,26 @@ select pg_temp.ok(
               where n.nspname = 'public' and p.proname = 'game_organizer_phone'));
 
 -- --- fixture: a game with an active booking AND an organizer contact --------
--- No seeded game has both, so the contact is created here and rolled back.
+-- All of it MADE HERE and rolled back: a game, a player holding a seat on it and one who does not. It used to borrow
+-- a seeded booking, so on an empty database the game was null and the contact insert failed before any assertion.
 create temp table _fx (game_id uuid, holder uuid, outsider uuid) on commit drop;
 
-insert into _fx (game_id, holder)
-select b.game_id, p.auth_user_id
-from public.bookings b
-join public.players p on p.id = b.player_id
-where b.status in ('reserved', 'confirmed') and p.auth_user_id is not null
-limit 1;
+insert into auth.users (id, email) values
+  ('a0000000-0000-0000-0000-0000000013d1', 'sec-holder@test.invalid'),
+  ('a0000000-0000-0000-0000-0000000013d2', 'sec-outsider@test.invalid');
+insert into public.players (id, nickname, email, auth_user_id) values
+  ('aaaa0000-0000-0000-0000-0000000013d1', 'TstSecHolder', 'sec-holder@test.invalid',
+   'a0000000-0000-0000-0000-0000000013d1'),
+  ('aaaa0000-0000-0000-0000-0000000013d2', 'TstSecOutsider', 'sec-outsider@test.invalid',
+   'a0000000-0000-0000-0000-0000000013d2');
+insert into public.games (id, venue, starts_at, capacity, price_thb, status, duration_minutes) values
+  ('9a000000-0000-0000-0000-0000000013d1', 'Conformance Court', now() + interval '5 days', 12, 300, 'published', 120);
+insert into public.bookings (game_id, player_id, status, payment_method, price_thb, credit_applied_thb) values
+  ('9a000000-0000-0000-0000-0000000013d1', 'aaaa0000-0000-0000-0000-0000000013d1', 'confirmed', 'cash', 300, 0);
 
--- A player with NO booking on that game.
-update _fx set outsider = (
-  select p.auth_user_id from public.players p
-  where p.auth_user_id is not null
-    and not exists (
-      select 1 from public.bookings b
-      where b.game_id = (select game_id from _fx) and b.player_id = p.id
-        and b.status in ('reserved', 'confirmed'))
-  limit 1);
+insert into _fx (game_id, holder, outsider) values
+  ('9a000000-0000-0000-0000-0000000013d1', 'a0000000-0000-0000-0000-0000000013d1',
+   'a0000000-0000-0000-0000-0000000013d2');
 
 insert into public.game_organizer_contacts (game_id, organizer_name, organizer_phone)
 values ((select game_id from _fx), 'Conformance Organizer', '+420700000000');

@@ -161,37 +161,30 @@ select game_id, 'rpc-conformance pitch', now() + interval '14 days', 1, 150,
 from _fx;
 
 /*
- * Any player carrying an auth identity, NOT `is_seed` only.
+ * p1 is an ADMIN, p2 is NOT, and both are MADE HERE.
  *
- * Exactly one seeded player has an `auth_user_id`, so filtering on `is_seed`
- * yields a null second player and the suite dies deep inside
- * `current_player_id` with `invalid input syntax for type uuid: ""` — an error
- * that names neither the fixture nor the filter that produced it. The fixture
- * assertion below is what turns that into a readable failure.
+ * They used to be borrowed from the seed (the oldest admin, the oldest non-admin), which meant the suite could not
+ * run on an empty database — on the local throwaway one p2 came back null and everything died inside
+ * `current_player_id` with `invalid input syntax for type uuid: ""`. Roles the suite depends on are stated, and the
+ * players exist because the suite created them, not because a seed happened to.
  */
-/*
- * p1 is an ADMIN, p2 is NOT, and both are pinned by `is_admin` rather than by
- * created_at order.
- *
- * Ordering by creation happened to make p1 the Organizer, who is an admin —
- * so "the payer cannot confirm their own top-up" ran as an admin and got a
- * foreign-key error instead of a refusal. The probe was testing the wrong
- * person. Roles the suite depends on are now stated, not inherited from
- * whatever the seed inserted first.
- */
-update _fx set
-  p1 = (select id from public.players
-         where auth_user_id is not null and is_admin order by created_at limit 1),
-  p1_auth = (select auth_user_id from public.players
-              where auth_user_id is not null and is_admin order by created_at limit 1);
+insert into auth.users (id, email) values
+  ('a0000000-0000-0000-0000-0000000013c1', 'rpc-conf-admin@test.invalid'),
+  ('a0000000-0000-0000-0000-0000000013c2', 'rpc-conf-player@test.invalid');
+insert into public.players (id, nickname, email, auth_user_id, is_admin) values
+  ('aaaa0000-0000-0000-0000-0000000013c1', 'TstRpcAdmin', 'rpc-conf-admin@test.invalid',
+   'a0000000-0000-0000-0000-0000000013c1', true),
+  ('aaaa0000-0000-0000-0000-0000000013c2', 'TstRpcPlayer', 'rpc-conf-player@test.invalid',
+   'a0000000-0000-0000-0000-0000000013c2', false);
 
 update _fx set
-  p2 = (select id from public.players
-         where auth_user_id is not null and not is_admin
-           and id <> (select p1 from _fx) order by created_at limit 1),
-  p2_auth = (select auth_user_id from public.players
-              where auth_user_id is not null and not is_admin
-                and id <> (select p1 from _fx) order by created_at limit 1);
+  p1 = 'aaaa0000-0000-0000-0000-0000000013c1', p1_auth = 'a0000000-0000-0000-0000-0000000013c1',
+  p2 = 'aaaa0000-0000-0000-0000-0000000013c2', p2_auth = 'a0000000-0000-0000-0000-0000000013c2';
+
+-- THE 5-PASS, READ FROM THE TABLE (section 9 below). It was 840 crediting 900 (HrajFotbal); Playco's is 1,380
+-- crediting 1,500 (Jachym, 17 Nov 2026). The test is about intent plus an exact amount, not about either number.
+select set_config('rpc.pass5_price',    (select price_thb::text    from public.pass_tiers where games = 5), true);
+select set_config('rpc.pass5_credited', (select credited_thb::text from public.pass_tiers where games = 5), true);
 
 select pg_temp.ok(
   (select count(*) from _fx
@@ -354,7 +347,7 @@ select pg_temp.ok(
 
 -- A legitimate one, kept for the assertions below.
 select set_config('rpc.topup_ordinary',
-  (select (public.create_topup(840)).id::text), true);
+  (select (public.create_topup(current_setting('rpc.pass5_price')::integer)).id::text), true);
 
 -- Back to postgres for these two: `authenticated` has no grant on `events` at
 -- all (by design — the log is not a client surface), and the suite would die
@@ -409,11 +402,11 @@ set local role authenticated;
 select set_config('request.jwt.claims',
   json_build_object('sub', current_setting('rpc.p2'))::text, true);
 select pg_temp.ok(
-  pg_temp.why(format($q$select public.confirm_topup(%L::uuid, %L::uuid, 840)$q$,
+  pg_temp.why(format($q$select public.confirm_topup(%L::uuid, %L::uuid, current_setting('rpc.pass5_price')::integer)$q$,
                      current_setting('rpc.topup_ordinary'),
                      current_setting('rpc.p2_player'))) = 'INSUFFICIENT_PERMISSION',
   'the payer cannot confirm their own top-up',
-  pg_temp.why(format($q$select public.confirm_topup(%L::uuid, %L::uuid, 840)$q$,
+  pg_temp.why(format($q$select public.confirm_topup(%L::uuid, %L::uuid, current_setting('rpc.pass5_price')::integer)$q$,
                      current_setting('rpc.topup_ordinary'),
                      current_setting('rpc.p2_player'))));
 reset role;
@@ -447,9 +440,9 @@ select set_config('request.jwt.claims',
 
 -- Half one: intent present, amount exact -> tier value, WITH an expiry.
 select pg_temp.ok(
-  pg_temp.why(format($q$select public.confirm_topup(%L::uuid, null, 840)$q$,
+  pg_temp.why(format($q$select public.confirm_topup(%L::uuid, null, current_setting('rpc.pass5_price')::integer)$q$,
                      current_setting('rpc.topup_pass'))) = 'ok',
-  'an admin confirms the 5-pass top-up at exactly 840');
+  'an admin confirms the 5-pass top-up at exactly its price');
 
 /*
  * Back to postgres to READ the ledger.
@@ -466,8 +459,8 @@ select pg_temp.ok(
   (select delta_thb from public.credit_ledger
     where reason = 'topup' and expires_at is not null
       and player_id = current_setting('rpc.p2_player')::uuid
-    order by created_at desc limit 1) = 900,
-  'a 5-pass paid at exactly 840 credits the tier value of 900',
+    order by created_at desc limit 1) = current_setting('rpc.pass5_credited')::integer,
+  'a 5-pass paid at exactly its price credits the tier value',
   (select coalesce((select delta_thb::text from public.credit_ledger
      where reason = 'topup' and expires_at is not null
        and player_id = current_setting('rpc.p2_player')::uuid
@@ -488,9 +481,9 @@ select set_config('request.jwt.claims',
   json_build_object('sub', current_setting('rpc.p1'))::text, true);
 
 select pg_temp.ok(
-  pg_temp.why(format($q$select public.confirm_topup(%L::uuid, null, 840)$q$,
+  pg_temp.why(format($q$select public.confirm_topup(%L::uuid, null, current_setting('rpc.pass5_price')::integer)$q$,
                      current_setting('rpc.topup_ordinary'))) = 'ok',
-  'an admin confirms the ordinary 840 top-up');
+  'an admin confirms the ordinary top-up of the same amount');
 
 reset role;
 select set_config('request.jwt.claims', '', true);
@@ -499,12 +492,12 @@ select set_config('request.jwt.claims', '', true);
 -- the same `created_at`, so an ORDER BY could not tell them apart.
 select pg_temp.ok(
   (select count(*) from public.credit_ledger
-    where reason = 'topup' and delta_thb = 840
+    where reason = 'topup' and delta_thb = current_setting('rpc.pass5_price')::integer
       and player_id = current_setting('rpc.p2_player')::uuid) = 1
   and (select count(*) from public.credit_ledger
-    where reason = 'topup' and delta_thb = 900
+    where reason = 'topup' and delta_thb = current_setting('rpc.pass5_credited')::integer
       and player_id = current_setting('rpc.p2_player')::uuid) = 1,
-  'an ORDINARY 840 credits 840, never 900 — the amount alone is not enough',
+  'an ORDINARY top-up of the pass price credits that amount, never the tier value — the amount alone is not enough',
   (select coalesce(string_agg(delta_thb::text, ', '), 'no row') from public.credit_ledger
      where reason = 'topup'
        and player_id = current_setting('rpc.p2_player')::uuid));

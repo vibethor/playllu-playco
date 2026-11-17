@@ -261,9 +261,11 @@ insert into public.players (id, nickname, email, auth_user_id) values
 -- THREE CREDITS: the seat the booking below is about to spend, plus exactly two
 -- guests' worth and not a crown more. `create_booking` applies the wallet inside
 -- its own transaction, so granting two here would leave one and the refusal
--- below would fire for the wrong reason.
+-- below would fire for the wrong reason. A credit's worth is read from the
+-- database (Playco, 17 Nov 2026: 300 THB; it was 180), so a price change does not
+-- break the suite.
 insert into public.credit_ledger (player_id, delta_thb, reason)
-values ('aaaa0000-0000-0000-0000-0000000d9f02', 3 * 180, 'admin_grant');
+values ('aaaa0000-0000-0000-0000-0000000d9f02', 3 * public.credit_seat_price_thb(), 'admin_grant');
 
 select pg_temp.act_as('6d000000-0000-0000-0000-0000000d9f02');
 select public.create_booking('9d000000-0000-0000-0000-0000000d9f02', 'cash');
@@ -286,7 +288,7 @@ create function pg_temp.debit_balance() returns integer language sql security de
 $$;
 
 -- THE REFUSAL COMES FIRST, so it is made against a balance that has not yet
--- been spent: three guests cost 450 and the wallet holds 300.
+-- been spent: three guests cost three credits and the wallet holds two.
 select pg_temp.act_as('6d000000-0000-0000-0000-0000000d9f02');
 select pg_temp.ok_probe(
   format($q$select public.add_guests_with_credit(%L, 3)$q$, pg_temp.debit_booking()),
@@ -295,7 +297,7 @@ select pg_temp.ok_probe(
 reset role;
 
 select pg_temp.ok(
-  pg_temp.debit_balance() = 2 * 180,
+  pg_temp.debit_balance() = 2 * public.credit_seat_price_thb(),
   'and the refusal took nothing — a refused spend that debits is the worst '
   'possible bug in this file',
   pg_temp.debit_balance()::text);
@@ -313,7 +315,7 @@ select pg_temp.ok(
   (select count(*) from public.credit_ledger
     where booking_id = pg_temp.debit_booking()
       and reason = 'redemption'
-      and delta_thb = -2 * 180) = 1,
+      and delta_thb = -2 * public.credit_seat_price_thb()) = 1,
   'as ONE redemption row, at the credit rate times the guest count');
 
 select seq, label, case when passed then 'PASS' else 'FAIL' end as result, detail

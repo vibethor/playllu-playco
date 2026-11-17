@@ -442,27 +442,29 @@ declare
   v_late uuid;
   v_result public.booking_result;
 begin
-  -- A clean wallet: two batches and some ordinary credit.
+  -- A clean wallet: two batches and some ordinary credit. The later batch holds
+  -- one whole Credit, whose worth is read from the database (Playco, 17 Nov 2026:
+  -- 300 THB; it was 180), so a price change does not break the suite.
   perform pg_temp.reset_wallet('cccc0000-0000-0000-0000-0000000020a3');
 
-  v_late := pg_temp.grant_batch('cccc0000-0000-0000-0000-0000000020a3', 300, now() + interval '60 days');
+  v_late := pg_temp.grant_batch('cccc0000-0000-0000-0000-0000000020a3', public.credit_seat_price_thb(), now() + interval '60 days');
   v_soon := pg_temp.grant_batch('cccc0000-0000-0000-0000-0000000020a3', 100, now() + interval '5 days');
   perform pg_temp.grant_plain('cccc0000-0000-0000-0000-0000000020a3', 500);
 
   perform pg_temp.ok(
-    pg_temp.balance('cccc0000-0000-0000-0000-0000000020a3') = 900,
-    'the fixture wallet is 900');
+    pg_temp.balance('cccc0000-0000-0000-0000-0000000020a3') = public.credit_seat_price_thb() + 600,
+    'the fixture wallet is one Credit and 600');
 
   -- Booked AS the player: `create_booking` takes identity from the session and
   -- accepts a player id only to refuse it.
   perform pg_temp.act_as('c0000000-0000-0000-0000-0000000020a3');
-  -- ONE CREDIT IS 180 and the soonest batch has 100, so it is emptied and the
-  -- rest comes from the next one — which is the batch-ordering claim this block
-  -- exists for, and it survives the rate moving.
+  -- ONE CREDIT IS MORE THAN 100 and the soonest batch has 100, so it is emptied
+  -- and the rest comes from the next one — which is the batch-ordering claim this
+  -- block exists for, and it survives the rate moving.
   v_result := public.create_booking('dddd0000-0000-0000-0000-0000000020a1', 'cash');
 
   perform pg_temp.ok(
-    v_result.credit_applied_thb = 180 and v_result.status = 'confirmed',
+    v_result.credit_applied_thb = public.credit_seat_price_thb() and v_result.status = 'confirmed',
     'the whole seat came out of the wallet');
 
   perform pg_temp.ok(
@@ -471,8 +473,9 @@ begin
     coalesce(pg_temp.remaining('cccc0000-0000-0000-0000-0000000020a3', v_soon)::text, 'null'));
 
   perform pg_temp.ok(
-    pg_temp.remaining('cccc0000-0000-0000-0000-0000000020a3', v_late) = 220,
-    'the later batch covers the remainder — 80 of it');
+    pg_temp.remaining('cccc0000-0000-0000-0000-0000000020a3', v_late) = 100,
+    'the later batch covers the remainder — all but the 100 the soonest one gave',
+    coalesce(pg_temp.remaining('cccc0000-0000-0000-0000-0000000020a3', v_late)::text, 'null'));
 
   -- The ordinary pool is untouched while any batch has anything in it.
   perform pg_temp.ok(
@@ -483,8 +486,8 @@ begin
     'never-expiring credit is spent LAST — otherwise the pass expires while the permanent credit goes');
 
   perform pg_temp.ok(
-    pg_temp.balance('cccc0000-0000-0000-0000-0000000020a3') = 720,
-    'and balance is still SUM(delta_thb), down by exactly the price');
+    pg_temp.balance('cccc0000-0000-0000-0000-0000000020a3') = 600,
+    'and balance is still SUM(delta_thb), down by exactly one Credit');
 end $$;
 
 -- =============================================================================
@@ -502,7 +505,7 @@ declare
 begin
   perform pg_temp.reset_wallet('cccc0000-0000-0000-0000-0000000020a3');
 
-  v_late := pg_temp.grant_batch('cccc0000-0000-0000-0000-0000000020a3', 300, now() + interval '60 days');
+  v_late := pg_temp.grant_batch('cccc0000-0000-0000-0000-0000000020a3', public.credit_seat_price_thb(), now() + interval '60 days');
   v_soon := pg_temp.grant_batch('cccc0000-0000-0000-0000-0000000020a3', 100, now() + interval '5 days');
 
   perform pg_temp.act_as('c0000000-0000-0000-0000-0000000020a3');
@@ -515,8 +518,8 @@ begin
     coalesce(pg_temp.remaining('cccc0000-0000-0000-0000-0000000020a3', v_soon)::text, 'null'));
 
   perform pg_temp.ok(
-    pg_temp.remaining('cccc0000-0000-0000-0000-0000000020a3', v_late) = 300,
-    'and the 50 taken from the later one goes back to that one');
+    pg_temp.remaining('cccc0000-0000-0000-0000-0000000020a3', v_late) = public.credit_seat_price_thb(),
+    'and what was taken from the later one goes back to that one');
 
   -- The refund carries the batch's ORIGINAL expiry, which is the whole point.
   perform pg_temp.ok(
@@ -528,7 +531,7 @@ begin
     'no part of the refund became never-expiring credit — a cancel loop cannot launder an expiry away');
 
   perform pg_temp.ok(
-    pg_temp.balance('cccc0000-0000-0000-0000-0000000020a3') = 400,
+    pg_temp.balance('cccc0000-0000-0000-0000-0000000020a3') = public.credit_seat_price_thb() + 100,
     'the wallet is whole again');
 end $$;
 
@@ -639,7 +642,7 @@ declare
   v_count integer;
 begin
   perform pg_temp.reset_wallet('cccc0000-0000-0000-0000-0000000020a3');
-  v_batch := pg_temp.grant_batch('cccc0000-0000-0000-0000-0000000020a3', 180, now() + interval '2 days');
+  v_batch := pg_temp.grant_batch('cccc0000-0000-0000-0000-0000000020a3', public.credit_seat_price_thb(), now() + interval '2 days');
 
   perform pg_temp.act_as('c0000000-0000-0000-0000-0000000020a3');
   perform public.create_booking('dddd0000-0000-0000-0000-0000000020a2', 'cash');
@@ -715,14 +718,14 @@ begin
 
   -- Exactly one game's worth, in a batch — one CREDIT, which since round 35 v2
   -- is what a seat costs whatever the game charges a card.
-  perform pg_temp.grant_batch('cccc0000-0000-0000-0000-0000000020a3', 180, now() + interval '10 days');
+  perform pg_temp.grant_batch('cccc0000-0000-0000-0000-0000000020a3', public.credit_seat_price_thb(), now() + interval '10 days');
 
   perform pg_temp.act_as('c0000000-0000-0000-0000-0000000020a3');
   v_first  := public.create_booking('dddd0000-0000-0000-0000-0000000020a1', 'cash');
   v_second := public.create_booking('dddd0000-0000-0000-0000-0000000020a2', 'cash');
 
   perform pg_temp.ok(
-    v_first.credit_applied_thb = 180,
+    v_first.credit_applied_thb = public.credit_seat_price_thb(),
     'the first booking spends the batch');
 
   perform pg_temp.ok(
