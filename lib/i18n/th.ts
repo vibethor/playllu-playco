@@ -93,6 +93,7 @@ export const th: StringsOverlay = {
     statsPlayersLabel: "ผู้เล่นที่ใช้งานอยู่",
     nextMatchesLabel: "เกมที่กำลังจะมาถึง",
     nextMatchesAll: "ดูเกมทั้งหมด",
+    nextMatchesAllCta: "ดูเกมทั้งหมด",
     potmTitle: "ผู้เล่นประจำเดือน",
     potmEmpty: "ยังไม่มีใครถูกเลือก อาจเป็นคุณก็ได้",
     potmHours: "{hours} ชม. ในสนามเดือนนี้",

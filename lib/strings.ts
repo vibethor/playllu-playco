@@ -238,6 +238,8 @@ export const strings = {
     // question a visitor arrives with is "is there a game I can make".
     nextMatchesLabel: "Upcoming games",
     nextMatchesAll: "All games",
+    /** The big button under the home page's upcoming games. */
+    nextMatchesAllCta: "See all games",
     potmTitle: "Player of the month",
     potmEmpty: "Nobody picked yet — could be you.",
     /*
