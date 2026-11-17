@@ -22,7 +22,7 @@ describe("priceForDurationThb", () => {
     expect(prices).toEqual(lengths.map(() => PASS_REFERENCE_PRICE_THB));
   });
 
-  it("is the standard Bangkok game's 250 THB", () => {
+  it("is the standard Bangkok game's 300 THB (Playco, 17 Nov 2026; was 250)", () => {
     // Arrange
     const standardMinutes = 120;
 
@@ -30,7 +30,7 @@ describe("priceForDurationThb", () => {
     const price = priceForDurationThb(standardMinutes);
 
     // Assert
-    expect(price).toBe(250);
+    expect(price).toBe(300);
   });
 
   it("prefills 300 THB for a game longer than two hours (the Sunday 3-hour game)", () => {

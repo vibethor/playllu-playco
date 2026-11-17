@@ -104,13 +104,13 @@ end $$;
 reset role;
 
 -- =============================================================================
--- PLAYCO'S PASSES (Jachym, 16 Nov 2026): 5 games 1,150 THB · 10 games 2,200 · 20 games 4,000. Each credit is one
+-- PLAYCO'S PASSES (Jachym, 17 Nov 2026, at 300 a game): 5 games 1,380 THB · 10 games 2,640 · 20 games 4,800. Each credit is one
 -- seat at the flat seat price, so a tier's credited value is games x credit_seat_price_thb().
 -- =============================================================================
 
 select pg_temp.ok(
-  (select string_agg(games || ':' || price_thb, ',' order by games) from public.pass_tiers) = '5:1150,10:2200,20:4000',
-  'the passes are 5 for 1,150, 10 for 2,200 and 20 for 4,000',
+  (select string_agg(games || ':' || price_thb, ',' order by games) from public.pass_tiers) = '5:1380,10:2640,20:4800',
+  'the passes are 5 for 1,380, 10 for 2,640 and 20 for 4,800',
   (select string_agg(games || ':' || price_thb, ',' order by games) from public.pass_tiers));
 
 select pg_temp.ok(
@@ -187,6 +187,12 @@ select pg_temp.ok(
   'and the constraint reads the same function the writers do',
   pg_get_constraintdef(oid))
 from pg_constraint where conname = 'credit_topups_amount_range';
+
+-- PLAYCO (Jachym, 17 Nov 2026): every game is 300, whatever its length, and so is one credit.
+select pg_temp.ok(public.credit_seat_price_thb() = 300, 'one credit is one 300 THB game');
+select pg_temp.ok(
+  public.price_for_duration(60) = 300 and public.price_for_duration(120) = 300 and public.price_for_duration(180) = 300,
+  'every game length prefills 300');
 
 select seq, label, case when passed then 'PASS' else 'FAIL' end as result, detail
 from _results order by seq;
