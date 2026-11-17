@@ -11,7 +11,9 @@ import { GoogleTagManager } from "@next/third-parties/google";
 import { Footer } from "@/components/chrome/Footer";
 import { CookieConsent } from "@/components/consent/CookieConsent";
 import { SignUpEvent } from "@/components/analytics/SignUpEvent";
-import { consentBootstrapScript, gtmContainerId } from "@/lib/analytics/gtm";
+import { SiteEvents } from "@/components/analytics/SiteEvents";
+import { capiConfig, registrationEventId } from "@/lib/analytics/metaCapi";
+import { consentBootstrapScript, gtmContainerId, userIdBootstrapScript } from "@/lib/analytics/gtm";
 import { Header } from "@/components/chrome/Header";
 import { getCurrentPlayer } from "@/lib/auth/session";
 import { getLocale, getStrings } from "@/lib/i18n/server";
@@ -166,6 +168,13 @@ export default async function RootLayout({
             {consentBootstrapScript()}
           </Script>
         )}
+        {/* The player id before the container, so GA4's first page view
+            carries it (2026-11-12) — see `userIdBootstrapScript`. */}
+        {gtmId && player && (
+          <Script id="analytics-user" strategy="beforeInteractive">
+            {userIdBootstrapScript(player.id)}
+          </Script>
+        )}
       </head>
       {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body className="min-h-full flex flex-col">
@@ -224,7 +233,9 @@ export default async function RootLayout({
               {gtmId && <CookieConsent />}
               {gtmId && (
                 <Suspense fallback={null}>
-                  <SignUpEvent />
+                  <SignUpEvent eventId={player ? registrationEventId(player.id) : null} capi={capiConfig() !== null} />
+                  {/* user_id (the internal player id, never the email), login, cancellations, shares. */}
+                  <SiteEvents userId={player?.id ?? null} />
                 </Suspense>
               )}
             </div>
