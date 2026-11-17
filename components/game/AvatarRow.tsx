@@ -70,8 +70,9 @@ export async function AvatarRow({
   /** Beyond this, a "+N" chip stands in for the tail. */
   max?: number;
   /**
-   * `card` is the canonical game card's stack (§2.1): 28px, three faces then
-   * `+N`. It is its own size rather than a reuse of `slim` because §2.1 fixes
+   * `card` is the canonical game card's stack (§2.1): 22px, three faces then
+   * `+N`, on its own row under the capacity bar (owner, 17 Nov 2026: "maybe make
+   * them a bit smaller"; it was 28px beside the time). It is its own size rather than a reuse of `slim` because §2.1 fixes
    * the number, and a stack whose diameter drifts with the caller is a card
    * whose height drifts with it.
    */
@@ -105,12 +106,18 @@ export async function AvatarRow({
   const overflow = players.length - shown.length;
   const dim = {
     slim: "h-[26px] w-[26px] text-[11px]",
-    card: "h-7 w-7 text-[11px]",
+    card: "h-[22px] w-[22px] text-[10px]",
     default: "h-[34px] w-[34px] text-[13px]",
   }[size];
+  /*
+   * HOW FAR EACH FACE TUCKS UNDER THE LAST, and the padding that gives the first one its tuck back. A smaller circle
+   * overlaps less, and the card's row starts at the card's edge, so its first face must not hang out past it. The
+   * other sizes keep exactly what they had.
+   */
+  const { overlap, inset } = size === "card" ? { overlap: "-ml-1.5", inset: "pl-1.5" } : { overlap: "-ml-2", inset: "" };
 
   return (
-    <div className="flex flex-wrap items-center gap-y-[6px]">
+    <div className={`flex flex-wrap items-center gap-y-[6px] ${inset}`}>
       {shown.map((player, i) => {
         const isYou =
           highlight != null && player.nickname != null && player.nickname === highlight;
@@ -145,7 +152,7 @@ export async function AvatarRow({
           title: isYou ? `${label} — ${t.games.waitlistYou}` : label,
           "data-guest": player.isGuest ? "true" : undefined,
           "data-testid": isYou ? "avatar-you" : "avatar",
-          className: `-ml-2 flex items-center justify-center overflow-hidden rounded-pill border-2 font-bold ${dim} ${
+          className: `${overlap} flex items-center justify-center overflow-hidden rounded-pill border-2 font-bold ${dim} ${
               isYou
                 ? "border-accent bg-surface-avatar text-accent"
                 : `border-surface-raised bg-surface-avatar ${
@@ -216,7 +223,7 @@ export async function AvatarRow({
 
       {overflow > 0 && (
         <span
-          className={`-ml-2 flex items-center justify-center rounded-pill border-2 border-surface-raised bg-surface-avatar text-muted ${dim}`}
+          className={`${overlap} flex items-center justify-center rounded-pill border-2 border-surface-raised bg-surface-avatar text-muted ${dim}`}
         >
           +{overflow}
         </span>
