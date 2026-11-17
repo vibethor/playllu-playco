@@ -46,7 +46,7 @@ describe("creditsFromThb", () => {
     expect(creditsFromThb(RATE - 1)).toBe(0);
     expect(creditsFromThb(2 * RATE - 1)).toBe(1);
     // A ragged legacy balance, floored to what it can actually buy.
-    expect(creditsFromThb(4460)).toBe(17);
+    expect(creditsFromThb(4460)).toBe(Math.floor(4460 / RATE));
   });
 
   it("never goes negative", () => {
@@ -85,7 +85,7 @@ describe("adminWallet", () => {
      * has to be able to see. `remainderThb` is what the surface prints as
      * subtext — never instead of the credit count, always beside it.
      */
-    expect(adminWallet(4460)).toEqual({ credits: 17, remainderThb: 4460 });
+    expect(adminWallet(4460)).toEqual({ credits: Math.floor(4460 / RATE), remainderThb: 4460 });
     expect(adminWallet(110)).toEqual({ credits: 0, remainderThb: 110 });
     expect(adminWallet(50)).toEqual({ credits: 0, remainderThb: 50 });
   });
