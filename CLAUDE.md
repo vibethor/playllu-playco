@@ -52,7 +52,7 @@ change a business rule below; find a design gap; send anything to players; add a
 ## 3. Business rules
 
 Platform:
-- **Cancellation:** any time; refund to the wallet up to 8 hours before the start. No-shows keep nothing. A
+- **Cancellation:** any time; refund to the wallet up to 12 hours before the start (Jachym, 17 Nov 2026; the database enforces 12). No-shows keep nothing. A
   real-money refund is requested by the player and approved by the organiser or the city manager.
 - **No cash.** Players prepay online (or from the wallet); a seat exists only once it is paid. Staff seats are free.
 - **Wallet credit** from a cancellation never expires. A purchased game pass expires 60 days after purchase.
@@ -60,8 +60,9 @@ Platform:
   panel at launch and in Playllu HQ later (plan Phase 18): keep admin logic in RPCs and query modules, not components.
 - **Levels** are shown, not enforced. **Referral code** per player (6 random characters, no 0/O/1/I/L; shown on the profile with one-click copy and
   an invite link `/signup?ref=`), recorded at sign-up; no reward yet.
-- **Game passes** (Jachym, 16 Nov 2026): 5 / 10 / 20 games for 1,150 / 2,200 / 4,000 THB (rows in `pass_tiers`).
-  One credit = one spot in any game, 250 or 300 THB; guests cost one credit each; pass credits expire 60 days
+- **Game passes** (Jachym, 16-17 Nov 2026): 5 / 10 / 20 games for 1,380 / 2,640 / 4,800 THB (rows in `pass_tiers`;
+  8% / 12% / 20% off 300 a game).
+  One credit = one spot in any game; guests cost one credit each; pass credits expire 60 days
   after purchase. "Most popular" marks the 10-game pass.
 - **City managers** are invited or approved by Playllu and paid a profit share: 50% of profit and 50% of a loss as standard. They
   may bring their own organisers. Big decisions are discussed with Playllu; day-to-day growth is theirs.
@@ -71,7 +72,8 @@ Platform:
 
 Bangkok (the first city — these are data, entered in admin, listed here so the agent can seed a dev database):
 - THB · Asia/Bangkok · English (default) and Thai · +66 · Thai PDPA.
-- Volleyball 250 THB, beach 300; the Sunday Swish game (3 h, 17:00–20:00, intermediate / advanced) 300.
+- Every game 300 THB (Jachym, 17 Nov 2026; was 250, beach and the Sunday game 300). The Sunday Swish game is 3 h,
+  17:00–20:00, intermediate / advanced.
   Regular games 2 h. 3 free staff seats a game (Steven, Sofi, Jay). Capacity Swish 18, Asoke 15.
 - Venue costs per hour: Swish Elite 50 volleyball 1,000, basketball 1,200 full / 600 half · Swish 56 basketball
   1,200 / 600 · Pachyderm 1,500 · Cruzeiro 1,200 · Asoke (beach, outdoor) 1,200. Must agree with HQ's

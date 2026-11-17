@@ -30,7 +30,8 @@
  * disagree with itself.
  */
 /*
- * PLAYCO, PHASE F: 250 — a standard Bangkok volleyball game. Moved with `public.credit_seat_price_thb()` in
- * migration 20261116120000_playco_bangkok_defaults.sql. Phase 5 replaces flat seat prices with price rules.
+ * PLAYCO: 300 — every Bangkok game (Jachym, 17 Nov 2026; was 250, with 300 only for long games). Moved with
+ * `public.credit_seat_price_thb()` in migration 20261117150000_playco_price_300.sql. Phase 5 replaces flat seat
+ * prices with price rules.
  */
-export const PASS_REFERENCE_PRICE_THB = 250;
+export const PASS_REFERENCE_PRICE_THB = 300;

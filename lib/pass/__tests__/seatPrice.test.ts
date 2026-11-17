@@ -79,17 +79,18 @@ function withoutComments(source: string): string {
 }
 
 describe("the seat price", () => {
-  it("is 250 as the credit nominal, and 250 as the prefill up to two hours (Playco, Phase F)", () => {
+  it("is 300 as the credit nominal and the prefill for a game of any length (Playco, 17 Nov 2026)", () => {
     /*
      * ~~"as the two game prices".~~ A PREFILL (round 36, item 2). The mapping
      * still has to be right — it is what lands in the organizer's box — but a
      * game's price is whatever they left in that box, so nothing downstream may
      * read this function to find out what a game costs.
      */
-    expect(PASS_REFERENCE_PRICE_THB).toBe(250);
-    // ~~60 minutes prefilled 150~~ — gone in round 40: a game is one Credit.
-    expect(priceForDurationThb(60)).toBe(250);
-    expect(priceForDurationThb(120)).toBe(250);
+    expect(PASS_REFERENCE_PRICE_THB).toBe(300);
+    // ~~60 minutes prefilled 150~~ — gone in round 40: a game is one Credit. Playco: 300 for every game (Jachym).
+    expect(priceForDurationThb(60)).toBe(300);
+    expect(priceForDurationThb(120)).toBe(300);
+    expect(priceForDurationThb(180)).toBe(300);
   });
 
   it("PREFILLS A FIELD THE ORGANIZER CAN TYPE IN, rather than deciding for them", () => {
