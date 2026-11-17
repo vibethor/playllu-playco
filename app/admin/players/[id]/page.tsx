@@ -9,6 +9,7 @@ import { PlayerGameRow } from "@/components/admin/PlayerGameRow";
 import { RemoveCoverButton } from "@/components/admin/RemoveCoverButton";
 import { RemoveCreditForm } from "@/components/admin/RemoveCreditForm";
 import { RemovePhotoButton } from "@/components/admin/RemovePhotoButton";
+import { AddToGameForm } from "@/components/admin/players/AddToGameForm";
 import { KpiTile } from "@/components/admin/players/KpiTile";
 import { MoneySpentPanel } from "@/components/admin/players/MoneySpentPanel";
 import { PlayerHeader } from "@/components/admin/players/PlayerHeader";
@@ -19,10 +20,11 @@ import { getBookingSeatValues } from "@/lib/admin/economics";
 import { historyFigures } from "@/lib/admin/players/activity";
 import { CAME_BACK_GAMES } from "@/lib/admin/players/segments";
 import { playerSpend } from "@/lib/admin/players/spend";
-import { getAdminPlayer } from "@/lib/admin/queries";
+import { addToGameOptions } from "@/lib/admin/players/addToGame";
+import { getAdminPlayer, listAllGames } from "@/lib/admin/queries";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { appCapabilities } from "@/lib/db/capabilities";
-import { formatThb, formatDate } from "@/lib/format";
+import { formatThb, formatDate, formatGameDateTime } from "@/lib/format";
 import { avatarUrl } from "@/lib/storage/avatar";
 import { profilePhotoVersion } from "@/lib/storage/photoVersions";
 import { strings } from "@/lib/strings";
@@ -38,7 +40,8 @@ const t = strings.admin.playersHub;
 
 /** Under the last game: whether they came back, in words. */
 function cameBackLine(gamesPlayed: number): string {
-  if (gamesPlayed >= CAME_BACK_GAMES) return t.playerKpis.cameBack.replace("{n}", String(gamesPlayed));
+  if (gamesPlayed >= CAME_BACK_GAMES)
+    return t.playerKpis.cameBack.replace("{n}", String(gamesPlayed));
   if (gamesPlayed === 1) return t.playerKpis.oneGame;
   return t.playerKpis.notPlayed;
 }
@@ -63,7 +66,11 @@ function cameBackLine(gamesPlayed: number): string {
  * The page is under `app/admin/layout.tsx`, which runs `requireAdmin()` first,
  * and every read goes through the service-role client.
  */
-export default async function AdminPlayerPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminPlayerPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const acting = await requireAdmin();
   const { id } = await params;
   const detail = await getAdminPlayer(id);
@@ -86,32 +93,81 @@ export default async function AdminPlayerPage({ params }: { params: Promise<{ id
   const figures = historyFigures(games);
   const wallet = adminWallet(balanceThb);
   const spend = capabilities.pitchCosts
-    ? playerSpend(await getBookingSeatValues([...new Set(games.map((row) => row.gameId))]), player.id)
+    ? playerSpend(
+        await getBookingSeatValues([
+          ...new Set(games.map((row) => row.gameId)),
+        ]),
+        player.id,
+      )
     : null;
 
   const isDeleted = Boolean(player.deleted_at);
+
+  /*
+   * PLAYCO (owner, 17 Nov 2026): the games this player can be added to, free. A game they hold an active spot in
+   * is shown as "already in"; a full one as "full". admin_add_free_seat enforces the same rules.
+   */
+  const activeGameIds = games
+    .filter((row) => row.status === "reserved" || row.status === "confirmed")
+    .map((row) => row.gameId);
+  const addChoices = isDeleted
+    ? []
+    : addToGameOptions(await listAllGames(), activeGameIds, new Date()).map(
+        (option) => {
+          const template: string =
+            option.disabledReason === "alreadyIn"
+              ? t.addToGameAlreadyIn
+              : option.disabledReason === "full"
+                ? t.addToGameFull
+                : t.addToGameOption;
+          const label = template
+            .replace("{when}", formatGameDateTime(option.startsAt))
+            .replace("{venue}", option.venue)
+            .replace("{spots}", String(option.spotsLeft));
+          return {
+            id: option.id,
+            label,
+            disabled: option.disabledReason !== null,
+          };
+        },
+      );
   const canBan = capabilities.banProfile && !isDeleted;
-  const canDelete = capabilities.deleteAccount && !isDeleted && !player.is_admin;
+  const canDelete =
+    capabilities.deleteAccount && !isDeleted && !player.is_admin;
 
   return (
     <>
       <PlayerHeader player={player} photoUrl={photo} coverUrl={cover} />
 
       {/* --- the figures ------------------------------------------------------ */}
-      <section data-testid="admin-player-stats" className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
-        <KpiTile label={t.playerKpis.gamesPlayed} value={String(figures.gamesPlayed)} valueTestId="admin-player-games-played">
+      <section
+        data-testid="admin-player-stats"
+        className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3"
+      >
+        <KpiTile
+          label={t.playerKpis.gamesPlayed}
+          value={String(figures.gamesPlayed)}
+          valueTestId="admin-player-games-played"
+        >
           <span>
             {strings.admin.bookingsLabel} {games.length}
           </span>
         </KpiTile>
         <KpiTile
           label={t.playerKpis.lastGame}
-          value={figures.lastGameAt ? formatDate(figures.lastGameAt) : t.noGameYet}
+          value={
+            figures.lastGameAt ? formatDate(figures.lastGameAt) : t.noGameYet
+          }
           valueTestId="admin-player-last-game"
           size="md"
           tone="white"
         >
-          <span data-testid="admin-player-came-back" className={figures.gamesPlayed >= CAME_BACK_GAMES ? "text-accent" : undefined}>
+          <span
+            data-testid="admin-player-came-back"
+            className={
+              figures.gamesPlayed >= CAME_BACK_GAMES ? "text-accent" : undefined
+            }
+          >
             {cameBackLine(figures.gamesPlayed)}
           </span>
         </KpiTile>
@@ -122,10 +178,20 @@ export default async function AdminPlayerPage({ params }: { params: Promise<{ id
           is a FLOOR, so a balance that does not divide into whole Credits shows
           its exact crowns beneath.
         */}
-        <KpiTile label={t.playerKpis.credit} value={String(wallet.credits)} valueTestId="admin-player-balance">
+        <KpiTile
+          label={t.playerKpis.credit}
+          value={String(wallet.credits)}
+          valueTestId="admin-player-balance"
+        >
           {wallet.remainderThb !== null && (
-            <span data-testid="admin-player-balance-exact" className="text-faint">
-              {strings.admin.walletExactThb.replace("{thb}", formatThb(wallet.remainderThb))}
+            <span
+              data-testid="admin-player-balance-exact"
+              className="text-faint"
+            >
+              {strings.admin.walletExactThb.replace(
+                "{thb}",
+                formatThb(wallet.remainderThb),
+              )}
             </span>
           )}
         </KpiTile>
@@ -138,22 +204,38 @@ export default async function AdminPlayerPage({ params }: { params: Promise<{ id
       )}
 
       {/* --- the controls, by what they change -------------------------------- */}
-      <div data-testid="admin-actions" className="mt-6 grid gap-4 md:grid-cols-2 md:items-start">
+      <div
+        data-testid="admin-actions"
+        className="mt-6 grid gap-4 md:grid-cols-2 md:items-start"
+      >
         <Panel testId="admin-player-rights">
           <SectionHeading title={t.rightsTitle} lede={t.rightsLede} />
           <div className="flex flex-wrap items-center gap-3">
             <AdminRightsButton playerId={player.id} isAdmin={player.is_admin} />
             {/* Round 42 — beside admin rights, as the owner asked. */}
             {capabilities.organizerPlayer && !isDeleted && (
-              <OrganizerRightsButton playerId={player.id} isOrganizer={Boolean(player.is_organizer)} />
+              <OrganizerRightsButton
+                playerId={player.id}
+                isOrganizer={Boolean(player.is_organizer)}
+              />
             )}
           </div>
           {player.id === acting.id && (
-            <p data-testid="admin-rights-self-note" className="m-0 mt-3 text-[12px] text-faint">
+            <p
+              data-testid="admin-rights-self-note"
+              className="m-0 mt-3 text-[12px] text-faint"
+            >
               {strings.admin.adminSelfNote}
             </p>
           )}
         </Panel>
+
+        {!isDeleted && (
+          <Panel testId="admin-player-add-to-game">
+            <SectionHeading title={t.addToGameTitle} lede={t.addToGameLede} />
+            <AddToGameForm playerId={player.id} choices={addChoices} />
+          </Panel>
+        )}
 
         <Panel testId="admin-player-account">
           <SectionHeading title={t.accountTitle} />
@@ -164,9 +246,13 @@ export default async function AdminPlayerPage({ params }: { params: Promise<{ id
             image to remove, because an enabled button for an absent photo is a
             promise the page cannot keep.
           */}
-          <h4 className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-faint">{t.accountProfile}</h4>
+          <h4 className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-faint">
+            {t.accountProfile}
+          </h4>
           <div className="mt-2 flex flex-wrap items-start gap-3">
-            {capabilities.adminRenamePlayer && <ChangeNameForm playerId={player.id} name={player.nickname} />}
+            {capabilities.adminRenamePlayer && (
+              <ChangeNameForm playerId={player.id} name={player.nickname} />
+            )}
             {player.photo_path && <RemovePhotoButton playerId={player.id} />}
             {player.cover_path && <RemoveCoverButton playerId={player.id} />}
           </div>
@@ -177,11 +263,22 @@ export default async function AdminPlayerPage({ params }: { params: Promise<{ id
           */}
           {(canBan || canDelete || player.banned_at) && (
             <div className="mt-4 border-t border-hairline pt-4">
-              <h4 className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-faint">{t.accountAccess}</h4>
-              {(canBan || canDelete) && <p className="m-0 mt-1 text-[12px] text-muted">{t.accountAccessLede}</p>}
+              <h4 className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-faint">
+                {t.accountAccess}
+              </h4>
+              {(canBan || canDelete) && (
+                <p className="m-0 mt-1 text-[12px] text-muted">
+                  {t.accountAccessLede}
+                </p>
+              )}
               {(canBan || canDelete) && (
                 <div className="mt-3 flex flex-wrap items-center gap-3">
-                  {canBan && <BanPlayerButton playerId={player.id} isBanned={Boolean(player.banned_at)} />}
+                  {canBan && (
+                    <BanPlayerButton
+                      playerId={player.id}
+                      isBanned={Boolean(player.banned_at)}
+                    />
+                  )}
                   {canDelete && <DeletePlayerButton playerId={player.id} />}
                 </div>
               )}
@@ -192,7 +289,9 @@ export default async function AdminPlayerPage({ params }: { params: Promise<{ id
               */}
               {player.banned_at && (
                 <p
-                  data-testid={isDeleted ? "player-deleted-notice" : "player-banned-notice"}
+                  data-testid={
+                    isDeleted ? "player-deleted-notice" : "player-banned-notice"
+                  }
                   className="m-0 mt-3 text-[11px] uppercase tracking-eyebrow text-danger"
                 >
                   {isDeleted ? strings.admin.deleted : strings.admin.banned}
@@ -219,9 +318,14 @@ export default async function AdminPlayerPage({ params }: { params: Promise<{ id
 
       {/* --- history, with the no-show control -------------------------------- */}
       <Panel testId="admin-player-history" className="mt-6">
-        <SectionHeading title={strings.admin.playerGamesTitle} lede={strings.admin.playerGamesLede} />
+        <SectionHeading
+          title={strings.admin.playerGamesTitle}
+          lede={strings.admin.playerGamesLede}
+        />
         {games.length === 0 ? (
-          <p className="m-0 text-small text-faint">{strings.admin.playerGamesEmpty}</p>
+          <p className="m-0 text-small text-faint">
+            {strings.admin.playerGamesEmpty}
+          </p>
         ) : (
           <ul className="m-0 list-none p-0">
             {games.map((row) => (
