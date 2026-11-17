@@ -202,7 +202,6 @@ export const strings = {
     heroLine2: "Anytime. Anywhere.",
     heroSub: "Book your spot in a minute and just show up. No team needed.",
     heroCta: "Find a game",
-    heroPhotoCredit: "Photo: Spatialxplora, CC BY 4.0",
     vision:
       "One game that repeats itself. Find a game, claim your spot, show up.",
     scrollHint: "↓ SCROLL",
@@ -239,6 +238,8 @@ export const strings = {
     // question a visitor arrives with is "is there a game I can make".
     nextMatchesLabel: "Upcoming games",
     nextMatchesAll: "All games",
+    /** The big button under the home page's upcoming games. */
+    nextMatchesAllCta: "See all games",
     potmTitle: "Player of the month",
     potmEmpty: "Nobody picked yet — could be you.",
     /*
@@ -1555,7 +1556,7 @@ export const strings = {
     items: [
       {
         q: "What should I bring?",
-        a: "Bring indoor sports shoes, water and a towel, and be ready to play. Balls are provided.",
+        a: "Bring indoor sports shoes, water and a towel, and be ready to play.",
       },
       {
         q: "What if the game is full?",

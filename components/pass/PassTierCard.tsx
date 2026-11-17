@@ -95,7 +95,7 @@ export async function PassTierCard({
       data-testid="pass-tier"
       data-games={tier.games}
       data-most-popular={mostPopular ? "true" : "false"}
-      className="lifted relative rounded-card p-5"
+      className={`lifted relative rounded-card p-5 ${mostPopular ? "ring-2 ring-accent" : ""}`}
     >
       {/*
         The tag, on the card's top corner. A volt OUTLINE rather than a fill:
@@ -112,7 +112,11 @@ export async function PassTierCard({
       {mostPopular && (
         <span
           data-testid="pass-tier-popular"
-          className="lifted absolute -top-2 right-4 rounded-pill border-accent px-3 py-1 text-small font-semibold text-accent"
+          /*
+            PLAYCO (owner, 17 Nov 2026: "make the most popular text stand out a little bit more"): FILLED lime with
+            navy text, reversing the outline-only ruling above, and the card itself takes a lime edge.
+          */
+          className="absolute -top-3 right-4 rounded-pill bg-volt px-3.5 py-1 text-small font-bold uppercase tracking-wide text-ink shadow-sm"
         >
           {t.pass.tierMostPopular}
         </span>

@@ -70,7 +70,6 @@ export const th: StringsOverlay = {
     heroLine2: "ได้ทุกที่ ทุกเวลา",
     heroSub: "จองที่ได้ในนาทีเดียว แล้วมาเล่นได้เลย ไม่ต้องมีทีม",
     heroCta: "หาเกม",
-    heroPhotoCredit: "ภาพ: Spatialxplora, CC BY 4.0",
     vision: "เกมเดียวที่วนกลับมาเรื่อย ๆ หาเกม จองที่ แล้วมาเล่น",
     scrollHint: "↓ เลื่อนลง",
     steps: [
@@ -94,6 +93,7 @@ export const th: StringsOverlay = {
     statsPlayersLabel: "ผู้เล่นที่ใช้งานอยู่",
     nextMatchesLabel: "เกมที่กำลังจะมาถึง",
     nextMatchesAll: "ดูเกมทั้งหมด",
+    nextMatchesAllCta: "ดูเกมทั้งหมด",
     potmTitle: "ผู้เล่นประจำเดือน",
     potmEmpty: "ยังไม่มีใครถูกเลือก อาจเป็นคุณก็ได้",
     potmHours: "{hours} ชม. ในสนามเดือนนี้",
@@ -645,7 +645,7 @@ export const th: StringsOverlay = {
     items: [
       {
         q: "ต้องเตรียมอะไรมาบ้าง?",
-        a: "เตรียมรองเท้ากีฬาในร่ม น้ำ และผ้าเช็ดตัว แล้วพร้อมเล่นได้เลย เรามีลูกบอลให้",
+        a: "เตรียมรองเท้ากีฬาในร่ม น้ำ และผ้าเช็ดตัว แล้วพร้อมเล่นได้เลย",
       },
       {
         q: "ถ้าเกมเต็มแล้วทำอย่างไร?",

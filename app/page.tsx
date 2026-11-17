@@ -138,8 +138,10 @@ export default async function LandingPage() {
       {/*
         THE HERO (rebrand). A full-bleed venue photograph, slowly drifting, under a navy scrim, with Jachym's copy:
         eyebrow, "Play volleyball. Anytime. Anywhere.", one sentence, one action. A dark island (`theme-dark`), so
-        `text-bone` is Cloud White and `text-accent` is lime here. The photo is a placeholder for the background
-        video (TODO.md); it is credited in the corner because its licence (CC BY 4.0) asks for it.
+        `text-bone` is Cloud White and `text-accent` is lime here. The photo is a volleyball spike at the net
+        (owner, 17 Nov 2026: "an action volleyball play", in place of the hall photo that read as a basketball court),
+        generated for Playco in the brand colours (navy hall and court, lime shirts, ball and line), so it needs no credit
+        line. `scripts/prepare-hero-photo.py` paints out the logos the generator drew and adds headroom over the ball. A background video may replace it later (TODO.md).
       */}
       <section data-testid="home-hero" className="theme-dark relative isolate overflow-hidden">
         <Image
@@ -148,9 +150,10 @@ export default async function LandingPage() {
           fill
           priority
           sizes="100vw"
-          className="-z-20 animate-hero-drift object-cover motion-reduce:animate-none"
+          /* On a phone the frame is cropped to a tall strip: centre it on the spiker and the ball, right of middle. */
+          className="-z-20 animate-hero-drift object-cover object-[66%_center] motion-reduce:animate-none md:object-center"
         />
-        <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/60 via-ink/75 to-page" />
+        <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/50 via-ink/65 to-page" />
         <div className="mx-auto flex max-w-shell flex-col items-start gap-4 px-gutter pb-10 pt-[calc(theme(spacing.nav)+40px)] md:pb-16 md:pt-[calc(theme(spacing.nav)+96px)]">
           <p className="m-0 text-eyebrow font-semibold uppercase tracking-eyebrow text-muted">{landing.heroEyebrow}</p>
           <h1 data-testid="hero-headline" className="m-0 font-display text-[clamp(40px,9vw,72px)] font-extrabold leading-[1.02] tracking-tight text-bone">
@@ -168,7 +171,6 @@ export default async function LandingPage() {
             <span aria-hidden>→</span>
           </Link>
         </div>
-        <span className="absolute bottom-2 right-3 text-[10px] text-faint">{landing.heroPhotoCredit}</span>
       </section>
       <div className="relative z-10 mx-auto w-full max-w-shell px-gutter">
         {/*
@@ -199,43 +201,11 @@ export default async function LandingPage() {
           hero also lost its own CTA in round 23, so `pb-10` was sized for a
           button that is no longer there.
         */}
-        <section className="flex flex-col pb-4 pt-8 text-center">
-          
-
-          {/*
-            HOW IT WORKS — BACK WHERE IT WAS, closing the hero.
-
-            Phase 17 moved this to the top of the second screen on the reading
-            of §6 that it belongs "above fold-two content". Reverted on review:
-            the strip is part of the hero's rhythm, and lifting it out left the
-            first screen ending on a scroll hint with nothing under the fold
-            line to explain the product. The equipment line stays attached to
-            it, which is the part of §6 that was actually load-bearing —
-            "what do I bring" is the second question anyone asks.
-          */}
-          {/*
-            ONE PANEL, THREE DIVIDED ROWS (redesign v2, round 3, p01).
-
-            It was three separate `lifted` cards in a wrapping flex row. The
-            frame draws one panel with hairline rules between the steps, and
-            the difference is not decoration: three cards are three objects
-            that happen to be adjacent, and 01 → 02 → 03 is a SEQUENCE. A
-            divided list says so; three boxes say the reader may start
-            anywhere.
-
-            It is also what makes the numbers work. In the frame they are
-            Anton in volt at the size of a heading — a display numeral, which
-            is R5's narrow widening exactly ("large counters, never body-size
-            figures"). At 14px bold on a card of its own, `01` read as a
-            label.
-
-            AN ORDERED LIST, because it is one. `<ol>` was `<div>`s, and the
-            steps are numbered in the copy — a screen reader should not have
-            to infer the order from three strings that happen to start with a
-            digit. The visible numerals are `aria-hidden`; the list marker is
-            suppressed because they are drawn.
-          */}
-        </section>
+        {/*
+          ~~An empty `pb-4 pt-8` section~~ that once held the "how it works" strip; the strip moved under the games and
+          the padding stayed, adding 48px of blank page under the hero (owner, 17 Nov 2026: "quite a big gap of just
+          white space between the hero section and the upcoming games"). Removed.
+        */}
 
         {/*
           BELOW THE HERO — ruling J's order, as amended 2026-08-10:
@@ -253,7 +223,7 @@ export default async function LandingPage() {
           height of the tab bar — it was borrowed here as a round number, and
           the games do not sit under the nav.
         */}
-        <div id="next-match" className="flex flex-col pt-8">
+        <div id="next-match" className="flex flex-col pt-6">
           <section className="pb-3 pt-[10px]">
             <div className="mb-[14px] flex items-baseline justify-between gap-3">
               <h2 className="m-0 font-display text-[22px] font-bold tracking-tight text-bone">
@@ -353,8 +323,19 @@ export default async function LandingPage() {
 
               IT STILL RENDERS AT ZERO, which ruling J requires: a visitor who
               arrives on an empty week must still be able to reach the board.
+
+              PLAYCO (owner, 17 Nov 2026: "I would also add a bigger button at the end of the upcoming games preview"):
+              back, full width, Midnight Navy so the hero keeps the page's one lime button. The small link in the
+              heading row stays too.
             */}
-            
+            <Link
+              href="/games"
+              data-testid="next-matches-all-button"
+              className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-pill bg-navy px-6 text-body-lg font-bold text-cloud no-underline transition-opacity hover:opacity-90"
+            >
+              {landing.nextMatchesAllCta}
+              <span aria-hidden>→</span>
+            </Link>
           </section>
 
           {/*
