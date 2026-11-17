@@ -5,7 +5,10 @@ import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { toAdminErrorMessage } from "@/lib/admin/errors";
 import { notifyWaitlistForGame } from "@/lib/cron/waitlistRelease";
 import { PROFILE_PHOTOS_BUCKET } from "@/lib/storage/avatar";
-import { finishAccountDeletion, parseDeletionResult } from "@/lib/players/accountDeletion";
+import {
+  finishAccountDeletion,
+  parseDeletionResult,
+} from "@/lib/players/accountDeletion";
 import {
   createServerSupabaseClient,
   createServiceRoleSupabaseClient,
@@ -51,14 +54,19 @@ export async function removeCoverAction(
   await requireAdmin();
 
   const playerId = String(formData.get("playerId") ?? "");
-  if (!playerId) return { status: "error", message: toAdminErrorMessage("PLAYER_NOT_FOUND") };
+  if (!playerId)
+    return {
+      status: "error",
+      message: toAdminErrorMessage("PLAYER_NOT_FOUND"),
+    };
 
   const supabase = await createServerSupabaseClient();
   const { data: path, error } = await supabase.rpc("remove_profile_cover", {
     p_player_id: playerId,
   });
 
-  if (error) return { status: "error", message: toAdminErrorMessage(error.message) };
+  if (error)
+    return { status: "error", message: toAdminErrorMessage(error.message) };
 
   if (typeof path === "string" && path.length > 0) {
     const service = createServiceRoleSupabaseClient();
@@ -67,7 +75,10 @@ export async function removeCoverAction(
       .remove([path]);
 
     if (storageError) {
-      console.error("profile cover object removal failed", storageError.message);
+      console.error(
+        "profile cover object removal failed",
+        storageError.message,
+      );
     }
   }
 
@@ -100,14 +111,19 @@ export async function removePhotoAction(
   await requireAdmin();
 
   const playerId = String(formData.get("playerId") ?? "");
-  if (!playerId) return { status: "error", message: toAdminErrorMessage("PLAYER_NOT_FOUND") };
+  if (!playerId)
+    return {
+      status: "error",
+      message: toAdminErrorMessage("PLAYER_NOT_FOUND"),
+    };
 
   const supabase = await createServerSupabaseClient();
   const { data: path, error } = await supabase.rpc("remove_profile_photo", {
     p_player_id: playerId,
   });
 
-  if (error) return { status: "error", message: toAdminErrorMessage(error.message) };
+  if (error)
+    return { status: "error", message: toAdminErrorMessage(error.message) };
 
   if (typeof path === "string" && path.length > 0) {
     const service = createServiceRoleSupabaseClient();
@@ -118,7 +134,10 @@ export async function removePhotoAction(
     // Logged, never thrown. The reference is already gone, which is the part
     // that matters for moderation; a surviving object is unreachable.
     if (storageError) {
-      console.error("profile photo object removal failed", storageError.message);
+      console.error(
+        "profile photo object removal failed",
+        storageError.message,
+      );
     }
   }
 
@@ -149,7 +168,11 @@ export async function setDisplayNameAction(
   await requireAdmin();
 
   const playerId = String(formData.get("playerId") ?? "");
-  if (!playerId) return { status: "error", message: toAdminErrorMessage("PLAYER_NOT_FOUND") };
+  if (!playerId)
+    return {
+      status: "error",
+      message: toAdminErrorMessage("PLAYER_NOT_FOUND"),
+    };
 
   const supabase = await createServerSupabaseClient();
   const { data: name, error } = await supabase.rpc("admin_set_display_name", {
@@ -157,7 +180,8 @@ export async function setDisplayNameAction(
     p_nickname: String(formData.get("nickname") ?? ""),
   });
 
-  if (error) return { status: "error", message: toAdminErrorMessage(error.message) };
+  if (error)
+    return { status: "error", message: toAdminErrorMessage(error.message) };
 
   revalidatePath(`/admin/players/${playerId}`);
   revalidatePath("/admin/players");
@@ -188,7 +212,11 @@ export async function setPlayerBannedAction(
   await requireAdmin();
 
   const playerId = String(formData.get("playerId") ?? "");
-  if (!playerId) return { status: "error", message: toAdminErrorMessage("PLAYER_NOT_FOUND") };
+  if (!playerId)
+    return {
+      status: "error",
+      message: toAdminErrorMessage("PLAYER_NOT_FOUND"),
+    };
 
   const banning = String(formData.get("banned") ?? "") === "true";
   const supabase = await createServerSupabaseClient();
@@ -197,7 +225,8 @@ export async function setPlayerBannedAction(
     ? await supabase.rpc("ban_player", { p_player_id: playerId })
     : await supabase.rpc("unban_player", { p_player_id: playerId });
 
-  if (error) return { status: "error", message: toAdminErrorMessage(error.message) };
+  if (error)
+    return { status: "error", message: toAdminErrorMessage(error.message) };
 
   /*
    * A BAN FREES SEATS, so the games those seats were on may have room again.
@@ -246,16 +275,59 @@ export async function deletePlayerAction(
   await requireAdmin();
 
   const playerId = String(formData.get("playerId") ?? "");
-  if (!playerId) return { status: "error", message: toAdminErrorMessage("PLAYER_NOT_FOUND") };
+  if (!playerId)
+    return {
+      status: "error",
+      message: toAdminErrorMessage("PLAYER_NOT_FOUND"),
+    };
 
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.rpc("delete_player_account", { p_player_id: playerId });
-  if (error) return { status: "error", message: toAdminErrorMessage(error.message) };
+  const { data, error } = await supabase.rpc("delete_player_account", {
+    p_player_id: playerId,
+  });
+  if (error)
+    return { status: "error", message: toAdminErrorMessage(error.message) };
 
   const result = parseDeletionResult(data);
   if (result) await finishAccountDeletion(playerId, result);
 
   revalidatePath(`/admin/players/${playerId}`);
   revalidatePath("/admin/players");
+  return { status: "done" };
+}
+
+/**
+ * PLAYCO (owner, 17 Nov 2026): add this player to an upcoming game, free. `admin_add_free_seat` checks the admin,
+ * the game and the capacity; nothing is emailed to the player.
+ */
+export async function addToGameAction(
+  _prev: PlayerAdminState,
+  formData: FormData,
+): Promise<PlayerAdminState> {
+  await requireAdmin();
+
+  const playerId = String(formData.get("playerId") ?? "");
+  const gameId = String(formData.get("gameId") ?? "");
+  if (!playerId)
+    return {
+      status: "error",
+      message: toAdminErrorMessage("PLAYER_NOT_FOUND"),
+    };
+  if (!gameId)
+    return { status: "error", message: toAdminErrorMessage("GAME_NOT_FOUND") };
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.rpc("admin_add_free_seat", {
+    p_game_id: gameId,
+    p_player_id: playerId,
+  });
+
+  if (error)
+    return { status: "error", message: toAdminErrorMessage(error.message) };
+
+  revalidatePath(`/admin/players/${playerId}`);
+  revalidatePath(`/admin/games/${gameId}`);
+  revalidatePath(`/game/${gameId}`);
+  revalidatePath("/games");
   return { status: "done" };
 }

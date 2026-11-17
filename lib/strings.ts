@@ -2043,6 +2043,11 @@ export const strings = {
     // Generic, and generic on purpose: every RPC that takes a player id can
     // raise this, and the merge tool that used to own the message is gone.
     playerNotFound: "No such player.",
+    // PLAYCO — admin_add_free_seat raises the same codes as any booking.
+    bookingDuplicate: "They already have a spot in this game.",
+    bookingCapacityFull: "This game is full. Raise its capacity first.",
+    bookingGameStarted: "This game has already started.",
+    bookingGameNotBookable: "This game is not published.",
 
     // --- stats ---------------------------------------------------------------
     statsTitle: "Stats",
@@ -2493,6 +2498,17 @@ export const strings = {
         credit: "Other Credit",
         kept: "Kept from cancellations",
       },
+      // PLAYCO (owner, 17 Nov 2026): add a player to an upcoming game, free.
+      addToGameTitle: "Add to a game",
+      addToGameLede:
+        "A free spot, confirmed straight away. For staff, friends, or someone who paid you another way. They get no email.",
+      addToGameLabel: "Upcoming game",
+      addToGameOption: "{when} · {venue} · {spots} left",
+      addToGameAlreadyIn: "{when} · {venue} · already in",
+      addToGameFull: "{when} · {venue} · full",
+      addToGameSubmit: "Add free spot",
+      addToGameDone: "Added. They're in the roster with a free spot.",
+      addToGameEmpty: "No upcoming games to add them to.",
       rightsTitle: "Rights",
       rightsLede: "An admin can use every page here. An organizer can be picked to run a game, and their photo shows on it.",
       accountTitle: "Account",

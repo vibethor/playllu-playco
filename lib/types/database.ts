@@ -1111,6 +1111,15 @@ export interface Database {
         Returns: BookingResult;
       };
 
+      /** PLAYCO: admin only — a free, confirmed spot for a player in an upcoming game. Returns the booking id. */
+      admin_add_free_seat: {
+        Args: {
+          p_game_id: string;
+          p_player_id: string;
+        };
+        Returns: string;
+      };
+
       /** Admin/service-role act-on-behalf entry point. */
       admin_create_booking: {
         Args: {
