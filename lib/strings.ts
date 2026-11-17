@@ -2509,6 +2509,7 @@ export const strings = {
       addToGameSubmit: "Add free spot",
       addToGameDone: "Added. They're in the roster with a free spot.",
       addToGameEmpty: "No upcoming games to add them to.",
+      addToGameNoneOpen: "Nothing to add: they are already in every upcoming game that has room.",
       rightsTitle: "Rights",
       rightsLede: "An admin can use every page here. An organizer can be picked to run a game, and their photo shows on it.",
       accountTitle: "Account",

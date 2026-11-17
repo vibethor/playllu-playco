@@ -32,12 +32,14 @@ export function AddToGameForm({
   const [state, formAction] = useActionState(addToGameAction, INITIAL);
   const firstOpen = choices.find((choice) => !choice.disabled);
 
-  if (!firstOpen) {
+  /*
+   * Only a list with no upcoming games at all swaps the form for a line of text. When every game is "already in" or
+   * full (for example right after adding them to the only one), the form stays, so the confirmation stays on screen.
+   */
+  if (choices.length === 0) {
     return (
       <p data-testid="add-to-game-empty" className="m-0 text-[12px] text-faint">
-        {choices.length === 0
-          ? strings.admin.playersHub.addToGameEmpty
-          : strings.admin.bookingCapacityFull}
+        {strings.admin.playersHub.addToGameEmpty}
       </p>
     );
   }
@@ -52,7 +54,7 @@ export function AddToGameForm({
         <select
           id={`add-to-game-${playerId}`}
           name="gameId"
-          defaultValue={firstOpen.id}
+          defaultValue={firstOpen?.id ?? choices[0]!.id}
           data-testid="add-to-game-select"
           className="field mt-2 w-full"
         >
@@ -67,8 +69,16 @@ export function AddToGameForm({
           ))}
         </select>
       </label>
+      {!firstOpen && state.status !== "done" && (
+        <p
+          data-testid="add-to-game-none-open"
+          className="mt-2 text-[12px] text-faint"
+        >
+          {strings.admin.playersHub.addToGameNoneOpen}
+        </p>
+      )}
       <div className="mt-3">
-        <Submit />
+        <Submit disabled={!firstOpen} />
       </div>
       {state.status === "done" && (
         <p
@@ -92,12 +102,12 @@ export function AddToGameForm({
   );
 }
 
-function Submit() {
+function Submit({ disabled }: { disabled: boolean }) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || disabled}
       data-testid="add-to-game-submit"
       className={chipPrimary}
     >
