@@ -2579,6 +2579,10 @@ export const strings = {
       costHeading: "Venue cost",
       costLede:
         "What one game here costs you, flat. The season switch at the top picks which of the two new games take.",
+      // PLAYCO (owner, 17 Nov 2026): one season in Thailand, so one cost per venue.
+      costLedeOne: "What one game here costs you, flat. New games take this cost; games already created keep theirs.",
+      costLabel: "Court cost",
+      listCostColumnOne: "Court cost",
       seasons: {
         winter: "Winter",
         summer: "Summer",

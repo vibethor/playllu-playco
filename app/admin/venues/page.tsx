@@ -3,7 +3,6 @@ import { Panel } from "@/components/admin/ui/Panel";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { VenueForm } from "@/components/admin/VenueForm";
 import { ArchivedVenues } from "@/components/admin/venues/ArchivedVenues";
-import { PitchSeasonSwitch } from "@/components/admin/venues/PitchSeasonSwitch";
 import { VenueCard } from "@/components/admin/venues/VenueCard";
 import { partitionVenues } from "@/lib/venues/archive";
 import { appCapabilities } from "@/lib/db/capabilities";
@@ -58,10 +57,12 @@ export default async function AdminVenuesPage() {
     listVenues(),
     countGamesByVenue(),
     capabilities.pitchCosts
-      ? Promise.all([getPitchSeason(), getVenuePitchCosts()]).then(([season, costs]) => ({
-          season,
-          costs,
-        }))
+      ? Promise.all([getPitchSeason(), getVenuePitchCosts()]).then(
+          ([season, costs]) => ({
+            season,
+            costs,
+          }),
+        )
       : Promise.resolve(null),
   ]);
   const { active: venues, archived } = partitionVenues(all);
@@ -73,7 +74,11 @@ export default async function AdminVenuesPage() {
         async (venue) =>
           [
             venue.id,
-            venuePhotoUrl(supabaseUrl, venue.image_path, await venuePhotoVersion(venue.image_path)),
+            venuePhotoUrl(
+              supabaseUrl,
+              venue.image_path,
+              await venuePhotoVersion(venue.image_path),
+            ),
           ] as const,
       ),
     ),
@@ -90,20 +95,25 @@ export default async function AdminVenuesPage() {
 
   return (
     <>
-      <PageHeader title={strings.admin.venuesTitle} lede={strings.admin.venuesLede} />
+      <PageHeader
+        title={strings.admin.venuesTitle}
+        lede={strings.admin.venuesLede}
+      />
 
-      {pitch && <PitchSeasonSwitch current={pitch.season} className="mt-6" />}
+      {/* PLAYCO (owner, 17 Nov 2026): no season switch; one court cost per venue (VenuePitchCostForm). */}
 
       <Panel
         title={strings.admin.venueNewHeading}
         testId="venue-create-section"
-        className={pitch ? "mt-4" : "mt-6"}
+        className="mt-6"
       >
         <VenueForm canSetAddress={capabilities.venueAddress} />
       </Panel>
 
       {venues.length === 0 ? (
-        <p className="mt-8 text-small text-faint">{strings.admin.venuesEmpty}</p>
+        <p className="mt-8 text-small text-faint">
+          {strings.admin.venuesEmpty}
+        </p>
       ) : (
         <section aria-labelledby="venues-list-heading" className="mt-8">
           <div className="mb-3 flex items-baseline justify-between gap-3 px-1">
@@ -111,14 +121,14 @@ export default async function AdminVenuesPage() {
               id="venues-list-heading"
               className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-accent-dim"
             >
-              {strings.admin.pitch.listHeading.replace("{count}", String(venues.length))}
+              {strings.admin.pitch.listHeading.replace(
+                "{count}",
+                String(venues.length),
+              )}
             </h3>
             {pitch && (
               <span className="text-[10px] uppercase tracking-eyebrow text-muted">
-                {strings.admin.pitch.listCostColumn.replace(
-                  "{season}",
-                  strings.admin.pitch.seasons[pitch.season],
-                )}
+                {strings.admin.pitch.listCostColumnOne}
               </span>
             )}
           </div>
@@ -131,14 +141,23 @@ export default async function AdminVenuesPage() {
                 canSetAddress={capabilities.venueAddress}
                 canArchive={capabilities.venueArchive}
                 canDelete={canHardDelete(venue.id)}
-                pitch={pitch && { season: pitch.season, costs: pitch.costs.get(venue.id) ?? null }}
+                pitch={
+                  pitch && {
+                    season: pitch.season,
+                    costs: pitch.costs.get(venue.id) ?? null,
+                  }
+                }
               />
             ))}
           </ul>
         </section>
       )}
 
-      <ArchivedVenues venues={archived} canDelete={canHardDelete} pitch={pitch} />
+      <ArchivedVenues
+        venues={archived}
+        canDelete={canHardDelete}
+        pitch={pitch}
+      />
     </>
   );
 }
