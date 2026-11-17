@@ -7,7 +7,6 @@ import { CardBadges } from "@/components/game/CardBadges";
 import { venueDisplayName } from "@/lib/venues/displayName";
 import { SpotsLeft } from "@/components/game/SpotsLeft";
 import { formatTime } from "@/lib/format";
-import { gameLanguageOf } from "@/lib/games/language";
 import { venuePhotoUrl } from "@/lib/storage/avatar";
 import { gamePath } from "@/lib/games/link";
 import { venuePhotoVersion } from "@/lib/storage/photoVersions";
@@ -23,15 +22,11 @@ type GameRowData = Database["public"]["Tables"]["games"]["Row"];
 export type GameCardGame = Pick<
   GameRowData,
   "id" | "game_number" | "venue" | "starts_at" | "capacity" | "format" | "surface" | "duration_minutes"
-> & {
-  /**
-   * The language pair (round 18, item 2). Optional because `games.language`
-   * arrives with round 18's migration and every card must render before the
-   * owner applies it — `gameLanguageOf` turns absence into `en-cs`, which is
-   * the column's default and what every existing game has always been.
-   */
-  language?: unknown;
-};
+>;
+/*
+ * ~~`language`~~ — the card no longer shows the game's languages (owner, 17 Nov 2026: "remove the languages from the
+ * game card … just keep it in the game information once you click on it"). The game page reads them itself.
+ */
 
 /**
  * THE canonical game card (v1.3 §2.1, ruling E).
@@ -326,130 +321,76 @@ export async function GameCard({
       </span>
 
       {/*
-        THE ANATOMY, RE-ORDERED TO THE FRAMES:
+        THE ANATOMY (owner, 17 Nov 2026):
 
-          venue                      · format/surface badges
-          time pill                  · spots left
-          capacity bar
-          faces                      · Join → (paint)
+          venue (two lines max)      · format, game type
+          time pill, faces           · Join → | Playing now
+          capacity bar               · spots left
 
-        What moved: the spots figure comes UP onto the time row, and the faces
-        drop to share the last row with the join cue. The previous order put
-        spots and faces together on the final row, which was right on a flat
-        card and wrong over a photograph — the two loudest elements both sat in
-        the darkest band and the middle of the card carried nothing.
+        Three rows of fixed height, so every card in a list is the same size.
       */}
-      <span className="relative flex items-start justify-between gap-2">
+      {/*
+        EVERY CARD ONE HEIGHT (owner, 17 Nov 2026: "the second game is a little bit bigger than the one above … make
+        sure all the game cards are the same size"). The title row has a fixed floor (two lines of venue), the time row
+        a fixed height, and the Join cue moved up onto the time
+        row, so a card no longer grows by a row when it can be joined.
+      */}
+      <span className="relative flex min-h-[62px] items-start justify-between gap-2">
         <span data-testid="card-venue" className="line-clamp-2 min-w-0 flex-1 break-words pt-1 font-display text-[18px] font-bold leading-snug text-bone">
           {venueDisplayName(game.venue, pitchName)}
         </span>
-        <CardBadges
-          format={game.format}
-          surface={game.surface}
-          language={gameLanguageOf(game.language)}
-          layout="card"
-        />
+        <CardBadges format={game.format} surface={game.surface} layout="card" />
       </span>
 
-      <span className="relative mt-2 flex items-center justify-between gap-2">
-        <span
-          data-testid="card-when"
-          /*
-            `border-2`, NOT `border-[1.5px]`, AND THE REASON IS THE DEVICE.
-
-            The night round set this to 1.5px to make the volt outline read.
-            It never rendered: Chrome snaps a border to whole device pixels, so
-            at this DPR 1.5px is used — and REPORTED by getComputedStyle — as
-            1px. The old spec asserted `1px` and passed, which is how it went
-            unnoticed through two rounds.
-
-            My first diagnosis here was wrong and is recorded so nobody repeats
-            it: I blamed `.lifted` beating the arbitrary utility from the
-            components layer. The built stylesheet disproves it — the utility
-            is emitted after `.lifted` and does win. The pixel snapping is the
-            whole of it.
-
-            2px is a whole pixel at every DPR, so it renders everywhere and the
-            assertion means something. The fill is spelled out rather than
-            taken from `.lifted` simply because this element states its own
-            stroke; that part of the change stands on its own.
-          */
-          className="inline-flex min-w-0 shrink-0 items-center gap-2 rounded-pill border-[1.5px] border-bone/90 py-[5px] pl-3 pr-4 font-display text-[24px] font-bold leading-tight tabular-nums text-bone"
-        >
-          <Icon name="clock" className="h-[18px] w-[18px] text-accent" />
-          {formatTime(game.starts_at)}
-        </span>
-
-        {/*
-          ~~THE DURATION, which this card had never rendered until round 18
-          item 9 put it here.~~ REMOVED (round 19, item 4).
-
-          ROUND 18 WAS RIGHT ABOUT THE BUG AND WRONG ABOUT THE FIX. The prop
-          really was threaded, typed and drawn in this file's ASCII sketch with
-          nothing rendering it — but the conclusion "so render it" skipped the
-          question of whether the card should carry it at all. A grey "60 min"
-          in the middle of the box is the third number on a row that already
-          carries a kick-off time and a spots figure, and it is the one nobody
-          is scanning for: how long a game runs almost never varies, and when
-          it does it is a detail you check after deciding to come.
-
-          IT IS NOT LOST. `duration_minutes` renders on the game DETAIL, in the
-          fact list beside When and Format, where there is room to say
-          "90 minutes" in words. The card links to it.
-
-          The `Pick<>` above still carries `duration_minutes` — `isInProgress`
-          and the `.ics` both read it — so this is a rendering decision, not a
-          data one.
-        */}
-        <span data-testid="row-spots" className="shrink-0">
-          {live ? (
-            <span data-testid="card-live" className="badge-pill border-warn bg-warn/[.12] text-warn">
-              {t.games.playingNow}
-            </span>
-          ) : (
-            <SpotsLeft bookedCount={bookedCount} capacity={game.capacity} />
-          )}
-        </span>
-      </span>
-
-      <span className="relative mt-2 block">
-        <CapacityBar bookedCount={bookedCount} capacity={game.capacity} size="slim" />
-      </span>
-
-      <span className="relative mt-2 flex items-center justify-between gap-3">
-        {/* Absent at zero (§2.1) — a ring drawn around nobody is a question. */}
-        {roster.length > 0 ? (
-          <AvatarRow players={roster} max={4} size="card" supabaseUrl={supabaseUrl} />
-        ) : (
-          <span />
-        )}
-
-        {/*
-          `Join →` — PAINT, NOT A CONTROL (R1).
-
-          A `<span>`. No href, no handler, no focus stop, no role. Ruling E is
-          UPHELD rather than reversed: the whole card is still one anchor, and
-          a link inside a link is the construction E removed. This only makes
-          the card LOOK like it carries the action it has always carried.
-
-          `aria-hidden`, because it is decoration on top of a link that already
-          announces itself — without it a screen reader reads the card's name
-          and then the word "Join" as if a second control existed.
-
-          Not rendered on a past card: the state is not tappable at all, and a
-          call to action on it would be a lie about what the card does. Nor
-          where the viewer already holds the spot — see `joinCue`.
-        */}
-        {!past && !live && joinCue && (
+      <span className="relative mt-2 flex h-10 items-center justify-between gap-2">
+        <span className="flex min-w-0 items-center gap-2">
           <span
-            aria-hidden
-            data-testid="card-join-cue"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-pill bg-volt px-[18px] py-2 text-body font-bold text-ink"
+            data-testid="card-when"
+            /*
+              SOLID, AND A STEP SMALLER (owner, 17 Nov 2026: "make the time pill a little bit smaller, and don't make it
+              transparent … try to play around with the colour so it fits the branding"). Midnight Navy with a lime
+              hairline and a lime clock: the photo no longer shows through it.
+            */
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-pill border border-volt/60 bg-navy py-1 pl-2.5 pr-3 font-display text-[19px] font-bold leading-tight tabular-nums text-bone shadow-sm"
           >
-            {t.games.cardJoinCue}
-            <Icon name="arrowRight" className="h-4 w-4" />
+            <Icon name="clock" className="h-4 w-4 text-accent" />
+            {formatTime(game.starts_at)}
           </span>
+          {/* Absent at zero (§2.1) — a ring drawn around nobody is a question. */}
+          {roster.length > 0 && <AvatarRow players={roster} max={3} size="card" supabaseUrl={supabaseUrl} />}
+        </span>
+
+        {/*
+          `Join →` — PAINT, NOT A CONTROL (R1): a `<span>`, `aria-hidden`, on a card that is one link. It moved up
+          from its own row onto this one, which is what keeps every card the same height. Not on a past card, not
+          while the game is being played, and not where the viewer already holds the spot (`joinCue`).
+        */}
+        {live ? (
+          <span data-testid="card-live" className="badge-pill shrink-0 border-warn bg-warn/[.12] text-warn">
+            {t.games.playingNow}
+          </span>
+        ) : (
+          !past &&
+          joinCue && (
+            <span
+              aria-hidden
+              data-testid="card-join-cue"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-pill bg-volt px-4 py-2 text-body font-bold text-ink"
+            >
+              {t.games.cardJoinCue}
+              <Icon name="arrowRight" className="h-4 w-4" />
+            </span>
+          )
         )}
+      </span>
+
+      <span className="relative mt-2.5 flex items-center gap-3">
+        <span className="min-w-0 flex-1">
+          <CapacityBar bookedCount={bookedCount} capacity={game.capacity} size="slim" />
+        </span>
+        <span data-testid="row-spots" className="shrink-0">
+          <SpotsLeft bookedCount={bookedCount} capacity={game.capacity} size="card" />
+        </span>
       </span>
     </>
   );
