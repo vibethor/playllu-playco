@@ -96,17 +96,25 @@ export function ProfileCover({
   return (
     <div
       data-testid="profile-cover"
-      className="pointer-events-none absolute inset-x-0 -top-24 -mx-gutter h-[341px] overflow-hidden"
+      /*
+        PLAYCO: `bottom-0`, NOT `h-[341px]`. The cover now ends where the header does (ProfileHeader), so the dark
+        ground always runs past the stats, whatever the identity row's height, and the tabs start on the light page.
+        Without a photo of their own a player gets plain navy (`bg-ink` under the scrim), not the court motif, which
+        put a corner bracket and a dot behind the "Change cover" control.
+      */
+      className="pointer-events-none absolute inset-x-0 -top-24 bottom-0 -mx-gutter overflow-hidden bg-ink"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={coverUrl ?? "/venue-default.jpg"}
-        alt=""
-        aria-hidden
-        data-testid="profile-cover-photo"
-        data-own={coverUrl ? "true" : "false"}
-        className="h-full w-full object-cover object-center"
-      />
+      {coverUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={coverUrl}
+          alt=""
+          aria-hidden
+          data-testid="profile-cover-photo"
+          data-own="true"
+          className="h-full w-full object-cover object-center"
+        />
+      )}
 
       {/*
         R6(b)'s ramp, ending at `ink` at full opacity before the band does —

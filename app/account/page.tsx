@@ -3,15 +3,18 @@ import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ToastFromQuery } from "@/components/ToastFromQuery";
-import { BadgeGrid } from "@/components/account/BadgeGrid";
 import { CreditBalance } from "@/components/CreditBalance";
 import { CreditBatches } from "@/components/account/CreditBatches";
 import { PlayerHistory } from "@/components/account/PlayerHistory";
 import { ProfileDetails } from "@/components/account/ProfileDetails";
 import { MarketingPreference } from "@/components/account/MarketingPreference";
 import { EmailLanguagePreference } from "@/components/account/EmailLanguagePreference";
-import { DEFAULT_EMAIL_LOCALE, localeFromMetadata } from "@/lib/email/recipientLocale";
+import {
+  DEFAULT_EMAIL_LOCALE,
+  localeFromMetadata,
+} from "@/lib/email/recipientLocale";
 import { ProfileCover } from "@/components/account/ProfileCover";
+import { ProfileHeader } from "@/components/account/ProfileHeader";
 import { ProfileIdentity } from "@/components/account/ProfileIdentity";
 import { ProfileStats } from "@/components/account/ProfileStats";
 import { ProfileTabs, parseProfileTab } from "@/components/account/ProfileTabs";
@@ -32,7 +35,6 @@ import {
 } from "@/lib/booking/queries";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 import { listMyBatches } from "@/lib/pass/queries";
-import { playerBadges } from "@/lib/profile/badges";
 import { profileStats } from "@/lib/profile/stats";
 import { playersMetFor } from "@/lib/profile/playersMet";
 import { appCapabilities } from "@/lib/db/capabilities";
@@ -98,7 +100,8 @@ export default async function AccountPage({
   const player = await requireCurrentPlayer("/account");
   // Round 41: the email language, from the session already loaded (cached).
   const emailLocale =
-    localeFromMetadata((await getSessionUser())?.metadata) ?? DEFAULT_EMAIL_LOCALE;
+    localeFromMetadata((await getSessionUser())?.metadata) ??
+    DEFAULT_EMAIL_LOCALE;
   // Read off the row already loaded rather than through `isAdminSession()`,
   // which would be a second round trip for a boolean this page is holding.
   const isAdmin = player.is_admin === true;
@@ -114,17 +117,18 @@ export default async function AccountPage({
    * The wallet reads are the two that are genuinely tab-specific, and they are
    * cheap enough not to be worth branching a `Promise.all` around.
    */
-  const [balanceThb, batches, bookings, waitlisted, capabilities] = await Promise.all([
-    getOwnCreditBalance(),
-    // The wallet broken into batches (§4.2). A single number cannot say that
-    // 750 of a 900 balance runs out on the 3rd, which is the one thing a pass
-    // holder needs in order to use it.
-    listMyBatches(),
-    listOwnBookings(),
-    // Round 16 item 12 — the Waitlist subsection under My games.
-    listOwnWaitlisted(),
-    appCapabilities(),
-  ]);
+  const [balanceThb, batches, bookings, waitlisted, capabilities] =
+    await Promise.all([
+      getOwnCreditBalance(),
+      // The wallet broken into batches (§4.2). A single number cannot say that
+      // 750 of a 900 balance runs out on the 3rd, which is the one thing a pass
+      // holder needs in order to use it.
+      listMyBatches(),
+      listOwnBookings(),
+      // Round 16 item 12 — the Waitlist subsection under My games.
+      listOwnWaitlisted(),
+      appCapabilities(),
+    ]);
 
   /*
    * PLAYERS MET (round 23, item 1) — the third tile, when the database can
@@ -137,10 +141,11 @@ export default async function AccountPage({
    * and trusting the flag without checking the answer would render a confident
    * zero if the grant were missing.
    */
-  const playersMet = capabilities.playersMet ? await playersMetFor(player.id) : null;
+  const playersMet = capabilities.playersMet
+    ? await playersMetFor(player.id)
+    : null;
 
   const stats = profileStats(bookings);
-  const badges = playerBadges({ ...stats, playersMet }, t);
   const history = splitHistory(bookings);
 
   const deletionHref =
@@ -150,7 +155,7 @@ export default async function AccountPage({
 
   return (
     <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
-{/*
+      {/*
         THE COVER SPANS IDENTITY AND STATS BOTH (round 9, item 4), which is
         what `p10` and `p11` draw — the photograph runs down to the tab row.
         It can only do that from a layer behind both, so the two blocks share
@@ -163,7 +168,7 @@ export default async function AccountPage({
         the photograph. This padding puts it back where it sat — overlapping
         the cover's lower half, which is `p10`'s composition.
       */}
-      <div className="relative pt-[104px]">
+      <ProfileHeader>
         <ProfileCover
           /* `undefined` until migration 20260820140000 is applied — see the prop. */
           coverPath={player.cover_path}
@@ -182,8 +187,13 @@ export default async function AccountPage({
           t={t}
         />
 
-        <ProfileStats stats={stats} playersMet={playersMet} locale={locale} t={t} />
-      </div>
+        <ProfileStats
+          stats={stats}
+          playersMet={playersMet}
+          locale={locale}
+          t={t}
+        />
+      </ProfileHeader>
 
       <ProfileTabs selected={tab} t={t} />
 
@@ -218,7 +228,9 @@ export default async function AccountPage({
               className="mt-8 flex min-h-11 items-center justify-between gap-3 rounded-control border border-hairline-strong px-4 text-body-lg font-semibold text-bone no-underline transition-colors hover:border-hairline-accent"
             >
               {t.nav.admin}
-              <span aria-hidden className="text-accent">→</span>
+              <span aria-hidden className="text-accent">
+                →
+              </span>
             </Link>
           )}
 
@@ -303,7 +315,7 @@ export default async function AccountPage({
             The page now runs wallet -> who you are -> what you have earned ->
             your details -> the account actions on them.
           */}
-          <BadgeGrid badges={badges} t={t} />
+          {/* PLAYCO (owner, 17 Nov 2026): no accomplishments on the profile. BadgeGrid stays in the code. */}
 
           {/*
             A HEADING, WHICH IT DID NOT NEED AS A TAB AND DOES NOW.
@@ -444,7 +456,10 @@ export default async function AccountPage({
              * dead end for exactly the person most likely to be looking for
              * one.
              */
-            <div data-testid="my-games-empty" className="rounded-card bg-surface p-6">
+            <div
+              data-testid="my-games-empty"
+              className="rounded-card bg-surface p-6"
+            >
               <p className="m-0 text-[15px] leading-relaxed text-bone">
                 {t.account.myGamesEmpty}
               </p>
@@ -461,7 +476,6 @@ export default async function AccountPage({
           )}
         </div>
       )}
-
 
       {/* Signed in, or a cancellation made from this page. */}
       <ToastFromQuery query={query} />
