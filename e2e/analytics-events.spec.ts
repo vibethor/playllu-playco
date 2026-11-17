@@ -86,7 +86,7 @@ if (gtmOn) {
     const game = await createScratchGame({ durationMinutes: 90, hoursFromNow: 48 });
     try {
       await clearActiveBookings("runner");
-      await setWalletTo(players.runner.id, 180);
+      await setWalletTo(players.runner.id, 300);
       await signInAs(context, players.runner);
 
       // Act
@@ -137,10 +137,10 @@ if (gtmOn) {
       expect(booking).toBeNull();
       await execAsOwner(
         `with b as (
-           insert into public.bookings (game_id, player_id, status, payment_method, payment_code, price_czk, credit_applied_czk, stripe_session_id)
-           values ($1, $2, 'confirmed', 'qr', null, 180, 0, $3) returning id)
-         insert into public.checkout_sessions (stripe_session_id, game_id, player_id, amount_czk, status, booking_id, settled_at)
-         select $3, $1, $2, 180, 'booked', b.id, now() from b`,
+           insert into public.bookings (game_id, player_id, status, payment_method, payment_code, price_thb, credit_applied_thb, stripe_session_id)
+           values ($1, $2, 'confirmed', 'qr', null, 300, 0, $3) returning id)
+         insert into public.checkout_sessions (stripe_session_id, game_id, player_id, amount_thb, status, booking_id, settled_at)
+         select $3, $1, $2, 300, 'booked', b.id, now() from b`,
         [game.id, players.runner.id, session],
       );
       const { data: made } = await serviceClient()
@@ -156,7 +156,7 @@ if (gtmOn) {
       // Assert
       await expect.poll(async () => (await events(page, "purchase")).length).toBe(1);
       const purchase = (await events(page, "purchase"))[0]!;
-      expect(purchase.ecommerce).toMatchObject({ transaction_id: session, value: 180, currency: "CZK" });
+      expect(purchase.ecommerce).toMatchObject({ transaction_id: session, value: 300, currency: "THB" });
       expect(await events(page, "game_booked")).toHaveLength(1);
     } finally {
       await execAsOwner("delete from public.checkout_sessions where stripe_session_id = $1", [session]);

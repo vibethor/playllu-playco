@@ -28,4 +28,5 @@ This file is the only link between the two codebases: the commit we forked from 
 
 | Upstream commit | What | Playco commit |
 |---|---|---|
-| — | — | — |
+| `9107614` | GA4 tracking for GTM v4 and Meta Conversions API (dormant until configured) | cherry-picked on `claude/tracking-gtm-v4` |
+| `8626dd0` | GTM v4 events: five corrections before they ship | cherry-picked on `claude/tracking-gtm-v4` |

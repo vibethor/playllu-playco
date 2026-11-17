@@ -1,3 +1,4 @@
+import { DEFAULT_CITY } from "@/lib/city/default";
 import { createHash } from "node:crypto";
 
 /**
@@ -32,7 +33,7 @@ import { createHash } from "node:crypto";
  */
 export const GRAPH_VERSION = "v25.0";
 const SEND_TIMEOUT_MS = 4_000;
-const CURRENCY = "CZK";
+const CURRENCY = DEFAULT_CITY.currency;
 
 export type CapiEventName = "Purchase" | "CompleteRegistration";
 
@@ -56,7 +57,7 @@ export interface CapiInput {
   userAgent: string | null;
   fbp: string | null;
   fbc: string | null;
-  /** CZK, for a Purchase. */
+  /** The city currency, for a Purchase. */
   value?: number;
   atSeconds: number;
 }

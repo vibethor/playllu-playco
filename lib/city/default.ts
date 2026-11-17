@@ -13,6 +13,8 @@ export const DEFAULT_CITY = {
   timeZone: "Asia/Bangkok",
   /** ISO 3166-1 alpha-2 country whose phone prefix the phone field starts with. */
   phoneCountry: "TH",
+  /** ISO 4217 code of the city's prices, as analytics and Meta expect it (upper case). */
+  currency: "THB",
 } as const;
 
 /** The brand players see. */

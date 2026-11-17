@@ -24,8 +24,8 @@ describe("one-time analytics flags (GTM v4)", () => {
   });
 
   it("reads the game a share link points at", () => {
-    expect(sharedGameId("https://www.hrajfotbal.com/game/14")).toBe("14");
-    expect(sharedGameId("https://www.hrajfotbal.com/game/7d3c?x=1")).toBe("7d3c");
-    expect(sharedGameId("https://www.hrajfotbal.com/games")).toBeNull();
+    expect(sharedGameId("https://playco.live/game/14")).toBe("14");
+    expect(sharedGameId("https://playco.live/game/7d3c?x=1")).toBe("7d3c");
+    expect(sharedGameId("https://playco.live/games")).toBeNull();
   });
 });

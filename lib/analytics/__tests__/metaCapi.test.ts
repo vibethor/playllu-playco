@@ -22,7 +22,7 @@ describe("Meta Conversions API (dormant until configured)", () => {
       name: "Purchase" as const,
       eventId: "cs_live_abc",
       playerId: "7f1c2d34-0000-4000-8000-000000000001",
-      sourceUrl: "https://www.hrajfotbal.com/pass/credits-added",
+      sourceUrl: "https://playco.live/pass/credits-added",
       ip: "203.0.113.9",
       userAgent: "Mozilla/5.0",
       fbp: "fb.1.1700000000.123",
@@ -35,7 +35,7 @@ describe("Meta Conversions API (dormant until configured)", () => {
     const event = buildCapiEvent(input);
 
     // Assert
-    expect(event).toMatchObject({ event_name: "Purchase", event_id: "cs_live_abc", event_time: 1_731_400_000, action_source: "website", custom_data: { value: 1296, currency: "CZK" } });
+    expect(event).toMatchObject({ event_name: "Purchase", event_id: "cs_live_abc", event_time: 1_731_400_000, action_source: "website", custom_data: { value: 1296, currency: "THB" } });
     expect(event.user_data.external_id).toMatch(/^[0-9a-f]{64}$/);
     expect(JSON.stringify(event)).not.toContain(input.playerId);
     expect(event.user_data).not.toHaveProperty("fbc");

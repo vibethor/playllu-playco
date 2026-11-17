@@ -1,3 +1,4 @@
+import { DEFAULT_CITY } from "@/lib/city/default";
 import type { Metadata } from "next";
 import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import { ToastFromQuery } from "@/components/ToastFromQuery";
@@ -162,7 +163,7 @@ export default async function ConfirmationPage({
         ecommerce: {
           transaction_id: paidSession,
           value: charged,
-          currency: "CZK",
+          currency: DEFAULT_CITY.currency,
           items: [{ item_id: game.id, item_name: `${game.venue} · ${game.starts_at.slice(0, 10)}`, item_category: "single", price: seats ? Math.round(charged / seats) : charged, quantity: seats }],
         },
       });

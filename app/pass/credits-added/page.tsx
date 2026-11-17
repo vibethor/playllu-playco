@@ -1,3 +1,4 @@
+import { DEFAULT_CITY } from "@/lib/city/default";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -126,11 +127,11 @@ async function passPurchaseEvent(query: Record<string, string | string[] | undef
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
     .from("credit_topups")
-    .select("id, player_id, status, amount_czk, received_amount_czk, pass_games, stripe_session_id")
+    .select("id, player_id, status, amount_thb, received_amount_thb, pass_games, stripe_session_id")
     .eq("id", topupId)
     .maybeSingle();
   if (!data || data.status !== "confirmed") return null;
-  const value = Number(data.received_amount_czk ?? data.amount_czk);
+  const value = Number(data.received_amount_thb ?? data.amount_thb);
   const games = data.pass_games;
   const eventId = data.stripe_session_id ?? data.id;
   await queueCapiEvent({ name: "Purchase", eventId, playerId: data.player_id, path: "/pass/credits-added", value });
@@ -140,7 +141,7 @@ async function passPurchaseEvent(query: Record<string, string | string[] | undef
     ecommerce: {
       transaction_id: eventId,
       value,
-      currency: "CZK",
+      currency: DEFAULT_CITY.currency,
       items: [{ item_id: games ? `pass_${games}` : "credit_topup", item_name: games ? `${games}-game pass` : "Credit top-up", item_category: "pass", price: value, quantity: 1 }],
     },
   };

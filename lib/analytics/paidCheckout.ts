@@ -8,7 +8,7 @@ import { createServiceRoleSupabaseClient } from "@/lib/supabase/clients";
  * their own confirmation link and push a `purchase` GA4 would book as revenue.
  * Before the page reports one, the Checkout Session must exist, be `booked`
  * (paid and seated — `settle_checkout_session`), and belong to this player and
- * this booking. Its own `amount_czk` is then the purchase value: what Stripe
+ * this booking. Its own `amount_thb` is then the purchase value: what Stripe
  * actually charged, rather than a figure worked back from the booking.
  *
  * Read with the service role: `checkout_sessions` grants players nothing. The
@@ -22,14 +22,14 @@ export async function paidCheckoutAmount(input: {
   const service = createServiceRoleSupabaseClient();
   const { data, error } = await service
     .from("checkout_sessions")
-    .select("amount_czk")
+    .select("amount_thb")
     .eq("stripe_session_id", input.sessionId)
     .eq("booking_id", input.bookingId)
     .eq("player_id", input.playerId)
     .eq("status", "booked")
     .maybeSingle();
   if (error || !data) return null;
-  return data.amount_czk;
+  return data.amount_thb;
 }
 
 /** How recent a booking must be for `?booked=1` to report it. */
