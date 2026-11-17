@@ -78,6 +78,7 @@ export function VenueCard({
               className="shrink-0 text-small font-semibold tabular-nums text-bone"
             >
               {formatThb(costNow)}
+              {strings.admin.pitch.perHourSuffix}
             </span>
           )}
           <Chevron testId="venue-disclosure" />

@@ -2611,9 +2611,13 @@ export const strings = {
       costLede:
         "What one game here costs you, flat. The season switch at the top picks which of the two new games take.",
       // PLAYCO (owner, 17 Nov 2026): one season in Thailand, so one cost per venue.
-      costLedeOne: "What one game here costs you, flat. New games take this cost; games already created keep theirs.",
-      costLabel: "Court cost",
-      listCostColumnOne: "Court cost",
+      // PLAYCO (owner, 17 Nov 2026): courts are rented by the hour; a game costs this × its length.
+      costLedeOne:
+        "What this court costs you per hour. A game costs this times its length, so a 2-hour game costs twice this.",
+      costLabel: "Court cost per hour",
+      listCostColumnOne: "Per hour",
+      /** After the hourly price on a venue's closed row. */
+      perHourSuffix: " / h",
       seasons: {
         winter: "Winter",
         summer: "Summer",
