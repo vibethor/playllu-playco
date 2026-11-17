@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { PhotoUpload } from "@/components/account/PhotoUpload";
+import { venuePhotoControlLabel } from "@/lib/admin/venues/photo";
 import { strings } from "@/lib/strings";
 
 /**
@@ -52,10 +54,24 @@ export function VenuePhotoUpload({
    */
   emptyFrame?: boolean;
 }) {
+  /*
+   * THE NEW PHOTO, SHOWN THE MOMENT IT IS STORED (owner, 17 Nov 2026: "keeps loading", on an iPhone). The create
+   * form is never handed a `photoUrl`, so after an upload this step looked exactly as it did before one: the button
+   * faded while the photo went up, then read "Upload a photo" again. The uploaded image is kept as a local preview,
+   * and the button says what it is doing.
+   */
+  const [preview, setPreview] = useState<string | null>(null);
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview);
+  }, [preview]);
+  const venueHasPhoto = hasPhoto || preview !== null;
+
   return (
     <div data-testid="venue-photo-upload">
       <p className="m-0 text-small font-semibold text-bone">{strings.admin.venuePhotoTitle}</p>
 
+      {/* The server's photo first (it is versioned, so a replacement shows on the refresh); the local preview
+          covers the create form, which is never handed one. */}
       {photoUrl ? (
         <Image
           src={photoUrl}
@@ -66,6 +82,16 @@ export function VenuePhotoUpload({
           data-testid="venue-photo-preview"
           className="mt-2 aspect-[1600/740] w-full rounded-control border border-hairline object-cover"
         />
+      ) : preview ? (
+        <Image
+          src={preview}
+          alt=""
+          width={440}
+          height={204}
+          unoptimized
+          data-testid="venue-photo-preview"
+          className="mt-2 aspect-[1600/740] w-full rounded-control border border-hairline object-cover"
+        />
       ) : emptyFrame ? (
         <div className="mt-2 flex aspect-[1600/740] w-full items-center justify-center rounded-control border border-dashed border-hairline-strong bg-surface text-[12px] text-faint">
           {strings.admin.pitch.photoEmpty}
@@ -73,14 +99,27 @@ export function VenuePhotoUpload({
       ) : null}
 
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        <PhotoUpload target="venue" venueId={venueId} hasPhoto={hasPhoto}>
-          <span
-            data-testid="venue-photo-control"
-            className="inline-flex min-h-11 items-center rounded-control border border-hairline-strong px-4 text-small font-semibold text-accent transition-colors hover:border-hairline-accent active:border-hairline-accent"
-          >
-            {hasPhoto ? strings.admin.venuePhotoReplace : strings.admin.venuePhotoUpload}
-          </span>
+        <PhotoUpload
+          target="venue"
+          venueId={venueId}
+          hasPhoto={venueHasPhoto}
+          onUploaded={(photo) => setPreview(URL.createObjectURL(photo))}
+        >
+          {({ busy }) => (
+            <span
+              data-testid="venue-photo-control"
+              aria-busy={busy || undefined}
+              className="inline-flex min-h-11 items-center rounded-control border border-hairline-strong px-4 text-small font-semibold text-accent transition-colors hover:border-hairline-accent active:border-hairline-accent"
+            >
+              {venuePhotoControlLabel({ busy, hasPhoto: venueHasPhoto })}
+            </span>
+          )}
         </PhotoUpload>
+        {preview && (
+          <p role="status" data-testid="venue-photo-saved" className="m-0 text-small text-accent">
+            {strings.admin.venuePhotoSaved}
+          </p>
+        )}
       </div>
 
       <p className="mb-0 mt-2 text-[12px] leading-snug text-muted">

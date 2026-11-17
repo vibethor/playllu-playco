@@ -109,9 +109,16 @@ export function PhotoUpload({
   venueId,
   photoVersion = null,
   className,
+  onUploaded,
 }: {
   hasPhoto: boolean;
-  children?: React.ReactNode;
+  /**
+   * The control's face. A FUNCTION OF THE UPLOAD STATE when the caller draws its own button (owner, 17 Nov 2026):
+   * the venue photo's button used to only fade while the photo went up, which on a phone read as "keeps loading".
+   */
+  children?: React.ReactNode | ((state: { busy: boolean }) => React.ReactNode);
+  /** Called with the uploaded image once it is stored, so the caller can show it at once. */
+  onUploaded?: (photo: Blob) => void;
   /**
    * Which picture this control changes (round 8, item 10).
    *
@@ -265,6 +272,8 @@ export function PhotoUpload({
        * is what this action does. The reload below is the avatar's remedy and
        * would point at the wrong bucket for a venue key.
        */
+      onUploaded?.(cropped);
+
       if (target === "venue") {
         await venuePhotoChangedAction();
         router.refresh();
@@ -384,7 +393,7 @@ export function PhotoUpload({
       >
         {input}
         <span className={busy ? "opacity-50 transition-opacity" : "transition-opacity"}>
-          {children}
+          {typeof children === "function" ? children({ busy }) : children}
         </span>
         {/* The pencil badge belongs to the AVATAR shape. The cover's control
             carries its own label, so a second affordance on it would be two
