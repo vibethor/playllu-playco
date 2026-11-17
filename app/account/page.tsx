@@ -3,7 +3,6 @@ import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ToastFromQuery } from "@/components/ToastFromQuery";
-import { BadgeGrid } from "@/components/account/BadgeGrid";
 import { CreditBalance } from "@/components/CreditBalance";
 import { ReferralCodeCard } from "@/components/account/ReferralCodeCard";
 import { CreditBatches } from "@/components/account/CreditBatches";
@@ -16,6 +15,7 @@ import {
   localeFromMetadata,
 } from "@/lib/email/recipientLocale";
 import { ProfileCover } from "@/components/account/ProfileCover";
+import { ProfileHeader } from "@/components/account/ProfileHeader";
 import { ProfileIdentity } from "@/components/account/ProfileIdentity";
 import { ProfileStats } from "@/components/account/ProfileStats";
 import { ProfileTabs, parseProfileTab } from "@/components/account/ProfileTabs";
@@ -37,7 +37,6 @@ import {
 } from "@/lib/booking/queries";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 import { listMyBatches } from "@/lib/pass/queries";
-import { playerBadges } from "@/lib/profile/badges";
 import { profileStats } from "@/lib/profile/stats";
 import { playersMetFor } from "@/lib/profile/playersMet";
 import { appCapabilities } from "@/lib/db/capabilities";
@@ -149,7 +148,6 @@ export default async function AccountPage({
     : null;
 
   const stats = profileStats(bookings);
-  const badges = playerBadges({ ...stats, playersMet }, t);
   const history = splitHistory(bookings);
 
   const deletionHref =
@@ -172,7 +170,7 @@ export default async function AccountPage({
         the photograph. This padding puts it back where it sat — overlapping
         the cover's lower half, which is `p10`'s composition.
       */}
-      <div className="relative pt-[104px]">
+      <ProfileHeader>
         <ProfileCover
           /* `undefined` until migration 20260820140000 is applied — see the prop. */
           coverPath={player.cover_path}
@@ -197,7 +195,7 @@ export default async function AccountPage({
           locale={locale}
           t={t}
         />
-      </div>
+      </ProfileHeader>
 
       <ProfileTabs selected={tab} t={t} />
 
@@ -329,7 +327,7 @@ export default async function AccountPage({
             The page now runs wallet -> who you are -> what you have earned ->
             your details -> the account actions on them.
           */}
-          <BadgeGrid badges={badges} t={t} />
+          {/* PLAYCO (owner, 17 Nov 2026): no accomplishments on the profile. BadgeGrid stays in the code. */}
 
           {/*
             A HEADING, WHICH IT DID NOT NEED AS A TAB AND DOES NOW.

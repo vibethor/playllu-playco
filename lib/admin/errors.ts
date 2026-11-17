@@ -49,6 +49,11 @@ const CODES: Array<[string, string]> = [
    * cannot reach the surface was copy pretending to be a code path.
    */
   ["PLAYER_NOT_FOUND", strings.admin.playerNotFound],
+  // PLAYCO — admin_add_free_seat raises the same codes as any booking.
+  ["DUPLICATE_ACTIVE_BOOKING", strings.admin.bookingDuplicate],
+  ["CAPACITY_FULL", strings.admin.bookingCapacityFull],
+  ["GAME_ALREADY_STARTED", strings.admin.bookingGameStarted],
+  ["GAME_NOT_BOOKABLE", strings.admin.bookingGameNotBookable],
   // Round 42 — the organizer dropdown offers only organizers; a stale form
   // or a hand-made call can still name somebody else.
   ["PLAYER_NOT_ORGANIZER", strings.admin.organizerNotOrganizer],

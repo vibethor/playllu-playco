@@ -172,8 +172,8 @@ insert into public.games (id, venue, venue_id, starts_at, capacity, price_thb, s
 -- =============================================================================
 
 select pg_temp.ok(
-  (select count(*) = 5 from public.pass_tiers),
-  'five tiers ship — the pass starts at five games (migration 36)');
+  (select count(*) = 3 from public.pass_tiers),
+  'three tiers ship — Playco: 5, 10 and 20 games (migration 20261117120000)');
 
 select pg_temp.ok(
   (select bool_and(credited_thb = games * public.credit_seat_price_thb()) from public.pass_tiers),
@@ -198,7 +198,7 @@ begin
    * Round 35 v2 moved the rate, so the fixture moved with it.
    */
   insert into public.pass_tiers (games, price_thb, credited_thb, expires_months)
-  values (1, 150, 1 * 180, null);
+  values (1, 150, 1 * public.credit_seat_price_thb(), null);
 
   perform pg_temp.ok(false,
     'a sub-five tier is refused by the constraint, not merely absent from the seed');
@@ -208,9 +208,9 @@ exception when check_violation then
 end $$;
 
 select pg_temp.ok(
-  (select price_thb = 840 and credited_thb = 900 and expires_months = 1
+  (select price_thb = 1150 and credited_thb = 1250
      from public.pass_tiers where games = 5),
-  'the 5-pass: 840 buys 900, expiring in a month');
+  'the 5-pass: 1,150 buys 1,250 (five seats at 250)');
 
 select pg_temp.ok(
   (select count(distinct price_thb) = count(*) from public.pass_tiers),
@@ -219,7 +219,7 @@ select pg_temp.ok(
 select set_config('role', 'anon', true);
 select pg_temp.ok_call(
   $q$select count(*) from public.pass_tiers$q$,
-  '5',
+  '3',
   'anon reads the tiers — the pass panel renders for a signed-out visitor');
 reset role;
 
@@ -236,7 +236,7 @@ begin
   v_topup := public.create_pass_topup(5);
 
   perform pg_temp.ok(
-    v_topup.amount_thb = 840 and v_topup.pass_games = 5,
+    v_topup.amount_thb = 1150 and v_topup.pass_games = 5,
     'a pass request is priced from the TIER, not from anything the caller sent');
 
   perform pg_temp.ok(
@@ -268,15 +268,15 @@ begin
    where player_id = 'bbbb0000-0000-0000-0000-0000000020a2' limit 1;
 
   -- EXACT match on the pass price -> the pass VALUE is credited, with expiry.
-  v_result := public.confirm_topup(v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 840);
+  v_result := public.confirm_topup(v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 1150);
 
   perform pg_temp.ok(
-    v_result.credited_thb = 900,
-    'an exact 840 credits the 5-pass VALUE of 900 — the one exception to credited-equals-received',
+    v_result.credited_thb = 1250,
+    'an exact 1150 credits the 5-pass VALUE of 1250 — the one exception to credited-equals-received',
     v_result.credited_thb::text);
 
   perform pg_temp.ok(
-    pg_temp.balance('bbbb0000-0000-0000-0000-0000000020a2') = 900,
+    pg_temp.balance('bbbb0000-0000-0000-0000-0000000020a2') = 1250,
     'and the balance is still SUM(delta_thb)');
 
   v_batch := pg_temp.only_batch('bbbb0000-0000-0000-0000-0000000020a2');
@@ -291,8 +291,8 @@ begin
 
   -- ALL THREE NUMBERS on the event, because they differ (§4.2).
   perform pg_temp.ok(
-    (select metadata ->> 'received_thb' = '840'
-        and metadata ->> 'credited_thb' = '900'
+    (select metadata ->> 'received_thb' = '1150'
+        and metadata ->> 'credited_thb' = '1250'
         and metadata ->> 'expires_at' is not null
        from public.events
       where event_type = 'topup_confirmed'
@@ -305,8 +305,8 @@ end $$;
 -- THE CLARIFIED KEYING (ruled 2026-08-02): intent AND amount
 --
 -- An ordinary top-up of a coincidental tier amount is an ORDINARY TOP-UP.
--- Free entry admits 50–2000, so a player typing 840 into the top-up form is
--- entirely plausible — and crediting them 900 with a one-month expiry would
+-- Free entry admits 50–2000, so a player typing 1150 into the top-up form is
+-- entirely plausible — and crediting them 1250 with a one-month expiry would
 -- transform money they meant to keep permanently. This is the assertion that
 -- says it cannot happen.
 -- =============================================================================
@@ -320,24 +320,24 @@ begin
 
   perform pg_temp.act_as('b0000000-0000-0000-0000-0000000020a2');
   -- The ORDINARY path: no tier chosen, an amount that happens to equal one.
-  v_topup := public.create_topup(840);
+  v_topup := public.create_topup(1150);
 
   perform pg_temp.ok(
     v_topup.pass_games is null,
     'an ordinary top-up records no tier, whatever the amount');
 
   perform pg_temp.as_service();
-  v_result := public.confirm_topup(v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 840);
+  v_result := public.confirm_topup(v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 1150);
 
   perform pg_temp.ok(
-    v_result.credited_thb = 840,
-    'an ordinary 840 credits 840 — never 900. The player meant 840 THB that keeps',
+    v_result.credited_thb = 1150,
+    'an ordinary 1150 credits 1150 — never 1250. The player meant 1150 THB that keeps',
     v_result.credited_thb::text);
 
   perform pg_temp.ok(
     exists (select 1 from public.credit_ledger
              where player_id = 'bbbb0000-0000-0000-0000-0000000020a2'
-               and reason = 'topup' and delta_thb = 840
+               and reason = 'topup' and delta_thb = 1150
                and expires_at = now() + interval '60 days'),
     'and it is valid sixty days like every Credit — ~~NO expiry~~ ended in round 40');
 end $$;
@@ -355,21 +355,21 @@ begin
   perform pg_temp.reset_wallet('bbbb0000-0000-0000-0000-0000000020a2');
 
   perform pg_temp.act_as('b0000000-0000-0000-0000-0000000020a2');
-  v_topup := public.create_pass_topup(5);   -- 840
+  v_topup := public.create_pass_topup(5);   -- 1150
 
   perform pg_temp.as_service();
   v_result := public.confirm_topup(
-    v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 1296);  -- the 8-pass price
+    v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 2200);  -- the 10-pass price
 
   perform pg_temp.ok(
-    v_result.credited_thb = 1296,
-    'a 5-pass paid at the 8-pass price credits what arrived, not the 8-pass value',
+    v_result.credited_thb = 2200,
+    'a 5-pass paid at the 10-pass price credits what arrived, not the 8-pass value',
     v_result.credited_thb::text);
 
   perform pg_temp.ok(
     exists (select 1 from public.credit_ledger
              where player_id = 'bbbb0000-0000-0000-0000-0000000020a2'
-               and reason = 'topup' and delta_thb = 1296
+               and reason = 'topup' and delta_thb = 2200
                and expires_at = now() + interval '60 days'),
     'and it is a top-up, valid sixty days like every Credit since round 40');
 end $$;
@@ -389,11 +389,11 @@ begin
   v_topup := public.create_pass_topup(5);
 
   perform pg_temp.as_service();
-  v_result := public.confirm_topup(v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 840);
+  v_result := public.confirm_topup(v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 1150);
 
   perform pg_temp.ok(
-    v_result.credited_thb = 900,
-    'a CHOSEN 5-pass paid at exactly 840 still credits 900');
+    v_result.credited_thb = 1250,
+    'a CHOSEN 5-pass paid at exactly 1150 still credits 1250');
 
   perform pg_temp.ok(
     pg_temp.batch_count('bbbb0000-0000-0000-0000-0000000020a2') = 1,
@@ -414,7 +414,7 @@ begin
   v_topup := public.create_pass_topup(5);
 
   perform pg_temp.as_service();
-  -- A few crowns short of the 840 pass: a top-up, not a purchase.
+  -- Short of the 1,150 pass: a top-up, not a purchase.
   v_result := public.confirm_topup(v_topup.id, 'aaaa0000-0000-0000-0000-0000000020a1', 690);
 
   perform pg_temp.ok(
