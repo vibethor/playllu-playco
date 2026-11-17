@@ -93,11 +93,12 @@ $$;
 -- THE MAPPING
 -- =============================================================================
 
-select pg_temp.ok(public.price_for_duration(60) = 180,
-  'sixty minutes prefills 180 — ~~150~~, removed by the owner in round 40');
-select pg_temp.ok(public.price_for_duration(90) = 180, 'ninety minutes is 180');
-select pg_temp.ok(public.price_for_duration(null) = 180, 'so is a null length');
-select pg_temp.ok(public.price_for_duration(120) = 180, 'and so is anything else');
+-- The Credit price is read, not typed (Playco, 17 Nov 2026: 300 THB; it was 180, then 250).
+select pg_temp.ok(public.price_for_duration(60) = public.credit_seat_price_thb(),
+  'sixty minutes prefills the Credit price — ~~150~~, removed by the owner in round 40');
+select pg_temp.ok(public.price_for_duration(90) = public.credit_seat_price_thb(), 'ninety minutes is the same');
+select pg_temp.ok(public.price_for_duration(null) = public.credit_seat_price_thb(), 'so is a null length');
+select pg_temp.ok(public.price_for_duration(120) = public.credit_seat_price_thb(), 'and so is anything else');
 select pg_temp.ok(
   public.price_for_duration(60) = public.credit_seat_price_thb(),
   'because a game IS one Credit — the prefill is the Credit price, called, not copied');
@@ -120,9 +121,9 @@ select pg_temp.act_as('60000000-0000-0000-0000-00000000dd01');
 create temp table _made as
 select public.admin_create_game_v2(
   '11110000-0000-0000-0000-00000000dd01', now() + interval '30 hours', 12,
-  180,                       -- the CREDIT-SEAT price, typed by the organizer
+  180,                       -- a price typed by the organizer, not the prefill
   'Dur Organizer', null, null, null, null,
-  60                         -- ...against a 60-minute game, which prefills 150
+  60                         -- ...against a 60-minute game
 ) as id;
 
 select pg_temp.ok(
@@ -177,8 +178,8 @@ select pg_temp.ok(
 -- =============================================================================
 
 insert into public.credit_ledger (player_id, delta_thb, reason) values
-  ('6ddd0000-0000-0000-0000-00000000dd02', 3 * 180, 'admin_grant'),
-  ('6ddd0000-0000-0000-0000-00000000dd03', 3 * 180, 'admin_grant');
+  ('6ddd0000-0000-0000-0000-00000000dd02', 3 * public.credit_seat_price_thb(), 'admin_grant'),
+  ('6ddd0000-0000-0000-0000-00000000dd03', 3 * public.credit_seat_price_thb(), 'admin_grant');
 
 -- The ninety-minute game: credit applies, one per seat.
 select pg_temp.act_as('60000000-0000-0000-0000-00000000dd02');
@@ -186,7 +187,7 @@ select public.create_booking((select id from _made90), 'cash', null, null, 1);
 reset role;
 
 select pg_temp.ok(
-  pg_temp.bal('6ddd0000-0000-0000-0000-00000000dd02') = 180,
+  pg_temp.bal('6ddd0000-0000-0000-0000-00000000dd02') = public.credit_seat_price_thb(),
   'two seats at ninety minutes spend two credits',
   pg_temp.bal('6ddd0000-0000-0000-0000-00000000dd02')::text);
 
@@ -200,12 +201,12 @@ select public.create_booking((select id from _made), 'cash', null, null, 0);
 reset role;
 
 select pg_temp.ok(
-  pg_temp.bal('6ddd0000-0000-0000-0000-00000000dd03') = 2 * 180,
+  pg_temp.bal('6ddd0000-0000-0000-0000-00000000dd03') = 2 * public.credit_seat_price_thb(),
   'A SIXTY-MINUTE GAME TAKES ONE CREDIT — ~~no credit at all~~ ended in round 40',
   pg_temp.bal('6ddd0000-0000-0000-0000-00000000dd03')::text);
 
 select pg_temp.ok(
-  (pg_temp.bk((select id from _made), '6ddd0000-0000-0000-0000-00000000dd03')).credit_applied_thb = 180
+  (pg_temp.bk((select id from _made), '6ddd0000-0000-0000-0000-00000000dd03')).credit_applied_thb = public.credit_seat_price_thb()
   and (pg_temp.bk((select id from _made), '6ddd0000-0000-0000-0000-00000000dd03')).status = 'confirmed',
   'flat at the Credit rate whatever the card price is, and settled');
 
@@ -222,7 +223,7 @@ select public.add_guests_with_credit(
 reset role;
 
 select pg_temp.ok(
-  pg_temp.bal('6ddd0000-0000-0000-0000-00000000dd03') = 180,
+  pg_temp.bal('6ddd0000-0000-0000-0000-00000000dd03') = public.credit_seat_price_thb(),
   'a guest on a sixty-minute game costs exactly one credit',
   pg_temp.bal('6ddd0000-0000-0000-0000-00000000dd03')::text);
 
@@ -255,7 +256,7 @@ select pg_temp.ok(
   (select count(*) from public.bookings
     where credit_applied_thb > 0
       and credit_applied_thb % public.credit_seat_price_thb() <> 0) = 0,
-  'and every credit that WAS applied came in whole seats — flat at 180 each, '
+  'and every credit that WAS applied came in whole seats — flat at one Credit each, '
   'unmoved by a game priced at 150 or at 4242',
   (select count(*)::text from public.bookings
     where credit_applied_thb > 0

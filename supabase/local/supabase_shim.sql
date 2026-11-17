@@ -59,6 +59,20 @@ create table if not exists storage.objects (
 alter table storage.objects enable row level security;
 grant select, insert, update, delete on storage.objects to authenticated, service_role;
 grant select on storage.objects to anon;
+-- Supabase's guard against deleting storage rows by SQL (seen on the Playco project, 17 Nov 2026): a direct DELETE on
+-- storage.objects raises 42501 unless `storage.allow_delete_query` is 'true'; files are removed through the Storage
+-- API. Copied here so a local run answers like the real service (profile_photos.sql #14 expects that refusal).
+create or replace function storage.protect_delete() returns trigger language plpgsql as $$
+begin
+  if coalesce(current_setting('storage.allow_delete_query', true), 'false') != 'true' then
+    raise exception 'Direct deletion from storage tables is not allowed. Use the Storage API instead.'
+      using hint = 'This prevents accidental data loss from orphaned objects.', errcode = '42501';
+  end if;
+  return null;
+end $$;
+drop trigger if exists protect_objects_delete on storage.objects;
+create trigger protect_objects_delete before delete on storage.objects
+  for each statement execute function storage.protect_delete();
 create or replace function storage.foldername(name text) returns text[] language sql immutable as $$
   select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1) - 1]
 $$;

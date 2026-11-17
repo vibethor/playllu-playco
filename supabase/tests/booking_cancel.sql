@@ -239,22 +239,23 @@ select pg_temp.ok(
 -- this test exists for — applied credit with money still owed — only exists
 -- on a party now. One credit pays the first seat; the second is owed at the
 -- game''s own 200. The point is unchanged.
+-- Exactly one credit, its worth read from the database (Playco: 300 THB; it was 180).
 insert into public.credit_ledger (player_id, delta_thb, reason) values
-  ('bbbb0000-0000-0000-0000-00000000000b', 180, 'admin_grant');
+  ('bbbb0000-0000-0000-0000-00000000000b', public.credit_seat_price_thb(), 'admin_grant');
 
 select pg_temp.act_as('b0000000-0000-0000-0000-0000000000b1');
 select public.create_booking('94440000-0000-0000-0000-000000000004', 'qr', null, null, 1);
 select pg_temp.ok(
   (select (public.cancel_booking(
     (select id from public.bookings where game_id = '94440000-0000-0000-0000-000000000004')
-  )).credit_issued_thb) = 180,
+  )).credit_issued_thb) = public.credit_seat_price_thb(),
   'cancelling a RESERVED booking with partial credit returns only the ONE '
-  'CREDIT applied, not the 380 the party was priced at');
+  'CREDIT applied, not what the whole party was priced at');
 reset role;
 
 select pg_temp.ok(
   (select coalesce(sum(delta_thb), 0) from public.credit_ledger
-    where player_id = 'bbbb0000-0000-0000-0000-00000000000b') = 180,
+    where player_id = 'bbbb0000-0000-0000-0000-00000000000b') = public.credit_seat_price_thb(),
   'player B''s balance is restored to exactly the credit they started with',
   'balance=' || (select coalesce(sum(delta_thb), 0) from public.credit_ledger
                   where player_id = 'bbbb0000-0000-0000-0000-00000000000b'));

@@ -89,6 +89,13 @@ $$;
    assert a CHANGE rather than an absolute count. */
 create temp table _baseline as select pg_temp.offenders() as n;
 
+/* ITS OWN PLAYER. The drills below used to borrow the oldest real player, so on an empty database (the local
+   throwaway one) they inserted nothing and every guard failed. A fixture of its own makes the suite run anywhere. */
+insert into auth.users (id, email) values ('a0000000-0000-0000-0000-0000000032a1', 'ledger-inv@test.invalid');
+insert into public.players (id, nickname, email, auth_user_id) values
+  ('aaaa0000-0000-0000-0000-0000000032a1', 'TstLedgerInv', 'ledger-inv@test.invalid',
+   'a0000000-0000-0000-0000-0000000032a1');
+
 -- =============================================================================
 -- the invariant itself
 -- =============================================================================
@@ -115,22 +122,22 @@ select pg_temp.ok(
 -- =============================================================================
 
 insert into public.credit_ledger (player_id, delta_thb, reason, note, created_at)
-select p.id, 260, 'adjustment', 'round 32 drill', now()
-  from public.players p where p.auth_user_id is not null order by p.created_at limit 1;
+select p.id, public.credit_seat_price_thb() + 80, 'adjustment', 'round 32 drill', now()
+  from public.players p where p.id = 'aaaa0000-0000-0000-0000-0000000032a1';
 
 select pg_temp.ok(
   pg_temp.offenders() = (select n from _baseline) + 1,
-  'a 260 THB adjustment minted today IS caught',
+  'an adjustment of one credit and 80 THB, minted today, IS caught',
   pg_temp.offenders()::text || ' vs baseline ' || (select n from _baseline)::text);
 
 -- A legal one alongside it must NOT be caught, or the check is just "any row".
 insert into public.credit_ledger (player_id, delta_thb, reason, note, created_at)
-select p.id, 360, 'admin_grant', 'round 32 drill', now()
-  from public.players p where p.auth_user_id is not null order by p.created_at limit 1;
+select p.id, 2 * public.credit_seat_price_thb(), 'admin_grant', 'round 32 drill', now()
+  from public.players p where p.id = 'aaaa0000-0000-0000-0000-0000000032a1';
 
 select pg_temp.ok(
   pg_temp.offenders() = (select n from _baseline) + 1,
-  'a 360 THB grant beside it is NOT caught — two credits is legal',
+  'a grant of exactly two credits beside it is NOT caught — two credits is legal',
   pg_temp.offenders()::text);
 
 -- =============================================================================
@@ -139,11 +146,11 @@ select pg_temp.ok(
 
 insert into public.credit_ledger (player_id, delta_thb, reason, note, created_at)
 select p.id, -180, 'redemption', 'round 32 drill', now()
-  from public.players p where p.auth_user_id is not null order by p.created_at limit 1;
+  from public.players p where p.id = 'aaaa0000-0000-0000-0000-0000000032a1';
 
 select pg_temp.ok(
   pg_temp.offenders() = (select n from _baseline) + 1,
-  'a -180 redemption is NOT a violation — it is a 180 THB game being paid for',
+  'a -180 redemption is NOT a violation — it is a 180 THB game being paid for, off the credit grid',
   pg_temp.offenders()::text);
 
 /*
@@ -172,7 +179,7 @@ select pg_temp.ok(
 
 insert into public.credit_ledger (player_id, delta_thb, reason, note, created_at)
 select p.id, 110, 'adjustment', 'round 32 drill', pg_temp.ruling_date() - interval '1 day'
-  from public.players p where p.auth_user_id is not null order by p.created_at limit 1;
+  from public.players p where p.id = 'aaaa0000-0000-0000-0000-0000000032a1';
 
 select pg_temp.ok(
   pg_temp.offenders() = (select n from _baseline) + 1,

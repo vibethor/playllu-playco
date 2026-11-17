@@ -91,6 +91,7 @@ npm run dev
 npx tsc --noEmit && npx vitest run      # types + unit tests
 ```
 Database tests on a throwaway local Postgres (no Docker): apply `supabase/local/supabase_shim.sql`, then
-`supabase/migrations/*.sql` in order, then run `supabase/tests/*.sql` and read each summary row. Known local gaps:
-`notifications.sql` needs pgTAP; `ledger_invariant.sql` needs a seeded player; `profile_photos.sql` #14 depends on
-Supabase's real storage service. Phase 0 of the plan turns this into `npm run test:db`.
+`supabase/migrations/*.sql` in order, then run `supabase/tests/*.sql` and read each summary row
+(`node supabase/tests/run.mjs` does the last step). `notifications.sql` needs pgTAP in its own schema
+(`create schema tap; create extension pgtap schema tap;`). Every suite makes its own fixtures, so an empty database
+is enough; on 17 Nov 2026 all 64 passed. Phase 0 of the plan turns this into `npm run test:db`.

@@ -140,8 +140,10 @@ select pg_temp.ok(
   'seed booking is confirmed at price 0 with no VS');
 
 -- --- full credit -> credit, confirmed instantly, no VS ----------------------
+-- One credit and 50 over. The credit's worth is read from the database (Playco, 17 Nov 2026: 300 THB; it was 180,
+-- then 250), so a price change does not break this suite.
 insert into public.credit_ledger (player_id, delta_thb, reason) values
-  ('aaaa0000-0000-0000-0000-00000000000a', 230, 'admin_grant');
+  ('aaaa0000-0000-0000-0000-00000000000a', public.credit_seat_price_thb() + 50, 'admin_grant');
 
 select pg_temp.act_as('a0000000-0000-0000-0000-0000000000a1');
 select pg_temp.ok(
@@ -153,8 +155,9 @@ select pg_temp.ok(
   (select count(*) from public.bookings
     where player_id = 'aaaa0000-0000-0000-0000-00000000000a'
       and game_id = '92220000-0000-0000-0000-000000000002'
-      and status = 'confirmed' and payment_code is null and credit_applied_thb = 180) = 1,
-  'full-credit booking is confirmed, no VS, and ONE CREDIT applied — 180, not '
+      and status = 'confirmed' and payment_code is null
+      and credit_applied_thb = public.credit_seat_price_thb()) = 1,
+  'full-credit booking is confirmed, no VS, and ONE CREDIT applied — one seat''s worth, not '
   'the game''s 200 (round 35''s seat-denominated ruling)');
 
 select pg_temp.ok(

@@ -277,14 +277,16 @@ reset role;
 -- the 200 booking applies the full 100 and expiry must return all 100. Stating
 -- the running balance explicitly here because getting it wrong is exactly what
 -- made this assertion fail first time round — against a correct RPC.
+-- The grant tops the 50 up to exactly one credit, whose worth is read from the database (Playco: 300 THB; it was
+-- 180, made of the 50 and a 130 grant).
 insert into public.credit_ledger (player_id, delta_thb, reason) values
-  ('bbbb0000-0000-0000-0000-00000000000b', 130, 'admin_grant');
+  ('bbbb0000-0000-0000-0000-00000000000b', public.credit_seat_price_thb() - 50, 'admin_grant');
 
 select pg_temp.ok(
   (select coalesce(sum(delta_thb), 0) from public.credit_ledger
-    where player_id = 'bbbb0000-0000-0000-0000-00000000000b') = 180,
-  'player B''s balance before the expiring booking is 180 — one credit, made of '
-  'a 50 overpayment and a 130 grant',
+    where player_id = 'bbbb0000-0000-0000-0000-00000000000b') = public.credit_seat_price_thb(),
+  'player B''s balance before the expiring booking is one credit, made of '
+  'a 50 overpayment and a grant',
   'balance=' || (select coalesce(sum(delta_thb), 0) from public.credit_ledger
                   where player_id = 'bbbb0000-0000-0000-0000-00000000000b'));
 
@@ -299,19 +301,19 @@ reset role;
 
 select pg_temp.ok(
   (select credit_applied_thb from public.bookings
-    where game_id = '9aaa0000-0000-0000-0000-00000000000a') = 180,
+    where game_id = '9aaa0000-0000-0000-0000-00000000000a') = public.credit_seat_price_thb(),
   'the booking applies ONE CREDIT and leaves the rest due');
 
 select pg_temp.act_as_service();
 select pg_temp.ok(
   (select (public.expire_booking(
-    pg_temp.booking_id_for('9aaa0000-0000-0000-0000-00000000000a'))).credit_issued_thb) = 180,
+    pg_temp.booking_id_for('9aaa0000-0000-0000-0000-00000000000a'))).credit_issued_thb) = public.credit_seat_price_thb(),
   'expiring a booking with applied credit returns ALL of it to the wallet');
 reset role;
 
 select pg_temp.ok(
   (select coalesce(sum(delta_thb), 0) from public.credit_ledger
-    where player_id = 'bbbb0000-0000-0000-0000-00000000000b') = 180,
+    where player_id = 'bbbb0000-0000-0000-0000-00000000000b') = public.credit_seat_price_thb(),
   'player B ends where they started: the expiry confiscated nothing',
   'balance=' || (select coalesce(sum(delta_thb), 0) from public.credit_ledger
                   where player_id = 'bbbb0000-0000-0000-0000-00000000000b'));

@@ -143,8 +143,8 @@ select pg_temp.ok(public.cancelled_game_extension_days() = 7,
 select pg_temp.ok(public.cancellation_refund_cutoff_hours() = 12,
   'the refund cutoff is twelve hours (Podmínky 9.1)');
 select pg_temp.ok(
-  public.price_for_duration(60) = 180 and public.price_for_duration(90) = 180
-  and public.price_for_duration(120) = 180 and public.price_for_duration(null) = 180,
+  public.price_for_duration(60) = public.credit_seat_price_thb() and public.price_for_duration(90) = public.credit_seat_price_thb()
+  and public.price_for_duration(120) = public.credit_seat_price_thb() and public.price_for_duration(null) = public.credit_seat_price_thb(),
   'every length prefills the same price — a game is one Credit, and the 150 is gone');
 select pg_temp.ok(
   not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -203,17 +203,21 @@ select pg_temp.ok(
 
 -- =============================================================================
 -- A CREDIT PAYS FOR A GAME OF ANY LENGTH
+--
+-- A Credit's worth is read from the database (Playco, 17 Nov 2026: 300 THB; it
+-- was 180), so a price change does not break the suite. Card payments below stay
+-- at the games' own 180: that is money, not Credits.
 -- =============================================================================
 
 insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
-values ('4ccc0000-0000-0000-0000-000000000003', 180, 'topup', now() + interval '60 days');
+values ('4ccc0000-0000-0000-0000-000000000003', public.credit_seat_price_thb(), 'topup', now() + interval '60 days');
 
 select pg_temp.act_as('40000000-0000-0000-0000-000000000003');
 select public.create_booking('94000000-0000-0000-0000-0000000000a3', 'cash', null, null, 0);
 reset role;
 
 select pg_temp.ok(
-  (select payment_method = 'credit' and credit_applied_thb = 180 and status = 'confirmed'
+  (select payment_method = 'credit' and credit_applied_thb = public.credit_seat_price_thb() and status = 'confirmed'
      from public.bookings
     where id = pg_temp.booking_of('94000000-0000-0000-0000-0000000000a3',
                                   '4ccc0000-0000-0000-0000-000000000003')),
@@ -251,7 +255,7 @@ select pg_temp.pay_by_card('cs_test_r40_we_cancel', '94000000-0000-0000-0000-000
 
 -- (b) paid from a pass that runs out in three days
 insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
-values ('4ccc0000-0000-0000-0000-000000000006', 180, 'topup', now() + interval '3 days');
+values ('4ccc0000-0000-0000-0000-000000000006', public.credit_seat_price_thb(), 'topup', now() + interval '3 days');
 select pg_temp.act_as('40000000-0000-0000-0000-000000000006');
 select public.create_booking('94000000-0000-0000-0000-0000000000a4', 'cash', null, null, 0);
 reset role;
@@ -260,12 +264,12 @@ reset role;
 -- spend an expired batch, but a booking made before the expiry can outlive it.
 insert into public.credit_ledger (id, player_id, delta_thb, reason, expires_at)
 values ('4b000000-0000-0000-0000-0000000000c7', '4ccc0000-0000-0000-0000-000000000007',
-        180, 'topup', now() - interval '1 day');
+        public.credit_seat_price_thb(), 'topup', now() - interval '1 day');
 insert into public.bookings (id, game_id, player_id, status, payment_method, price_thb, credit_applied_thb)
 values ('4bb00000-0000-0000-0000-0000000000c7', '94000000-0000-0000-0000-0000000000a4',
-        '4ccc0000-0000-0000-0000-000000000007', 'confirmed', 'credit', 180, 180);
+        '4ccc0000-0000-0000-0000-000000000007', 'confirmed', 'credit', public.credit_seat_price_thb(), public.credit_seat_price_thb());
 insert into public.credit_ledger (player_id, delta_thb, reason, booking_id, batch_id)
-values ('4ccc0000-0000-0000-0000-000000000007', -180, 'redemption',
+values ('4ccc0000-0000-0000-0000-000000000007', -public.credit_seat_price_thb(), 'redemption',
         '4bb00000-0000-0000-0000-0000000000c7', '4b000000-0000-0000-0000-0000000000c7');
 
 select pg_temp.act_as_service();
@@ -350,7 +354,7 @@ select pg_temp.ok(
 -- =============================================================================
 
 insert into public.credit_ledger (player_id, delta_thb, reason, expires_at)
-values ('4ccc0000-0000-0000-0000-000000000010', 540, 'topup', now() + interval '60 days');
+values ('4ccc0000-0000-0000-0000-000000000010', 3 * public.credit_seat_price_thb(), 'topup', now() + interval '60 days');
 
 select pg_temp.act_as('40000000-0000-0000-0000-000000000010');
 select public.create_booking('94000000-0000-0000-0000-0000000000a7', 'cash', null, null, 2);
@@ -361,7 +365,7 @@ select public.cancel_booking(pg_temp.booking_of('94000000-0000-0000-0000-0000000
 reset role;
 
 select pg_temp.ok(
-  pg_temp.balance('4ccc0000-0000-0000-0000-000000000010') = 540,
+  pg_temp.balance('4ccc0000-0000-0000-0000-000000000010') = 3 * public.credit_seat_price_thb(),
   'three Credits spent, all three returned — three, not five',
   pg_temp.balance('4ccc0000-0000-0000-0000-000000000010')::text);
 
