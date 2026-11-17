@@ -14,7 +14,6 @@ import { CookieConsent } from "@/components/consent/CookieConsent";
 import { SignUpEvent } from "@/components/analytics/SignUpEvent";
 import { consentBootstrapScript, gtmContainerId } from "@/lib/analytics/gtm";
 import { Header } from "@/components/chrome/Header";
-import { EMPTY_BELL, getBellState } from "@/lib/notifications/queries";
 import { getCurrentPlayer } from "@/lib/auth/session";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 import { BRAND } from "@/lib/brand/palette";
@@ -93,7 +92,8 @@ export async function generateMetadata(): Promise<Metadata> {
      * origin uses, so both agree by construction.
      */
     metadataBase: new URL(
-      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "http://localhost:3000",
+      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+        "http://localhost:3000",
     ),
     /**
      * Every page sets its own bare title ("Games", "My account") and the
@@ -180,19 +180,14 @@ export default async function RootLayout({
             }}
           >
             <Header
-              /*
-                THE BELL'S ROWS (round 7, item 5). Fetched only for a signed-in
-                player: `my_notifications` resolves the caller from
-                `auth.uid()`, so calling it anonymously is a round trip that
-                can only return an empty list.
-              */
-              bell={player ? await getBellState({ joinedAt: player.created_at }) : EMPTY_BELL}
               nickname={player?.nickname ?? null}
               isAdmin={player?.is_admin ?? false}
               photoPath={player?.photo_path ?? null}
               /* `created_at` moves when the row does, which is when the photo
                  bytes changed — the same cache-busting value `/account` uses. */
-              photoVersion={player ? await profilePhotoVersion(player.photo_path) : null}
+              photoVersion={
+                player ? await profilePhotoVersion(player.photo_path) : null
+              }
             />
             {/*
               `--tabbar-h` is the bottom bar's footprint including the iPhone
