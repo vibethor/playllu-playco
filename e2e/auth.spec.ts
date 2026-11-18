@@ -1,3 +1,4 @@
+import { TERMS_VERSION } from "../lib/legal";
 import { expect, test } from "@playwright/test";
 import { players, serviceClient, signInAs } from "./helpers/session.ts";
 import { SEED_PASSWORD } from "../scripts/fixtures.ts";
@@ -237,13 +238,13 @@ test("the terms are readable without an account", async ({ page }) => {
   // before signing up — and findable again afterwards.
   await page.goto("/terms");
   await expect(
-    page.getByRole("heading", { level: 1, name: "Obchodní podmínky" }),
+    page.getByRole("heading", { level: 1, name: "Terms and conditions" }),
   ).toBeVisible();
 
   // The version the document prints is the TERMS_VERSION stamped onto every
-  // acceptance; `lib/content/__tests__/legalDocuments.test.tsx` holds the two
+  // acceptance; `lib/content/__tests__/termsDraft.test.ts` holds the two
   // together, and this is the reader-side half: the line is really on the page.
-  await expect(page.getByText("účinné od 19. 10. 2026, verze 2.0")).toBeVisible();
+  await expect(page.getByTestId("legal-meta")).toContainText(`version ${TERMS_VERSION}`);
 });
 
 test("set-password is a page, not a gate", async ({ page, context }) => {

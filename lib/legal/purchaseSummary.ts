@@ -59,6 +59,21 @@ export function creditPurchaseSummary(
   });
 }
 
+/**
+ * PLAYCO (18 Nov 2026): WHAT A GAME BOOKING SAYS ABOVE STRIPE'S PAY BUTTON. A booking paid by card or PromptPay is a
+ * paid spot, not a purchase of credits (terms 5), so it no longer gets the pass's credit summary with its validity.
+ * The booking itself (game, venue, cancellation) is spelled out on the page by `reservationSummary`.
+ */
+export function bookingPaymentSummary(
+  payment: { amountThb: number; termsUrl: string },
+  t: Strings,
+): string {
+  return fillTemplate(t.purchase.bookingSummary, {
+    amount: formatThb(payment.amountThb),
+    terms: `[${t.purchase.termsLinkLabel}](${payment.termsUrl})`,
+  });
+}
+
 export interface ReservationFacts {
   /** Already formatted: day, date and kick-off time. */
   when: string;

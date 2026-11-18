@@ -80,7 +80,7 @@ export const ru: StringsOverlay = {
     privacyTitle: "Политика конфиденциальности",
     cookiesTitle: "Политика использования cookies",
     footerNavLabel: "Правовая информация",
-    czechOnlyNotice: "Этот документ на чешском языке. Юридически обязательной является чешская версия.",
+    englishOnlyNotice: "Этот документ доступен только на английском языке.",
     downloadPdf: "Скачать условия в PDF",
     back: "← Назад к матчам",
     emailLabel: "Эл. почта",

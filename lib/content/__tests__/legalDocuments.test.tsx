@@ -14,7 +14,7 @@ import {
 } from "@/lib/content/legalDocuments";
 import { LEGAL_ORIGINALS } from "@/lib/content/legalOriginals.generated";
 import { applyLegalSubstitutions } from "@/lib/content/legalSubstitutions";
-import { COOKIES_VERSION, OPERATOR_CONTACT, PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal";
+import { ORIGINAL_DOCUMENT_VERSIONS, OPERATOR_CONTACT } from "@/lib/legal";
 import { strings } from "@/lib/strings";
 
 /**
@@ -122,10 +122,10 @@ describe("the published legal documents", () => {
   });
 
   it.each([
-    ["terms", TERMS_VERSION],
-    ["privacy", PRIVACY_VERSION],
-    ["cookies", COOKIES_VERSION],
-  ] as const)("stamps %s with the version its header prints", (name, version) => {
+    ["terms", ORIGINAL_DOCUMENT_VERSIONS.terms],
+    ["privacy", ORIGINAL_DOCUMENT_VERSIONS.privacy],
+    ["cookies", ORIGINAL_DOCUMENT_VERSIONS.cookies],
+  ] as const)("keeps the inherited Czech %s at the version its header prints", (name, version) => {
     // Arrange
     const meta = loadLegalDocument(name).main.header.meta ?? [];
 
