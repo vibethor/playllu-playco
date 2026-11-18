@@ -6,6 +6,8 @@ import { ConfirmPaymentRow } from "@/components/admin/ConfirmPaymentRow";
 import { DeleteControl } from "@/components/admin/DeleteControl";
 import { ExportCsvLink } from "@/components/admin/ExportCsvLink";
 import { GameForm } from "@/components/admin/GameForm";
+import { readRepeatsWeekly } from "@/lib/admin/weeklyGames";
+import { createServerSupabaseClient } from "@/lib/supabase/clients";
 import { GuestControl } from "@/components/admin/GuestControl";
 import { NotifyForm } from "@/components/admin/NotifyForm";
 import { StoryDownloadLink } from "@/components/admin/StoryDownloadLink";
@@ -91,11 +93,12 @@ export default async function AdminGamePage({
     appCapabilities(),
     game.status === "cancelled" ? getCancelReasons([game.id]) : Promise.resolve(new Map<string, string>()),
   ]);
-  const [organizerPlayers, money] = await Promise.all([
+  const [organizerPlayers, money, repeatsWeekly] = await Promise.all([
     // Whoever runs the game now stays in the dropdown even if their organizer
     // status has since been taken away.
     listOrganizerCandidates(organizer?.organizer_player_id ?? null),
     capabilities.pitchCosts ? getGameMoney(game.id) : Promise.resolve<GameMoney | null>(null),
+    readRepeatsWeekly(await createServerSupabaseClient(), game.id),
   ]);
 
   const venueRow = venues.find((venue) => venue.id === game.venue_id) ?? null;
@@ -346,7 +349,7 @@ export default async function AdminGamePage({
             <GameForm
               action={updateGameAction}
               venues={pickableVenues(venues, game.venue_id)}
-              game={game}
+              game={{ ...game, repeats_weekly: repeatsWeekly }}
               organizer={organizer}
               defaultOrganizerName={admin.nickname}
               canSetLanguage={capabilities.gameLanguage}

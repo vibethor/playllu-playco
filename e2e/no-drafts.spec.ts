@@ -101,6 +101,8 @@ test("a game created through the form is published, not drafted", async ({ page,
   await page.getByTestId("venue-select").selectOption(venue.id);
   // Required since round 16 item 10 — a game with no surface draws no badge.
   await page.selectOption("#surface", "turf");
+  // Required since 18 Nov 2026: the format dropdown.
+  await page.getByTestId("format-side").selectOption("6");
   await page.getByTestId("starts-at").fill(when);
   await page.getByTestId("organizer-name").fill("R14 Organizer");
   await page.getByTestId("game-form-submit").click();

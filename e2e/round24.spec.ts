@@ -410,6 +410,8 @@ test("publishing a game lands on an unmistakable confirmed state", async ({
   // The form's own fields, filled the way `admin.spec.ts` fills them.
   await page.getByTestId("venue-select").selectOption({ label: "E2E Scratch Pitch" });
   await page.selectOption("#surface", "turf");
+  // Required since 18 Nov 2026: the format dropdown.
+  await page.getByTestId("format-side").selectOption("6");
   await page
     .getByTestId("starts-at")
     .fill(new Date(Date.now() + 21 * 24 * 3600_000).toISOString().slice(0, 16));
@@ -420,7 +422,7 @@ test("publishing a game lands on an unmistakable confirmed state", async ({
    * number that appears beside it is the product's answer rather than this
    * spec's.
    */
-  await page.getByTestId("duration-minutes").fill("60");
+  await page.getByTestId("duration-minutes").selectOption("60");
   await page.getByTestId("game-form-submit").click();
 
   await page.waitForURL(/\/admin\/games\/[0-9a-f-]{36}(\?|$)/);

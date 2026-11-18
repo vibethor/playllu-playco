@@ -30,7 +30,6 @@ export function MoneySpentPanel({ spend }: { spend: PlayerSpend }) {
           <div data-testid="admin-player-spend-total" className="font-display text-[34px] leading-none tabular-nums text-accent">
             {formatThb(spend.totalThb)}
           </div>
-          <p className="m-0 mt-2 max-w-[360px] text-[11px] leading-snug text-muted">{t.playerKpis.spentDetail}</p>
         </div>
         <BreakdownBars rows={rows} testId="admin-player-spend-split" emptyText={t.playerKpis.spentEmpty} />
       </div>

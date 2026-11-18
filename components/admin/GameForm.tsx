@@ -4,14 +4,14 @@ import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { AdminActionState } from "@/app/admin/games/actions";
 import {
-  DURATION_DEFAULT,
+  DURATION_CHOICES,
   DURATION_STANDARD,
-  DURATION_MAX,
-  DURATION_MIN,
+  FORMAT_SIDE_CHOICES,
+  TEAM_CHOICES,
+  composeFormat,
+  splitFormat,
   ORGANIZER_NAME_MAX,
   SKILL_LEVELS,
-  SUBS_MAX,
-  SUBS_MIN,
   SURFACES,
 } from "@/lib/admin/gameForm";
 import { LanguagePill } from "@/components/game/LanguagePill";
@@ -39,7 +39,6 @@ const INITIAL: AdminActionState = { status: "idle" };
 const FIELD =
   "mt-1 min-h-11 w-full rounded-control border border-hairline-strong bg-surface px-3 py-2 text-[13px] text-bone outline-none transition-colors placeholder:text-faint focus:border-accent";
 const LABEL = "block text-[10px] uppercase tracking-eyebrow text-muted";
-const HINT = "mt-1 text-[12px] leading-snug text-muted";
 const ERROR = "mt-1 text-[12px] text-accent";
 
 /*
@@ -119,6 +118,8 @@ export function GameForm({
     pitch_name: string | null;
     /** Round 18 item 2 — absent on a database without the migration. */
     language?: unknown;
+    /** Make this game recurring — absent on a database without the weekly-games migration. */
+    repeats_weekly?: boolean;
   };
   /**
    * The stored contact when editing. Read server-side with the service-role
@@ -200,7 +201,21 @@ export function GameForm({
    * WHAT THE PRICE DOES NOT DECIDE is whether a credit can buy the game: since
    * round 40 a Credit buys a seat on ANY game, whatever its length or price.
    */
-  const [format, setFormat] = useState(game?.format ?? "");
+  // FORMAT IS TWO DROPDOWNS (owner, 18 Nov 2026): players a side, and how many teams. "6" + 3 teams posts "6v6v6".
+  // A stored format the dropdowns cannot say (an uneven "5v6") stays as its own option, so editing never changes it.
+  const initialSplit = splitFormat(game?.format);
+  const legacyFormat = game?.format && !initialSplit ? game.format : null;
+  const [formatSide, setFormatSide] = useState<string>(
+    initialSplit ? String(initialSplit.perSide) : legacyFormat ? "legacy" : "",
+  );
+  const [teams, setTeams] = useState<string>(String(initialSplit?.teams ?? 2));
+  const format =
+    formatSide === "legacy" ? (legacyFormat ?? "") : formatSide ? composeFormat(Number(formatSide), Number(teams)) : "";
+  const sideChoices: number[] = [...FORMAT_SIDE_CHOICES];
+  if (initialSplit && !sideChoices.includes(initialSplit.perSide)) sideChoices.push(initialSplit.perSide);
+  const teamChoices: number[] = [...TEAM_CHOICES];
+  if (initialSplit && !teamChoices.includes(initialSplit.teams)) teamChoices.push(initialSplit.teams);
+  const [repeatsWeekly, setRepeatsWeekly] = useState(Boolean(game?.repeats_weekly));
   const [surface, setSurface] = useState<string>(game?.surface ?? "");
   // Round 18 item 2 — resolved through `gameLanguageOf` so a pre-migration row
   // (no such property) reads as the column default rather than as undefined.
@@ -243,6 +258,13 @@ export function GameForm({
    * is what the placeholder under that field already says — so a blank form
    * proposes the 60-minute price rather than nothing.
    */
+  // The four lengths, plus whatever an older game already has so editing never changes it.
+  const durationOptions: number[] = [...DURATION_CHOICES];
+  if (durationMinutes !== "" && !durationOptions.includes(Number(durationMinutes))) {
+    durationOptions.push(Number(durationMinutes));
+    durationOptions.sort((x, y) => x - y);
+  }
+
   const prefillForDuration = (minutes: string) =>
     String(priceForDurationThb(minutes.trim() === "" ? null : Number(minutes)));
 
@@ -272,6 +294,15 @@ export function GameForm({
   const [skillLevels, setSkillLevels] = useState<SkillLevel[]>(
     game?.allowed_skill_levels ?? [],
   );
+
+  // "Every Thursday at 19:00", read off the wall-clock value the organiser typed.
+  const weeklySummary = (() => {
+    const parsed = startsAtLocal ? new Date(startsAtLocal) : null;
+    if (!parsed || Number.isNaN(parsed.getTime())) return null;
+    const weekday = parsed.toLocaleDateString("en-GB", { weekday: "long" });
+    const time = startsAtLocal.slice(11, 16);
+    return strings.admin.repeatsWeeklyOn.replace("{weekday}", weekday).replace("{time}", time);
+  })();
 
   const errors = state.fieldErrors ?? {};
   const isEdit = Boolean(game);
@@ -348,31 +379,59 @@ export function GameForm({
               />
               {errors.startsAt && <p className={ERROR}>{errors.startsAt}</p>}
             </div>
+
+            {/*
+              RECURRING (owner, 18 Nov 2026). Ticked, next week's copy — same day, time and settings — is created and
+              published straight away and every day after, until it is unticked here. See `lib/admin/weeklyGames.ts`.
+            */}
+            <label className="flex min-h-11 items-center gap-3 rounded-control border border-hairline-strong px-3 py-2 text-[13px] text-bone">
+              <input
+                type="checkbox"
+                name="repeatsWeekly"
+                data-testid="repeats-weekly"
+                checked={repeatsWeekly}
+                onChange={(event) => setRepeatsWeekly(event.target.checked)}
+                className="h-4 w-4 accent-volt"
+              />
+              <span className="min-w-0">
+                <span className="block font-semibold">{strings.admin.repeatsWeeklyLabel}</span>
+                {repeatsWeekly && weeklySummary && (
+                  <span data-testid="repeats-weekly-summary" className="block text-[12px] text-muted">
+                    {weeklySummary}
+                  </span>
+                )}
+              </span>
+            </label>
           </div>
         </fieldset>
 
         {/* --- length, price, seats ------------------------------------------- */}
+        {/*
+          BOXES ONLY (owner, 18 Nov 2026): no helper text, a dropdown for the length, and no spinner arrows. The length
+          still refills the price when it changes; the price box takes any whole number.
+        */}
         <fieldset className={GROUP}>
           <legend className={LEGEND}>{hub.formSeats}</legend>
-          {/* The length first, because it refills the price beside it. */}
           <div className="clear-both grid gap-4 sm:grid-cols-2">
             <div className="min-w-0">
               <label className={LABEL} htmlFor="durationMinutes">
                 {strings.admin.durationLabel}
               </label>
-              <input
+              <select
                 id="durationMinutes"
                 name="durationMinutes"
-                type="number"
-                min={DURATION_MIN}
-                max={DURATION_MAX}
                 className={FIELD}
                 data-testid="duration-minutes"
-                placeholder={String(DURATION_DEFAULT)}
                 value={durationMinutes}
                 onChange={(event) => onDurationChange(event.target.value)}
-              />
-              <p className={HINT}>{strings.admin.durationHint}</p>
+              >
+                {durationMinutes === "" && <option value="">—</option>}
+                {durationOptions.map((minutes) => (
+                  <option key={minutes} value={String(minutes)}>
+                    {strings.admin.durationOption.replace("{n}", String(minutes))}
+                  </option>
+                ))}
+              </select>
               {errors.durationMinutes && <p className={ERROR}>{errors.durationMinutes}</p>}
             </div>
 
@@ -383,15 +442,15 @@ export function GameForm({
               <input
                 id="priceThb"
                 name="priceThb"
-                type="number"
-                min={1}
-                step={1}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="off"
                 data-testid="price-thb"
                 className={FIELD}
                 value={priceThb}
                 onChange={(event) => setPriceThb(event.target.value)}
               />
-              <p className={HINT}>{strings.admin.priceDerivedHint}</p>
               {errors.priceThb && <p className={ERROR}>{errors.priceThb}</p>}
             </div>
 
@@ -402,13 +461,14 @@ export function GameForm({
               <input
                 id="capacity"
                 name="capacity"
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="off"
                 className={FIELD}
                 value={capacity}
                 onChange={(event) => setCapacity(event.target.value)}
               />
-              <p className={HINT}>{strings.admin.capacityHint}</p>
               {errors.capacity && <p className={ERROR}>{errors.capacity}</p>}
             </div>
 
@@ -419,75 +479,93 @@ export function GameForm({
               <input
                 id="subsPerTeam"
                 name="subsPerTeam"
-                type="number"
-                min={SUBS_MIN}
-                max={SUBS_MAX}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="off"
                 className={FIELD}
                 data-testid="subs-per-team"
                 value={subsPerTeam}
                 onChange={(event) => setSubsPerTeam(event.target.value)}
               />
-              <p className={HINT}>{strings.admin.subsHint}</p>
               {errors.subsPerTeam && <p className={ERROR}>{errors.subsPerTeam}</p>}
             </div>
           </div>
         </fieldset>
 
-        {/* --- the game itself ------------------------------------------------- */}
-        <fieldset className={GROUP}>
+        {/* --- the game itself: format, teams, game type, language, skill level --- */}
+        <fieldset className={`${GROUP} md:col-span-2`}>
           <legend className={LEGEND}>{hub.formGame}</legend>
-          <div className="clear-both space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="min-w-0">
-                <label className={LABEL} htmlFor="format">
-                  {strings.admin.formatLabel}
-                </label>
-                <input
-                  id="format"
-                  name="format"
-                  className={FIELD}
-                  placeholder="6v6"
-                  value={format}
-                  onChange={(event) => setFormat(event.target.value)}
-                />
-                <p className={HINT}>{strings.admin.formatHint}</p>
-                {errors.format && <p className={ERROR}>{errors.format}</p>}
-              </div>
-
-              <div className="min-w-0">
-                <label className={LABEL} htmlFor="surface">
-                  {strings.admin.surfaceLabel}
-                </label>
-                <select
-                  id="surface"
-                  name="surface"
-                  className={FIELD}
-                  value={surface}
-                  onChange={(event) => setSurface(event.target.value)}
-                >
-                  <option value="">{strings.admin.surfaceNone}</option>
-                  {SURFACES.map((surface) => (
-                    <option key={surface} value={surface}>
-                      {strings.admin.surfaceOptions[surface]}
-                    </option>
-                  ))}
-                </select>
-                {/* Required since round 16 item 10 — see `lib/admin/gameForm.ts`. */}
-                {errors.surface && <p className={ERROR}>{errors.surface}</p>}
-              </div>
+          <div className="clear-both grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="min-w-0">
+              <label className={LABEL} htmlFor="formatSide">
+                {strings.admin.formatLabel}
+              </label>
+              <select
+                id="formatSide"
+                required
+                className={FIELD}
+                data-testid="format-side"
+                value={formatSide}
+                onChange={(event) => setFormatSide(event.target.value)}
+              >
+                <option value="" disabled>
+                  —
+                </option>
+                {sideChoices.map((n) => (
+                  <option key={n} value={String(n)}>
+                    {`${n}v${n}`}
+                  </option>
+                ))}
+                {legacyFormat && <option value="legacy">{legacyFormat}</option>}
+              </select>
+              <input type="hidden" name="format" value={format} data-testid="format-value" />
+              {errors.format && <p className={ERROR}>{errors.format}</p>}
             </div>
 
-            {/*
-              LANGUAGE (round 18, item 2), GATED ON THE MIGRATION: without
-              `games.language` the field is not rendered at all, and a submission
-              then resolves to `en-cs`, which is what every existing game is.
+            <div className="min-w-0">
+              <label className={LABEL} htmlFor="teams">
+                {strings.admin.teamsLabel}
+              </label>
+              <select
+                id="teams"
+                className={FIELD}
+                data-testid="format-teams"
+                disabled={formatSide === "legacy"}
+                value={teams}
+                onChange={(event) => setTeams(event.target.value)}
+              >
+                {teamChoices.map((n) => (
+                  <option key={n} value={String(n)}>
+                    {strings.admin.teamsOption.replace("{n}", String(n))}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              THE OPTIONS ARE FLAG PAIRS, not words, which is the owner's format.
-              A native `<select>` cannot hold SVG, so the flags are drawn beside
-              it as a live preview and the options carry plain text.
-            */}
+            <div className="min-w-0">
+              <label className={LABEL} htmlFor="surface">
+                {strings.admin.surfaceLabel}
+              </label>
+              <select
+                id="surface"
+                name="surface"
+                className={FIELD}
+                value={surface}
+                onChange={(event) => setSurface(event.target.value)}
+              >
+                <option value="">{strings.admin.surfaceNone}</option>
+                {SURFACES.map((surface) => (
+                  <option key={surface} value={surface}>
+                    {strings.admin.surfaceOptions[surface]}
+                  </option>
+                ))}
+              </select>
+              {errors.surface && <p className={ERROR}>{errors.surface}</p>}
+            </div>
+
             {canSetLanguage && (
-              <div className="min-w-0">
+              <div className="min-w-0 sm:col-span-2 lg:col-span-1">
                 <label className={LABEL} htmlFor="language">
                   {strings.admin.languageLabel}
                 </label>
@@ -508,44 +586,29 @@ export function GameForm({
                     {language === "uk-ru" && <option value="uk-ru">{strings.admin.languageUkRu}</option>}
                   </select>
                 </div>
-                <p className={HINT}>{strings.admin.languageHint}</p>
               </div>
             )}
-          </div>
-        </fieldset>
 
-        {/* --- skill restriction ------------------------------------------------ */}
-        {/*
-          CHECKBOXES, NOT A SELECT, and no "All levels" option among them.
-          All-levels is the absence of a selection — the same shape as the NULL
-          column — so there is one way to say it.
-        */}
-        <fieldset className={GROUP}>
-          <legend className={LEGEND}>{strings.admin.skillHeading}</legend>
-          <div className="clear-both">
-            <div className="flex flex-wrap gap-x-4">
-              {SKILL_LEVELS.map((level) => (
-                <label
-                  key={level}
-                  /* `min-h-11` (audit F14): the label is what a pointer hits; the
-                     box stays 16px. */
-                  className="flex min-h-11 items-center gap-2 text-[13px] text-bone"
-                >
-                  <input
-                    type="checkbox"
-                    name="allowedSkillLevels"
-                    value={level}
-                    data-testid={`skill-${level}`}
-                    checked={skillLevels.includes(level)}
-                    onChange={() => toggleSkill(level)}
-                    className="h-4 w-4 accent-volt"
-                  />
-                  {strings.admin.skillOptions[level]}
-                </label>
-              ))}
+            {/* Skill level, in the game's own box (owner, 18 Nov 2026). None ticked means all levels. */}
+            <div className={`min-w-0 sm:col-span-2 ${canSetLanguage ? "lg:col-span-2" : "lg:col-span-3"}`}>
+              <span className={LABEL}>{strings.admin.skillHeading}</span>
+              <div className="flex flex-wrap gap-x-4">
+                {SKILL_LEVELS.map((level) => (
+                  <label key={level} className="flex min-h-11 items-center gap-2 text-[13px] text-bone">
+                    <input
+                      type="checkbox"
+                      name="allowedSkillLevels"
+                      value={level}
+                      data-testid={`skill-${level}`}
+                      checked={skillLevels.includes(level)}
+                      onChange={() => toggleSkill(level)}
+                      className="h-4 w-4 accent-volt"
+                    />
+                    {strings.admin.skillOptions[level]}
+                  </label>
+                ))}
+              </div>
             </div>
-            <p className={HINT}>{strings.admin.skillHint}</p>
-            <p className={HINT}>{strings.admin.skillNote}</p>
           </div>
         </fieldset>
 
@@ -592,7 +655,6 @@ export function GameForm({
                   ))}
                 </select>
                 <input type="hidden" name="organizerName" value={pickedNickname} />
-                <p className={HINT}>{strings.admin.organizerPlayerHint}</p>
                 {errors.organizerName && <p className={ERROR}>{errors.organizerName}</p>}
               </div>
             ) : (
@@ -609,9 +671,6 @@ export function GameForm({
                   value={organizerName}
                   onChange={(event) => setOrganizerName(event.target.value)}
                 />
-                <p className={HINT}>
-                  {organizerPlayers ? strings.admin.organizerPlayerNoneYet : strings.admin.organizerNameHint}
-                </p>
                 {errors.organizerName && <p className={ERROR}>{errors.organizerName}</p>}
               </div>
             )}
@@ -630,9 +689,6 @@ export function GameForm({
                 value={organizerPhone}
                 onChange={(event) => setOrganizerPhone(event.target.value)}
               />
-              <p className={HINT}>
-                {pickable.length > 0 ? strings.admin.organizerPhonePrefilled : strings.admin.organizerPhoneHint}
-              </p>
               {errors.organizerPhone && <p className={ERROR}>{errors.organizerPhone}</p>}
             </div>
 
@@ -656,7 +712,6 @@ export function GameForm({
                   value={organizerTelegram}
                   onChange={(event) => setOrganizerTelegram(event.target.value)}
                 />
-                <p className={HINT}>{strings.admin.organizerTelegramHint}</p>
                 {errors.organizerTelegram && <p className={ERROR}>{errors.organizerTelegram}</p>}
               </div>
             )}
@@ -677,14 +732,12 @@ export function GameForm({
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
           />
-          <p className={HINT}>{strings.admin.notesHint}</p>
           {errors.notes && <p className={ERROR}>{errors.notes}</p>}
         </div>
       </div>
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-5">
         <SubmitButton isEdit={isEdit} />
-        {!isEdit && <p className={`${HINT} md:mt-0`}>{strings.admin.createGameHint}</p>}
 
         {state.status === "saved" && (
           <p data-testid="game-form-saved" className="m-0 text-[13px] text-accent">

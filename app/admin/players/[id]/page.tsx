@@ -203,125 +203,72 @@ export default async function AdminPlayerPage({
         </div>
       )}
 
-      {/* --- the controls, by what they change -------------------------------- */}
-      <div
-        data-testid="admin-actions"
-        className="mt-6 grid gap-4 md:grid-cols-2 md:items-start"
-      >
-        <Panel testId="admin-player-rights">
-          <SectionHeading title={t.rightsTitle} lede={t.rightsLede} />
-          <div className="flex flex-wrap items-center gap-3">
+      {/*
+        ONE "ACTIONS" PANEL (owner, 18 Nov 2026): Rights, Account and Credit used to be three panels with a paragraph
+        each. The buttons and what they do are unchanged; they are grouped into tiles in one panel, without the text.
+        History and "Add to a game" follow at the bottom.
+      */}
+      <Panel testId="admin-actions" className="mt-6">
+        <SectionHeading title={t.actionsTitle} />
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <ActionGroup title={t.rightsTitle} testId="admin-player-rights">
             <AdminRightsButton playerId={player.id} isAdmin={player.is_admin} />
-            {/* Round 42 — beside admin rights, as the owner asked. */}
             {capabilities.organizerPlayer && !isDeleted && (
               <OrganizerRightsButton
                 playerId={player.id}
                 isOrganizer={Boolean(player.is_organizer)}
               />
             )}
-          </div>
-          {player.id === acting.id && (
-            <p
-              data-testid="admin-rights-self-note"
-              className="m-0 mt-3 text-[12px] text-faint"
-            >
-              {strings.admin.adminSelfNote}
-            </p>
-          )}
-        </Panel>
+            {player.id === acting.id && (
+              <p
+                data-testid="admin-rights-self-note"
+                className="m-0 w-full text-[11px] text-faint"
+              >
+                {strings.admin.adminSelfNote}
+              </p>
+            )}
+          </ActionGroup>
 
-        {!isDeleted && (
-          <Panel testId="admin-player-add-to-game">
-            <SectionHeading title={t.addToGameTitle} lede={t.addToGameLede} />
-            <AddToGameForm playerId={player.id} choices={addChoices} />
-          </Panel>
-        )}
-
-        <Panel testId="admin-player-account">
-          <SectionHeading title={t.accountTitle} />
-
-          {/*
-            HOW THEY APPEAR. The rename is always offered — a name always exists
-            (round 33, item 1) — and each image removal only when there is an
-            image to remove, because an enabled button for an absent photo is a
-            promise the page cannot keep.
-          */}
-          <h4 className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-faint">
-            {t.accountProfile}
-          </h4>
-          <div className="mt-2 flex flex-wrap items-start gap-3">
+          <ActionGroup title={t.accountProfile} testId="admin-player-account">
             {capabilities.adminRenamePlayer && (
               <ChangeNameForm playerId={player.id} name={player.nickname} />
             )}
             {player.photo_path && <RemovePhotoButton playerId={player.id} />}
             {player.cover_path && <RemoveCoverButton playerId={player.id} />}
-          </div>
+          </ActionGroup>
 
-          {/*
-            ACCESS — what the account IS. A deleted account has nothing left to
-            ban or delete (round 40), so only its notice remains.
-          */}
+          <ActionGroup title={t.creditTitle} testId="admin-player-credit" wide>
+            <GrantCreditForm playerId={player.id} />
+            <RemoveCreditForm playerId={player.id} balanceThb={balanceThb} />
+          </ActionGroup>
+
           {(canBan || canDelete || player.banned_at) && (
-            <div className="mt-4 border-t border-hairline pt-4">
-              <h4 className="m-0 text-[10px] font-normal uppercase tracking-eyebrow text-faint">
-                {t.accountAccess}
-              </h4>
-              {(canBan || canDelete) && (
-                <p className="m-0 mt-1 text-[12px] text-muted">
-                  {t.accountAccessLede}
-                </p>
+            <ActionGroup title={t.accountAccess} testId="admin-player-access" danger>
+              {canBan && (
+                <BanPlayerButton
+                  playerId={player.id}
+                  isBanned={Boolean(player.banned_at)}
+                />
               )}
-              {(canBan || canDelete) && (
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  {canBan && (
-                    <BanPlayerButton
-                      playerId={player.id}
-                      isBanned={Boolean(player.banned_at)}
-                    />
-                  )}
-                  {canDelete && <DeletePlayerButton playerId={player.id} />}
-                </div>
-              )}
-              {/*
-                THE STATE ITSELF, said once and plainly: a banned account is a
-                fact about the person, not a property of one button — an
-                organizer scrolling to the history needs to know why it stops.
-              */}
+              {canDelete && <DeletePlayerButton playerId={player.id} />}
               {player.banned_at && (
                 <p
                   data-testid={
                     isDeleted ? "player-deleted-notice" : "player-banned-notice"
                   }
-                  className="m-0 mt-3 text-[11px] uppercase tracking-eyebrow text-danger"
+                  className="m-0 w-full text-[11px] uppercase tracking-eyebrow text-danger"
                 >
                   {isDeleted ? strings.admin.deleted : strings.admin.banned}
                 </p>
               )}
-            </div>
+            </ActionGroup>
           )}
-        </Panel>
+        </div>
+      </Panel>
 
-        {/*
-          THE CREDIT, BOTH DIRECTIONS (round 28, item 5b) — one act with a sign,
-          side by side and alike, but only the removal arms itself before it
-          will submit. The floor that stops a wallet going negative is
-          `grant_credit`'s, under the player's advisory lock.
-        */}
-        <Panel testId="admin-player-credit" className="md:col-span-2">
-          <SectionHeading title={t.creditTitle} lede={t.creditLede} />
-          <div className="flex flex-wrap items-start gap-x-5 gap-y-3">
-            <GrantCreditForm playerId={player.id} />
-            <RemoveCreditForm playerId={player.id} balanceThb={balanceThb} />
-          </div>
-        </Panel>
-      </div>
-
-      {/* --- history, with the no-show control -------------------------------- */}
-      <Panel testId="admin-player-history" className="mt-6">
-        <SectionHeading
-          title={strings.admin.playerGamesTitle}
-          lede={strings.admin.playerGamesLede}
-        />
+      {/* --- history ------------------------------------------------------------ */}
+      <Panel testId="admin-player-history" className="mt-4">
+        <SectionHeading title={strings.admin.playerGamesTitle} />
         {games.length === 0 ? (
           <p className="m-0 text-small text-faint">
             {strings.admin.playerGamesEmpty}
@@ -334,6 +281,47 @@ export default async function AdminPlayerPage({
           </ul>
         )}
       </Panel>
+
+      {/* --- add to a game, last ------------------------------------------------- */}
+      {!isDeleted && (
+        <Panel testId="admin-player-add-to-game" className="mt-4">
+          <SectionHeading title={t.addToGameTitle} />
+          <AddToGameForm playerId={player.id} choices={addChoices} />
+        </Panel>
+      )}
     </>
+  );
+}
+
+/** One tile of the Actions panel: a small label and its buttons. */
+function ActionGroup({
+  title,
+  testId,
+  wide = false,
+  danger = false,
+  children,
+}: {
+  title: string;
+  testId: string;
+  wide?: boolean;
+  danger?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      data-testid={testId}
+      className={`flex min-w-0 flex-col gap-3 rounded-control border bg-surface p-4 ${
+        danger ? "border-danger/40" : "border-hairline"
+      } ${wide ? "sm:col-span-2 xl:col-span-2" : ""}`}
+    >
+      <h4
+        className={`m-0 text-[10px] font-normal uppercase tracking-eyebrow ${
+          danger ? "text-danger" : "text-faint"
+        }`}
+      >
+        {title}
+      </h4>
+      <div className="flex flex-wrap items-start gap-2">{children}</div>
+    </div>
   );
 }

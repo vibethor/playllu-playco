@@ -5,7 +5,7 @@ import { ConfirmingPayment } from "@/components/payment/ConfirmingPayment";
 import { requireCurrentPlayer } from "@/lib/auth/session";
 import { getStrings } from "@/lib/i18n/server";
 import { readPendingPurchase } from "@/lib/payments/pendingPurchaseCookie";
-import type { PendingPurchase } from "@/lib/payments/pendingPurchase";
+import { parsePendingPurchase, type PendingPurchase } from "@/lib/payments/pendingPurchase";
 import {
   findRecentPendingPurchase,
   readPurchaseStatus,
@@ -107,7 +107,18 @@ export default async function PaymentReturnPage({
    * behind it answers correctly.
    */
   const candidates: PendingPurchase[] = [];
-  if (fromStripe) candidates.push(fromStripe);
+
+  /*
+   * A PASS THAT NAMED ITSELF GOES FIRST (18 Nov 2026). The pass checkout puts
+   * `pass=<top-up id>` into its return URL, so a pass buyer is never matched
+   * against a game checkout. `parsePendingPurchase` checks the id's shape;
+   * RLS on `credit_topups` decides whether it is theirs.
+   */
+  const passParam =
+    typeof query.pass === "string" ? parsePendingPurchase(`pass:${query.pass}`) : null;
+  if (passParam) candidates.push(passParam);
+
+  if (fromStripe && !passParam) candidates.push(fromStripe);
 
   const stashed = await readPendingPurchase();
   if (stashed && stashed.id !== fromStripe?.id) candidates.push(stashed);
@@ -122,6 +133,11 @@ export default async function PaymentReturnPage({
       status = resolved;
       break;
     }
+  }
+
+  // A named pass never falls through to the guess, which could pick a game.
+  if (!purchase && passParam) {
+    purchase = passParam;
   }
 
   // The guess, and only once the exact answers have all declined.
