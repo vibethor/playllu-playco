@@ -62,7 +62,6 @@ export default async function SignupPage({
           <h1 className="m-0 font-display text-page-title uppercase tracking-wide text-bone">
             {t.auth.signupTitle}
           </h1>
-          <p className="mt-3 text-body text-muted">{t.auth.signupLede}</p>
 
           {/* p09. Gated identically to /login — see GoogleAuthBlock. */}
           <GoogleAuthBlock

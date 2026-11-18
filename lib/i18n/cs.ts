@@ -170,7 +170,6 @@ export const cs: StringsOverlay = {
     callbackDetailLabel: "Technický detail",
 
     signupTitle: "Založ si účet",
-    signupLede: "Jeden účet, jedna přezdívka — a jsi v sestavě.",
     signupFinishTitle: "Dokonči profil",
     signupFinishLede: "E-mail je potvrzený. Tohle je poslední krok.",
 
