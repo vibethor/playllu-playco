@@ -29,3 +29,15 @@ export function teamSetup(format: string | null, capacity: number): TeamSetup | 
   const teams = Math.max(sides.length, Math.floor(capacity / perTeam));
   return { perTeam, teams, rotating: teams > SIDES_ON_COURT };
 }
+
+/**
+ * The format as one match-up on court, for the badge (owner, 18 Nov 2026): a stored `5v5v5` (three teams rotating)
+ * shows as "5v5", and the game page's Format row says "3 teams of 5, rotating" through `teamSetup`. A two-team or
+ * uneven format is shown exactly as stored.
+ */
+export function courtFormat(format: string | null): string | null {
+  if (!format) return null;
+  const sides = format.split("v");
+  if (sides.length <= SIDES_ON_COURT || sides.some((side) => side !== sides[0])) return format;
+  return sides.slice(0, SIDES_ON_COURT).join("v");
+}

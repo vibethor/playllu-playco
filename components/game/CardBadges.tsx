@@ -1,4 +1,5 @@
 import { Icon, type IconName } from "@/components/Icon";
+import { courtFormat } from "@/lib/games/teams";
 import { getStrings } from "@/lib/i18n/server";
 import type { GameSurface } from "@/lib/types/database";
 
@@ -67,6 +68,8 @@ export async function CardBadges({
 }) {
   const t = await getStrings();
   if (!format && !surface) return null;
+  // One match-up on the badge: "5v5v5" (three teams rotating) shows as "5v5" (owner, 18 Nov 2026).
+  const shownFormat = courtFormat(format);
 
   /*
    * THE LIST CARD'S PAIR (owner, 17 Nov 2026, after a HrajFotbal screenshot, then "make the beach pill the same as the
@@ -86,7 +89,7 @@ export async function CardBadges({
             className={`${CARD_PILL} bg-volt tabular-nums text-ink`}
           >
             <Icon name="users" className="h-3.5 w-3.5" />
-            {format}
+            {shownFormat}
           </span>
         )}
         {surface && (
@@ -108,7 +111,7 @@ export async function CardBadges({
       className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-pill bg-cloud px-2.5 text-small font-semibold text-navy"
     >
       <Icon name="users" className="h-4 w-4" />
-      {format}
+      {shownFormat}
     </span>
   );
   const surfaceTag = surface && (

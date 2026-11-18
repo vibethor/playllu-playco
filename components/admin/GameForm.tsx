@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { useFormStatus } from "react-dom";
+import { startTransition, useActionState, useState, type FormEvent } from "react";
 import type { AdminActionState } from "@/app/admin/games/actions";
 import {
   DURATION_CHOICES,
@@ -19,6 +18,7 @@ import { gameLanguageOf, type GameLanguage } from "@/lib/games/language";
 import { priceForDurationThb } from "@/lib/games/price";
 import { phoneAfterOrganizerChange } from "@/lib/admin/organizerPhone";
 import { openNativePicker } from "@/lib/forms/nativePicker";
+import { cityInputValue, instantFromCityInput, weeklyRepeatLabel } from "@/lib/admin/startsAtInput";
 import { strings } from "@/lib/strings";
 import type { Database, GameSurface, SkillLevel } from "@/lib/types/database";
 
@@ -59,10 +59,12 @@ const hub = strings.admin.gamesHub;
  * Create/edit form for a game.
  *
  * KICK-OFF AND TIME ZONES. `<input type="datetime-local">` submits wall-clock
- * text with no zone attached. Rather than parse that on the server — where the
- * only zone available is the server's, which is not the organizer's — the
- * browser converts it to an absolute instant in a hidden ISO field, and the
- * action accepts only that. `parseGameForm` rejects a missing ISO value rather
+ * text with no zone attached. The box is read and written in the CITY's zone
+ * (`lib/admin/startsAtInput.ts`, 18 Nov 2026) and converted to an absolute
+ * instant in a hidden ISO field, which is all the action accepts. ~~The
+ * browser's own zone~~ made the server (UTC) and the browser (Bangkok) render
+ * different text, React regenerated the page, and a save then reset every
+ * dropdown to its first option. `parseGameForm` rejects a missing ISO value rather
  * than falling back, because a silent fallback moves a real game by an hour
  * twice a year.
  *
@@ -77,6 +79,13 @@ const hub = strings.admin.gamesHub;
  * typed replaced by the stored ones, which reads as "the form does not save"
  * rather than as "one field above is invalid". Controlled inputs survive the
  * reset, so a rejected submit leaves the work intact and only the error is new.
+ *
+ * AND SINCE 18 NOV 2026 THERE IS NO RESET AT ALL. The form submits through
+ * `onSubmit` + `startTransition` rather than `<form action>`, so React never runs
+ * its automatic form reset after a save. That reset is what put the venue, length,
+ * format and game type dropdowns back on their first option on production (shown
+ * "—", 60 min, 2v2) while the state still held the real values — a second save
+ * would have sent the wrong ones. Pending comes from `useActionState` itself.
  */
 export function GameForm({
   action,
@@ -158,7 +167,7 @@ export function GameForm({
    * more, and `+ Add venue` goes to `/admin/venues`.
    */
 }) {
-  const [state, formAction] = useActionState(action, INITIAL);
+  const [state, formAction, isPending] = useActionState(action, INITIAL);
 
   const [venueChoice, setVenueChoice] = useState(
     game?.venue_id ?? "",
@@ -168,7 +177,7 @@ export function GameForm({
   // The visible wall-clock text and the absolute instant that is actually
   // submitted, kept as two pieces of state for the reason in the header.
   const [startsAtLocal, setStartsAtLocal] = useState(() =>
-    game ? toLocalInputValue(game.starts_at) : "",
+    game ? cityInputValue(game.starts_at) : "",
   );
   const [startsAtIso, setStartsAtIso] = useState(game?.starts_at ?? "");
 
@@ -295,14 +304,17 @@ export function GameForm({
     game?.allowed_skill_levels ?? [],
   );
 
-  // "Every Thursday at 19:00", read off the wall-clock value the organiser typed.
-  const weeklySummary = (() => {
-    const parsed = startsAtLocal ? new Date(startsAtLocal) : null;
-    if (!parsed || Number.isNaN(parsed.getTime())) return null;
-    const weekday = parsed.toLocaleDateString("en-GB", { weekday: "long" });
-    const time = startsAtLocal.slice(11, 16);
-    return strings.admin.repeatsWeeklyOn.replace("{weekday}", weekday).replace("{time}", time);
-  })();
+  // "Every Thursday at 19:00" in the city — the same text on the server and in the browser.
+  const repeatLabel = weeklyRepeatLabel(startsAtIso);
+  const weeklySummary = repeatLabel
+    ? strings.admin.repeatsWeeklyOn.replace("{weekday}", repeatLabel.weekday).replace("{time}", repeatLabel.time)
+    : null;
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    startTransition(() => formAction(data));
+  }
 
   const errors = state.fieldErrors ?? {};
   const isEdit = Boolean(game);
@@ -316,7 +328,7 @@ export function GameForm({
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4">
       {game && <input type="hidden" name="gameId" value={game.id} />}
       <input type="hidden" name="startsAtIso" value={startsAtIso} />
 
@@ -373,8 +385,7 @@ export function GameForm({
                 onChange={(event) => {
                   const value = event.target.value;
                   setStartsAtLocal(value);
-                  const parsed = value ? new Date(value) : null;
-                  setStartsAtIso(parsed && !Number.isNaN(parsed.getTime()) ? parsed.toISOString() : "");
+                  setStartsAtIso(instantFromCityInput(value) ?? "");
                 }}
               />
               {errors.startsAt && <p className={ERROR}>{errors.startsAt}</p>}
@@ -737,7 +748,7 @@ export function GameForm({
       </div>
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-5">
-        <SubmitButton isEdit={isEdit} />
+        <SubmitButton isEdit={isEdit} pending={isPending} />
 
         {state.status === "saved" && (
           <p data-testid="game-form-saved" className="m-0 text-[13px] text-accent">
@@ -769,8 +780,7 @@ export function GameForm({
   );
 }
 
-function SubmitButton({ isEdit }: { isEdit: boolean }) {
-  const { pending } = useFormStatus();
+function SubmitButton({ isEdit, pending }: { isEdit: boolean; pending: boolean }) {
   return (
     <button
       type="submit"
@@ -784,22 +794,5 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
           ? strings.admin.saveGame
           : strings.admin.createGame}
     </button>
-  );
-}
-
-/**
- * ISO instant → the wall-clock string `datetime-local` expects.
- *
- * Runs in the browser, so `getHours()` and friends are the organizer's own
- * zone — which is the point: the field shows them the time they think in, and
- * the hidden ISO field carries the absolute instant.
- */
-function toLocalInputValue(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
   );
 }
