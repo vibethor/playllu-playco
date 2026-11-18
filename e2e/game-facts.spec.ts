@@ -28,6 +28,8 @@ import { createScratchGame, destroyScratchGame } from "./helpers/scaffold";
 test.use({ viewport: { width: 390, height: 844 } });
 
 const FORMAT = "7v7v7v7";
+// The badge shows one match-up; the Format row adds "4 teams of 7, rotating" (owner, 18 Nov 2026).
+const FORMAT_BADGE = "7v7";
 const DURATION = 120;
 
 test("a four-way, 120-minute game says so on the list and on the detail", async ({
@@ -70,7 +72,7 @@ test("a four-way, 120-minute game says so on the list and on the detail", async 
     await expect(
       card.getByTestId("game-format"),
       "the card is showing a format that is not this game's",
-    ).toHaveText(FORMAT);
+    ).toHaveText(FORMAT_BADGE);
 
     /*
      * THE CARD DOES NOT SHOW A DURATION AT ALL (round 19, item 4), and the
@@ -94,7 +96,8 @@ test("a four-way, 120-minute game says so on the list and on the detail", async 
     await page.goto(`/game/${game.id}`, { waitUntil: "networkidle" });
     const info = page.getByTestId("game-info-card");
 
-    await expect(info.getByTestId("game-format")).toHaveText(FORMAT);
+    await expect(info.getByTestId("game-format")).toHaveText(FORMAT_BADGE);
+    await expect(info.getByTestId("game-teams")).toContainText("4");
     await expect(info.getByTestId("game-duration")).toContainText(String(DURATION));
 
     /*
