@@ -324,10 +324,12 @@ export async function GameCard({
         THE ANATOMY (owner, 17 Nov 2026):
 
           venue (two lines max)      · format, game type
-          time pill, faces           · Join → | Playing now
+          time pill                  · Join → | Playing now
           capacity bar               · spots left
+          faces
 
-        Three rows of fixed height, so every card in a list is the same size.
+        Four rows of fixed height, so every card in a list is the same size. The faces moved off the time row onto
+        their own, under the bar ("move it below the progress bar … so it doesn't look too stacked").
       */}
       {/*
         EVERY CARD ONE HEIGHT (owner, 17 Nov 2026: "the second game is a little bit bigger than the one above … make
@@ -356,8 +358,6 @@ export async function GameCard({
             <Icon name="clock" className="h-4 w-4 text-accent" />
             {formatTime(game.starts_at)}
           </span>
-          {/* Absent at zero (§2.1) — a ring drawn around nobody is a question. */}
-          {roster.length > 0 && <AvatarRow players={roster} max={3} size="card" supabaseUrl={supabaseUrl} />}
         </span>
 
         {/*
@@ -391,6 +391,15 @@ export async function GameCard({
         <span data-testid="row-spots" className="shrink-0">
           <SpotsLeft bookedCount={bookedCount} capacity={game.capacity} size="card" />
         </span>
+      </span>
+
+      {/*
+        THE FACES, UNDER THE BAR (owner, 17 Nov 2026). The row is there even when nobody has joined, so a card with
+        players is not taller than one without; the faces themselves are absent at zero (§2.1) — a ring drawn around
+        nobody is a question.
+      */}
+      <span data-testid="card-faces" className="relative mt-1 flex h-[22px] items-center">
+        {roster.length > 0 && <AvatarRow players={roster} max={3} size="card" supabaseUrl={supabaseUrl} />}
       </span>
     </>
   );
