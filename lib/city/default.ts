@@ -19,3 +19,23 @@ export const DEFAULT_CITY = {
 
 /** The brand players see. */
 export const SITE_NAME = "Playco";
+
+/**
+ * THE LAW THE GAMES ARE PLAYED UNDER (Jachym, 18 Nov 2026: Playco's own English terms and privacy policy). Legal
+ * texts name the country, its data protection law, its authorities and its emergency number; they read them from here
+ * so a second country is a second row, not an edit of the documents.
+ */
+export const LEGAL_JURISDICTION = {
+  country: "Thailand",
+  governingLaw: "the laws of Thailand",
+  courts: "the courts of Thailand",
+  dataProtectionLaw: "Thailand's Personal Data Protection Act B.E. 2562 (2019) (the PDPA)",
+  dataProtectionAuthority: "the Office of the Personal Data Protection Committee (PDPC)",
+  consumerAuthority: "the Office of the Consumer Protection Board (OCPB, hotline 1166)",
+  /** Medical emergencies (ambulance). */
+  emergencyNumber: "1669",
+  /** The age of majority: below it a person needs a parent's or guardian's consent to contract. */
+  ageOfMajority: 20,
+  /** Where the database runs; other providers are named in the privacy policy. */
+  databaseRegion: "Singapore",
+} as const;

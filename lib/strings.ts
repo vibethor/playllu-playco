@@ -1488,15 +1488,12 @@ export const strings = {
     /** The accessible name of the footer's row of legal links. */
     footerNavLabel: "Legal information",
     /*
-     * Shown above a document to every reader whose language is not Czech.
-     * Never omitted: a person who accepted the terms is entitled to know which
-     * language the thing they accepted is in, and which text binds.
+     * PLAYCO (18 Nov 2026): the terms and the privacy policy are written in
+     * English only. Shown above them to every reader whose language is not
+     * English, in their language, so nobody accepts a text without knowing
+     * which language it is in.
      */
-    czechOnlyNotice:
-      "This page is being reviewed under Thai law. Until the review is finished, the text below is a placeholder and not binding.",
-    /** PLAYCO: shown instead of the inherited Czech documents until the Thai versions are written by a lawyer. */
-    reviewBody:
-      "Playco's terms, privacy notice and cookie policy for Thailand are being prepared with a lawyer. Questions in the meantime: {email}",
+    englishOnlyNotice: "This document is available in English only.",
     downloadPdf: "Download the terms as PDF",
     back: "← Back to the games",
     /*
@@ -2983,11 +2980,13 @@ export const strings = {
     creditsMany: "{n} Credits",
     /** Texty 3.2 — directly above Stripe's Pay button. */
     creditSummary:
-      "You're buying: {credits} (1 Credit = 1 place in one game). Total price: {amount}. Credits are valid for {days} days from when they're added, i.e. until {date}; unused Credits then expire. Credits can only be used to book Playllu games, can't be transferred and can't be exchanged for money. We add them to your account as soon as you pay. A purchase of Credits can't be withdrawn from. {terms}",
+      "You're buying: {credits} (1 credit = 1 spot in any game, guests included). Total price: {amount}. Pass credits are valid for {days} days, until {date}; unused credits then expire. They can only be used for Playco games, can't be transferred and can't be exchanged for money. We add them to your account as soon as you pay. A pass purchase can't be withdrawn from. {terms}",
+    /** PLAYCO (18 Nov 2026): above Pay for a game booking — a paid spot, not a purchase of credits (terms 5). */
+    bookingSummary: "Total price: {amount}. {terms}",
     termsLinkLabel: "Terms and Conditions",
-    /** Texty 4.1 — before a booking is confirmed. */
+    /** Texty 4.1 — before a booking is confirmed. PLAYCO (18 Nov 2026): matches terms 7 and 8. */
     reservationSummary:
-      "You're booking a place at the game on {when}, {venue}. Payment: {credits}. Cancelling: you can cancel up to {hours} hours before the start and your Credit comes back. If you cancel later or don't turn up, the Credit is lost. If we cancel the game, we return your Credit and extend its validity by {extensionDays} days. A booking can't be withdrawn from, because it's a leisure service provided on a specific date and time. (Under review for Thai law.)",
+      "You're booking a place at the game on {when}, {venue}. You can cancel any time before the start: cancel at least {hours} hours before and you get a full refund to your account; cancel later or don't turn up and nothing is refunded. If we cancel the game, you get a full refund to your account, and pass credits get {extensionDays} extra days. A booking can't be withdrawn from, because it's a leisure service on a specific date and time.",
     reservationTitle: "Your booking",
     /** Our own box in front of the form, when Stripe cannot draw its own. */
     lockedHint: "Tick the box above to unlock payment.",

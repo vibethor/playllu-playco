@@ -81,7 +81,7 @@ export const cs: StringsOverlay = {
     privacyTitle: "Zásady zpracování osobních údajů",
     cookiesTitle: "Zásady používání cookies",
     footerNavLabel: "Právní informace",
-    czechOnlyNotice: "Tento dokument je v češtině. Právně závazné je české znění.",
+    englishOnlyNotice: "Tento dokument je k dispozici pouze v angličtině.",
     downloadPdf: "Stáhnout podmínky v PDF",
     back: "← Zpět na zápasy",
     emailLabel: "E-mail",

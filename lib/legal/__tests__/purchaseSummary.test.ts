@@ -3,6 +3,7 @@ import { LOCALES } from "@/lib/i18n/locales";
 import { resolveStrings } from "@/lib/i18n/resolve";
 import {
   STRIPE_CUSTOM_TEXT_MAX,
+  bookingPaymentSummary,
   creditPurchaseSummary,
   creditsValidUntil,
   reservationSummary,
@@ -125,5 +126,33 @@ describe("reservationSummary", () => {
 
     // Assert
     for (const text of texts) expect(text).not.toMatch(/\{[a-zA-Z]+\}/);
+  });
+});
+
+describe("bookingPaymentSummary", () => {
+  it("states the price of a game booking without calling it a purchase of credits", () => {
+    // Arrange
+    const t = resolveStrings("en");
+
+    // Act
+    const text = bookingPaymentSummary({ amountThb: 300, termsUrl: TERMS_URL }, t);
+
+    // Assert
+    expect(text).toContain("300");
+    expect(text).toContain(`(${TERMS_URL})`);
+    expect(text).not.toMatch(/credit|valid for/i);
+  });
+
+  it("leaves no slot unfilled in any language", () => {
+    for (const locale of LOCALES) {
+      // Arrange
+      const t = resolveStrings(locale);
+
+      // Act
+      const text = bookingPaymentSummary({ amountThb: 300, termsUrl: TERMS_URL }, t);
+
+      // Assert
+      expect(text, locale).not.toMatch(/\{[a-zA-Z]+\}/);
+    }
   });
 });

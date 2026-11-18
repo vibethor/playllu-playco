@@ -16,6 +16,7 @@ import { TERMS_VERSION } from "@/lib/legal";
 import { termsAgreementWording } from "@/lib/legal/consentWording";
 import { fillTemplate } from "@/lib/i18n/template";
 import {
+  bookingPaymentSummary,
   creditPurchaseSummary,
   reservationSummary,
   type ReservationFacts,
@@ -279,17 +280,20 @@ export default async function CheckoutPage({
     playerId: player.id,
     ...(gameId ? { gameId, guestCount: guests } : {}),
     legal: {
-      summary: creditPurchaseSummary(
-        {
-          credits,
-          amountThb: line.amountThb,
-          ...(passId ? { packageName: t.pass.panelTitle } : {}),
-          paidAt: new Date(),
-          termsUrl: `${origin}/terms`,
-        },
-        locale,
-        t,
-      ),
+      // A pass buys credits; a game booking buys a spot (terms 5 and 6, 18 Nov 2026).
+      summary: passId
+        ? creditPurchaseSummary(
+            {
+              credits,
+              amountThb: line.amountThb,
+              packageName: t.pass.panelTitle,
+              paidAt: new Date(),
+              termsUrl: `${origin}/terms`,
+            },
+            locale,
+            t,
+          )
+        : bookingPaymentSummary({ amountThb: line.amountThb, termsUrl: `${origin}/terms` }, t),
       termsBox: fillTemplate(t.booking.termsAgree, {
         terms: `[${t.auth.tosTermsLink}](${origin}/terms)`,
       }),

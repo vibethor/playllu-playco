@@ -93,7 +93,7 @@ export const uk: StringsOverlay = {
     privacyTitle: "Політика конфіденційності",
     cookiesTitle: "Політика використання cookies",
     footerNavLabel: "Правова інформація",
-    czechOnlyNotice: "Цей документ чеською мовою. Юридично обов’язковою є чеська версія.",
+    englishOnlyNotice: "Цей документ доступний лише англійською мовою.",
     downloadPdf: "Завантажити умови у PDF",
     back: "← Назад до матчів",
     emailLabel: "Ел. пошта",

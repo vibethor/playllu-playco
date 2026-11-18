@@ -1,84 +1,61 @@
 import { expect, test, type BrowserContext } from "@playwright/test";
 import { LOCALE_COOKIE } from "../lib/i18n/locales";
+import { OPERATOR_CONTACT, TERMS_RULES_ANCHOR, TERMS_VERSION } from "../lib/legal";
 
 /**
- * THE LAWYER'S DOCUMENTS, WHERE THEY BELONG (2026-10-19).
+ * PLAYCO'S OWN ENGLISH TERMS AND PRIVACY POLICY (18 Nov 2026).
  *
- * The WORDS are proven by `lib/content/__tests__/legalDocuments.test.tsx`,
- * which compares the rendered text with the lawyer's files. This file proves
- * what only a browser can: the pages are reachable, the language notice
- * appears for exactly the readers it is for, the PDF is really served, the
- * rules attachment is where signup links to, and a wide table does not push
- * the page sideways on a phone.
+ * The WORDS are proven by `lib/content/__tests__/termsDraft.test.ts` and `privacyDraft.test.ts`. This file proves
+ * what only a browser can: the pages are reachable, the language notice appears for exactly the readers it is for,
+ * the rules annex is where signup links to, and the page does not scroll sideways on a phone.
  *
- * Every assertion waits on `legal-document`, which only the real page renders —
- * the root `loading.tsx` makes `page.goto` resolve while a skeleton is up.
+ * Every assertion waits on `legal-document`, which only the real page renders — the root `loading.tsx` makes
+ * `page.goto` resolve while a skeleton is up.
  */
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-async function useLocale(context: BrowserContext, locale: "cs" | "en") {
+async function useLocale(context: BrowserContext, locale: "cs" | "en" | "th") {
   await context.addCookies([{ name: LOCALE_COOKIE, value: locale, domain: "localhost", path: "/" }]);
 }
 
-test("the terms are the lawyer's Czech document, with its rules attachment", async ({
-  page,
-  context,
-}) => {
-  // Arrange
-  await useLocale(context, "cs");
-
-  // Act
-  await page.goto("/terms#pravidla");
-
-  // Assert
-  await expect(page.getByTestId("legal-document")).toBeVisible();
-  await expect(page.getByRole("heading", { level: 1, name: "Obchodní podmínky" })).toBeVisible();
-  await expect(page.locator("#pravidla")).toHaveText("Příloha 1 – Pravidla komunity a hry");
-  await expect(page.getByTestId("legal-czech-notice")).toHaveCount(0);
-});
-
-test("a reader of another language is told which text binds", async ({ page, context }) => {
+test("the terms are Playco's English document, with its rules annex", async ({ page, context }) => {
   // Arrange
   await useLocale(context, "en");
 
   // Act
-  await page.goto("/privacy");
+  await page.goto(`/terms#${TERMS_RULES_ANCHOR}`);
 
   // Assert
   await expect(page.getByTestId("legal-document")).toBeVisible();
-  await expect(page.getByTestId("legal-czech-notice")).toContainText(
-    "The Czech text is the legally binding version",
-  );
-  await expect(
-    page.getByRole("heading", { level: 1, name: "Zásady zpracování osobních údajů" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Terms and conditions" })).toBeVisible();
+  await expect(page.getByTestId("legal-meta")).toContainText(`version ${TERMS_VERSION}`);
+  await expect(page.locator(`#${TERMS_RULES_ANCHOR}`)).toHaveText("Annex: Community and game rules");
+  await expect(page.getByTestId("legal-language-notice")).toHaveCount(0);
 });
 
-test("the privacy page is the real policy, not the draft", async ({ page }) => {
-  // Act
-  await page.goto("/privacy");
-
-  // Assert
-  await expect(page.getByTestId("legal-document")).toBeVisible();
-  await expect(page.locator("body")).not.toContainText(/DRAFT/);
-  await expect(page.getByTestId("legal-document")).toContainText("privacy@hrajfotbal.com");
-});
-
-test("the terms PDF is served", async ({ page, request }) => {
+test("a reader of another language is told the document is in English", async ({ page, context }) => {
   // Arrange
-  await page.goto("/terms");
-  const href = await page.getByTestId("legal-pdf").getAttribute("href");
+  await useLocale(context, "th");
 
   // Act
-  const response = await request.get(href ?? "");
+  await page.goto("/privacy");
 
   // Assert
-  expect(response.status()).toBe(200);
-  expect(response.headers()["content-type"]).toContain("application/pdf");
+  await expect(page.getByTestId("legal-document")).toBeVisible();
+  await expect(page.getByTestId("legal-language-notice")).toBeVisible();
 });
 
-test("a wide table scrolls inside its box, not the page", async ({ page }) => {
+test("the privacy page names the address for personal-data requests", async ({ page }) => {
+  // Act
+  await page.goto("/privacy");
+
+  // Assert
+  await expect(page.getByTestId("legal-document")).toContainText(OPERATOR_CONTACT.privacyEmail);
+  await expect(page.locator("body")).not.toContainText(/hrajfotbal/i);
+});
+
+test("the privacy page does not scroll sideways on a phone", async ({ page }) => {
   // Act
   await page.goto("/privacy");
   await expect(page.getByTestId("legal-document")).toBeVisible();
