@@ -261,8 +261,8 @@ export const strings = {
        * The handle is the destination.
        */
       instagram: "Instagram",
-      // Playco's Instagram profile. Empty hides the tile (18 Nov 2026: link to come).
-      instagramUrl: "",
+      // Playco's Instagram profile (Jachym, 18 Nov 2026). Empty would hide the tile.
+      instagramUrl: "https://www.instagram.com/playco.live/",
       /*
        * TELEGRAM (round 13, item 19). A product's name is not a word, so both
        * keys join WhatsApp's and Instagram's in the intentionally-untranslated
