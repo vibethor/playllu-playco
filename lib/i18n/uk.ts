@@ -183,7 +183,6 @@ export const uk: StringsOverlay = {
     callbackDetailLabel: "Технічні деталі",
 
     signupTitle: "Створи акаунт",
-    signupLede: "Один акаунт, один нік — і ти у складі.",
     signupFinishTitle: "Заверши профіль",
     signupFinishLede: "Пошту підтверджено. Лишився останній крок.",
 

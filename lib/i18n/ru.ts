@@ -173,7 +173,6 @@ export const ru: StringsOverlay = {
     callbackDetailLabel: "Технические детали",
 
     signupTitle: "Создай аккаунт",
-    signupLede: "Один аккаунт, один ник — и ты в составе.",
     signupFinishTitle: "Заверши профиль",
     signupFinishLede: "Почта подтверждена. Остался последний шаг.",
 

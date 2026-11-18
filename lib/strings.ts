@@ -350,7 +350,6 @@ export const strings = {
     callbackDetailLabel: "Technical detail",
 
     signupTitle: "Create your account",
-    signupLede: "One account, one nickname, and you are in the lineup.",
     /** Shown on the finish-your-profile pass, when the account already exists. */
     signupFinishTitle: "Finish your profile",
     signupFinishLede: "Your email is confirmed. This is the last step.",
@@ -366,11 +365,12 @@ export const strings = {
     passwordHint: "At least 8 characters",
     passwordTooShort: "Use at least 8 characters.",
 
-    countryLabel: "Country",
-    countryPlaceholder: "Pick your country",
-    countryInvalid: "Please pick your country from the list.",
+    /* The owner, 18 Nov 2026: "Country, just do it like nationality". The list still names countries. */
+    countryLabel: "Nationality",
+    countryPlaceholder: "Pick your nationality",
+    countryInvalid: "Please pick your nationality from the list.",
 
-    skillLabel: "How do you play?",
+    skillLabel: "What's your level?",
     skillHint: "It shows on your profile. It never stops you booking a game.",
     skillBeginner: "Beginner",
     skillIntermediate: "Intermediate",
