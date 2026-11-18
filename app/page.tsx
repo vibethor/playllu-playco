@@ -22,8 +22,8 @@ import { siteUrl } from "@/lib/site";
 import { homeStructuredData } from "@/lib/seo/site";
 import { getStrings } from "@/lib/i18n/server";
 
-/** PLAYCO, PHASE F: the community panel still links to HrajFotbal's groups; off until Playco has its own. */
-const COMMUNITY_LINKS_READY = false;
+/** Playco's own WhatsApp group is in (18 Nov 2026); Instagram shows once its link is set in `lib/strings.ts`. */
+const COMMUNITY_LINKS_READY = true;
 
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -406,7 +406,6 @@ export default async function LandingPage() {
           <section className="pt-4">
             {/* `items-start`, so a panel is as tall as its own contents. */}
             <div className="flex flex-wrap items-start gap-4">
-              {/* PLAYCO, PHASE F: hidden until Playco has its own WhatsApp / Instagram links (TODO.md). */}
               {COMMUNITY_LINKS_READY && (
                 <CommunityPanel
                   gamesPerWeek={home.gamesPerWeek}

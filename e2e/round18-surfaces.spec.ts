@@ -15,7 +15,8 @@ test.use({ viewport: { width: 390, height: 844 } });
  * A text assertion would pass on exactly the output this exists to avoid;
  * counting `<svg>` cannot.
  */
-test("the Telegram tile carries two drawn flags, not emoji", async ({ page }) => {
+// PLAYCO (18 Nov 2026): the Telegram tile was HrajFotbal's UA/RU group and is gone from the community panel.
+test.skip("the Telegram tile carries two drawn flags, not emoji", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
 
   const flags = page.getByTestId("community-telegram-flags");

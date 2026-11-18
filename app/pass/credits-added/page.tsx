@@ -55,10 +55,11 @@ export default async function CreditsAddedPage({
   const query = searchParams ? await searchParams : {};
   const purchase = await passPurchaseEvent(query);
 
-  const [t, locale, balanceThb] = await Promise.all([
+  const [t, locale, balanceThb, addedGames] = await Promise.all([
     getStrings(),
     getLocale(),
     getOwnCreditBalance(),
+    passGamesAdded(query),
   ]);
 
   // Floored, like every other credit count in the product: telling somebody
@@ -87,8 +88,17 @@ export default async function CreditsAddedPage({
         </div>
 
         <p
-          data-testid="credits-added-count"
+          data-testid="credits-added-body"
           className="mt-6 mb-0 text-body-lg font-semibold text-bone"
+        >
+          {addedGames
+            ? t.pass.creditsAddedBody.replace("{credits}", creditsLabel(addedGames, locale, t))
+            : t.pass.creditsAddedBodyGeneric}
+        </p>
+
+        <p
+          data-testid="credits-added-count"
+          className="mt-2 mb-0 text-body text-bone"
         >
           {t.pass.creditsAddedCount.replace("{credits}", creditsLabel(credits, locale, t))}
         </p>
@@ -145,4 +155,25 @@ async function passPurchaseEvent(query: Record<string, string | string[] | undef
       items: [{ item_id: games ? `pass_${games}` : "credit_topup", item_name: games ? `${games}-game pass` : "Credit top-up", item_category: "pass", price: value, quantity: 1 }],
     },
   };
+}
+
+/**
+ * How many games the pass just bought, for "We've added N credits". Read off
+ * the player's own confirmed top-up (RLS-scoped); no number is taken from the
+ * URL. Null when there is no confirmed pass to name — the page then says it
+ * without a number.
+ */
+async function passGamesAdded(
+  query: Record<string, string | string[] | undefined>,
+): Promise<number | null> {
+  const topupId = typeof query.topup === "string" ? query.topup : null;
+  if (!topupId) return null;
+  const supabase = await createServerSupabaseClient();
+  const { data } = await supabase
+    .from("credit_topups")
+    .select("status, pass_games")
+    .eq("id", topupId)
+    .maybeSingle();
+  if (!data || data.status !== "confirmed" || !data.pass_games) return null;
+  return Number(data.pass_games);
 }

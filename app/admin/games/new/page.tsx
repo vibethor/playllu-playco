@@ -68,7 +68,6 @@ export default async function NewGamePage({
       <div className="mt-4">
         <PageHeader
           title={strings.admin.newGameTitle}
-          lede={strings.admin.gamesHub.newGameLede}
           testId="admin-new-game-header"
         />
       </div>

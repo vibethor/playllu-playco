@@ -99,7 +99,17 @@ export default async function CheckoutPage({
 
   const supabase = await createServerSupabaseClient();
   const origin = await siteUrl();
-  const returnUrl = `${origin}/payment/return?session_id={CHECKOUT_SESSION_ID}`;
+  /*
+   * A PASS NAMES ITSELF IN THE RETURN URL (18 Nov 2026). Without it the return
+   * page had to fall back on a cookie, and when the cookie was missing (paid on
+   * another host, cleared jar) the recovery lookup adopted the player's most
+   * recent GAME checkout — so a pass buyer landed on a "you're booked at Swish
+   * Elite" screen. The id is not trusted because it is in a URL: the pass read
+   * is RLS-scoped to the signed-in player.
+   */
+  const returnUrl = passId
+    ? `${origin}/payment/return?session_id={CHECKOUT_SESSION_ID}&pass=${encodeURIComponent(passId)}`
+    : `${origin}/payment/return?session_id={CHECKOUT_SESSION_ID}`;
 
   let line: { name: string; description?: string; amountThb: number };
   let reference: string;

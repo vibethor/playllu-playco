@@ -98,7 +98,6 @@ export default async function AdminPlayersPage({
     <>
       <PageHeader
         title={strings.admin.playersTitle}
-        lede={t.lede}
         actions={<ExportCsvLink href="/admin/players/export" testId="export-players" />}
       />
 

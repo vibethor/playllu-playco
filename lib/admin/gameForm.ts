@@ -88,6 +88,25 @@ export const DURATION_STANDARD = policy.game.standardMinutes;
 export const SUBS_MIN = 0;
 export const SUBS_MAX = 20;
 
+/** The duration dropdown (owner, 18 Nov 2026). */
+export const DURATION_CHOICES = [60, 90, 120, 180] as const;
+/** Players per side in the format dropdown, and how many teams. */
+export const FORMAT_SIDE_CHOICES = [2, 3, 4, 5, 6] as const;
+export const TEAM_CHOICES = [2, 3, 4] as const;
+
+/** "6" and 3 teams → "6v6v6". */
+export function composeFormat(perSide: number, teams: number): string {
+  return Array.from({ length: teams }, () => String(perSide)).join("v");
+}
+
+/** "6v6v6" → { perSide: 6, teams: 3 }; null when the sides differ or it does not parse. */
+export function splitFormat(format: string | null | undefined): { perSide: number; teams: number } | null {
+  if (!format || !FORMAT_RE.test(format)) return null;
+  const sides = format.split("v").map(Number);
+  if (!sides.every((n) => n === sides[0])) return null;
+  return { perSide: sides[0]!, teams: sides.length };
+}
+
 export const SKILL_LEVELS: SkillLevel[] = ["beginner", "intermediate", "advanced"];
 
 /** Mirrors `organizer_name_length`. */
@@ -142,6 +161,8 @@ export interface GameFormValues {
    */
   allowedSkillLevels: SkillLevel[] | null;
   subsPerTeam: number | null;
+  /** "Make this game recurring?" — the next weeks are created automatically. */
+  repeatsWeekly: boolean;
 }
 
 export type GameFormResult =
@@ -208,7 +229,9 @@ export function parseGameForm(form: FormData): GameFormResult {
 
   // --- optional detail --------------------------------------------------------
   const format = text(form, "format");
-  if (format && !FORMAT_RE.test(format)) {
+  if (!format) {
+    fieldErrors.format = strings.admin.formatRequired;
+  } else if (!FORMAT_RE.test(format)) {
     fieldErrors.format = strings.admin.formatInvalid;
   }
 
@@ -375,6 +398,7 @@ export function parseGameForm(form: FormData): GameFormResult {
       durationMinutes,
       allowedSkillLevels,
       subsPerTeam,
+      repeatsWeekly: text(form, "repeatsWeekly") === "on",
     },
   };
 }

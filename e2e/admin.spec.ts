@@ -325,6 +325,8 @@ test("the whole admin lifecycle fits inside five minutes", async ({ page, contex
   await page.getByTestId("venue-select").selectOption({ label: "E2E Scratch Pitch" });
   // Required since round 16 item 10 — a game with no surface draws no badge.
   await page.selectOption("#surface", "turf");
+  // Required since 18 Nov 2026: the format dropdown.
+  await page.getByTestId("format-side").selectOption("6");
   await page
     .getByTestId("starts-at")
     .fill(new Date(Date.now() + 48 * 3600_000).toISOString().slice(0, 16));
@@ -335,7 +337,7 @@ test("the whole admin lifecycle fits inside five minutes", async ({ page, contex
    * flow is about the lifecycle rather than the price, so it sets the length
    * and takes the prefill — which is also the path most creates will take.
    */
-  await page.getByTestId("duration-minutes").fill("90");
+  await page.getByTestId("duration-minutes").selectOption("90");
   await page.getByTestId("game-form-submit").click();
 
   // Creating redirects straight to the new game's page — `game-form-saved` is

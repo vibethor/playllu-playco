@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  composeFormat,
+  splitFormat,
   DURATION_DEFAULT,
   DURATION_MAX,
   DURATION_MIN,
@@ -29,6 +31,8 @@ const VALID = {
    * surface badge — the fact was skippable, so it was skipped.
    */
   surface: "indoor",
+  // REQUIRED SINCE 18 NOV 2026 (owner: "format is not optional"), picked from a dropdown.
+  format: "6v6",
 };
 
 describe("parseGameForm", () => {
@@ -39,7 +43,7 @@ describe("parseGameForm", () => {
     expect(result.values.venueId).toBe(VALID.venueId);
     expect(result.values.capacity).toBe(14);
     expect(result.values.priceThb).toBe(200);
-    expect(result.values.format).toBeNull();
+    expect(result.values.format).toBe("6v6");
     expect(result.values.surface).toBe("indoor");
     expect(result.values.notes).toBeNull();
     // The Phase 2 fields default to "not stated", which is a real answer.
@@ -135,6 +139,34 @@ describe("parseGameForm", () => {
     }
     for (const bad of ["0", "-1", "12.5", "", "abc"]) {
       expect(parseGameForm(form({ ...VALID, priceThb: bad })).ok, bad).toBe(false);
+    }
+  });
+
+  it("requires a format (owner, 18 Nov 2026)", () => {
+    const missing = parseGameForm(form({ ...VALID, format: "" }));
+    expect(missing.ok).toBe(false);
+    if (missing.ok) return;
+    expect(missing.fieldErrors.format).toBe(strings.admin.formatRequired);
+  });
+
+  it("reads the recurring tick", () => {
+    const off = parseGameForm(form(VALID));
+    expect(off.ok && off.values.repeatsWeekly).toBe(false);
+    const on = parseGameForm(form({ ...VALID, repeatsWeekly: "on" }));
+    expect(on.ok && on.values.repeatsWeekly).toBe(true);
+  });
+
+  it("composes and splits the format dropdowns", () => {
+    expect(composeFormat(6, 2)).toBe("6v6");
+    expect(composeFormat(5, 3)).toBe("5v5v5");
+    expect(composeFormat(4, 4)).toBe("4v4v4v4");
+    expect(splitFormat("6v6v6")).toEqual({ perSide: 6, teams: 3 });
+    expect(splitFormat("5v6")).toBeNull();
+    expect(splitFormat(null)).toBeNull();
+    for (const side of [2, 3, 4, 5, 6]) {
+      for (const teams of [2, 3, 4]) {
+        expect(parseGameForm(form({ ...VALID, format: composeFormat(side, teams) })).ok).toBe(true);
+      }
     }
   });
 
@@ -349,6 +381,7 @@ describe("parseGameForm", () => {
       durationMinutes: 75,
       allowedSkillLevels: null,
       subsPerTeam: 3,
+      repeatsWeekly: false,
     });
   });
 

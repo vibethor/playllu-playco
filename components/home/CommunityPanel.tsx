@@ -1,4 +1,3 @@
-import { FlagRU, FlagUA } from "@/components/flags/Flags";
 import { getStrings } from "@/lib/i18n/server";
 
 /**
@@ -225,6 +224,7 @@ export async function CommunityPanel({
         naming an account where its neighbours named an app.
       */}
       <div className="mt-4 flex gap-2">
+        {community.whatsappUrl && (
         <a
           href={community.whatsappUrl}
           target="_blank"
@@ -236,6 +236,8 @@ export async function CommunityPanel({
           <img src="/brand/whatsapp-96.png" alt="" width={55} height={55} className="h-[55px] w-[55px]" />
           {community.whatsapp}
         </a>
+        )}
+        {community.instagramUrl && (
         <a
           href={community.instagramUrl}
           target="_blank"
@@ -247,50 +249,7 @@ export async function CommunityPanel({
           <img src="/brand/instagram-96.png" alt="" width={55} height={55} className="h-[55px] w-[55px] rounded-[10px]" />
           {community.instagram}
         </a>
-        {/*
-          TELEGRAM, THIRD (round 13, item 19), and the row still fits at 390:
-          three `flex-1 basis-0` tiles are ~110px each, and the longest label
-          is "Instagram" at about 70px inside `px-3`.
-
-          `telegram-96.png` is drawn in the same flat treatment as the other
-          two — Telegram publishes a gradient roundel, and a gradient at 44px
-          is a smudge next to WhatsApp's flat green.
-        */}
-        <a
-          href={community.telegramUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          data-testid="community-telegram"
-          className="flex min-w-0 flex-1 basis-0 flex-col items-center justify-center gap-2 rounded-control border border-hairline-strong px-2 py-4 text-center text-[13px] font-bold tracking-wide text-bone no-underline transition hover:border-telegram"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/telegram-96.png" alt="" width={55} height={55} className="h-[55px] w-[55px]" />
-          {community.telegram}
-
-          {/*
-            THE FLAG PAIR (round 18, item 1) — who the group is FOR, said in
-            the only way a tile this size can say it.
-
-            SVG, NOT EMOJI, and that is the whole reason `components/flags`
-            exists. `🇺🇦` is a pair of regional-indicator codepoints the font is
-            expected to ligature into a flag; Windows ships no such glyphs, so
-            on a large share of desktop visitors the owner's `🇺🇦 / 🇷🇺` renders
-            as the letters "UA / RU" in boxes. Emoji flags are not flags on the
-            platform where it matters.
-
-            THE SLASH IS A CHARACTER, not a border, because the owner's format
-            is "flag slash flag" and a divider that happens to look like one is
-            a divider somebody will restyle.
-          */}
-          <span
-            data-testid="community-telegram-flags"
-            className="flex items-center gap-1 text-[11px] leading-none text-muted"
-          >
-            <FlagUA width={16} />
-            <span aria-hidden>/</span>
-            <FlagRU width={16} />
-          </span>
-        </a>
+        )}
       </div>
     </div>
   );

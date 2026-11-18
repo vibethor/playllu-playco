@@ -8,6 +8,7 @@ import { parseGameForm, type GameFormValues } from "@/lib/admin/gameForm";
 import type { TransitionState } from "@/lib/admin/actionState";
 import { toAdminErrorMessage } from "@/lib/admin/errors";
 import { getGameOrganizer, organizerNicknameFor } from "@/lib/admin/queries";
+import { applyRepeatsWeekly } from "@/lib/admin/weeklyGames";
 import { createServerSupabaseClient } from "@/lib/supabase/clients";
 
 /**
@@ -235,6 +236,11 @@ export async function createGameAction(
     };
   }
 
+  // "Make this game recurring?" — next week is created and published straight away.
+  if (values.repeatsWeekly) {
+    await applyRepeatsWeekly(supabase, newGameId, true);
+  }
+
   revalidatePath("/admin/games");
   revalidatePath("/games");
   revalidatePath("/");
@@ -419,6 +425,9 @@ export async function updateGameAction(
       fieldErrors: { capacity: toAdminErrorMessage(capacityError.message) },
     };
   }
+
+  // Ticking or unticking applies to this game and every later week of its series.
+  await applyRepeatsWeekly(supabase, gameId, values.repeatsWeekly);
 
   revalidatePath("/admin/games");
   revalidatePath(`/admin/games/${gameId}`);

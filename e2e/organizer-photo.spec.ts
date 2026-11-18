@@ -165,6 +165,8 @@ test("a game created through the form runs under the chosen organizer's nickname
     await page.goto("/admin/games/new", { waitUntil: "networkidle" });
     await page.getByTestId("venue-select").selectOption(venue.id);
     await page.selectOption("#surface", "turf");
+    // Required since 18 Nov 2026: the format dropdown.
+    await page.getByTestId("format-side").selectOption("6");
     await page.getByTestId("starts-at").fill(when);
     await expect(page.getByTestId("organizer-player")).toHaveValue(players.organizer.id);
     await page.getByTestId("game-form-submit").click();

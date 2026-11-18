@@ -52,7 +52,7 @@ export default async function AdminSitePage() {
 
   return (
     <>
-      <PageHeader title={strings.admin.siteTitle} lede={strings.admin.siteLede} />
+      <PageHeader title={strings.admin.siteTitle} />
 
       <div className="mt-6 flex flex-col gap-4">
         <Panel title={strings.admin.shell.siteNumbersTitle} testId="site-home-numbers">

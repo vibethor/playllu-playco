@@ -42,6 +42,8 @@ async function asAdmin(context: import("@playwright/test").BrowserContext) {
 async function fillRequiredCreateFields(page: import("@playwright/test").Page, hours: number) {
   await page.getByTestId("venue-select").selectOption({ label: "E2E Scratch Pitch" });
   await page.selectOption("#surface", "turf");
+  // Required since 18 Nov 2026: the format dropdown.
+  await page.getByTestId("format-side").selectOption("6");
   await page
     .getByTestId("starts-at")
     .fill(new Date(Date.now() + hours * 3600_000).toISOString().slice(0, 16));
@@ -68,9 +70,9 @@ test("the duration PREFILLS the price, and the organizer types over it", async (
 
   // Act / Assert — ~~60 prefilled 150~~: since round 40 every length prefills
   // one Credit's price.
-  await duration.fill("60");
+  await duration.selectOption("60");
   await expect(price, "60 minutes did not prefill 180").toHaveValue("180");
-  await duration.fill("120");
+  await duration.selectOption("120");
   await expect(price, "120 minutes did not prefill 180").toHaveValue("180");
 
   // And the box is the organizer's, not the mapping's.
@@ -99,11 +101,11 @@ test("CHANGING THE DURATION OVERWRITES A CUSTOMISED PRICE, on purpose", async ({
   await page.goto("/admin/games/new", { waitUntil: "networkidle" });
   const price = page.getByTestId("price-thb");
 
-  await page.getByTestId("duration-minutes").fill("90");
+  await page.getByTestId("duration-minutes").selectOption("90");
   await price.fill(String(OFF_MAPPING_HIGH));
 
   // Act
-  await page.getByTestId("duration-minutes").fill("60");
+  await page.getByTestId("duration-minutes").selectOption("60");
 
   // Assert — every length prefills 180 since round 40.
   await expect(price, "the customised price survived a duration change").toHaveValue("180");
@@ -129,7 +131,7 @@ test("a price of zero never leaves the form", async ({ page, context }) => {
   await asAdmin(context);
   await page.goto("/admin/games/new", { waitUntil: "networkidle" });
   await fillRequiredCreateFields(page, 24 * 9);
-  await page.getByTestId("duration-minutes").fill("90");
+  await page.getByTestId("duration-minutes").selectOption("90");
   await page.getByTestId("price-thb").fill("0");
 
   // Act
@@ -155,7 +157,7 @@ test("the typed price is what the database stores and what the game page shows",
   await asAdmin(context);
   await page.goto("/admin/games/new", { waitUntil: "networkidle" });
   await fillRequiredCreateFields(page, 24 * 7);
-  await page.getByTestId("duration-minutes").fill("90");
+  await page.getByTestId("duration-minutes").selectOption("90");
   await page.getByTestId("price-thb").fill(String(OFF_MAPPING_HIGH));
 
   // Act

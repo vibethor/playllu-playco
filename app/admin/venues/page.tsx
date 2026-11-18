@@ -97,7 +97,6 @@ export default async function AdminVenuesPage() {
     <>
       <PageHeader
         title={strings.admin.venuesTitle}
-        lede={strings.admin.venuesLede}
       />
 
       {/* PLAYCO (owner, 17 Nov 2026): no season switch; one court cost per venue (VenuePitchCostForm). */}

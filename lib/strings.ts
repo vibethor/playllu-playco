@@ -253,7 +253,7 @@ export const strings = {
       title: "Join our community",
       body: "Follow our socials to keep up to date with the latest community news",
       whatsapp: "WhatsApp",
-      whatsappUrl: "https://chat.whatsapp.com/LjPjGf3rf32CNifizwzsW9?mode=gi_t",
+      whatsappUrl: "https://chat.whatsapp.com/CFmhA9NB9gKENQKRzUHBCh",
       /*
        * ~~"@HRAJFOTBAL"~~ — the PLATFORM name, since round 13 (item 19). With
        * a third tile the handle no longer fits a third of the row, and it was
@@ -261,7 +261,8 @@ export const strings = {
        * The handle is the destination.
        */
       instagram: "Instagram",
-      instagramUrl: "https://instagram.com/",
+      // Playco's Instagram profile. Empty hides the tile (18 Nov 2026: link to come).
+      instagramUrl: "",
       /*
        * TELEGRAM (round 13, item 19). A product's name is not a word, so both
        * keys join WhatsApp's and Instagram's in the intentionally-untranslated
@@ -1788,7 +1789,12 @@ export const strings = {
     priceDerivedHint:
       "Whole THB. The duration prefills it — 60 minutes 150, 90 minutes 180 — and changing the duration refills the box. Type over it freely.",
     priceHint: "Future bookings only.",
-    formatLabel: "Format (optional)",
+    formatLabel: "Format",
+    formatRequired: "Pick a format.",
+    teamsLabel: "Teams",
+    teamsOption: "{n} teams",
+    repeatsWeeklyLabel: "Make this game recurring?",
+    repeatsWeeklyOn: "Every {weekday} at {time}",
     formatHint: "Like 6v6, or 6v6v6 for a three-way.",
     /*
      * ~~"Surface (optional)" with a "Not specified" default.~~ REQUIRED since
@@ -1851,7 +1857,8 @@ export const strings = {
     // one needs to know that before they type it, not after.
     organizerPhoneHint:
       "Only players holding a spot can see it.",
-    durationLabel: "Duration (minutes)",
+    durationLabel: "Duration",
+    durationOption: "{n} min",
     durationHint: "30 to 180. A new game starts at 90; empty uses 60.",
     skillHeading: "Skill level",
     skillHint:
@@ -1862,7 +1869,7 @@ export const strings = {
       intermediate: "Intermediate",
       advanced: "Advanced",
     },
-    subsLabel: "Substitutes per team (optional)",
+    subsLabel: "Substitutes per team",
     subsHint: "Display only — limits nothing.",
     /*
      * ~~`createGame: "Create as draft"` and a hint saying publishing was a
@@ -2528,6 +2535,7 @@ export const strings = {
       addToGameDone: "Added. They're in the roster with a free spot.",
       addToGameEmpty: "No upcoming games to add them to.",
       addToGameNoneOpen: "Nothing to add: they are already in every upcoming game that has room.",
+      actionsTitle: "Actions",
       rightsTitle: "Rights",
       rightsLede: "An admin can use every page here. An organizer can be picked to run a game, and their photo shows on it.",
       accountTitle: "Account",
@@ -3060,7 +3068,10 @@ export const strings = {
      * a NUMBER here will get 11 and 21 wrong in Russian; the phrase carries
      * its own agreement and the sentence must not fight it.
      */
-    creditsAddedTitle: "Credits added successfully",
+    creditsAddedTitle: "Thank you for your purchase",
+    // `{credits}` is the pluralised phrase for what this pass added.
+    creditsAddedBody: "We've added {credits} to your account.",
+    creditsAddedBodyGeneric: "We've added the credits to your account.",
     creditsAddedCount: "You now have {credits}.",
     creditsAddedBack: "Back to games",
 
