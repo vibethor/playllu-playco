@@ -4,7 +4,6 @@ import {
   LEGAL_EFFECTIVE_DATE,
   MINIMUM_ACCOUNT_AGE,
   OPERATOR_CONTACT,
-  OPERATOR_NAME,
   PRIVACY_VERSION,
 } from "@/lib/legal";
 
@@ -71,7 +70,7 @@ export function privacyDraft({ analytics }: PrivacyFacts): LegalDraft {
       id: "who",
       heading: "Who we are",
       paragraphs: [
-        `${site} is operated by ${OPERATOR_NAME}, trading as ${site} in ${law.country} (“${site}”, “we”). We are the data controller for the personal data described here. ${site} is part of Playllu, a group that runs pickup games in several cities.`,
+        `${site} (“${site}”, “we”) is the data controller for the personal data described here. We run pickup team-sports games in ${law.country}, as part of Playllu, a group that runs pickup games in several cities.`,
         `For anything about your personal data, email ${privacy}. For everything else, ${OPERATOR_CONTACT.email}.`,
         `We follow ${law.dataProtectionLaw}. Words such as “game”, “spot” and “organiser” mean what they mean in our terms and conditions.`,
       ],
