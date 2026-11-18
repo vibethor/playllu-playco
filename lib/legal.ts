@@ -25,11 +25,12 @@
 /*
  * PLAYCO, 3.0 (Jachym, 18 Nov 2026): the terms and the privacy policy are now Playco's own English texts
  * (`lib/content/termsDraft.ts`, `lib/content/privacyDraft.ts`), written on the logic of HrajFotbal's Czech 2.0 and not
- * yet reviewed by a lawyer. Each prints "version 3.0" and a unit test holds the two together, as before.
+ * yet reviewed by a lawyer. Each prints its version and a unit test holds the two together, as before. 3.1 (same day):
+ * the operator is presented as Playco, without a personal name.
  */
-export const TERMS_VERSION = "3.0" as const;
+export const TERMS_VERSION = "3.1" as const;
 
-export const PRIVACY_VERSION = "3.0" as const;
+export const PRIVACY_VERSION = "3.1" as const;
 
 /** The day the 3.0 terms and privacy policy took effect, as the documents print it. */
 export const LEGAL_EFFECTIVE_DATE = "18 November 2026";
@@ -40,11 +41,10 @@ export const LEGAL_EFFECTIVE_DATE = "18 November 2026";
  */
 export const ORIGINAL_DOCUMENT_VERSIONS = { terms: "2.0", privacy: "2.0", cookies: "2.0" } as const;
 
-/**
- * Who runs Playco in law: the holder of the Stripe account that takes the money (launch checklist, 18 Nov 2026: "the
- * seller named must be the Stripe account owner"). The documents name him; the street address is left to the lawyer.
+/*
+ * NO PERSONAL NAME IN THE DOCUMENTS (Jachym, 18 Nov 2026: "remove my name ... and just keep it under Playco"). The
+ * terms and the privacy policy present the business as Playco; who holds it in law is for the lawyer's review.
  */
-export const OPERATOR_NAME = "Jachym Thor";
 
 /** The youngest a player may be to open an account (Playco terms 4.1). */
 export const MINIMUM_ACCOUNT_AGE = 18;

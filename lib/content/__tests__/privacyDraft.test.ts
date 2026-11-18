@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { LEGAL_JURISDICTION, SITE_NAME } from "@/lib/city/default";
 import { legalDraftText } from "@/lib/content/legalDraft";
 import { privacyDraft } from "@/lib/content/privacyDraft";
-import { OPERATOR_CONTACT, OPERATOR_NAME, PRIVACY_VERSION } from "@/lib/legal";
+import { OPERATOR_CONTACT, PRIVACY_VERSION } from "@/lib/legal";
 
 /**
  * Playco's English privacy policy (Jachym, 18 Nov 2026), on the logic of HrajFotbal's Czech one and Thailand's PDPA.
@@ -15,8 +15,16 @@ describe("Playco's privacy policy", () => {
     const text = legalDraftText(privacyDraft({ analytics: false }));
 
     // Assert
-    expect(text).toContain(`${SITE_NAME} is operated by ${OPERATOR_NAME}`);
+    expect(text).toContain(`${SITE_NAME} (“${SITE_NAME}”, “we”) is the data controller`);
     expect(text).toContain(OPERATOR_CONTACT.privacyEmail);
+  });
+
+  it("names no private person (Jachym, 18 Nov 2026: keep it under Playco)", () => {
+    // Act
+    const text = legalDraftText(privacyDraft({ analytics: true }));
+
+    // Assert
+    expect(text).not.toMatch(/Jachym|Thor\b|trading as/);
   });
 
   it("follows the data protection law of the country the games are played in", () => {

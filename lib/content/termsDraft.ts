@@ -4,7 +4,6 @@ import {
   LEGAL_EFFECTIVE_DATE,
   MINIMUM_ACCOUNT_AGE,
   OPERATOR_CONTACT,
-  OPERATOR_NAME,
   TERMS_RULES_ANCHOR,
   TERMS_VERSION,
 } from "@/lib/legal";
@@ -51,7 +50,7 @@ export function termsDraft({ refundCutoffHours }: TermsFacts): LegalDraft {
         id: "about",
         heading: "1. About these terms",
         paragraphs: [
-          `${site} is operated by ${OPERATOR_NAME}, trading as ${site} in ${law.country} (“${site}”, “we”, “us”). ${site} is part of Playllu, a group that runs pickup games in several cities.`,
+          `${site} (“${site}”, “we”, “us”) runs pickup team-sports games in ${law.country}. ${site} is part of Playllu, a group that runs pickup games in several cities.`,
           `These terms apply between ${site} and everyone who uses the ${site} website (the “Site”), creates an account, books a spot in a game or buys a game pass (“you”).`,
           `You accept these terms when you create an account, and again each time you book or pay. The version in force at that moment applies to that booking or purchase.`,
           `You can reach us at ${support}. We answer in English and Thai.`,

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { LEGAL_JURISDICTION, SITE_NAME } from "@/lib/city/default";
 import { legalDraftText } from "@/lib/content/legalDraft";
 import { termsDraft } from "@/lib/content/termsDraft";
-import { OPERATOR_CONTACT, OPERATOR_NAME, TERMS_RULES_ANCHOR, TERMS_VERSION } from "@/lib/legal";
+import { OPERATOR_CONTACT, TERMS_RULES_ANCHOR, TERMS_VERSION } from "@/lib/legal";
 import { policy } from "@/lib/policy";
 
 /**
@@ -47,13 +47,21 @@ describe("Playco's terms", () => {
     expect(text).toContain(`extended by ${policy.credits.cancelledGameExtensionDays} days`);
   });
 
-  it("names the operator who holds the payment account and how to reach them", () => {
+  it("presents the business as Playco, with how to reach it", () => {
     // Act
     const text = legalDraftText(termsDraft({ refundCutoffHours: TWELVE_HOURS }));
 
     // Assert
-    expect(text).toContain(`${SITE_NAME} is operated by ${OPERATOR_NAME}`);
+    expect(text).toContain(`${SITE_NAME} (“${SITE_NAME}”, “we”, “us”)`);
     expect(text).toContain(OPERATOR_CONTACT.email);
+  });
+
+  it("names no private person (Jachym, 18 Nov 2026: keep it under Playco)", () => {
+    // Act
+    const text = legalDraftText(termsDraft({ refundCutoffHours: TWELVE_HOURS }));
+
+    // Assert
+    expect(text).not.toMatch(/Jachym|Thor\b|trading as/);
   });
 
   it("puts the community rules where signup and the booking emails link to", () => {
