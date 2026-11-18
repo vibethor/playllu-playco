@@ -1,4 +1,5 @@
 import { creditsFromThb } from "@/lib/admin/credits";
+import { creditedBecauseGameFilled } from "@/lib/payments/creditReason";
 import { bookingEmailContext } from "@/lib/cron/context";
 import { dispatchEmail, sendCreditsPurchasedEmail } from "@/lib/email/dispatch";
 import { emailLocalePreference } from "@/lib/email/recipientLocale";
@@ -89,7 +90,7 @@ async function afterCheckout(
 ): Promise<void> {
   const { data: row } = await supabase
     .from("checkout_sessions")
-    .select("game_id, player_id, booking_id, guest_count, kind")
+    .select("game_id, player_id, booking_id, guest_count, kind, attention_reason")
     .eq("stripe_session_id", input.sessionId)
     .maybeSingle();
   const session = row as {
@@ -98,6 +99,7 @@ async function afterCheckout(
     booking_id: string | null;
     guest_count: number | null;
     kind: string;
+    attention_reason?: string | null;
   } | null;
   if (!session) return;
 
@@ -115,7 +117,8 @@ async function afterCheckout(
       {
         paid: cardReceipt(input),
         balanceCredits: await balanceCredits(supabase, session.player_id),
-        gameFull: true,
+        // "The game filled while you paid" only when it did — not for a spot they already had.
+        gameFull: creditedBecauseGameFilled(session.attention_reason ?? null),
       },
       locale,
     );

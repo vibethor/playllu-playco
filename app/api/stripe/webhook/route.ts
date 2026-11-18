@@ -144,7 +144,7 @@ export async function POST(request: Request) {
     if (settled.data === "credited") {
       // Money arrived for a seat that no longer existed. It became credit and
       // the player was told; this line is what a person greps for.
-      console.error("stripe webhook: game full at payment, credited in full", {
+      console.error("stripe webhook: no seat for this payment (game full, or the player already had one), credited in full", {
         session: session.id,
         amountThb,
       });
