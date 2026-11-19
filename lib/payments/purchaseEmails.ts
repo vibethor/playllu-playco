@@ -180,7 +180,22 @@ async function afterPurchase(
     .maybeSingle();
   if (!player?.email) return;
 
-  const paid = cardReceipt(input);
+  /*
+   * A PASS LASTS ITS OWN TIER'S DAYS (passes v2, 19 Nov 2026) — the receipt
+   * states what `confirm_topup` applied, read from the same row.
+   */
+  let validUntil: Partial<PaymentReceipt> = {};
+  if (purchase.pass_games) {
+    const { data: tier } = await supabase
+      .from("pass_tiers")
+      .select("validity_days")
+      .eq("games", purchase.pass_games)
+      .maybeSingle();
+    const days = (tier as { validity_days: number | null } | null)?.validity_days;
+    if (days) validUntil = { validUntil: creditsValidUntil(new Date(), days).toISOString() };
+  }
+
+  const paid = cardReceipt(input, validUntil);
   await sendCreditsPurchasedEmail(
     player.email,
     {

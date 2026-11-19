@@ -104,13 +104,14 @@ end $$;
 reset role;
 
 -- =============================================================================
--- PLAYCO'S PASSES (Jachym, 17 Nov 2026, at 300 a game): 5 games 1,380 THB · 10 games 2,640 · 20 games 4,800. Each credit is one
+-- PLAYCO'S PASSES (Jachym, 19 Nov 2026, at 300 a game): 5 games 1,400 THB · 8 games 2,080 · 12 games 2,880 · 20 games 4,400.
+-- Each credit is one
 -- seat at the flat seat price, so a tier's credited value is games x credit_seat_price_thb().
 -- =============================================================================
 
 select pg_temp.ok(
-  (select string_agg(games || ':' || price_thb, ',' order by games) from public.pass_tiers) = '5:1380,10:2640,20:4800',
-  'the passes are 5 for 1,380, 10 for 2,640 and 20 for 4,800',
+  (select string_agg(games || ':' || price_thb, ',' order by games) from public.pass_tiers) = '5:1400,8:2080,12:2880,20:4400',
+  'the passes are 5 for 1,400, 8 for 2,080, 12 for 2,880 and 20 for 4,400',
   (select string_agg(games || ':' || price_thb, ',' order by games) from public.pass_tiers));
 
 select pg_temp.ok(

@@ -24,6 +24,36 @@ describe("creditsValidUntil", () => {
     // Assert
     expect(until.toISOString()).toBe("2026-12-18T10:00:00.000Z");
   });
+
+  it("is a pass's own validity when one is given", () => {
+    // Arrange
+    const twentyGamePassDays = 90;
+
+    // Act
+    const until = creditsValidUntil(PAID_AT, twentyGamePassDays);
+
+    // Assert
+    expect(until.toISOString()).toBe("2027-01-17T10:00:00.000Z");
+  });
+});
+
+describe("creditPurchaseSummary for a pass", () => {
+  it("states the pass's own validity, not the default sixty days", () => {
+    // Arrange
+    const t = resolveStrings("en");
+    const fiveGamePassDays = 30;
+
+    // Act
+    const text = creditPurchaseSummary(
+      { credits: 5, amountThb: 1400, packageName: "Game Pass", paidAt: PAID_AT, termsUrl: TERMS_URL, validityDays: fiveGamePassDays },
+      "en",
+      t,
+    );
+
+    // Assert
+    expect(text).toContain("30 days");
+    expect(text).not.toContain("60 days");
+  });
 });
 
 describe("creditPurchaseSummary", () => {

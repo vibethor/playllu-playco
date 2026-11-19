@@ -29,9 +29,12 @@ export function creditCount(count: number, locale: Locale, t: Strings): string {
   );
 }
 
-/** Credits are valid `policy.credits.validityDays` from the moment they are added. */
-export function creditsValidUntil(paidAt: Date): Date {
-  return new Date(paidAt.getTime() + policy.credits.validityDays * DAY_MS);
+/**
+ * Credits are valid `policy.credits.validityDays` from the moment they are added — or, for a pass, that pass's own
+ * `pass_tiers.validity_days` (Playco passes v2, 19 Nov 2026), which `confirm_topup` applies.
+ */
+export function creditsValidUntil(paidAt: Date, validityDays: number = policy.credits.validityDays): Date {
+  return new Date(paidAt.getTime() + validityDays * DAY_MS);
 }
 
 export interface CreditPurchase {
@@ -41,6 +44,8 @@ export interface CreditPurchase {
   packageName?: string;
   paidAt: Date;
   termsUrl: string;
+  /** A pass's own validity in days; absent means `policy.credits.validityDays`. */
+  validityDays?: number;
 }
 
 /** Texty 3.2 — directly above Pay. The terms link is Markdown, which Stripe renders. */
@@ -50,11 +55,12 @@ export function creditPurchaseSummary(
   t: Strings,
 ): string {
   const count = creditCount(purchase.credits, locale, t);
+  const validityDays = purchase.validityDays ?? policy.credits.validityDays;
   return fillTemplate(t.purchase.creditSummary, {
     credits: purchase.packageName ? `${purchase.packageName} – ${count}` : count,
     amount: formatThb(purchase.amountThb),
-    days: String(policy.credits.validityDays),
-    date: formatDate(creditsValidUntil(purchase.paidAt), locale),
+    days: String(validityDays),
+    date: formatDate(creditsValidUntil(purchase.paidAt, validityDays), locale),
     terms: `[${t.purchase.termsLinkLabel}](${purchase.termsUrl})`,
   });
 }

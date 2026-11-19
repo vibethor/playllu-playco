@@ -5,10 +5,10 @@ import { MOST_POPULAR_GAMES } from "@/lib/pass/queries";
 
 /**
  * "Most popular" is a ruling, not a measurement, so it is a constant. The tiers it can point at are the ones the
- * Playco pass migration sells (Jachym, 16 Nov 2026: 5, 10 and 20 games). A constant naming a tier nobody can buy
+ * Playco pass migration sells (Jachym, 19 Nov 2026: 5, 8, 12 and 20 games). A constant naming a tier nobody can buy
  * shows the badge on nothing, silently.
  */
-const PASS_MIGRATION = "supabase/migrations/20261117120000_playco_pass_tiers.sql";
+const PASS_MIGRATION = "supabase/migrations/20261119100000_playco_pass_tiers_v2.sql";
 
 function soldTiers(): number[] {
   const sql = readFileSync(join(process.cwd(), PASS_MIGRATION), "utf8");
@@ -22,12 +22,12 @@ describe("the most-popular pass", () => {
     const tiers = soldTiers();
 
     // Act / Assert
-    expect(tiers).toEqual([5, 10, 20]);
+    expect(tiers).toEqual([5, 8, 12, 20]);
     expect(tiers).toContain(MOST_POPULAR_GAMES);
   });
 
-  it("is the middle pass, 10 games", () => {
+  it("is the 12-game pass", () => {
     // Act / Assert
-    expect(MOST_POPULAR_GAMES).toBe(10);
+    expect(MOST_POPULAR_GAMES).toBe(12);
   });
 });

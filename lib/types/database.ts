@@ -662,6 +662,8 @@ export interface Database {
           credited_thb: number;
           /** Null = never expires. Only the 1-game tier. */
           expires_months: number | null;
+          /** Days a pass's credits last; null falls back to `credit_validity_days()` (passes v2, 19 Nov 2026). */
+          validity_days: number | null;
         };
         Insert: never;
         Update: never;

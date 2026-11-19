@@ -365,12 +365,12 @@ values ('booking_cancelled', '4e450000-0000-0000-0000-000000000010', '94245000-0
         '4bb45000-0000-0000-0000-000000000010',
         jsonb_build_object('credit_issued_thb', 0, 'forfeited_thb', 180, 'previous_status', 'confirmed'));
 
--- P11 — on a 10-game pass for 1500, removed by an admin who returned nothing
--- (Playco sells 5 / 10 / 20-game passes; HrajFotbal's 12-game tier is gone)
+-- P11 — on a 12-game pass for 1500, removed by an admin who returned nothing
+-- (Playco sells 5 / 8 / 12 / 20-game passes since 19 Nov 2026; the 10-game tier is gone)
 insert into public.credit_topups (id, player_id, amount_thb, payment_code, status,
                                   received_amount_thb, confirmed_at, pass_games)
 values ('7b450000-0000-0000-0000-000000000011', '4e450000-0000-0000-0000-000000000011',
-        1500, 9424500011, 'confirmed', 1500, now() - interval '25 days', 10);
+        1500, 9424500011, 'confirmed', 1500, now() - interval '25 days', 12);
 insert into public.credit_ledger (id, player_id, delta_thb, reason, created_at, expires_at)
 values ('1e450000-0000-0000-0000-000000000011', '4e450000-0000-0000-0000-000000000011', 1800,
         'topup', now() - interval '25 days', now() + interval '35 days');

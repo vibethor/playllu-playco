@@ -117,6 +117,8 @@ export default async function CheckoutPage({
   let backHref: string;
   /** How many Credits this payment buys — every card payment buys Credits (round 40). */
   let credits: number;
+  /** A pass's own validity in days (passes v2); unset for a game checkout. */
+  let passValidityDays: number | undefined;
   /** A game checkout also states the booking it makes (Texty 4.1); a pass does not. */
   let reservation: ReservationFacts | null = null;
 
@@ -268,6 +270,17 @@ export default async function CheckoutPage({
     reference = topup.id;
     backHref = "/pass";
     credits = topup.pass_games ?? 0;
+
+    /*
+     * EACH PASS ITS OWN VALIDITY (passes v2, 19 Nov 2026): the box above Pay
+     * states the days `confirm_topup` will apply, read from the same row.
+     */
+    const { data: tier } = await supabase
+      .from("pass_tiers")
+      .select("validity_days")
+      .eq("games", credits)
+      .maybeSingle();
+    passValidityDays = (tier as { validity_days: number | null } | null)?.validity_days ?? undefined;
   }
 
   const session = await createEmbeddedSession({
@@ -289,6 +302,7 @@ export default async function CheckoutPage({
               packageName: t.pass.panelTitle,
               paidAt: new Date(),
               termsUrl: `${origin}/terms`,
+              validityDays: passValidityDays,
             },
             locale,
             t,
