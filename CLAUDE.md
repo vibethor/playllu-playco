@@ -39,7 +39,8 @@ this file says otherwise. Read it once.
    in `.env.example`.
 10. **Stripe:** prove every payment change with test keys first; Jachym swaps in live keys himself. Any change
     to the live Stripe account needs Jachym.
-11. **HQ reads, never writes** (`supabase/roles/hq_readonly.sql`, named columns, no email / phone / auth ids).
+11. **HQ reads, never writes** (`supabase/roles/hq_readonly.sql`, named columns, no auth ids). Email and phone only
+    through `supabase/roles/hq_contact_grant.sql`, for HQ's founders' player profile (Jachym, 19 Nov 2026).
 12. **Policy windows are values in `lib/policy.ts`.** Cancel any time; refund to the wallet up to the cutoff.
 13. **Keep the column, hide the feature.** Subscriptions, referral rewards and city brands come later;
     nothing built now may make them harder.
