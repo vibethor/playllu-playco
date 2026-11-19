@@ -6,7 +6,6 @@ import { MOST_POPULAR_GAMES, PASS_REFERENCE_PRICE_THB } from "@/lib/pass/queries
 import type { PassTier } from "@/lib/pass/queries";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 import { creditsLabel } from "@/lib/pass/credits";
-import { policy } from "@/lib/policy";
 
 /**
  * One tier, with its per-game price, its saving, and ITS EXPIRY STATED LOUDLY.
@@ -79,15 +78,14 @@ export async function PassTierCard({
   const mostPopular = tier.games === MOST_POPULAR_GAMES;
 
   /*
-   * SIXTY DAYS, EVERY TIER (round 40, Obchodní podmínky 5.4). ~~Derived from
-   * `pass_tiers.expires_months` and rounded to 30-day months~~ — the database
-   * now adds `credit_validity_days()` DAYS to every top-up, so the tile states
-   * the policy value and the two agree to the day. The column is no longer
-   * read by anything that writes.
+   * EACH PASS ITS OWN VALIDITY (Playco passes v2, 19 Nov 2026). ~~Sixty days,
+   * every tier (round 40)~~ — `confirm_topup` now dates a pass's batch from
+   * `pass_tiers.validity_days`, and the tile reads the same column, so the two
+   * agree to the day.
    */
   const expiry = t.pass.tierExpiresDays.replace(
     "{days}",
-    String(policy.credits.validityDays),
+    String(tier.validityDays),
   );
 
   return (

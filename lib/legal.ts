@@ -26,14 +26,18 @@
  * PLAYCO, 3.0 (Jachym, 18 Nov 2026): the terms and the privacy policy are now Playco's own English texts
  * (`lib/content/termsDraft.ts`, `lib/content/privacyDraft.ts`), written on the logic of HrajFotbal's Czech 2.0 and not
  * yet reviewed by a lawyer. Each prints its version and a unit test holds the two together, as before. 3.1 (same day):
- * the operator is presented as Playco, without a personal name.
+ * the operator is presented as Playco, without a personal name. Terms 3.2 (19 Nov 2026): game passes v2 — each pass
+ * states its own validity (30 to 90 days) instead of sixty days for every pass.
  */
-export const TERMS_VERSION = "3.1" as const;
+export const TERMS_VERSION = "3.2" as const;
 
 export const PRIVACY_VERSION = "3.1" as const;
 
 /** The day the 3.0 terms and privacy policy took effect, as the documents print it. */
 export const LEGAL_EFFECTIVE_DATE = "18 November 2026";
+
+/** The day the current terms (3.2, game passes v2) took effect; the privacy policy keeps `LEGAL_EFFECTIVE_DATE`. */
+export const TERMS_EFFECTIVE_DATE = "19 November 2026";
 
 /**
  * The versions HrajFotbal's inherited Czech files print ("verze 2.0"). They stay in `content/legal/original/` for

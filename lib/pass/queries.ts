@@ -1,4 +1,5 @@
 import { PASS_REFERENCE_PRICE_THB } from "@/lib/pass/creditPrice";
+import { policy } from "@/lib/policy";
 import { createServerSupabaseClient } from "@/lib/supabase/clients";
 
 /**
@@ -18,6 +19,11 @@ export interface PassTier {
   creditedThb: number;
   /** Null = never expires. Only the 1-game tier. */
   expiresMonths: number | null;
+  /**
+   * Days the pass's credits last from purchase: `pass_tiers.validity_days`, which `confirm_topup` applies (Playco
+   * passes v2, 19 Nov 2026). A row without one falls back to `policy.credits.validityDays`, as the database does.
+   */
+  validityDays: number;
   /** What one game works out at. The number the offer is actually judged on. */
   perGameThb: number;
   /** `creditedThb - priceThb`. Zero on the 1-game tier, and that is the point. */
@@ -36,7 +42,7 @@ export async function listPassTiers(): Promise<PassTier[]> {
 
   const { data, error } = await supabase
     .from("pass_tiers")
-    .select("games, price_thb, credited_thb, expires_months")
+    .select("games, price_thb, credited_thb, expires_months, validity_days")
     .order("games", { ascending: true });
 
   if (error || !data) return [];
@@ -46,6 +52,7 @@ export async function listPassTiers(): Promise<PassTier[]> {
     priceThb: row.price_thb,
     creditedThb: row.credited_thb,
     expiresMonths: row.expires_months,
+    validityDays: row.validity_days ?? policy.credits.validityDays,
     // Rounded to a whole crown for display. Every current tier divides
     // exactly; the rounding is here so a future one that does not cannot
     // render "139.99999".
@@ -102,8 +109,8 @@ export { PASS_REFERENCE_PRICE_THB };
  * openly a recommendation. Named here rather than compared inline so the day
  * it becomes a real number, there is one place to change.
  */
-// PLAYCO: the 10-game pass, the middle of 5 / 10 / 20 (HrajFotbal marked its 12-game pass).
-export const MOST_POPULAR_GAMES = 10;
+// PLAYCO passes v2 (19 Nov 2026): the 12-game pass, of 5 / 8 / 12 / 20 (it was the 10-game pass of 5 / 10 / 20).
+export const MOST_POPULAR_GAMES = 12;
 
 /**
  * The best discount any tier offers, as a whole percent, floored.

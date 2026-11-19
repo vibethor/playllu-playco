@@ -240,8 +240,8 @@ reset role;
 select pg_temp.ok(
   (select expires_at from public.credit_ledger
     where player_id = '4ccc0000-0000-0000-0000-000000000004' and reason = 'topup')
-    = now() + interval '60 days',
-  'a five-game pass is valid sixty days — it used to be one month',
+    = now() + make_interval(days => (select validity_days from public.pass_tiers where games = 5)),
+  'a five-game pass is valid its own tier''s days (Playco v2: 30; it was sixty for every tier since round 40)',
   (select expires_at::text from public.credit_ledger
     where player_id = '4ccc0000-0000-0000-0000-000000000004' and reason = 'topup'));
 

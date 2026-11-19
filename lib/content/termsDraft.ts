@@ -1,7 +1,7 @@
 import { LEGAL_JURISDICTION, SITE_NAME } from "@/lib/city/default";
 import type { LegalDraft } from "@/lib/content/legalDraft";
 import {
-  LEGAL_EFFECTIVE_DATE,
+  TERMS_EFFECTIVE_DATE,
   MINIMUM_ACCOUNT_AGE,
   OPERATOR_CONTACT,
   TERMS_RULES_ANCHOR,
@@ -39,12 +39,11 @@ export function termsDraft({ refundCutoffHours }: TermsFacts): LegalDraft {
   const site = SITE_NAME;
   const law = LEGAL_JURISDICTION;
   const support = OPERATOR_CONTACT.email;
-  const passDays = policy.credits.validityDays;
   const extensionDays = policy.credits.cancelledGameExtensionDays;
   const cutoff = `at least ${refundCutoffHours} hours before the start`;
 
   return {
-    meta: `Effective from ${LEGAL_EFFECTIVE_DATE}, version ${TERMS_VERSION}`,
+    meta: `Effective from ${TERMS_EFFECTIVE_DATE}, version ${TERMS_VERSION}`,
     sections: [
       {
         id: "about",
@@ -106,7 +105,7 @@ export function termsDraft({ refundCutoffHours }: TermsFacts): LegalDraft {
         id: "credits",
         heading: "6. Game passes and wallet credit",
         paragraphs: [
-          `A game pass is added to your account as pass credits as soon as you pay. One pass credit pays for one spot in any game, guests included. Pass credits are valid for ${passDays} days from the day you buy the pass; the expiry date is shown in your account. Unused pass credits expire after that date without refund.`,
+          `A game pass is added to your account as pass credits as soon as you pay. One pass credit pays for one spot in any game, guests included. Pass credits are valid for the number of days shown for that pass when you buy it, counted from the day you buy it; the expiry date is shown in your account. Unused pass credits expire after that date without refund.`,
           "Wallet credit comes from refunds, for example when you cancel in time or we cancel a game. It does not expire while your account is open.",
           "Pass credits and wallet credit can only be spent on games on the Site. They are not money, cannot be transferred to another person and cannot be exchanged for cash, except for a refund under section 7.",
           "We may add free credit, for example as a goodwill gesture. Free credit is valid for the period we tell you when we add it.",

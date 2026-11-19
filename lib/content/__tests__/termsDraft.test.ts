@@ -38,12 +38,13 @@ describe("Playco's terms", () => {
     expect(text).not.toContain(`at least ${TWELVE_HOURS} hours before the start`);
   });
 
-  it("gives pass credits the validity the database applies", () => {
+  it("gives pass credits the validity of the pass that was bought (passes v2, 19 Nov 2026)", () => {
     // Act
     const text = legalDraftText(termsDraft({ refundCutoffHours: TWELVE_HOURS }));
 
     // Assert
-    expect(text).toContain(`valid for ${policy.credits.validityDays} days from the day you buy the pass`);
+    expect(text).toContain("valid for the number of days shown for that pass when you buy it");
+    expect(text).not.toContain(`valid for ${policy.credits.validityDays} days from the day you buy the pass`);
     expect(text).toContain(`extended by ${policy.credits.cancelledGameExtensionDays} days`);
   });
 
