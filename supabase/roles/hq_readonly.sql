@@ -17,7 +17,8 @@
 -- The password never goes into this file, a chat or a commit. HQ refuses a connection string with an unencoded
 -- `/ ? # @` in it, hence letters and digits.
 --
--- Idempotent: safe to run again after a column is added to the contract.
+-- Idempotent: safe to run again after a column is added to the contract. Running it again also removes the contact
+-- grant (it starts from nothing), so run supabase/roles/hq_contact_grant.sql straight after it (Jachym, 19 Nov 2026).
 -- =============================================================================
 
 do $$

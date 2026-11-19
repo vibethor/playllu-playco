@@ -11,8 +11,13 @@ Playllu HQ (`playllu/playllu-hq`) is the founders' dashboard. It reads Playco's 
 1. **A column listed here is never renamed, dropped or given a new meaning** without a pull request in `playllu-hq`
    first. HQ's numbers (revenue, paying players, profit) are computed from these columns.
 2. **Adding** a column to this list needs a line here, a grant in the role file and an assertion in its test.
-3. **Never** granted: email, phone, auth ids, Stripe ids, payment codes, organiser contact details, consent records,
-   anything a player typed for staff. HQ shows nicknames.
+3. **Never** granted: auth ids, Stripe ids, payment codes, organiser contact details, consent records, anything a
+   player typed for staff. HQ shows nicknames.
+   **Contact details, by their own grant** (Jachym, 19 Nov 2026): `supabase/roles/hq_contact_grant.sql` gives
+   `hq_readonly` `players.email` and `players.phone`, and nothing else, so HQ's founders' player profile shows a
+   Bangkok player's contact details the way it shows a Hraj Fotbal player's. HQ shows them there only: never to team
+   accounts, Claude, URLs, analytics or exports. The role file revokes everything first, so the contact grant is run
+   after it every time; its own revoke hides them again. Tested by `supabase/tests/hq_contact_grant.sql`.
 4. **HQ never writes** to Playco. Changes to Playco go through pull requests here.
 5. Jachym runs the role file in the Supabase SQL editor and sets the password there himself. The connection string
    goes straight into HQ's Vercel project as `PLAYCO_DB_READONLY_URL` (user `hq_readonly.ldjyayedrkwnozcdttdy`,
