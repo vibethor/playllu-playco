@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { shortLinkRedirects } from "./shortLinks";
 
 /**
  * The Supabase storage origin, for the image optimizer's allow-list.
@@ -220,6 +221,8 @@ const nextConfig: NextConfig = {
         destination: "/football",
         permanent: false,
       },
+      /* Marketing short links (`/reclub`, `/ig`, `/wa`) → the games list with UTM tags. See `shortLinks.ts`. */
+      ...shortLinkRedirects(),
     ];
   },
 };
