@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { LOCALES } from "@/lib/i18n/locales";
 import { resolveStrings } from "@/lib/i18n/resolve";
-import { homeStructuredData, robotsFor, sitemapFor } from "@/lib/seo/site";
+import { SECURITY_HEADERS } from "@/lib/seo/securityHeaders";
+import { breadcrumbList, canonicalFor, homeStructuredData, robotsFor, sitemapFor } from "@/lib/seo/site";
 
 /**
  * How the site reads in a search result (2026-11-06, the owner: "the website
@@ -120,7 +121,8 @@ describe("the sub-links' titles and lines", () => {
   });
 
   it("explore, in English", () => {
-    expect(resolveStrings("en").meta.passDescription).toBe("Explore Game Pass and get a better deal");
+    // Rewritten 20 Nov 2026 (technical SEO pass): the caption said neither the sport nor the city.
+    expect(resolveStrings("en").meta.passDescription).toMatch(/Game Pass.*volleyball.*Bangkok/);
   });
 });
 
@@ -156,5 +158,131 @@ describe("favicon.ico", () => {
     expect(ico.subarray(firstImage, firstImage + 8)).toEqual(
       Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     );
+  });
+});
+
+/**
+ * The technical SEO pass (Jachym, 20 Nov 2026): one address per page, breadcrumbs, the short game link in the
+ * sitemap, and the social profile on the organisation.
+ */
+describe("a page's canonical address", () => {
+  it("is the page's own path on the site, without a query string or a trailing slash", () => {
+    // Act
+    const canonical = canonicalFor(SITE, "/games");
+
+    // Assert
+    expect(canonical).toBe(`${SITE}/games`);
+  });
+
+  it("is the bare origin with a slash for the home page", () => {
+    // Act
+    const canonical = canonicalFor(SITE, "/");
+
+    // Assert
+    expect(canonical).toBe(`${SITE}/`);
+  });
+
+  it("drops a tracking query, so a tagged link and the plain page are one result", () => {
+    // Act
+    const canonical = canonicalFor(SITE, "/games?utm_source=reclub&day=2026-11-21");
+
+    // Assert
+    expect(canonical).toBe(`${SITE}/games`);
+  });
+});
+
+describe("breadcrumbs for search results", () => {
+  it("number the trail from 1 and give each step its absolute address", () => {
+    // Arrange
+    const trail = [
+      { name: "Playco", path: "/" },
+      { name: "Games", path: "/games" },
+      { name: "Asoke", path: "/game/4" },
+    ];
+
+    // Act
+    const schema = breadcrumbList(SITE, trail);
+
+    // Assert
+    expect(schema).toEqual({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Playco", item: `${SITE}/` },
+        { "@type": "ListItem", position: 2, name: "Games", item: `${SITE}/games` },
+        { "@type": "ListItem", position: 3, name: "Asoke", item: `${SITE}/game/4` },
+      ],
+    });
+  });
+});
+
+describe("the sitemap's game addresses", () => {
+  it("uses a game's short link when it has one, the address its page names as canonical", () => {
+    // Arrange
+    const game = { id: "7d3c1f2a-0000-4000-8000-000000000004", path: "/game/4", startsAt: "2026-11-21T11:00:00Z" };
+
+    // Act
+    const urls = sitemapFor(SITE, { games: [game] }).map((entry) => entry.url);
+
+    // Assert
+    expect(urls).toContain(`${SITE}/game/4`);
+    expect(urls).not.toContain(`${SITE}/game/${game.id}`);
+  });
+});
+
+describe("the organisation in the home page's structured data", () => {
+  it("links its social profiles, so a search engine ties them to the site", () => {
+    // Arrange
+    const profiles = ["https://www.instagram.com/playco.live/"];
+
+    // Act
+    const organization = homeStructuredData(SITE, { sameAs: profiles })["@graph"].find(
+      (node) => node["@type"] === "Organization",
+    );
+
+    // Assert
+    expect(organization).toEqual(expect.objectContaining({ sameAs: profiles }));
+  });
+});
+
+describe("the security headers every response carries", () => {
+  it("force HTTPS for two years, subdomains included", () => {
+    // Act
+    const hsts = SECURITY_HEADERS.find((header) => header.key === "Strict-Transport-Security");
+
+    // Assert
+    expect(hsts?.value).toBe("max-age=63072000; includeSubDomains; preload");
+  });
+
+  it("stop MIME sniffing, framing by other sites and referrer leaks", () => {
+    // Act
+    const byKey = Object.fromEntries(SECURITY_HEADERS.map((header) => [header.key, header.value]));
+
+    // Assert
+    expect(byKey["X-Content-Type-Options"]).toBe("nosniff");
+    expect(byKey["X-Frame-Options"]).toBe("SAMEORIGIN");
+    expect(byKey["Referrer-Policy"]).toBe("strict-origin-when-cross-origin");
+  });
+});
+
+describe("the descriptions of the pages a search lands on", () => {
+  const SEARCHED = ["gamesDescription", "passDescription", "signupDescription"] as const;
+
+  it.each(SEARCHED)("%s fits a result in English: 110 to 160 characters", (key) => {
+    // Act
+    const description = resolveStrings("en").meta[key];
+
+    // Assert
+    expect(description.length).toBeGreaterThanOrEqual(110);
+    expect(description.length).toBeLessThanOrEqual(160);
+  });
+
+  it("gives the games list a title that names the sport and the city", () => {
+    // Act
+    const { gamesTitle } = resolveStrings("en").meta;
+
+    // Assert
+    expect(gamesTitle).toMatch(/volleyball/i);
+    expect(gamesTitle).toMatch(/Bangkok/);
   });
 });

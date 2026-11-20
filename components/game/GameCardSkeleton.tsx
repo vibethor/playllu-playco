@@ -65,9 +65,13 @@ export async function GamesListSkeleton() {
   const t = await getStrings();
   return (
     <main className="relative z-10 mx-auto w-full max-w-shell px-gutter pb-16 pt-24">
-      <h1 className="m-0 font-display text-section-title uppercase tracking-wide text-bone">
+      {/*
+        A `<p>`, not an `<h1>` (technical SEO pass, 20 Nov 2026). The skeleton is streamed first and the real page
+        after it, so the HTML a crawler receives held both headings: two `<h1>`s on the games list.
+      */}
+      <p className="m-0 font-display text-section-title uppercase tracking-wide text-bone">
         {t.games.listTitle}
-      </h1>
+      </p>
 
       <p className="sr-only" role="status">
         {t.common.loading}

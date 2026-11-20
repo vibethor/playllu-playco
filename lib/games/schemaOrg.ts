@@ -1,5 +1,5 @@
 import type { Database } from "@/lib/types/database";
-import { SITE_NAME } from "@/lib/city/default";
+import { DEFAULT_SPORT, SITE_NAME } from "@/lib/city/default";
 import { gameEndsAt } from "@/lib/games/duration";
 import { strings } from "@/lib/strings";
 
@@ -55,6 +55,8 @@ export interface GameEventSchemaInput {
   /** Venue display name, from `venues` when the game has one. */
   venueName: string;
   city: string;
+  /** The game's share image (absolute). Event results show a picture when given one. */
+  image?: string;
 }
 
 export function gameEventSchema({
@@ -63,6 +65,7 @@ export function gameEventSchema({
   url,
   venueName,
   city,
+  image,
 }: GameEventSchemaInput): Record<string, unknown> {
   // "6v6 football · Prazacka". The format leads when the game has one, because
   // that is the thing a player scanning results is deciding on.
@@ -82,7 +85,8 @@ export function gameEventSchema({
     eventStatus: eventStatus(game),
     // Everyone is physically on a pitch; there is no stream.
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-    sport: "Football",
+    sport: DEFAULT_SPORT,
+    ...(image ? { image: [image] } : {}),
     maximumAttendeeCapacity: game.capacity,
     remainingAttendeeCapacity: spotsLeft,
     location: {

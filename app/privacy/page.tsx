@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
+import { siteUrl } from "@/lib/site";
+import { publicPageMetadata } from "@/lib/seo/pageMetadata";
 import { LegalPage } from "@/components/legal/LegalPage";
 import { getStrings } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getStrings();
-  return { title: t.legal.privacyTitle };
+  return publicPageMetadata({
+    site: await siteUrl(),
+    path: "/privacy",
+    title: t.legal.privacyTitle,
+    description: t.meta.privacyDescription,
+  });
 }
 
 /**

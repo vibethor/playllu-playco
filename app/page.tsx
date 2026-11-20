@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SITE_NAME } from "@/lib/city/default";
 import { Logo } from "@/components/brand/Logo";
 import Image from "next/image";
 import Link from "next/link";
@@ -37,8 +38,9 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: t.meta.title,
       description: t.meta.description,
-      url,
+      url: `${url}/`,
       type: "website",
+      siteName: SITE_NAME,
     },
     twitter: {
       card: "summary_large_image",
@@ -57,7 +59,10 @@ export default async function LandingPage() {
   const t = await getStrings();
   const { landing } = t;
   const locale = await getLocale();
-  const structuredData = homeStructuredData(await siteUrl());
+  const structuredData = homeStructuredData(await siteUrl(), {
+    description: t.meta.description,
+    sameAs: [landing.community.instagramUrl].filter((profile) => profile.length > 0),
+  });
 
   /*
    * THREE GAMES, NOT ONE (v1.2 §6). This page showed a single "NEXT MATCH"
@@ -146,7 +151,7 @@ export default async function LandingPage() {
       <section data-testid="home-hero" className="theme-dark relative isolate overflow-hidden">
         <Image
           src="/hero-default.jpg"
-          alt=""
+          alt={t.meta.heroAlt}
           fill
           priority
           sizes="100vw"

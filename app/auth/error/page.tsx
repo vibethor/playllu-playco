@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { NOINDEX } from "@/lib/seo/pageMetadata";
 import { getStrings } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getStrings();
-  return { title: t.auth.callbackErrorTitle };
+  return { title: t.auth.callbackErrorTitle, robots: NOINDEX };
 }
 
 /**

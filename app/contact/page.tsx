@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { siteUrl } from "@/lib/site";
+import { canonicalFor } from "@/lib/seo/site";
 import Link from "next/link";
 import { getContactDetails } from "@/lib/home/queries";
 import { getStrings } from "@/lib/i18n/server";
@@ -11,7 +13,11 @@ export async function generateMetadata(): Promise<Metadata> {
    * Google result, which is the only way to keep a page out of them. Still
    * linked from the footer, and still followed.
    */
-  return { title: t.siteFooter.contact, robots: { index: false, follow: true } };
+  return {
+    title: t.siteFooter.contact,
+    robots: { index: false, follow: true },
+    alternates: { canonical: canonicalFor(await siteUrl(), "/contact") },
+  };
 }
 
 const LINK = "text-accent underline-offset-4 hover:underline";

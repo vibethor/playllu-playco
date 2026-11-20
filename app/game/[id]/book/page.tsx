@@ -1,5 +1,6 @@
 import { ANALYTICS_FLAGS, flagDestination } from "@/lib/analytics/gtm";
 import type { Metadata } from "next";
+import { NOINDEX } from "@/lib/seo/pageMetadata";
 import { appCapabilities } from "@/lib/db/capabilities";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -18,7 +19,8 @@ import { runCreateBooking } from "./actions";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getStrings();
-  return { title: t.booking.claimSpot };
+  // A step of checkout, behind sign-in: not a search result (20 Nov 2026).
+  return { title: t.booking.claimSpot, robots: NOINDEX };
 }
 
 export const dynamic = "force-dynamic";
