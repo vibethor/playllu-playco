@@ -36,9 +36,22 @@ export const strings = {
      * "Game Pass" in every language — the owner's name for the pass page in search.
      */
     passTitle: "Game Pass",
-    passDescription: "Explore Game Pass and get a better deal",
-    gamesDescription: "Find a game and come play",
+    /*
+     * LONGER, AND WITH THE WORDS PEOPLE SEARCH (technical SEO pass, Jachym, 20 Nov 2026). The short lines above were
+     * written as sitelink captions; as a page's only description they said neither the sport nor the city.
+     */
+    passDescription:
+      "Play more for less with a Playco Game Pass: a pack of pickup volleyball games in Bangkok at a lower price per game. One credit, one spot, any game.",
+    gamesTitle: "Volleyball games in Bangkok this week",
+    gamesDescription:
+      "See this week's pickup volleyball games in Bangkok. Pick a day and a venue, book your spot online and pay by card or PromptPay. All levels welcome.",
     loginDescription: "Sign in",
+    signupDescription:
+      "Create your free Playco account to book pickup volleyball games in Bangkok. Sign up with email or Google in under a minute. No team needed.",
+    privacyDescription: "How Playco collects, uses and protects your personal data under Thailand's PDPA.",
+    cookiesDescription: "Which cookies playco.live sets, what each one is for, and the choices you have.",
+    /** The home page's hero photo, for screen readers and image search. */
+    heroAlt: "A volleyball player jumps to spike the ball at the net during an indoor game",
   },
 
   brand: {

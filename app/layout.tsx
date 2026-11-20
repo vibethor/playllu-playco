@@ -107,6 +107,9 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s — ${SITE_NAME}`,
     },
     description: t.meta.description,
+    // Defaults a page without its own share tags inherits (20 Nov 2026): the brand on every preview card.
+    openGraph: { siteName: SITE_NAME, type: "website" },
+    twitter: { card: "summary_large_image" },
     applicationName: "Playco",
     manifest: "/manifest.webmanifest",
     appleWebApp: {

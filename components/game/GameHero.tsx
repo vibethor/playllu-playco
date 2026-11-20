@@ -74,6 +74,8 @@ export async function GameHero({
     await venuePhotoVersion(venueRow?.image_path),
   );
   const image = ownPhoto ?? DEFAULT_PITCH;
+  // A venue's own photograph is named after the venue (image search, screen readers); the fallback motif is scenery.
+  const photoAlt = ownPhoto ? venue : "";
   const isRemote = !image.startsWith("/");
 
   /*
@@ -187,7 +189,7 @@ export async function GameHero({
           */
           <Image
             src={image}
-            alt=""
+            alt={photoAlt}
             fill
             sizes="(max-width: 600px) 100vw, 560px"
             priority
@@ -197,7 +199,7 @@ export async function GameHero({
         ) : (
           <Image
             src={image}
-            alt=""
+            alt={photoAlt}
             data-testid="hero-photo"
             fill
             priority

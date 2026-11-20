@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { NOINDEX } from "@/lib/seo/pageMetadata";
 import { redirect } from "next/navigation";
 import { SetPasswordForm } from "./SetPasswordForm";
 import { getSessionUser } from "@/lib/auth/session";
@@ -6,7 +7,7 @@ import { getStrings } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getStrings();
-  return { title: t.auth.setPasswordTitle };
+  return { title: t.auth.setPasswordTitle, robots: NOINDEX };
 }
 
 /**

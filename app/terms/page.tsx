@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { siteUrl } from "@/lib/site";
+import { canonicalFor } from "@/lib/seo/site";
 import { LegalPage } from "@/components/legal/LegalPage";
 import { TERMS_RULES_ANCHOR } from "@/lib/content/legalDocuments";
 import { TERMS_PDF_PATH } from "@/lib/legal";
@@ -11,7 +13,11 @@ export async function generateMetadata(): Promise<Metadata> {
    * Google result, which is the only way to keep a page out of them. Still
    * linked from the footer, and still followed.
    */
-  return { title: t.legal.termsTitle, robots: { index: false, follow: true } };
+  return {
+    title: t.legal.termsTitle,
+    robots: { index: false, follow: true },
+    alternates: { canonical: canonicalFor(await siteUrl(), "/terms") },
+  };
 }
 
 /**

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { siteUrl } from "@/lib/site";
+import { publicPageMetadata } from "@/lib/seo/pageMetadata";
 import Link from "next/link";
 import { LoginForm } from "./LoginForm";
 import { GoogleAuthBlock } from "@/components/auth/GoogleAuthBlock";
@@ -6,7 +8,13 @@ import { getStrings } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getStrings();
-  return { title: t.auth.loginTitle, description: t.meta.loginDescription };
+  // One address for sign-in: the `?game=…&action=…` forms a Book button links to are the same page.
+  return publicPageMetadata({
+    site: await siteUrl(),
+    path: "/login",
+    title: t.auth.loginTitle,
+    description: t.meta.loginDescription,
+  });
 }
 
 /**

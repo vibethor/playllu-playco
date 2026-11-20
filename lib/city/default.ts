@@ -21,6 +21,12 @@ export const DEFAULT_CITY = {
 export const SITE_NAME = "Playco";
 
 /**
+ * The sport a game is, until `games` has a `sport` column (an open decision). Every Playco game today is
+ * volleyball; structured data read "Football", inherited from the fork, until 20 Nov 2026.
+ */
+export const DEFAULT_SPORT = "Volleyball";
+
+/**
  * THE LAW THE GAMES ARE PLAYED UNDER (Jachym, 18 Nov 2026: Playco's own English terms and privacy policy). Legal
  * texts name the country, its data protection law, its authorities and its emergency number; they read them from here
  * so a second country is a second row, not an edit of the documents.

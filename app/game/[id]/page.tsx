@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { breadcrumbList, jsonLdScript } from "@/lib/seo/site";
+import { SITE_NAME } from "@/lib/city/default";
 import { notFound } from "next/navigation";
 import { AmenityGrid } from "@/components/game/AmenityGrid";
 import { AvailabilityCard } from "@/components/game/AvailabilityCard";
@@ -105,7 +107,9 @@ export async function generateMetadata({ params }: GamePageProps): Promise<Metad
   return {
     title,
     description,
-    openGraph: { title, description, url, type: "website" },
+    // The short link is the one address of a game: `/game/<uuid>` and any tagged link point here (20 Nov 2026).
+    alternates: { canonical: url },
+    openGraph: { title, description, url, type: "website", siteName: SITE_NAME },
     twitter: { card: "summary_large_image", title, description },
   };
 }
@@ -320,7 +324,14 @@ export default async function GameDetailPage({ params, searchParams }: GamePageP
     url: shareUrl,
     venueName: venueRow?.name ?? game.venue,
     city: game.city,
+    image: `${shareUrl}/opengraph-image`,
   });
+  // Home › Games › this game, for the trail a search result shows.
+  const breadcrumbs = breadcrumbList(new URL(shareUrl).origin, [
+    { name: SITE_NAME, path: "/" },
+    { name: t.nav.games, path: "/games" },
+    { name: venueRow?.name ?? game.venue, path: gamePath(game) },
+  ]);
 
 
   return (
@@ -346,6 +357,7 @@ export default async function GameDetailPage({ params, searchParams }: GamePageP
           __html: JSON.stringify(schema).replace(/</g, "\\u003c"),
         }}
       />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbs) }} />
 
       {/*
         THE ORDER OF THIS PAGE IS THE ARGUMENT IT MAKES (v1.2 §5).

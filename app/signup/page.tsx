@@ -1,5 +1,7 @@
 import { normaliseReferralCode } from "@/lib/referrals/code";
 import type { Metadata } from "next";
+import { siteUrl } from "@/lib/site";
+import { publicPageMetadata } from "@/lib/seo/pageMetadata";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SignupForm } from "./SignupForm";
@@ -13,7 +15,12 @@ import { DEFAULT_PHONE_COUNTRY, phoneCountryOptions } from "@/lib/auth/phone";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getStrings();
-  return { title: t.auth.signupTitle };
+  return publicPageMetadata({
+    site: await siteUrl(),
+    path: "/signup",
+    title: t.auth.signupTitle,
+    description: t.meta.signupDescription,
+  });
 }
 
 /**

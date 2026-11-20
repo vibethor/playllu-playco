@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import { SITE_NAME } from "@/lib/city/default";
+import { breadcrumbList, jsonLdScript } from "@/lib/seo/site";
+import { siteUrl } from "@/lib/site";
+import { publicPageMetadata } from "@/lib/seo/pageMetadata";
 import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import { ToastFromQuery } from "@/components/ToastFromQuery";
 import { EmptyState } from "@/components/EmptyState";
@@ -21,10 +25,13 @@ import { getLocale, getStrings } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getStrings();
-  return {
-    title: t.games.listTitle,
+  // "Volleyball games in Bangkok this week" in search and shares; the tab strip keeps the short name on the page.
+  return publicPageMetadata({
+    site: await siteUrl(),
+    path: "/games",
+    title: t.meta.gamesTitle,
     description: t.meta.gamesDescription,
-  };
+  });
 }
 
 // Capacity changes as people book, so the list is rendered per request rather
@@ -150,7 +157,23 @@ export default async function GamesPage({
         has a real one now: the day group heads the list, and `groupByDay`
         renders those. An empty `<h1>` above them would be a second, competing
         outline root.
+
+        ~~No `<h1>` at all.~~ BACK, VISUALLY HIDDEN (technical SEO pass, Jachym, 20 Nov 2026). The day groups are
+        `<h2>`s, so the page had no top-level heading: nothing told a search engine or a screen reader what the list
+        is. Hidden, it costs the layout nothing and the reasoning above still holds for sighted readers.
       */}
+      <h1 className="sr-only">{t.meta.gamesTitle}</h1>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdScript(
+            breadcrumbList(await siteUrl(), [
+              { name: SITE_NAME, path: "/" },
+              { name: t.nav.games, path: "/games" },
+            ]),
+          ),
+        }}
+      />
 
       {nextOwn && (
         <div className="mt-2">

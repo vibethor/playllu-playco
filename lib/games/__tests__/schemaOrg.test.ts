@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DEFAULT_SPORT } from "@/lib/city/default";
 import { gameEventSchema } from "@/lib/games/schemaOrg";
 import { policy } from "@/lib/policy";
 import type { Database } from "@/lib/types/database";
@@ -120,5 +121,27 @@ describe("gameEventSchema", () => {
     const serialized = JSON.stringify(gameEventSchema(base));
     expect(serialized).not.toContain("undefined");
     expect(JSON.parse(serialized)).toMatchObject({ "@type": "SportsEvent" });
+  });
+});
+
+describe("gameEventSchema — the sport and the picture", () => {
+  it("names the sport Playco plays, not the football the fork came from", () => {
+    // Act
+    const schema = gameEventSchema(base);
+
+    // Assert
+    expect(schema.sport).toBe(DEFAULT_SPORT);
+    expect(schema.sport).not.toBe("Football");
+  });
+
+  it("carries the game's share image when the page passes one", () => {
+    // Arrange
+    const image = `${base.url}/opengraph-image`;
+
+    // Act
+    const schema = gameEventSchema({ ...base, image });
+
+    // Assert
+    expect(schema.image).toEqual([image]);
   });
 });

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { SECURITY_HEADERS } from "./lib/seo/securityHeaders";
 import { shortLinkRedirects } from "./shortLinks";
 
 /**
@@ -179,6 +180,11 @@ const nextConfig: NextConfig = {
    * runs only when nothing else matched, so `/football/games` would 404 against
    * the filesystem before it was ever offered the rewrite.
    */
+  /** HSTS and friends on every response. See `lib/seo/securityHeaders.ts`. */
+  async headers() {
+    return [{ source: "/:path*", headers: [...SECURITY_HEADERS] }];
+  },
+
   async rewrites() {
     return {
       beforeFiles: [

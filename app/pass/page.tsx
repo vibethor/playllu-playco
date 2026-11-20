@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { siteUrl } from "@/lib/site";
+import { publicPageMetadata } from "@/lib/seo/pageMetadata";
 import { notFound } from "next/navigation";
 import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import { PassTierCard } from "@/components/pass/PassTierCard";
@@ -9,7 +11,12 @@ import { getStrings } from "@/lib/i18n/server";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getStrings();
   // "Game Pass" in search (2026-11-06, the owner); the page's own heading is unchanged.
-  return { title: t.meta.passTitle, description: t.meta.passDescription };
+  return publicPageMetadata({
+    site: await siteUrl(),
+    path: "/pass",
+    title: t.meta.passTitle,
+    description: t.meta.passDescription,
+  });
 }
 
 export const dynamic = "force-dynamic";

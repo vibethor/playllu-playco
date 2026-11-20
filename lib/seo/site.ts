@@ -18,15 +18,53 @@ const SITE_NAME = "Playco";
  * Organization (the logo). The logo is the 512px icon the PWA manifest already
  * serves — square, and well over the 112px floor search engines ask for.
  */
-export function homeStructuredData(site: string) {
+export function homeStructuredData(site: string, options: { sameAs?: readonly string[]; description?: string } = {}) {
   const url = `${site}/`;
+  const { sameAs = [], description } = options;
+  const website: Record<string, unknown> = { "@type": "WebSite", name: SITE_NAME, url };
+  const organization: Record<string, unknown> = {
+    "@type": "Organization",
+    name: SITE_NAME,
+    url,
+    logo: `${site}/icons/icon-512.png`,
+  };
+  if (description) {
+    website.description = description;
+    organization.description = description;
+  }
+  // The social profiles (20 Nov 2026): `sameAs` is how a search engine ties @playco.live to this site.
+  if (sameAs.length > 0) organization.sameAs = [...sameAs];
+  return { "@context": "https://schema.org", "@graph": [website, organization] };
+}
+
+/**
+ * A PAGE'S CANONICAL ADDRESS (technical SEO pass, 20 Nov 2026): its own path on the configured origin, with no
+ * query string. Every marketing link carries `utm_` tags and the games list takes `?day=`; without a canonical each
+ * of those is a separate page to a search engine, competing with the real one.
+ */
+export function canonicalFor(site: string, path: string): string {
+  const [pathname = "/"] = path.split(/[?#]/);
+  if (pathname === "/" || pathname === "") return `${site}/`;
+  return `${site}${pathname.replace(/\/+$/, "")}`;
+}
+
+/** BreadcrumbList JSON-LD: the trail a search result shows in place of the raw address. */
+export function breadcrumbList(site: string, trail: readonly { name: string; path: string }[]) {
   return {
     "@context": "https://schema.org",
-    "@graph": [
-      { "@type": "WebSite", name: SITE_NAME, url },
-      { "@type": "Organization", name: SITE_NAME, url, logo: `${site}/icons/icon-512.png` },
-    ],
+    "@type": "BreadcrumbList",
+    itemListElement: trail.map((step, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: step.name,
+      item: canonicalFor(site, step.path),
+    })),
   };
+}
+
+/** Serialises JSON-LD for a `<script>` body. Escaping `<` stops admin-typed text closing the tag. */
+export function jsonLdScript(schema: unknown): string {
+  return JSON.stringify(schema).replace(/</g, "\\u003c");
 }
 
 /**
@@ -71,7 +109,7 @@ export interface SitemapOptions {
   /** Whether game passes are on sale (`PASSES_ENABLED`): `/pass` is then a public page. */
   passes?: boolean;
   /** The upcoming games the games list shows. */
-  games?: readonly { id: string; startsAt: string }[];
+  games?: readonly { id: string; startsAt: string; /** The game's canonical path (its short link), when known. */ path?: string }[];
 }
 
 export function sitemapFor(site: string, options: SitemapOptions = {}): MetadataRoute.Sitemap {
@@ -83,7 +121,8 @@ export function sitemapFor(site: string, options: SitemapOptions = {}): Metadata
   });
   const pass: MetadataRoute.Sitemap = passes ? [{ url: `${site}/pass`, ...SITEMAP_RANK.pass }] : [];
   const gamePages: MetadataRoute.Sitemap = games.map((game) => ({
-    url: `${site}/game/${encodeURIComponent(game.id)}`,
+    // The same address the game page names as canonical, so the sitemap and the page agree.
+    url: game.path ? canonicalFor(site, game.path) : `${site}/game/${encodeURIComponent(game.id)}`,
     ...SITEMAP_RANK.game,
   }));
   return [...pages, ...pass, ...gamePages];

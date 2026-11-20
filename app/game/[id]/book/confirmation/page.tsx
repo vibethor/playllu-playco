@@ -1,5 +1,6 @@
 import { DEFAULT_CITY } from "@/lib/city/default";
 import type { Metadata } from "next";
+import { NOINDEX } from "@/lib/seo/pageMetadata";
 import { PASSES_ENABLED } from "@/lib/pass/enabled";
 import { ToastFromQuery } from "@/components/ToastFromQuery";
 import { Suspense } from "react";
@@ -20,7 +21,7 @@ import { bestDiscountPercent, listPassTiers } from "@/lib/pass/queries";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getStrings();
-  return { title: t.payment.qrTitle };
+  return { title: t.payment.qrTitle, robots: NOINDEX };
 }
 
 export const dynamic = "force-dynamic";
