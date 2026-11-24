@@ -64,7 +64,7 @@ async function openBell(page: Page): Promise<void> {
   await expect(page.getByTestId("notification-panel")).toBeVisible();
 }
 
-test("signup: the phone takes a country code, emails take a language, and the bell starts empty", async ({
+test("signup: no phone asked, emails follow the page's language, and the bell starts empty", async ({
   page,
   context,
 }) => {
@@ -85,17 +85,8 @@ test("signup: the phone takes a country code, emails take a language, and the be
     await page.selectOption('select[name="country"]', "CZ");
     await page.check('input[name="skill"][value="intermediate"]');
 
-    // The prefix: Czech by default, then British — flag and code follow.
-    await expect(page.getByTestId("phone-country")).toHaveAttribute("data-country", "CZ");
-    await expect(page.getByTestId("phone-dial")).toHaveText("+420");
-    await page.getByTestId("phone-country-select").selectOption("GB");
-    await expect(page.getByTestId("phone-country")).toHaveAttribute("data-country", "GB");
-    await expect(page.getByTestId("phone-dial")).toHaveText("+44");
-    await page.fill('input[name="phone"]', "07400 123456");
-
-    // The email language is pre-set to the page's (Czech here); choose Ukrainian.
-    await expect(page.getByTestId("signup-email-locale")).toHaveValue("cs");
-    await page.getByTestId("signup-email-locale").selectOption("uk");
+    // ~~The phone prefix and the email-language picker~~ left sign-up on 24 Nov 2026: no phone is asked, and emails
+    // follow the page's language (Czech here). Both are still set on the profile.
 
     // The owner's words, 2026-10-28: the marketing consent, IN the terms box,
     // unticked — and the terms box no longer carries the photo sentence.
@@ -121,11 +112,11 @@ test("signup: the phone takes a country code, emails take a language, and the be
       .select("phone, auth_user_id")
       .eq("email", email)
       .maybeSingle();
-    expect(player?.phone).toBe("+447400123456");
+    expect(player?.phone).toBeNull();
 
-    // The language chosen for emails lives on the account.
+    // Emails follow the language the page was in.
     const { data: auth } = await admin.auth.admin.getUserById(player!.auth_user_id as string);
-    expect(auth.user?.user_metadata?.email_locale).toBe("uk");
+    expect(auth.user?.user_metadata?.email_locale).toBe("cs");
 
     // A clean bell, although an announcement went out before they joined.
     await page.goto("/games");

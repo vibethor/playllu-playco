@@ -147,37 +147,24 @@ export function parseSignupForm(form: {
     return { ok: false, field: "skill", code: "SKILL_REQUIRED" };
 
   /*
-   * REQUIRED SINCE ROUND 7, item 7.
+   * ~~REQUIRED SINCE ROUND 7, item 7.~~ OPTIONAL AT SIGN-UP (Jachym, 24 Nov 2026).
    *
-   * ~~Optional, and empty is a legitimate answer rather than a missing one.~~
-   * The organizer needs a way to reach a player about the game they are
-   * standing on a pitch waiting for, and an empty column is not one. It is
-   * still visible only to the organizer of a game the player has booked —
-   * `game_organizer_phone()` decides that, and this changes nothing about who
-   * can read it.
+   * The organizer still wants a way to reach a player at the venue, but asking for it before someone has seen a game
+   * cost registrations: sign-up was nine fields long on a phone. The field leaves the sign-up form and stays on the
+   * profile (`app/account`), which has always taken an empty phone. Who can read a number is unchanged:
+   * `game_organizer_phone()` decides that.
    *
-   * NO DATABASE CONSTRAINT, deliberately and per the instruction. `players`
-   * has thousands of rows that predate this and a `not null` would either
-   * fail to apply or lock every one of them out of their own profile. The rule
-   * lives at the two write paths — this parser and the finish-profile path —
-   * so existing players are unaffected until they next edit.
-   *
-   * THE LENGTH BOUNDS MIRROR THE ORGANIZER FIELD's, which the admin form has
-   * enforced since Phase 13: 3 to 32 characters. Not a format check — phone
-   * numbers are written a dozen ways across three countries here and a regex
-   * would reject more real numbers than fake ones. This catches a stray
-   * keystroke and a paste of a paragraph.
+   * A number that is typed here (an old form, a script) is still held to the organizer field's bounds, 3 to 32
+   * characters: not a format check, which would reject more real numbers than fake ones.
    */
   const phoneRaw = str(form.get("phone"));
-  if (phoneRaw === "")
-    return { ok: false, field: "phone", code: "PHONE_REQUIRED" };
   if (
-    phoneRaw.length < PHONE_MIN_LENGTH ||
-    phoneRaw.length > PHONE_MAX_LENGTH
+    phoneRaw !== "" &&
+    (phoneRaw.length < PHONE_MIN_LENGTH || phoneRaw.length > PHONE_MAX_LENGTH)
   ) {
     return { ok: false, field: "phone", code: "PHONE_INVALID" };
   }
-  const phone = phoneRaw;
+  const phone = phoneRaw === "" ? null : phoneRaw;
 
   // ONE required legal box since round 40 (the lawyer's Texty 2.2). The privacy
   // policy is a link beneath it: processing rests on the contract, not consent.

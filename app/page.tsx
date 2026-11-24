@@ -22,6 +22,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { siteUrl } from "@/lib/site";
 import { homeStructuredData } from "@/lib/seo/site";
 import { getStrings } from "@/lib/i18n/server";
+import { getCurrentPlayer } from "@/lib/auth/session";
 
 /** Playco's own WhatsApp group is in (18 Nov 2026); Instagram shows once its link is set in `lib/strings.ts`. */
 const COMMUNITY_LINKS_READY = true;
@@ -59,6 +60,8 @@ export default async function LandingPage() {
   const t = await getStrings();
   const { landing } = t;
   const locale = await getLocale();
+  // Cached per request: the layout has already read it for the header.
+  const signedIn = (await getCurrentPlayer()) !== null;
   const structuredData = homeStructuredData(await siteUrl(), {
     description: t.meta.description,
     sameAs: [landing.community.instagramUrl].filter((profile) => profile.length > 0),
@@ -175,6 +178,16 @@ export default async function LandingPage() {
             {landing.heroCta}
             <span aria-hidden>→</span>
           </Link>
+          {/* A second way in for a newcomer (24 Nov 2026): the hero only led to the games list. */}
+          {signedIn ? null : (
+            <Link
+              href="/signup"
+              data-testid="hero-join"
+              className="text-body font-semibold text-bone underline decoration-accent underline-offset-4 hover:text-accent"
+            >
+              {landing.heroJoin}
+            </Link>
+          )}
         </div>
       </section>
       <div className="relative z-10 mx-auto w-full max-w-shell px-gutter">

@@ -269,13 +269,26 @@ export async function Header({
               )}
             </Link>
           ) : (
-            <Link
-              href="/login"
-              data-testid="nav-login"
-              className="rounded-control bg-volt px-[14px] py-2 text-body font-bold text-ink no-underline"
-            >
-              {nav.logIn}
-            </Link>
+            /*
+             * JOIN FIRST, SIGN IN SECOND (Jachym, 24 Nov 2026). The bar offered only "Sign in", so a newcomer was never
+             * asked to register. The volt button now creates an account; returning players keep a plain text link.
+             */
+            <>
+              <Link
+                href="/login"
+                data-testid="nav-login"
+                className="px-1 py-2 text-body font-semibold text-bone no-underline hover:text-accent"
+              >
+                {nav.logIn}
+              </Link>
+              <Link
+                href="/signup"
+                data-testid="nav-join"
+                className="whitespace-nowrap rounded-control bg-volt px-[14px] py-2 text-body font-bold text-ink no-underline"
+              >
+                {nav.joinFree}
+              </Link>
+            </>
           )}
 
           {/* Immediately right of the auth control, per §3.1a. */}
