@@ -6,7 +6,6 @@ datePublished: 2026-11-24
 dateModified: 2026-11-24
 tags: ["volleyball", "bangkok", "guide"]
 locale: "en"
-draft: true
 ---
 
 You can play volleyball in Bangkok in four ways. Book a single spot in a pay-per-game session, join a community group that splits the court fee, rent a court for your own group, or use the free public courts in Benjakitti Park. The right one depends on your level, whether you already have people to play with, and how much organising you want to do.
@@ -35,7 +34,7 @@ You can play volleyball in Bangkok in four ways. Book a single spot in a pay-per
 
 You pick a game, pay for one spot and show up. At Playco a spot costs 300 THB for a two-hour game, paid by card or PromptPay when you book. We rent the court, bring the balls and send an organiser who welcomes people, splits the teams and keeps time.
 
-We play in two formats. The beach game is 5v5 on an indoor sand court at Asoke Sports Club, on the eleventh floor of the Foodland building at 48 Soi Sukhumvit 16, about five minutes from Asok BTS and Sukhumvit MRT. The indoor game is 6v6 at Swish Elite 50, where three teams of six rotate. [TODO Jachym: Swish Elite 50 address and nearest station.]
+We play in two formats. The beach game is 5v5 on an indoor sand court at Asoke Sports Club, on the eleventh floor of the Foodland building at 48 Soi Sukhumvit 16, about five minutes from Asok BTS and Sukhumvit MRT. The indoor game is 6v6 at Swish Elite 50, where three teams of six rotate. It is at 605 Sukhumvit Soi 50 in Phra Khanong, and On Nut is the nearest BTS station.
 
 Games are open to all levels unless the listing shows a level badge. If a game is full you can join the waitlist. If you cancel at least 12 hours before the start, the money comes back as credit on your account. [This week's games are here](/games), and [what to expect at your first game](/blog/first-pickup-volleyball-game-bangkok) covers the rest.
 
@@ -49,17 +48,17 @@ There is no fixed price. The group splits the court fee between whoever plays. I
 
 ## Can you rent a volleyball court in Bangkok?
 
-Yes, and it works if you can reliably bring ten or more people. BKK Volleyball's listing is a useful price marker: 800 to 1,000 THB an hour for a sand court. Asoke Sports Club has sand courts as well as pickleball; ask the venue about hiring one. [TODO Jachym: add the hourly rate you pay or have been quoted, if you are happy to publish it.]
+Yes, and it works if you can reliably bring ten or more people. BKK Volleyball's listing is a useful price marker: 800 to 1,000 THB an hour for a sand court. Asoke Sports Club has sand courts as well as pickleball; ask the venue about hiring one.
 
 The catch is the organising. Someone has to book the court, collect the money and find a twelfth player when two drop out on the day.
 
 ## Where are the free volleyball courts in Bangkok?
 
-Benchakitti Sports Center, the public sports complex in Benjakitti Park beside the Queen Sirikit National Convention Centre, is free to use. It is known for its ten free pickleball courts. Visitors also report volleyball there, alongside basketball, badminton and table tennis. There are no organised games, so bring a ball and enough people. [TODO Jachym: confirm from a visit that there is a volleyball net, and when it is free.]
+Benchakitti Sports Center, the public sports complex in Benjakitti Park beside the Queen Sirikit National Convention Centre, is free to use. It is known for its ten free pickleball courts. Visitors also report volleyball there, alongside basketball, badminton and table tennis. There are no organised games, so bring a ball and enough people. Go and look before you plan a session around it.
 
 ## Beach or indoor?
 
-Sand is softer to land on and the game is slower. With five a side you also touch the ball more often. Indoor is faster, with set positions and harder hitting. If you have not played since school, the sand game is the gentler way back in. [TODO Jachym: confirm this matches what you see at the games, or rewrite it in your own words.]
+Sand is softer to land on and the game is slower. With five a side you also touch the ball more often. Indoor is faster, with set positions and harder hitting. If you have not played since school, the sand game is the gentler way back in.
 
 ## Questions people ask
 

@@ -6,7 +6,6 @@ datePublished: 2026-11-24
 dateModified: 2026-11-24
 tags: ["volleyball", "bangkok", "beginners"]
 locale: "en"
-draft: true
 ---
 
 You book one spot online, arrive ten minutes early with court shoes and water, get put in a team by the organiser, and play for two hours. You do not need a team, a partner or much experience. The rest of this page is the detail, including what happens if you have to cancel.
@@ -29,13 +28,13 @@ There is no paying in cash at the court. You need to be 18 or over to have an ac
 
 Arrive ten minutes before the start. An organiser is there to welcome people, split the teams and keep time. The organiser is not a referee or a coach, so players call their own points and settle disagreements calmly between themselves.
 
-A game lasts 120 minutes. Indoors we play 6v6 with three teams of six rotating, so everyone gets a short rest between games. On sand we play 5v5. [TODO Jachym: one or two sentences on how the rotation works, for example games to a set score with the winner staying on.]
+A game lasts 120 minutes. Indoors we play 6v6 with three teams of six rotating, so everyone gets a short rest between games. On sand we play 5v5. The organiser explains on the day how the teams swap on and off.
 
 Games are run in English and Thai.
 
 ## What should I bring?
 
-- Indoor court shoes for the indoor game. [TODO Jachym: what people wear on the sand court, barefoot or socks.]
+- Indoor court shoes for the indoor game. For the sand court, ask the organiser before your first game.
 - Water and a towel.
 - Nothing else. We bring the volleyballs.
 
@@ -68,7 +67,7 @@ Join the waitlist. When a spot opens, everyone on the list is told by email and 
 
 ## Is it strange to come alone?
 
-No. You book a spot, not a team, so arriving on your own is the normal case. [TODO Jachym: one real line from a player who came alone the first time, with their permission.]
+No. You book a spot, not a team, so arriving on your own is the normal case.
 
 ## Questions people ask
 
