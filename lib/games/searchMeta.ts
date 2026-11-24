@@ -2,6 +2,7 @@ import type { Database } from "@/lib/types/database";
 import type { Strings } from "@/lib/strings";
 import { formatGameDate, formatGameDateShort, formatThb, formatTime, type DateLocale } from "@/lib/format";
 import { resolveDurationMinutes } from "@/lib/games/duration";
+import { courtFormat } from "@/lib/games/teams";
 import { fillTemplate } from "@/lib/i18n/template";
 
 type GameRow = Database["public"]["Tables"]["games"]["Row"];
@@ -39,7 +40,8 @@ export function gameSearchMeta(
     ...shared,
     // Mid-sentence in the description, so "Indoor" reads "indoor"; scripts without case are unchanged.
     surface: surface.toLocaleLowerCase(),
-    format: game.format ?? "",
+    // The match-up on court: a stored `5v5v5` (three teams taking turns) reads "5v5", as it does on the card badge.
+    format: courtFormat(game.format) ?? "",
     date: formatGameDate(game.starts_at, locale),
     time: formatTime(game.starts_at, locale),
     minutes: String(resolveDurationMinutes(game.duration_minutes)),

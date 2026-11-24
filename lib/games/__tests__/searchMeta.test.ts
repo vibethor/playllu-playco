@@ -95,3 +95,29 @@ describe("a game page's title and description in a search result", () => {
     expect(`${title}${description}`).not.toMatch(/\{[a-zA-Z]+\}/);
   });
 });
+
+/**
+ * A ROTATING GAME IS STILL 5v5 ON COURT (Jachym, 24 Nov 2026: "it should just say 5v5"). The beach game is stored
+ * as `5v5v5` — three teams of five taking turns — and the first version of these lines printed that. A searcher
+ * reads "5v5v5" as a typo; the badge on the game card has shown the match-up on court since 18 Nov.
+ */
+describe("the format of a game with a team waiting its turn", () => {
+  const ROTATING_GAME = { ...SUNDAY_GAME, venue: "Asoke Sports Club", format: "5v5v5", surface: "sand" } as const;
+
+  it("is the match-up on court in the description", () => {
+    // Act
+    const { description } = gameSearchMeta(ROTATING_GAME, "en", resolveStrings("en"));
+
+    // Assert
+    expect(description).toMatch(/^5v5 beach pickup volleyball at Asoke Sports Club/);
+  });
+
+  it("never shows three sides", () => {
+    // Act
+    const { title, description } = gameSearchMeta(ROTATING_GAME, "en", resolveStrings("en"));
+
+    // Assert
+    expect(`${title} ${description}`).not.toContain("5v5v5");
+  });
+});
+
