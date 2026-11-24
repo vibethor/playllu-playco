@@ -28,6 +28,13 @@ export const th: StringsOverlay = {
     cookiesDescription: "playco.live ใช้คุกกี้อะไรบ้าง ใช้เพื่ออะไร และคุณเลือกได้อย่างไร",
     heroAlt: "นักวอลเลย์บอลกระโดดตบลูกที่หน้าตาข่ายระหว่างเกมในร่ม",
     loginDescription: "เข้าสู่ระบบ",
+    // SEO audit, 24 Nov 2026 — drafted, waiting for a native review with the rest of the Thai.
+    gameTitle: "วอลเลย์บอล{surface}ที่ {venue} กรุงเทพฯ · {when}",
+    gameTitleNoSurface: "วอลเลย์บอลที่ {venue} กรุงเทพฯ · {when}",
+    gameDescription:
+      "วอลเลย์บอลขาจร{surface} {format} ที่ {venue} กรุงเทพฯ {date} เวลา {time} น. เล่น {minutes} นาที ราคา {price} จองที่ออนไลน์ จ่ายด้วยบัตรหรือพร้อมเพย์",
+    contactDescription:
+      "ติดต่อ Playco เกมวอลเลย์บอลขาจรในกรุงเทพฯ มีอีเมลสำหรับการจอง การคืนเงิน และการช่วยเหลือ และอีเมลสำหรับคำถามเรื่องข้อมูลส่วนบุคคล",
   },
   nav: {
     cta: "จองที่ของคุณ",
@@ -62,6 +69,7 @@ export const th: StringsOverlay = {
     settings: "ตั้งค่าคุกกี้",
   },
   siteFooter: {
+    copyright: "© {year} Playco · ส่วนหนึ่งของ Playllu",
     contact: "ติดต่อ",
     contactTitle: "ติดต่อเรา",
   },
@@ -71,7 +79,7 @@ export const th: StringsOverlay = {
     cta: "ดูเกมที่มีอยู่ →",
   },
   landing: {
-    heroEyebrow: "เกมขาจรในกรุงเทพฯ",
+    heroEyebrow: "วอลเลย์บอลขาจรในกรุงเทพฯ",
     heroLead: "เล่น",
     heroSport: "วอลเลย์บอล",
     heroLine1: "เล่นวอลเลย์บอล",
@@ -207,6 +215,8 @@ export const th: StringsOverlay = {
   },
   games: {
     listTitle: "เกมที่กำลังจะมาถึง",
+    cardPhotoAlt: "{venue} สนามวอลเลย์บอล{surface}",
+    cardPhotoAltNoSurface: "{venue} สนามวอลเลย์บอล",
     empty: "ตอนนี้ยังไม่มีเกม",
     emptyTitle: "ยังไม่มีเกมในตาราง",
     emptyBody: "มีเกมใหม่ทุกสัปดาห์",

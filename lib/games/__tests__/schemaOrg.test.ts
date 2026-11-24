@@ -49,7 +49,8 @@ describe("gameEventSchema — endDate", () => {
       ...base,
       game: { ...game, duration_minutes: 90 },
     });
-    expect(schema.endDate).toBe("2026-08-01T18:30:00.000Z");
+    // The same instant as 18:30 UTC, written in the city's clock (24 Nov 2026) rather than in UTC.
+    expect(Date.parse(schema.endDate as string)).toBe(Date.parse("2026-08-01T18:30:00.000Z"));
   });
 
   it("falls back to the policy constant for a game with no duration", () => {
@@ -143,5 +144,105 @@ describe("gameEventSchema — the sport and the picture", () => {
 
     // Assert
     expect(schema.image).toEqual([image]);
+  });
+});
+
+/**
+ * SEO audit, 24 Nov 2026. Production said `"name":"6v6 · Swish Elite 50 · Playco"`, a start time ending in `Z`
+ * and an address of `{"addressLocality":"bangkok"}`: all valid, none of it enough for an event listing.
+ */
+describe("gameEventSchema — what an event listing needs", () => {
+  const bangkokGame: GameRow = {
+    ...game,
+    venue: "Swish Elite 50",
+    city: "bangkok",
+    surface: "indoor",
+    starts_at: "2026-11-29T10:00:00.000Z",
+    duration_minutes: 120,
+  };
+  const bangkok = { ...base, game: bangkokGame, venueName: "Swish Elite 50", city: "bangkok" };
+
+  it("names the event by format, surface, sport and venue", () => {
+    // Act
+    const schema = gameEventSchema(bangkok);
+
+    // Assert
+    expect(schema.name).toBe("6v6 indoor pickup volleyball at Swish Elite 50");
+  });
+
+  it("starts the name with a capital when the game has no format", () => {
+    // Act
+    const schema = gameEventSchema({ ...bangkok, game: { ...bangkokGame, format: null, surface: "sand" } });
+
+    // Assert
+    expect(schema.name).toBe("Beach pickup volleyball at Swish Elite 50");
+  });
+
+  it("gives the start and the end in the city's own clock, with its offset", () => {
+    // Act
+    const schema = gameEventSchema(bangkok);
+
+    // Assert
+    expect(schema.startDate).toBe("2026-11-29T17:00:00+07:00");
+    expect(schema.endDate).toBe("2026-11-29T19:00:00+07:00");
+  });
+
+  it("prints the city's name and its country, not the slug the row carries", () => {
+    // Act
+    const { address } = gameEventSchema(bangkok).location as { address: Record<string, unknown> };
+
+    // Assert
+    expect(address.addressLocality).toBe("Bangkok");
+    expect(address.addressCountry).toBe("TH");
+  });
+
+  it("carries the venue's street address and its pin when the venue row has them", () => {
+    // Arrange
+    const venueAddress = " 48 Soi Sukhumvit 16, Khlong Toei, Bangkok 10110 ";
+    const coordinates = { lat: 13.7311, lng: 100.5601 };
+
+    // Act
+    const location = gameEventSchema({ ...bangkok, venueAddress, coordinates }).location as Record<string, unknown>;
+
+    // Assert
+    expect((location.address as Record<string, unknown>).streetAddress).toBe(venueAddress.trim());
+    expect(location.geo).toEqual({ "@type": "GeoCoordinates", latitude: 13.7311, longitude: 100.5601 });
+  });
+
+  it("leaves the street address and the pin out when the venue has neither, rather than inventing them", () => {
+    // Act
+    const location = gameEventSchema({ ...bangkok, venueAddress: "  ", coordinates: null }).location as Record<
+      string,
+      unknown
+    >;
+
+    // Assert
+    expect(location.address).not.toHaveProperty("streetAddress");
+    expect(location).not.toHaveProperty("geo");
+  });
+
+  it("describes this game when the page hands it a description, and the site otherwise", () => {
+    // Arrange
+    const description = "6v6 indoor pickup volleyball at Swish Elite 50, Bangkok.";
+
+    // Act
+    const described = gameEventSchema({ ...bangkok, description });
+    const plain = gameEventSchema(bangkok);
+
+    // Assert
+    expect(described.description).toBe(description);
+    expect(plain.description).not.toBe(description);
+  });
+
+  it("shows the venue's photograph beside the share image", () => {
+    // Arrange
+    const image = `${base.url}/opengraph-image`;
+    const venuePhoto = "https://example.supabase.co/storage/v1/object/public/venue-photos/venues/v.webp";
+
+    // Act
+    const schema = gameEventSchema({ ...bangkok, image, venuePhoto });
+
+    // Assert
+    expect(schema.image).toEqual([image, venuePhoto]);
   });
 });

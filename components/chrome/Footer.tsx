@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getStrings } from "@/lib/i18n/server";
+import { fillTemplate } from "@/lib/i18n/template";
 import { gtmEnabled } from "@/lib/analytics/gtm";
 import { CookieSettingsLink } from "@/components/consent/CookieSettingsLink";
 
@@ -92,7 +93,10 @@ export async function Footer() {
         {gtmEnabled() && <CookieSettingsLink />}
       </nav>
 
-      <p className="m-0 text-small text-faint">{siteFooter.copyright}</p>
+      {/* The year is the server's, read per request: a footer that says last year is the first thing that looks abandoned. */}
+      <p className="m-0 text-small text-faint">
+        {fillTemplate(siteFooter.copyright, { year: String(new Date().getFullYear()) })}
+      </p>
     </footer>
   );
 }

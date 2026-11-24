@@ -45,6 +45,17 @@ export const strings = {
     gamesTitle: "Volleyball games in Bangkok this week",
     gamesDescription:
       "See this week's pickup volleyball games in Bangkok. Pick a day and a venue, book your spot online and pay by card or PromptPay. All levels welcome.",
+    /*
+     * A GAME PAGE IN A SEARCH RESULT (SEO audit, 24 Nov 2026) — see `lib/games/searchMeta.ts`. The sport and the
+     * city are written out, like `gamesTitle` above. `{surface}` is `games.surface.*`; a game without one uses the
+     * second title. Nothing here counts spots: a result is cached for days.
+     */
+    gameTitle: "{surface} volleyball at {venue}, Bangkok · {when}",
+    gameTitleNoSurface: "Volleyball at {venue}, Bangkok · {when}",
+    gameDescription:
+      "{format} {surface} pickup volleyball at {venue}, Bangkok, {date} at {time}. {minutes} minutes, {price}. Book a spot online and pay by card or PromptPay.",
+    contactDescription:
+      "Contact Playco, the pickup volleyball games in Bangkok: one address for bookings, refunds and support, and one for questions about your personal data.",
     loginDescription: "Sign in",
     signupDescription:
       "Create your free Playco account to book pickup volleyball games in Bangkok. Sign up with email or Google in under a minute. No team needed.",
@@ -134,7 +145,9 @@ export const strings = {
      * their own: a footer link and the page it opens are one concept, and two
      * keys for one name drift apart in translation.
      */
-    copyright: "© Playllu",
+    // "© 2026 Playco · part of Playllu" since 24 Nov 2026 (SEO audit): the footer of every page now says which
+    // brand this is and which group it belongs to, the same two names the terms use. Was "© Playllu".
+    copyright: "© {year} Playco · part of Playllu",
     // A real address in the footer of every page. A booking product that takes
     // money and holds personal data needs one reachable line that is not a
     // WhatsApp group, and GDPR expects a controller contact anyway.
@@ -208,7 +221,9 @@ export const strings = {
      * one action. `heroLead` + `heroSport` are the first line split so the sport can be set in the accent;
      * `heroLine1` is the same line whole, for the share image.
      */
-    heroEyebrow: "Pickup games in Bangkok",
+    // "Pickup volleyball in Bangkok" since 24 Nov 2026 (SEO audit): it is half of the page's H1 now, and "games"
+    // did not say which. Was "Pickup games in Bangkok".
+    heroEyebrow: "Pickup volleyball in Bangkok",
     heroLead: "Play",
     heroSport: "volleyball.",
     heroLine1: "Play volleyball.",
@@ -472,6 +487,9 @@ export const strings = {
 
   games: {
     listTitle: "Upcoming games",
+    // The alt text of a venue's own photograph on a game card (SEO audit, 24 Nov 2026). `{surface}` is lower-cased.
+    cardPhotoAlt: "{venue}, {surface} volleyball court",
+    cardPhotoAltNoSurface: "{venue}, volleyball court",
     /*
      * Empty states.
      *

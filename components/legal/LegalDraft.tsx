@@ -1,4 +1,5 @@
 import type { LegalDraft as Draft, LegalSection } from "@/lib/content/legalDraft";
+import { LEGACY_TERMS_RULES_ANCHOR, TERMS_RULES_ANCHOR } from "@/lib/legal";
 
 /**
  * `/terms` and `/privacy`: Playco's own English documents (`lib/content/termsDraft.ts`, `lib/content/privacyDraft.ts`).
@@ -21,6 +22,10 @@ function Section({ section }: { section: LegalSection }) {
   return (
     <section className="mt-8">
       <h2 id={section.id} className="m-0 scroll-mt-24 font-display text-section-title font-bold">
+        {/* Emails already sent link to the rules by their old anchor; see `LEGACY_TERMS_RULES_ANCHOR`. */}
+        {section.id === TERMS_RULES_ANCHOR && (
+          <span id={LEGACY_TERMS_RULES_ANCHOR} aria-hidden className="block scroll-mt-24" />
+        )}
         {section.heading}
       </h2>
       {section.paragraphs.map((paragraph) => (

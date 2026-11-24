@@ -36,6 +36,10 @@ import {
   getWaitlist,
 } from "@/lib/games/queries";
 import { gameEventSchema } from "@/lib/games/schemaOrg";
+import { gameSearchMeta } from "@/lib/games/searchMeta";
+import { parseCoordinatePair } from "@/lib/venues/mapsLink";
+import { venuePhotoUrl } from "@/lib/storage/avatar";
+import { venuePhotoVersion } from "@/lib/storage/photoVersions";
 import { spotsLeftLabel } from "@/lib/games/urgency";
 import { appCapabilities } from "@/lib/db/capabilities";
 import { getOwnCreditBalance } from "@/lib/booking/queries";
@@ -43,6 +47,7 @@ import { embeddedCheckoutEnabled } from "@/lib/payments/embeddedCheckout";
 import { createServerSupabaseClient } from "@/lib/supabase/clients";
 import { siteUrl } from "@/lib/site";
 import { getLocale, getStrings } from "@/lib/i18n/server";
+import { strings } from "@/lib/strings";
 
 // The primary surface players land on from a shared WhatsApp link. It must
 // render completely for a visitor with no session, so nothing here is gated.
@@ -89,28 +94,31 @@ export async function generateMetadata({ params }: GamePageProps): Promise<Metad
 
   const { game } = result;
   const locale = await getLocale();
-  const title = `${game.venue} — ${formatGameDateTime(game.starts_at, locale)}`;
+  /*
+   * TWO READERS, TWO SETS OF WORDS (SEO audit, 24 Nov 2026).
+   *
+   * THE SHARE CARD keeps what it had: venue, day, and "17 spots left · 300 THB". Whoever gets the link in WhatsApp
+   * knows what it is; the count is the reason to tap now.
+   *
+   * THE SEARCH RESULT had the same two lines, and they are wrong there: no sport, no city, and a count that is
+   * stale an hour after it is indexed. `gameSearchMeta` names the sport, surface, venue, city and time instead.
+   */
+  const shareTitle = `${game.venue} — ${formatGameDateTime(game.starts_at, locale)}`;
   // Same ladder the page renders, so the WhatsApp preview and the page it
   // links to never disagree about how urgent the game is.
-  const description = `${spotsLeftLabel(
-    result.bookedCount,
-    game.capacity,
-    locale,
-    t,
-  )} · ${formatThb(
-    game.price_thb,
-  )}`;
+  const shareDescription = `${spotsLeftLabel(result.bookedCount, game.capacity, locale, t)} · ${formatThb(game.price_thb)}`;
+  const search = gameSearchMeta(game, locale, t);
 
   // Round 41: the short link, once the game has a number.
   const url = `${await siteUrl()}${gamePath(game)}`;
 
   return {
-    title,
-    description,
+    title: search.title,
+    description: search.description,
     // The short link is the one address of a game: `/game/<uuid>` and any tagged link point here (20 Nov 2026).
     alternates: { canonical: url },
-    openGraph: { title, description, url, type: "website", siteName: SITE_NAME },
-    twitter: { card: "summary_large_image", title, description },
+    openGraph: { title: shareTitle, description: shareDescription, url, type: "website", siteName: SITE_NAME },
+    twitter: { card: "summary_large_image", title: shareTitle, description: shareDescription },
   };
 }
 
@@ -318,6 +326,12 @@ export default async function GameDetailPage({ params, searchParams }: GamePageP
 
   // Structured data for search results. Built from the same numbers the page
   // renders, so the two cannot disagree about price or how full the game is.
+  // The venue's own photograph, absolute: a repo photo sits on this origin, an uploaded one on storage.
+  const venuePhotoPath = venuePhotoUrl(
+    supabaseUrl,
+    venueRow?.image_path,
+    await venuePhotoVersion(venueRow?.image_path),
+  );
   const schema = gameEventSchema({
     game,
     spotsLeft,
@@ -325,6 +339,12 @@ export default async function GameDetailPage({ params, searchParams }: GamePageP
     venueName: venueRow?.name ?? game.venue,
     city: game.city,
     image: `${shareUrl}/opengraph-image`,
+    venuePhoto: venuePhotoPath ? new URL(venuePhotoPath, baseUrl).toString() : null,
+    // The sentence the search result shows, in English like the rest of the block.
+    description: gameSearchMeta(game, "en", strings).description,
+    venueAddress: venueRow?.address ?? null,
+    // `map_query` is coordinates when the admin pasted a Maps link, and a place name otherwise.
+    coordinates: venueRow?.map_query ? parseCoordinatePair(venueRow.map_query) : null,
   });
   // Home › Games › this game, for the trail a search result shows.
   const breadcrumbs = breadcrumbList(new URL(shareUrl).origin, [

@@ -169,6 +169,22 @@ export function formatGameDate(value: Date | string | number, locale?: DateLocal
   );
 }
 
+/**
+ * e.g. "Sun 29 Nov" — the day in the fewest characters that still name it. For a page title, where
+ * "Sunday 29 November" spends a third of what a search result shows (SEO audit, 24 Nov 2026).
+ */
+export function formatGameDateShort(value: Date | string | number, locale?: DateLocale): string {
+  return capitaliseIn(
+    new Intl.DateTimeFormat(tagFor(locale), {
+      timeZone: DISPLAY_TIME_ZONE,
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    }).format(toDate(value)),
+    locale,
+  );
+}
+
 /** e.g. "3 Jul 2026" — date only. */
 export function formatDate(value: Date | string | number, locale?: DateLocale): string {
   return new Intl.DateTimeFormat(tagFor(locale), {
@@ -198,4 +214,29 @@ export function formatThb(amountThb: number): string {
    * round rendered and what the QR payment line carries.
    */
   return `${Math.round(amountThb).toLocaleString(DATE_LOCALE.en)} THB`;
+}
+
+/**
+ * An instant as ISO 8601 IN THE CITY'S OWN CLOCK, e.g. "2026-11-29T17:00:00+07:00" (SEO audit, 24 Nov 2026).
+ *
+ * For structured data. `toISOString()` is the same instant written in UTC ("…T10:00:00.000Z"), which is valid and
+ * which a reader has to convert to learn when the game is; an event's start is a local fact, and the offset form
+ * states it the way the page does.
+ */
+export function formatIsoInCity(value: Date | string | number, timeZone: string = DISPLAY_TIME_ZONE): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+    timeZoneName: "longOffset",
+  }).formatToParts(toDate(value));
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? "";
+  // "GMT+07:00", or a bare "GMT" for UTC itself.
+  const offset = part("timeZoneName").replace("GMT", "") || "+00:00";
+  return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}:${part("second")}${offset}`;
 }

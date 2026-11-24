@@ -9,6 +9,10 @@
 export const DEFAULT_CITY = {
   /** URL-safe key, matches `games.city` / `venues.city` in the database. */
   slug: "bangkok",
+  /** The city's name as an address prints it (structured data's `addressLocality`). Copy for players is in `lib/strings.ts`. */
+  name: "Bangkok",
+  /** ISO 3166-1 alpha-2 country the venues stand in (structured data's `addressCountry`). */
+  country: "TH",
   /** IANA time zone every user-visible datetime renders in. */
   timeZone: "Asia/Bangkok",
   /** ISO 3166-1 alpha-2 country whose phone prefix the phone field starts with. */
@@ -17,8 +21,16 @@ export const DEFAULT_CITY = {
   currency: "THB",
 } as const;
 
+/** A city's printable name from the slug a game or venue row carries. An unknown slug is returned as it is. */
+export function cityNameOf(slug: string): string {
+  return slug === DEFAULT_CITY.slug ? DEFAULT_CITY.name : slug;
+}
+
 /** The brand players see. */
 export const SITE_NAME = "Playco";
+
+/** The group Playco belongs to, as the terms and the footer name it ("Playco is part of Playllu"). */
+export const PARENT_ORGANIZATION = "Playllu";
 
 /**
  * The sport a game is, until `games` has a `sport` column (an open decision). Every Playco game today is

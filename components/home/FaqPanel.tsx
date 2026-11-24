@@ -60,9 +60,9 @@ export async function FaqPanel() {
       // the sampled values.
       className="lifted w-full rounded-card p-[22px]"
     >
-      <h3 className="m-0 mb-3 font-display text-community-title uppercase text-bone">
+      <h2 className="m-0 mb-3 font-display text-community-title uppercase text-bone">
         {t.faq.title}
-      </h3>
+      </h2>
 
       {/*
         THREE AND THREE, above `md` (Section 2, item 10). `columns-2` rather

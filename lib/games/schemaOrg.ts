@@ -1,5 +1,6 @@
 import type { Database } from "@/lib/types/database";
-import { DEFAULT_SPORT, SITE_NAME } from "@/lib/city/default";
+import { DEFAULT_CITY, DEFAULT_SPORT, SITE_NAME, cityNameOf } from "@/lib/city/default";
+import { formatIsoInCity } from "@/lib/format";
 import { gameEndsAt } from "@/lib/games/duration";
 import { strings } from "@/lib/strings";
 
@@ -44,7 +45,20 @@ function eventStatus(game: GameRow): string {
  * on the constant. `gameEndsAt` is the single fallback for all four surfaces.
  */
 function endTime(game: GameRow): string {
-  return gameEndsAt(game.starts_at, game.duration_minutes).toISOString();
+  return formatIsoInCity(gameEndsAt(game.starts_at, game.duration_minutes));
+}
+
+/**
+ * "6v6 indoor pickup volleyball at Swish Elite 50" (SEO audit, 24 Nov 2026).
+ *
+ * ~~`6v6 · Swish Elite 50 · Playco`~~ named neither the sport nor what kind of event this is; the organiser is
+ * already its own field. English, like the rest of this block: structured data is read by machines in one language.
+ */
+function eventName(game: GameRow, venueName: string): string {
+  const surface = game.surface ? strings.games.surface[game.surface].toLowerCase() : null;
+  const words = [game.format, surface, `pickup ${DEFAULT_SPORT.toLowerCase()} at ${venueName}`].filter(Boolean);
+  const name = words.join(" ");
+  return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 export interface GameEventSchemaInput {
@@ -54,9 +68,18 @@ export interface GameEventSchemaInput {
   url: string;
   /** Venue display name, from `venues` when the game has one. */
   venueName: string;
+  /** The city slug the game row carries; printed as the city's name. */
   city: string;
   /** The game's share image (absolute). Event results show a picture when given one. */
   image?: string;
+  /** The venue's own photograph (absolute), beside the share image. */
+  venuePhoto?: string | null;
+  /** What the page says about this game in a search result; the sitewide line when absent. */
+  description?: string;
+  /** The venue's street address as the admin typed it (`venues.address`). */
+  venueAddress?: string | null;
+  /** The venue's pin (`venues.map_query`, when it holds coordinates). */
+  coordinates?: { lat: number; lng: number } | null;
 }
 
 export function gameEventSchema({
@@ -66,33 +89,50 @@ export function gameEventSchema({
   venueName,
   city,
   image,
+  venuePhoto,
+  description,
+  venueAddress,
+  coordinates,
 }: GameEventSchemaInput): Record<string, unknown> {
-  // "6v6 football · Prazacka". The format leads when the game has one, because
-  // that is the thing a player scanning results is deciding on.
   const brand = SITE_NAME;
-  const name = game.format
-    ? `${game.format} · ${venueName} · ${brand}`
-    : `${venueName} · ${brand}`;
+  // The format still leads when the game has one: it is what a player scanning results decides on.
+  const name = eventName(game, venueName);
+  const images = [image, venuePhoto].filter((value): value is string => Boolean(value));
+  /*
+   * THE ADDRESS IS AS COMPLETE AS THE VENUE ROW IS. A bare `addressLocality` was all this said (measured on
+   * production: `{"addressLocality":"bangkok"}`, the slug), which is not enough for an event listing to place the
+   * game. The street address is the admin's own line, unparsed: splitting a postcode out of free text would be a
+   * guess about one country's format.
+   */
+  const address: Record<string, unknown> = {
+    "@type": "PostalAddress",
+    ...(venueAddress?.trim() ? { streetAddress: venueAddress.trim() } : {}),
+    addressLocality: cityNameOf(city),
+    addressCountry: DEFAULT_CITY.country,
+  };
 
   return {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
     name,
-    description: strings.meta.description,
+    description: description ?? strings.meta.description,
     url,
-    startDate: new Date(game.starts_at).toISOString(),
+    startDate: formatIsoInCity(game.starts_at),
     endDate: endTime(game),
     eventStatus: eventStatus(game),
     // Everyone is physically on a pitch; there is no stream.
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     sport: DEFAULT_SPORT,
-    ...(image ? { image: [image] } : {}),
+    ...(images.length > 0 ? { image: images } : {}),
     maximumAttendeeCapacity: game.capacity,
     remainingAttendeeCapacity: spotsLeft,
     location: {
       "@type": "Place",
       name: venueName,
-      address: { "@type": "PostalAddress", addressLocality: city },
+      address,
+      ...(coordinates
+        ? { geo: { "@type": "GeoCoordinates", latitude: coordinates.lat, longitude: coordinates.lng } }
+        : {}),
     },
     organizer: {
       "@type": "Organization",

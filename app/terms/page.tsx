@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
  *
  * The lawyer's text, verbatim, in Czech for every reader — see
  * `lib/content/legalDocuments.ts`. The rules attachment is anchored at
- * `#pravidla` because signup links straight to it, and the PDF beside the page
+ * `#rules` because signup links straight to it, and the PDF beside the page
  * is the same text printed from the same file (the lawyer's brief, item 1.2).
  */
 export default function TermsPage() {

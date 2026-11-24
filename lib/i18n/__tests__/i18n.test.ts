@@ -123,7 +123,6 @@ const INTENTIONALLY_UNTRANSLATED = new Set([
   "emails.spotHeld.spdLabel",
   "emails.spotHeld.preheader",
   // Brand and design furniture, identical in all three languages.
-  "siteFooter.copyright",
   "siteFooter.contactEmail",
   "notFound.code",
   // `landing.headlineLead` / `headlineAccent` were here — the hero's wordmark,
