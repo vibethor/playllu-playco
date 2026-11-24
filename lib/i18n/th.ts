@@ -70,6 +70,7 @@ export const th: StringsOverlay = {
   },
   siteFooter: {
     copyright: "© {year} Playco · ส่วนหนึ่งของ Playllu",
+    blog: "บล็อก",
     contact: "ติดต่อ",
     contactTitle: "ติดต่อเรา",
   },
@@ -212,6 +213,25 @@ export const th: StringsOverlay = {
     googleFailed: "เริ่มเข้าสู่ระบบด้วย Google ไม่สำเร็จ กรุณาลองอีกครั้ง",
     authOr: "หรือ",
     noAccount: "มาใหม่?",
+  },
+  blog: {
+    title: "บล็อก",
+    metaTitle: "บล็อก: คู่มือเล่นวอลเลย์บอลในกรุงเทพฯ",
+    metaDescription:
+      "คู่มือจาก Playco สำหรับการเล่นวอลเลย์บอลในกรุงเทพฯ: เล่นได้ที่ไหน แต่ละแบบมีค่าใช้จ่ายเท่าไร เกมแรกเป็นอย่างไร และเล่นในร่มได้ที่ไหน",
+    indexIntro: "คู่มือเล่นวอลเลย์บอลในกรุงเทพฯ: เล่นที่ไหน ค่าใช้จ่ายเท่าไร และควรรู้อะไรก่อนไป",
+    empty: "ยังไม่มีบทความ",
+    byline: "โดย {author}",
+    published: "เผยแพร่เมื่อ {date}",
+    updated: "อัปเดตล่าสุด {date}",
+    draftBadge: "ฉบับร่าง",
+    draftNotice: "ฉบับร่าง แสดงเฉพาะบนเวอร์ชันพรีวิวเท่านั้น ยังไม่ได้เผยแพร่",
+    englishOnlyNotice: "บทความนี้เป็นภาษาอังกฤษ",
+    closingTitle: "พร้อมเล่นหรือยัง?",
+    closingBody: "ดูเกมของสัปดาห์นี้และจองที่ออนไลน์ได้เลย",
+    closingCta: "ดูเกมของสัปดาห์นี้",
+    backToBlog: "บทความทั้งหมด",
+    feedTitle: "บล็อก Playco",
   },
   games: {
     listTitle: "เกมที่กำลังจะมาถึง",

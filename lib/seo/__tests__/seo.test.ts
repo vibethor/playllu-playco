@@ -402,3 +402,34 @@ describe("who is behind the name, in the home page's structured data", () => {
     expect(organization).not.toHaveProperty("parentOrganization");
   });
 });
+
+describe("the blog in the sitemap", () => {
+  const POSTS = [
+    { path: "/blog/where-to-play", lastModified: "2026-11-24" },
+    { path: "/blog/first-game", lastModified: "2026-12-02" },
+  ];
+
+  it("lists each published post with the day it was last changed", () => {
+    // Act
+    const entry = sitemapFor(SITE, { posts: POSTS }).find((candidate) => candidate.url === `${SITE}/blog/where-to-play`);
+
+    // Assert
+    expect(entry?.lastModified).toBe("2026-11-24");
+  });
+
+  it("lists the index with the newest post's day", () => {
+    // Act
+    const index = sitemapFor(SITE, { posts: POSTS }).find((candidate) => candidate.url === `${SITE}/blog`);
+
+    // Assert
+    expect(index?.lastModified).toBe("2026-12-02");
+  });
+
+  it("leaves the index out while nothing is published", () => {
+    // Act
+    const urls = sitemapFor(SITE, { posts: [] }).map((entry) => entry.url);
+
+    // Assert
+    expect(urls.some((url) => url.includes("/blog"))).toBe(false);
+  });
+});

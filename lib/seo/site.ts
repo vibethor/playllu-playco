@@ -145,12 +145,20 @@ const SITEMAP_RANK = {
   games: { changeFrequency: "daily", priority: 0.9 },
   game: { changeFrequency: "daily", priority: 0.7 },
   pass: { changeFrequency: "weekly", priority: 0.6 },
+  // The blog (24 Nov 2026): pages that last, unlike a game's. The index changes when a post is added.
+  blog: { changeFrequency: "weekly", priority: 0.6 },
+  post: { changeFrequency: "monthly", priority: 0.6 },
   other: { changeFrequency: "monthly", priority: 0.5 },
 } as const satisfies Record<string, { changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"]; priority: number }>;
 
 export interface SitemapOptions {
   /** Whether game passes are on sale (`PASSES_ENABLED`): `/pass` is then a public page. */
   passes?: boolean;
+  /**
+   * The published blog posts (never a draft), each with the day it was last changed. `/blog` itself is listed
+   * only when there is at least one: an index of nothing is not a page to send a crawler to.
+   */
+  posts?: readonly { path: string; lastModified: string }[];
   /** The upcoming games the games list shows. */
   games?: readonly {
     id: string;
@@ -174,7 +182,7 @@ function withLastModified<T extends object>(entry: T, lastModified: string | und
 }
 
 export function sitemapFor(site: string, options: SitemapOptions = {}): MetadataRoute.Sitemap {
-  const { passes = false, games = [] } = options;
+  const { passes = false, games = [], posts = [] } = options;
   // The home page and the games list show the games, so they changed when the newest game did.
   const gamesChanged = newest(games.map((game) => game.lastModified));
   const pages: MetadataRoute.Sitemap = PUBLIC_PATHS.map((path) => {
@@ -195,5 +203,14 @@ export function sitemapFor(site: string, options: SitemapOptions = {}): Metadata
       game.lastModified,
     ),
   );
-  return [...pages, ...pass, ...gamePages];
+  const blog: MetadataRoute.Sitemap =
+    posts.length > 0
+      ? [
+          withLastModified({ url: `${site}/blog`, ...SITEMAP_RANK.blog }, newest(posts.map((post) => post.lastModified))),
+          ...posts.map((post) =>
+            withLastModified({ url: canonicalFor(site, post.path), ...SITEMAP_RANK.post }, post.lastModified),
+          ),
+        ]
+      : [];
+  return [...pages, ...pass, ...blog, ...gamePages];
 }
