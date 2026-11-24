@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { readablePosts } from "@/lib/blog/posts";
 import { getStrings } from "@/lib/i18n/server";
 import { fillTemplate } from "@/lib/i18n/template";
 import { gtmEnabled } from "@/lib/analytics/gtm";
@@ -51,6 +52,8 @@ export async function Footer() {
     { href: "/privacy", label: legal.privacyTitle },
     { href: "/cookies", label: legal.cookiesTitle },
     { href: "/contact", label: siteFooter.contact },
+    // The blog, once there is something in it to read on this deployment (drafts count on a preview only).
+    ...(readablePosts().length > 0 ? [{ href: "/blog", label: siteFooter.blog }] : []),
   ];
 
   return (

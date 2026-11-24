@@ -148,6 +148,8 @@ export const strings = {
     // "© 2026 Playco · part of Playllu" since 24 Nov 2026 (SEO audit): the footer of every page now says which
     // brand this is and which group it belongs to, the same two names the terms use. Was "© Playllu".
     copyright: "© {year} Playco · part of Playllu",
+    // The footer link to `/blog`. Shown once there is a post to read.
+    blog: "Blog",
     // A real address in the footer of every page. A booking product that takes
     // money and holds personal data needs one reachable line that is not a
     // WhatsApp group, and GDPR expects a controller contact anyway.
@@ -485,6 +487,32 @@ export const strings = {
     noAccount: "New here?",
   },
 
+  /*
+   * THE BLOG (24 Nov 2026). The posts themselves are Markdown files in `content/blog/`, in the language they were
+   * written in; these are the words around them — the index, the byline, the dates, the block that closes every
+   * post.
+   */
+  blog: {
+    title: "Blog",
+    metaTitle: "Blog: guides to playing volleyball in Bangkok",
+    metaDescription:
+      "Guides from Playco on playing volleyball in Bangkok: where to play, what each option costs, what to expect at your first game and where to play indoors.",
+    indexIntro: "Guides to playing volleyball in Bangkok: where to play, what it costs and what to expect.",
+    empty: "No articles yet.",
+    // `{author}` is the named author, or the brand when the post names none.
+    byline: "By {author}",
+    published: "Published {date}",
+    updated: "Last updated {date}",
+    draftBadge: "Draft",
+    draftNotice: "Draft. Shown on preview deployments only; not published.",
+    englishOnlyNotice: "This article is in English.",
+    // The block that closes every post, so a post never needs to end with its own.
+    closingTitle: "Ready to play?",
+    closingBody: "See this week's games and book a spot online.",
+    closingCta: "See this week's games",
+    backToBlog: "All articles",
+    feedTitle: "Playco blog",
+  },
   games: {
     listTitle: "Upcoming games",
     // The alt text of a venue's own photograph on a game card (SEO audit, 24 Nov 2026). `{surface}` is lower-cased.

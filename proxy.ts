@@ -1,5 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { readablePosts } from "@/lib/blog/posts";
+import { BLOG_NOT_FOUND_PATH, blogRoute } from "@/lib/blog/routing";
 
 /** Query params that carry a magic-link credential worth rescuing. */
 const CREDENTIAL_PARAMS = ["code", "token_hash"] as const;
@@ -54,6 +56,15 @@ export default async function proxy(request: NextRequest) {
 
     return NextResponse.redirect(callback);
   }
+
+  /*
+   * THE BLOG (24 Nov 2026) — `lib/blog/routing.ts` has the reason. A post this deployment does not show (a draft
+   * in production, a mistyped address) is sent to a path no route matches, which is the only way to answer a real
+   * 404 under the root loading boundary: a `notFound()` from inside the page arrives after the response has
+   * started, at status 200.
+   */
+  const blog = blogRoute(url.pathname, readablePosts().map((post) => post.slug));
+  if (blog.kind === "missing") return NextResponse.rewrite(new URL(BLOG_NOT_FOUND_PATH, request.url));
 
   let response = NextResponse.next({ request });
 
