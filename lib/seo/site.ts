@@ -18,9 +18,22 @@ const SITE_NAME = "Playco";
  * Organization (the logo). The logo is the 512px icon the PWA manifest already
  * serves — square, and well over the 112px floor search engines ask for.
  */
-export function homeStructuredData(site: string, options: { sameAs?: readonly string[]; description?: string } = {}) {
+export interface HomeStructuredDataOptions {
+  sameAs?: readonly string[];
+  description?: string;
+  /** The support address the site already shows on `/contact`. */
+  contactEmail?: string;
+  /** Languages support answers in (BCP 47), e.g. `["en", "th"]`. */
+  contactLanguages?: readonly string[];
+  /** The city the games are in, by name. */
+  areaServed?: string;
+  /** The group the brand belongs to, by name, as the terms state it. */
+  parentOrganization?: string;
+}
+
+export function homeStructuredData(site: string, options: HomeStructuredDataOptions = {}) {
   const url = `${site}/`;
-  const { sameAs = [], description } = options;
+  const { sameAs = [], description, contactEmail, contactLanguages = [], areaServed, parentOrganization } = options;
   const website: Record<string, unknown> = { "@type": "WebSite", name: SITE_NAME, url };
   const organization: Record<string, unknown> = {
     "@type": "Organization",
@@ -34,6 +47,21 @@ export function homeStructuredData(site: string, options: { sameAs?: readonly st
   }
   // The social profiles (20 Nov 2026): `sameAs` is how a search engine ties @playco.live to this site.
   if (sameAs.length > 0) organization.sameAs = [...sameAs];
+  /*
+   * WHO IS BEHIND THE NAME (SEO audit, 24 Nov 2026). "Playco" is also a games company and a playground maker; a
+   * reachable contact, the city served and the group it belongs to are what tell this one apart. Each is optional
+   * and absent rather than empty when the page has nothing to say.
+   */
+  if (contactEmail) {
+    organization.contactPoint = {
+      "@type": "ContactPoint",
+      contactType: "customer support",
+      email: contactEmail,
+      ...(contactLanguages.length > 0 ? { availableLanguage: [...contactLanguages] } : {}),
+    };
+  }
+  if (areaServed) organization.areaServed = { "@type": "City", name: areaServed };
+  if (parentOrganization) organization.parentOrganization = { "@type": "Organization", name: parentOrganization };
   return { "@context": "https://schema.org", "@graph": [website, organization] };
 }
 
@@ -84,9 +112,12 @@ export function robotsFor(site: string): MetadataRoute.Robots {
 }
 
 /**
- * The public pages a search engine should know about. `/contact` and `/terms`
- * are noindex (the owner kept them out of the result's sub-links), so they are
- * not listed.
+ * The public pages a search engine should know about. `/terms` is noindex (the
+ * owner kept it out of the result's sub-links), so it is not listed.
+ *
+ * 24 Nov 2026 (SEO audit, Jachym): `/contact` IS LISTED and indexable again — who runs a site that takes payment
+ * is a trust question, and the answer was hidden from search. `/signup` IS NOT: a form with no reading on it, now
+ * noindex like `/login`.
  *
  * GAME PAGES ARE LISTED (Playco, 17 Nov 2026, Jachym: "have Google index our
  * public pages"). ~~Game pages are not listed: they live a week~~ — a week is
@@ -94,7 +125,19 @@ export function robotsFor(site: string): MetadataRoute.Robots {
  * upcoming game the games list shows is in the sitemap too. The route passes
  * them in; this stays pure.
  */
-const PUBLIC_PATHS = ["/", "/games", "/signup", "/privacy", "/cookies"] as const;
+const PUBLIC_PATHS = ["/", "/games", "/contact", "/privacy", "/cookies"] as const;
+
+/**
+ * WHEN EACH FIXED PAGE LAST CHANGED IN A WAY A READER WOULD NOTICE. A real date, edited by hand with the page:
+ * a `lastmod` of "now" on every request teaches a crawler to ignore the field. `/` and `/games` are not here
+ * because they change with the games; they take the newest game's time, passed in by the route.
+ */
+export const PAGE_LAST_MODIFIED: Readonly<Record<string, string>> = {
+  "/contact": "2026-11-24",
+  "/privacy": "2026-11-18",
+  "/cookies": "2026-11-17",
+  "/pass": "2026-11-19",
+};
 
 /** Where each kind of page sits in the sitemap: how often it changes, how much it matters. */
 const SITEMAP_RANK = {
@@ -102,28 +145,72 @@ const SITEMAP_RANK = {
   games: { changeFrequency: "daily", priority: 0.9 },
   game: { changeFrequency: "daily", priority: 0.7 },
   pass: { changeFrequency: "weekly", priority: 0.6 },
+  // The blog (24 Nov 2026): pages that last, unlike a game's. The index changes when a post is added.
+  blog: { changeFrequency: "weekly", priority: 0.6 },
+  post: { changeFrequency: "monthly", priority: 0.6 },
   other: { changeFrequency: "monthly", priority: 0.5 },
 } as const satisfies Record<string, { changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"]; priority: number }>;
 
 export interface SitemapOptions {
   /** Whether game passes are on sale (`PASSES_ENABLED`): `/pass` is then a public page. */
   passes?: boolean;
+  /**
+   * The published blog posts (never a draft), each with the day it was last changed. `/blog` itself is listed
+   * only when there is at least one: an index of nothing is not a page to send a crawler to.
+   */
+  posts?: readonly { path: string; lastModified: string }[];
   /** The upcoming games the games list shows. */
-  games?: readonly { id: string; startsAt: string; /** The game's canonical path (its short link), when known. */ path?: string }[];
+  games?: readonly {
+    id: string;
+    startsAt: string;
+    /** The game's canonical path (its short link), when known. */
+    path?: string;
+    /** When the game row was last written (`games.created_at` until the row carries an update time). */
+    lastModified?: string;
+  }[];
+}
+
+/** The newest of the given ISO times, or nothing when none is given. */
+function newest(times: readonly (string | undefined)[]): string | undefined {
+  const known = times.filter((time): time is string => Boolean(time));
+  if (known.length === 0) return undefined;
+  return known.reduce((latest, time) => (Date.parse(time) > Date.parse(latest) ? time : latest));
+}
+
+function withLastModified<T extends object>(entry: T, lastModified: string | undefined): T & { lastModified?: string } {
+  return lastModified ? { ...entry, lastModified } : entry;
 }
 
 export function sitemapFor(site: string, options: SitemapOptions = {}): MetadataRoute.Sitemap {
-  const { passes = false, games = [] } = options;
+  const { passes = false, games = [], posts = [] } = options;
+  // The home page and the games list show the games, so they changed when the newest game did.
+  const gamesChanged = newest(games.map((game) => game.lastModified));
   const pages: MetadataRoute.Sitemap = PUBLIC_PATHS.map((path) => {
-    if (path === "/") return { url: `${site}/`, ...SITEMAP_RANK.home };
-    if (path === "/games") return { url: `${site}${path}`, ...SITEMAP_RANK.games };
-    return { url: `${site}${path}`, ...SITEMAP_RANK.other };
+    if (path === "/") return withLastModified({ url: `${site}/`, ...SITEMAP_RANK.home }, gamesChanged);
+    if (path === "/games") return withLastModified({ url: `${site}${path}`, ...SITEMAP_RANK.games }, gamesChanged);
+    return withLastModified({ url: `${site}${path}`, ...SITEMAP_RANK.other }, PAGE_LAST_MODIFIED[path]);
   });
-  const pass: MetadataRoute.Sitemap = passes ? [{ url: `${site}/pass`, ...SITEMAP_RANK.pass }] : [];
-  const gamePages: MetadataRoute.Sitemap = games.map((game) => ({
-    // The same address the game page names as canonical, so the sitemap and the page agree.
-    url: game.path ? canonicalFor(site, game.path) : `${site}/game/${encodeURIComponent(game.id)}`,
-    ...SITEMAP_RANK.game,
-  }));
-  return [...pages, ...pass, ...gamePages];
+  const pass: MetadataRoute.Sitemap = passes
+    ? [withLastModified({ url: `${site}/pass`, ...SITEMAP_RANK.pass }, PAGE_LAST_MODIFIED["/pass"])]
+    : [];
+  const gamePages: MetadataRoute.Sitemap = games.map((game) =>
+    withLastModified(
+      {
+        // The same address the game page names as canonical, so the sitemap and the page agree.
+        url: game.path ? canonicalFor(site, game.path) : `${site}/game/${encodeURIComponent(game.id)}`,
+        ...SITEMAP_RANK.game,
+      },
+      game.lastModified,
+    ),
+  );
+  const blog: MetadataRoute.Sitemap =
+    posts.length > 0
+      ? [
+          withLastModified({ url: `${site}/blog`, ...SITEMAP_RANK.blog }, newest(posts.map((post) => post.lastModified))),
+          ...posts.map((post) =>
+            withLastModified({ url: canonicalFor(site, post.path), ...SITEMAP_RANK.post }, post.lastModified),
+          ),
+        ]
+      : [];
+  return [...pages, ...pass, ...blog, ...gamePages];
 }

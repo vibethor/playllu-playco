@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { oldHostRedirects } from "./lib/seo/oldHost";
 import { SECURITY_HEADERS } from "./lib/seo/securityHeaders";
 import { shortLinkRedirects } from "./shortLinks";
 
@@ -46,6 +47,18 @@ const nextConfig: NextConfig = {
    * variable, present at build time on every deployment; locally it is unset and nothing changes.
    */
   deploymentId: process.env.VERCEL_DEPLOYMENT_ID || undefined,
+
+  /*
+   * THE TITLE, THE CANONICAL AND THE ROBOTS TAG GO IN <head>, FOR EVERY VISITOR (SEO audit, 24 Nov 2026).
+   *
+   * Next streams `generateMetadata` on dynamic routes: measured on production, `/game/8` and `/player/<nickname>`
+   * sent `<title>`, the description, `rel="canonical"` and `noindex` inside <body>, after the "Loading…" shell.
+   * A crawler that does not run JavaScript reads no title there. It also un-did audit F10: `notFound()` thrown from
+   * `generateMetadata` arrived after the status line, so `/game/<unknown>` answered 200 with a noindex tag.
+   * A pattern that matches every user agent is the documented switch for "blocking metadata for everyone"
+   * (docs: next-config-js/htmlLimitedBots).
+   */
+  htmlLimitedBots: /.*/,
 
   /**
    * Ship `content/` with the server bundle.
@@ -227,6 +240,8 @@ const nextConfig: NextConfig = {
         destination: "/football",
         permanent: false,
       },
+      /* The first Vercel address → the real one. See `lib/seo/oldHost.ts`. */
+      ...oldHostRedirects(),
       /* Marketing short links (`/reclub`, `/ig`, `/wa`) → the games list with UTM tags. See `shortLinks.ts`. */
       ...shortLinkRedirects(),
     ];

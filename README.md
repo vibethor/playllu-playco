@@ -68,6 +68,7 @@ npm run test:e2e          # Playwright against the local stack, EMAIL_DRY_RUN fo
 npm run test:integration  # scripts/*.check.ts against the live database
 
 npm run perf:prod         # measure the DEPLOYED site — see perf/README.md
+npm run blog:build        # after editing, adding or deleting a post in content/blog/ (embeds the Markdown)
 ```
 
 `npm run perf:prod` is not one of the four suites and asserts nothing. It prints
@@ -81,6 +82,15 @@ Migrations are applied by the owner, by hand:
 ```bash
 node scripts/apply-migration.mjs supabase/migrations/<file>.sql --production
 ```
+
+## Blog
+
+Posts are Markdown files in `content/blog/<slug>.md`; the file name is the address (`/blog/<slug>`). After any
+change there, run `npm run blog:build` and commit `lib/blog/posts.generated.ts` with it — a unit test fails when
+the two disagree. A post with `draft: true`, or with a `[TODO` anywhere in it, is a draft: it is readable on
+preview deployments and in `npm run dev`, answers 404 in production, and is never in the sitemap or the feed.
+Which deployment is which comes from `VERCEL_ENV`, which Vercel sets itself; there is nothing to configure.
+To publish: fill the `[TODO]` lines, remove `draft: true`, set both dates to the day, rebuild, merge.
 
 ## Architecture
 

@@ -88,12 +88,12 @@ export async function CommunityPanel({
       className="lifted flex min-w-[270px] flex-1 flex-col rounded-card p-[22px]"
     >
       {/* Uppercase, as p01 draws it — §1.4 marks the display steps "Upper". */}
-      <h3
+      <h2
         data-testid="community-heading"
         className="m-0 mb-[6px] font-display text-community-title uppercase text-bone"
       >
         {community.title}
-      </h3>
+      </h2>
       <p className="mb-4 max-w-[320px] text-[13px] leading-relaxed text-muted">
         {community.body}
       </p>

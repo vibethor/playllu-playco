@@ -79,10 +79,18 @@ export const OPERATOR_CONTACT = {
 } as const;
 
 /**
- * The rules annex inside the terms — `/terms#pravidla`. Linked from signup,
- * from the booking emails and from the page itself.
+ * The rules annex inside the terms — `/terms#rules`. Linked from signup, from the booking emails and from the page
+ * itself. English since 24 Nov 2026 (SEO audit): the page is in English and Thai, and its one in-page anchor was
+ * the Czech word.
  */
-export const TERMS_RULES_ANCHOR = "pravidla";
+export const TERMS_RULES_ANCHOR = "rules";
+
+/**
+ * THE ANCHOR'S OLD NAME, WHICH STILL WORKS. Booking emails sent before 24 Nov 2026 link to `/terms#pravidla`, and
+ * an email cannot be recalled; the terms page keeps a second target under this id so those links still land on
+ * the rules. Nothing new may link to it.
+ */
+export const LEGACY_TERMS_RULES_ANCHOR = "pravidla";
 
 /** Where the terms are published as a PDF (the lawyer's brief, item 1.2). */
 export const TERMS_PDF_PATH = "/legal/obchodni-podminky.pdf";

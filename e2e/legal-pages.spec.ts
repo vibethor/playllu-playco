@@ -88,7 +88,8 @@ test("the footer carries the four legal links and no operator block", async ({ p
   await expect(footer).not.toContainText("Provozovatel");
   await expect(footer).not.toContainText("Česká obchodní inspekce");
   await expect(footer).not.toContainText("support@hrajfotbal.com");
-  await expect(footer).toContainText("© Playllu");
+  // "© 2026 Playco · part of Playllu" since 24 Nov 2026: the year is the server's, so the two names are matched.
+  await expect(footer).toContainText(/© \d{4} Playco · part of Playllu/);
   await expect(footer).not.toContainText(/hrajsport/i);
 });
 

@@ -21,6 +21,8 @@ const PLAYER_FACING = [
   "meta",
   "nav",
   "siteFooter",
+  // The words around a blog post (24 Nov 2026). The posts are files, in the language they were written in.
+  "blog",
   /*
    * The legal pages' furniture and the operator's contact block (2026-10-19).
    * The documents are Czech for everyone; what surrounds them is not, because
@@ -123,7 +125,6 @@ const INTENTIONALLY_UNTRANSLATED = new Set([
   "emails.spotHeld.spdLabel",
   "emails.spotHeld.preheader",
   // Brand and design furniture, identical in all three languages.
-  "siteFooter.copyright",
   "siteFooter.contactEmail",
   "notFound.code",
   // `landing.headlineLead` / `headlineAccent` were here — the hero's wordmark,

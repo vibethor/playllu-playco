@@ -1,7 +1,7 @@
 import { normaliseReferralCode } from "@/lib/referrals/code";
 import type { Metadata } from "next";
 import { siteUrl } from "@/lib/site";
-import { publicPageMetadata } from "@/lib/seo/pageMetadata";
+import { NOINDEX_FOLLOW, publicPageMetadata } from "@/lib/seo/pageMetadata";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SignupForm } from "./SignupForm";
@@ -14,12 +14,16 @@ import { countryOptions } from "@/lib/auth/countries";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getStrings();
-  return publicPageMetadata({
-    site: await siteUrl(),
-    path: "/signup",
-    title: t.auth.signupTitle,
-    description: t.meta.signupDescription,
-  });
+  return {
+    ...publicPageMetadata({
+      site: await siteUrl(),
+      path: "/signup",
+      title: t.auth.signupTitle,
+      description: t.meta.signupDescription,
+    }),
+    // A form, not a page to land on from a search (SEO audit, 24 Nov 2026). A shared link keeps its preview.
+    robots: NOINDEX_FOLLOW,
+  };
 }
 
 /**

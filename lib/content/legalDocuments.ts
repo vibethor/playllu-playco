@@ -31,7 +31,7 @@ export const LEGAL_DOCUMENT_ORIGINAL: Record<LegalDocumentName, LegalOriginalId>
 /** The language every legal document is published in. */
 export const LEGAL_DOCUMENT_LOCALE = "cs" as const;
 
-/** The anchor of the terms' Příloha 1 — the signup box links to `/terms#pravidla`. */
+/** The anchor of the terms' Příloha 1 — the signup box links to `/terms#rules`. */
 // Lives in `lib/legal.ts` since round 41, so the emails can link to it without
 // importing every legal document; re-exported here for the pages that always did.
 export { TERMS_RULES_ANCHOR } from "@/lib/legal";

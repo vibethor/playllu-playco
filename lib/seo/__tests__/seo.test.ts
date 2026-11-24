@@ -51,11 +51,30 @@ describe("the sitemap", () => {
     expect(urls.some((url) => /\/(admin|account|my-games|login|api|payment)/.test(url))).toBe(false);
   });
 
-  it("leaves out Kontakt and Obchodní podmínky, which are noindex — kept out of the result's sub-links", () => {
+  it("leaves out the terms, which are noindex — kept out of the result's sub-links", () => {
+    // Act
     const urls = sitemapFor(SITE).map((entry) => entry.url);
 
-    expect(urls).not.toContain(`${SITE}/contact`);
+    // Assert
     expect(urls).not.toContain(`${SITE}/terms`);
+  });
+
+  // 24 Nov 2026 (SEO audit): who runs a site that takes payment is a trust question, so the contact page is
+  // findable again. It was left out upstream to keep it from the result's sub-links.
+  it("lists the contact page, which is indexable", () => {
+    // Act
+    const urls = sitemapFor(SITE).map((entry) => entry.url);
+
+    // Assert
+    expect(urls).toContain(`${SITE}/contact`);
+  });
+
+  it("leaves out sign-up, a form with nothing to read, which is noindex like log-in", () => {
+    // Act
+    const urls = sitemapFor(SITE).map((entry) => entry.url);
+
+    // Assert
+    expect(urls).not.toContain(`${SITE}/signup`);
   });
 
   it("lists the game pass page while passes are on sale", () => {
@@ -266,7 +285,7 @@ describe("the security headers every response carries", () => {
 });
 
 describe("the descriptions of the pages a search lands on", () => {
-  const SEARCHED = ["gamesDescription", "passDescription", "signupDescription"] as const;
+  const SEARCHED = ["gamesDescription", "passDescription", "contactDescription"] as const;
 
   it.each(SEARCHED)("%s fits a result in English: 110 to 160 characters", (key) => {
     // Act
@@ -284,5 +303,133 @@ describe("the descriptions of the pages a search lands on", () => {
     // Assert
     expect(gamesTitle).toMatch(/volleyball/i);
     expect(gamesTitle).toMatch(/Bangkok/);
+  });
+});
+
+describe("when the sitemap says a page last changed", () => {
+  const GAMES = [
+    { id: "g1", startsAt: "2026-11-29T10:00:00Z", lastModified: "2026-11-20T08:00:00Z" },
+    { id: "g2", startsAt: "2026-12-01T10:00:00Z", lastModified: "2026-11-22T09:30:00Z" },
+  ];
+
+  function entryFor(path: string, games: typeof GAMES = GAMES) {
+    return sitemapFor(SITE, { games }).find((entry) => entry.url === `${SITE}${path}`);
+  }
+
+  it("gives a game's page the time its row was last written", () => {
+    // Act
+    const game = entryFor("/game/g1");
+
+    // Assert
+    expect(game?.lastModified).toBe("2026-11-20T08:00:00Z");
+  });
+
+  it("gives the games list the newest game's time, because the list is the games", () => {
+    // Act
+    const list = entryFor("/games");
+
+    // Assert
+    expect(list?.lastModified).toBe("2026-11-22T09:30:00Z");
+  });
+
+  it("gives the home page the newest game's time too", () => {
+    // Act
+    const home = entryFor("/");
+
+    // Assert
+    expect(home?.lastModified).toBe("2026-11-22T09:30:00Z");
+  });
+
+  it("gives a fixed page a real calendar date, not the moment of the request", () => {
+    // Act
+    const privacy = entryFor("/privacy");
+
+    // Assert
+    expect(privacy?.lastModified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("says nothing for the games list when there are no games, rather than inventing a date", () => {
+    // Act
+    const list = entryFor("/games", []);
+
+    // Assert
+    expect(list).toBeDefined();
+    expect(list).not.toHaveProperty("lastModified");
+  });
+});
+
+describe("who is behind the name, in the home page's structured data", () => {
+  function organizationWith(options: Parameters<typeof homeStructuredData>[1]) {
+    return homeStructuredData(SITE, options)["@graph"].find((node) => node["@type"] === "Organization");
+  }
+
+  it("gives a support contact and the languages it answers in", () => {
+    // Act
+    const organization = organizationWith({ contactEmail: "support@example.com", contactLanguages: ["en", "th"] });
+
+    // Assert
+    expect(organization?.contactPoint).toEqual({
+      "@type": "ContactPoint",
+      contactType: "customer support",
+      email: "support@example.com",
+      availableLanguage: ["en", "th"],
+    });
+  });
+
+  it("names the city it serves", () => {
+    // Act
+    const organization = organizationWith({ areaServed: "Bangkok" });
+
+    // Assert
+    expect(organization?.areaServed).toEqual({ "@type": "City", name: "Bangkok" });
+  });
+
+  it("names the group it belongs to", () => {
+    // Act
+    const organization = organizationWith({ parentOrganization: "Playllu" });
+
+    // Assert
+    expect(organization?.parentOrganization).toEqual({ "@type": "Organization", name: "Playllu" });
+  });
+
+  it("leaves each of them out when the page has nothing to say", () => {
+    // Act
+    const organization = organizationWith({});
+
+    // Assert
+    expect(organization).not.toHaveProperty("contactPoint");
+    expect(organization).not.toHaveProperty("areaServed");
+    expect(organization).not.toHaveProperty("parentOrganization");
+  });
+});
+
+describe("the blog in the sitemap", () => {
+  const POSTS = [
+    { path: "/blog/where-to-play", lastModified: "2026-11-24" },
+    { path: "/blog/first-game", lastModified: "2026-12-02" },
+  ];
+
+  it("lists each published post with the day it was last changed", () => {
+    // Act
+    const entry = sitemapFor(SITE, { posts: POSTS }).find((candidate) => candidate.url === `${SITE}/blog/where-to-play`);
+
+    // Assert
+    expect(entry?.lastModified).toBe("2026-11-24");
+  });
+
+  it("lists the index with the newest post's day", () => {
+    // Act
+    const index = sitemapFor(SITE, { posts: POSTS }).find((candidate) => candidate.url === `${SITE}/blog`);
+
+    // Assert
+    expect(index?.lastModified).toBe("2026-12-02");
+  });
+
+  it("leaves the index out while nothing is published", () => {
+    // Act
+    const urls = sitemapFor(SITE, { posts: [] }).map((entry) => entry.url);
+
+    // Assert
+    expect(urls.some((url) => url.includes("/blog"))).toBe(false);
   });
 });

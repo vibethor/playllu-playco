@@ -36,3 +36,10 @@ export function publicPageMetadata(input: {
 
 /** A page a search engine should not list: sign-in steps, checkout, a player's own screens. */
 export const NOINDEX = { index: false, follow: false } as const;
+
+/**
+ * A FORM WITH NOTHING TO READ, STILL WORTH CRAWLING THROUGH (SEO audit, 24 Nov 2026): log-in and sign-up. Listed,
+ * they compete with the home page for the brand's own name and give a searcher a form instead of an answer; the
+ * links on them (terms, privacy, home) are still followed.
+ */
+export const NOINDEX_FOLLOW = { index: false, follow: true } as const;

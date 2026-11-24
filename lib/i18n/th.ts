@@ -28,6 +28,13 @@ export const th: StringsOverlay = {
     cookiesDescription: "playco.live ใช้คุกกี้อะไรบ้าง ใช้เพื่ออะไร และคุณเลือกได้อย่างไร",
     heroAlt: "นักวอลเลย์บอลกระโดดตบลูกที่หน้าตาข่ายระหว่างเกมในร่ม",
     loginDescription: "เข้าสู่ระบบ",
+    // SEO audit, 24 Nov 2026 — drafted, waiting for a native review with the rest of the Thai.
+    gameTitle: "วอลเลย์บอล{surface}ที่ {venue} กรุงเทพฯ · {when}",
+    gameTitleNoSurface: "วอลเลย์บอลที่ {venue} กรุงเทพฯ · {when}",
+    gameDescription:
+      "วอลเลย์บอลขาจร{surface} {format} ที่ {venue} กรุงเทพฯ {date} เวลา {time} น. เล่น {minutes} นาที ราคา {price} จองที่ออนไลน์ จ่ายด้วยบัตรหรือพร้อมเพย์",
+    contactDescription:
+      "ติดต่อ Playco เกมวอลเลย์บอลขาจรในกรุงเทพฯ มีอีเมลสำหรับการจอง การคืนเงิน และการช่วยเหลือ และอีเมลสำหรับคำถามเรื่องข้อมูลส่วนบุคคล",
   },
   nav: {
     cta: "จองที่ของคุณ",
@@ -63,6 +70,8 @@ export const th: StringsOverlay = {
     settings: "ตั้งค่าคุกกี้",
   },
   siteFooter: {
+    copyright: "© {year} Playco · ส่วนหนึ่งของ Playllu",
+    blog: "บล็อก",
     contact: "ติดต่อ",
     contactTitle: "ติดต่อเรา",
   },
@@ -72,7 +81,7 @@ export const th: StringsOverlay = {
     cta: "ดูเกมที่มีอยู่ →",
   },
   landing: {
-    heroEyebrow: "เกมขาจรในกรุงเทพฯ",
+    heroEyebrow: "วอลเลย์บอลขาจรในกรุงเทพฯ",
     heroLead: "เล่น",
     heroSport: "วอลเลย์บอล",
     heroLine1: "เล่นวอลเลย์บอล",
@@ -208,8 +217,29 @@ export const th: StringsOverlay = {
     authOr: "หรือ",
     noAccount: "มาใหม่?",
   },
+  blog: {
+    title: "บล็อก",
+    metaTitle: "บล็อก: คู่มือเล่นวอลเลย์บอลในกรุงเทพฯ",
+    metaDescription:
+      "คู่มือจาก Playco สำหรับการเล่นวอลเลย์บอลในกรุงเทพฯ: เล่นได้ที่ไหน แต่ละแบบมีค่าใช้จ่ายเท่าไร เกมแรกเป็นอย่างไร และเล่นในร่มได้ที่ไหน",
+    indexIntro: "คู่มือเล่นวอลเลย์บอลในกรุงเทพฯ: เล่นที่ไหน ค่าใช้จ่ายเท่าไร และควรรู้อะไรก่อนไป",
+    empty: "ยังไม่มีบทความ",
+    byline: "โดย {author}",
+    published: "เผยแพร่เมื่อ {date}",
+    updated: "อัปเดตล่าสุด {date}",
+    draftBadge: "ฉบับร่าง",
+    draftNotice: "ฉบับร่าง แสดงเฉพาะบนเวอร์ชันพรีวิวเท่านั้น ยังไม่ได้เผยแพร่",
+    englishOnlyNotice: "บทความนี้เป็นภาษาอังกฤษ",
+    closingTitle: "พร้อมเล่นหรือยัง?",
+    closingBody: "ดูเกมของสัปดาห์นี้และจองที่ออนไลน์ได้เลย",
+    closingCta: "ดูเกมของสัปดาห์นี้",
+    backToBlog: "บทความทั้งหมด",
+    feedTitle: "บล็อก Playco",
+  },
   games: {
     listTitle: "เกมที่กำลังจะมาถึง",
+    cardPhotoAlt: "{venue} สนามวอลเลย์บอล{surface}",
+    cardPhotoAltNoSurface: "{venue} สนามวอลเลย์บอล",
     empty: "ตอนนี้ยังไม่มีเกม",
     emptyTitle: "ยังไม่มีเกมในตาราง",
     emptyBody: "มีเกมใหม่ทุกสัปดาห์",

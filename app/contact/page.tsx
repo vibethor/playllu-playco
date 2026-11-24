@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { siteUrl } from "@/lib/site";
-import { canonicalFor } from "@/lib/seo/site";
+import { publicPageMetadata } from "@/lib/seo/pageMetadata";
 import Link from "next/link";
 import { getContactDetails } from "@/lib/home/queries";
 import { getStrings } from "@/lib/i18n/server";
@@ -9,15 +9,17 @@ import { OPERATOR_CONTACT } from "@/lib/legal";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getStrings();
   /*
-   * NOINDEX (2026-11-06, the owner): kept out of the sub-links under the site's
-   * Google result, which is the only way to keep a page out of them. Still
-   * linked from the footer, and still followed.
+   * INDEXABLE AGAIN (SEO audit, Jachym, 24 Nov 2026). It was noindex since 2026-11-06 to keep it out of the
+   * sub-links under the site's Google result. For a site that takes card payments from strangers, "who is behind
+   * this and how do I reach them" is a question a searcher asks, and this page is the answer; hiding it cost more
+   * than a sub-link did.
    */
-  return {
+  return publicPageMetadata({
+    site: await siteUrl(),
+    path: "/contact",
     title: t.siteFooter.contact,
-    robots: { index: false, follow: true },
-    alternates: { canonical: canonicalFor(await siteUrl(), "/contact") },
-  };
+    description: t.meta.contactDescription,
+  });
 }
 
 const LINK = "text-accent underline-offset-4 hover:underline";

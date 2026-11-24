@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { SITE_NAME } from "@/lib/city/default";
+import { DEFAULT_CITY, PARENT_ORGANIZATION, SITE_NAME } from "@/lib/city/default";
+import { SERVED_LOCALES } from "@/lib/i18n/locales";
+import { OPERATOR_CONTACT } from "@/lib/legal";
 import { Logo } from "@/components/brand/Logo";
 import Image from "next/image";
 import Link from "next/link";
@@ -64,7 +66,12 @@ export default async function LandingPage() {
   const signedIn = (await getCurrentPlayer()) !== null;
   const structuredData = homeStructuredData(await siteUrl(), {
     description: t.meta.description,
+    // Every public profile of the brand; a LinkedIn page's address joins this list the day the page exists.
     sameAs: [landing.community.instagramUrl].filter((profile) => profile.length > 0),
+    contactEmail: OPERATOR_CONTACT.email,
+    contactLanguages: SERVED_LOCALES,
+    areaServed: DEFAULT_CITY.name,
+    parentOrganization: PARENT_ORGANIZATION,
   });
 
   /*
@@ -163,11 +170,20 @@ export default async function LandingPage() {
         />
         <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/50 via-ink/65 to-page" />
         <div className="mx-auto flex max-w-shell flex-col items-start gap-4 px-gutter pb-10 pt-[calc(theme(spacing.nav)+40px)] md:pb-16 md:pt-[calc(theme(spacing.nav)+96px)]">
-          <p className="m-0 text-eyebrow font-semibold uppercase tracking-eyebrow text-muted">{landing.heroEyebrow}</p>
-          <h1 data-testid="hero-headline" className="m-0 font-display text-[clamp(40px,9vw,72px)] font-extrabold leading-[1.02] tracking-tight text-bone">
-            {landing.heroLead} <span className="text-accent">{landing.heroSport}</span>
-            <br />
-            {landing.heroLine2}
+          {/*
+            ONE HEADING, TWO LINES (SEO audit, 24 Nov 2026). The page's only H1 was the slogan — "Play volleyball.
+            Anytime. Anywhere." — which names neither the city nor what kind of game, while the line that does
+            ("Pickup volleyball in Bangkok") sat above it as a paragraph. Both are the heading now. `flex flex-col
+            gap-4` repeats the parent's own stacking, so nothing moves: the two spans sit exactly where the
+            paragraph and the old H1 did. The test id stays on the slogan, which is what the layout tests measure.
+          */}
+          <h1 className="m-0 flex flex-col items-start gap-4">
+            <span className="block text-eyebrow font-semibold uppercase tracking-eyebrow text-muted">{landing.heroEyebrow}</span>
+            <span data-testid="hero-headline" className="block font-display text-[clamp(40px,9vw,72px)] font-extrabold leading-[1.02] tracking-tight text-bone">
+              {landing.heroLead} <span className="text-accent">{landing.heroSport}</span>
+              <br />
+              {landing.heroLine2}
+            </span>
           </h1>
           <p className="m-0 max-w-[34ch] text-body-lg text-muted">{landing.heroSub}</p>
           <Link

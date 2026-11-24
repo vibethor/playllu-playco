@@ -9,6 +9,7 @@ import { SpotsLeft } from "@/components/game/SpotsLeft";
 import { formatTime } from "@/lib/format";
 import { venuePhotoUrl } from "@/lib/storage/avatar";
 import { gamePath } from "@/lib/games/link";
+import { venuePhotoAlt } from "@/lib/games/photoAlt";
 import { venuePhotoVersion } from "@/lib/storage/photoVersions";
 import { getStrings } from "@/lib/i18n/server";
 import type { RosterAvatar } from "@/lib/games/queries";
@@ -237,7 +238,8 @@ export async function GameCard({
         */}
         <Image
           src={photo}
-          alt=""
+          // A venue's own photograph is named; the default one is decoration and stays silent (`venuePhotoAlt`).
+          alt={venuePhotoAlt({ venue: game.venue, surface: game.surface, isVenuePhoto: photo !== DEFAULT_PITCH }, t)}
           fill
           sizes="(max-width: 600px) 100vw, 560px"
           priority={priority}

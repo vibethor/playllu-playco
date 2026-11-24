@@ -65,9 +65,9 @@ export async function PlayerOfMonthPanel({
           <div className="min-w-0">
             {/* `eyebrow` — the one uppercase style in the product (ruling B),
                 and the frame draws this one in volt rather than grey. */}
-            <h3 className="m-0 text-eyebrow font-semibold uppercase text-accent">
+            <h2 className="m-0 text-eyebrow font-semibold uppercase text-accent">
               {t.landing.potmTitle}
-            </h3>
+            </h2>
             {/*
               THE NAME CARRIES THE DISPLAY FACE NOW. `page-title` is the step
               p01 sets it at, and it truncates rather than wraps: a nickname
@@ -135,9 +135,9 @@ export async function PlayerOfMonthPanel({
           to a heading and a sentence.
         */
         <div>
-          <h3 className="m-0 text-eyebrow font-semibold uppercase text-accent">
+          <h2 className="m-0 text-eyebrow font-semibold uppercase text-accent">
             {t.landing.potmTitle}
-          </h3>
+          </h2>
           <p className="m-0 mt-2 max-w-[240px] text-[13px] text-muted">
             {t.landing.potmEmpty}
           </p>
