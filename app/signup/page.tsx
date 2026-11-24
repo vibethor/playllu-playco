@@ -11,7 +11,6 @@ import { signedUpDestination } from "@/lib/analytics/gtm";
 import { getSessionUser, getCurrentPlayer } from "@/lib/auth/session";
 import { getLocale, getStrings } from "@/lib/i18n/server";
 import { countryOptions } from "@/lib/auth/countries";
-import { DEFAULT_PHONE_COUNTRY, phoneCountryOptions } from "@/lib/auth/phone";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getStrings();
@@ -60,7 +59,6 @@ export default async function SignupPage({
 
   const countries = countryOptions(locale);
   // Round 41: the same list with each calling code, for the phone prefix.
-  const phoneCountries = phoneCountryOptions(countries);
 
   if (!user) {
     return (
@@ -81,8 +79,6 @@ export default async function SignupPage({
           <SignupForm
             next={next}
             countries={countries}
-            phoneCountries={phoneCountries}
-            defaultPhoneCountry={DEFAULT_PHONE_COUNTRY}
             defaultEmailLocale={locale}
             defaultReferral={defaultReferral}
             mode="create"
@@ -145,8 +141,6 @@ export default async function SignupPage({
         <SignupForm
           next={next}
           countries={countries}
-          phoneCountries={phoneCountries}
-          defaultPhoneCountry={DEFAULT_PHONE_COUNTRY}
           defaultEmailLocale={locale}
           defaultReferral={defaultReferral}
           mode="finish"

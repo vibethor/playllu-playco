@@ -33,6 +33,7 @@ export const th: StringsOverlay = {
     cta: "จองที่ของคุณ",
     games: "เกม",
     logIn: "เข้าสู่ระบบ",
+    joinFree: "สมัครฟรี",
     profile: "โปรไฟล์ของฉัน",
     homeShort: "หน้าแรก",
     pass: "พาส",
@@ -78,6 +79,7 @@ export const th: StringsOverlay = {
     heroLine2: "ได้ทุกที่ ทุกเวลา",
     heroSub: "จองที่ได้ในนาทีเดียว แล้วมาเล่นได้เลย ไม่ต้องมีทีม",
     heroCta: "หาเกม",
+    heroJoin: "มาใหม่ใช่ไหม? สมัครบัญชีฟรี",
     vision: "เกมเดียวที่วนกลับมาเรื่อย ๆ หาเกม จองที่ แล้วมาเล่น",
     scrollHint: "↓ เลื่อนลง",
     steps: [
@@ -178,6 +180,7 @@ export const th: StringsOverlay = {
     tosTermsLink: "ข้อกำหนดและเงื่อนไข",
     tosRulesLink: "กติกาของคอมมูนิตี้และการเล่น",
     tosRequired: "กรุณายอมรับข้อกำหนดเพื่อดำเนินการต่อ",
+    referralToggle: "มีรหัสแนะนำไหม?",
     referralLabel: "รหัสแนะนำ (ไม่บังคับ)",
     referralHint: "มีรหัสจากเพื่อนไหม? กรอกที่นี่",
     referralInvalid: "รหัสแนะนำไม่ถูกต้อง ตรวจสอบอีกครั้ง หรือเว้นว่างไว้",

@@ -302,10 +302,6 @@ test("a signup rejected for a missing consent keeps every other field", async ({
   await page.fill('input[name="nickname"]', "WipeCheck");
   await page.selectOption('select[name="country"]', "CZ");
   await page.check('input[name="skill"][value="intermediate"]');
-  // REQUIRED SINCE ROUND 7, item 7. Without it the browser blocks the submit
-  // outright and this test passes for the wrong reason — the form never posts,
-  // so of course every field still holds what was typed into it.
-  await page.fill('input[name="phone"]', "+420600123456");
   // The newsletter ticked, the terms missed — so the error must name the terms
   // and must not reset the box that WAS ticked.
   await page.check('input[name="marketing"]');
@@ -326,44 +322,30 @@ test("a signup rejected for a missing consent keeps every other field", async ({
   await expect(page.locator('input[name="marketing"]')).toBeChecked();
   await expect(page.locator('input[name="tos"]')).not.toBeChecked();
 
-  await expect(page.locator('input[name="phone"]')).toHaveValue("+420600123456");
-
   // And the password is not echoed back into the DOM.
   await expect(page.locator('input[name="password"]')).toHaveValue("");
 });
 
 /*
- * PHONE IS REQUIRED, ASSERTED PAST THE BROWSER (round 7, item 7).
- *
- * `required` on the input is a courtesy that saves a round trip; the rule that
- * counts is in `parseSignupForm`, which is what a curl request meets. Removing
- * the attribute in the page and submitting is the closest a browser test gets
- * to that request, and it is the assertion worth having — a later round that
- * "cleans up" the parser check would still pass a test that only exercised the
- * attribute.
+ * ~~PHONE IS REQUIRED, ASSERTED PAST THE BROWSER (round 7, item 7).~~ NO PHONE AT SIGN-UP (Jachym, 24 Nov 2026).
+ * The field left the form; an account is made without one, and the profile asks for it later.
  */
-test("signup refuses a missing phone number on the server, not only in the browser", async ({
-  page,
-}) => {
+test("signup makes an account without a phone number", async ({ page }) => {
+  // Arrange
   await page.goto("/signup");
-
   await page.fill('input[name="email"]', `nophone-${Date.now()}@example.com`);
   await page.fill('input[name="password"]', "correct-horse-battery");
-  await page.fill('input[name="nickname"]', "NoPhone");
-  await page.selectOption('select[name="country"]', "CZ");
+  await page.fill('input[name="nickname"]', `NoPhone${String(Date.now()).slice(-5)}`);
+  await page.selectOption('select[name="country"]', "TH");
   await page.check('input[name="skill"][value="intermediate"]');
   await page.check('input[name="tos"]');
 
-  // Defeat the client-side gate so the submission actually reaches the action.
-  await page.evaluate(() => {
-    document.querySelector('input[name="phone"]')!.removeAttribute("required");
-  });
-
+  // Act
   const submit = page.getByTestId("signup-submit");
   await submit.scrollIntoViewIfNeeded();
   await submit.click();
 
-  await expect(page.locator("body")).toContainText(/phone/i);
-  // Still on the form, and no account was made.
-  await expect(page.locator('input[name="nickname"]')).toHaveValue("NoPhone");
+  // Assert
+  await expect(page.locator('input[name="phone"]')).toHaveCount(0);
+  await page.waitForURL(/\/games/);
 });

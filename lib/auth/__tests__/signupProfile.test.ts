@@ -46,27 +46,26 @@ describe("parseSignupForm", () => {
   });
 
   /*
-   * PHONE IS REQUIRED (round 7, item 7).
+   * ~~PHONE IS REQUIRED (round 7, item 7).~~ OPTIONAL AT SIGN-UP AGAIN (Jachym, 24 Nov 2026).
    *
-   * The organizer needs a way to reach a player about the game they are
-   * standing on a pitch waiting for. Asserted on the PARSER rather than on the
-   * form, because the parser is what a curl request meets — the `required`
-   * attribute is a courtesy that saves a round trip.
+   * Sign-up asked for nine things before anyone had seen a game, and most visitors are on a phone. The number moves
+   * to the profile; one typed here is still checked. Asserted on the PARSER, which is what a curl request meets.
    */
   describe("the phone number", () => {
-    it("is required", () => {
+    it("may be left out at sign-up", () => {
+      // Act
       const result = parseSignupForm(form({ phone: "" }));
-      expect(result.ok).toBe(false);
-      if (result.ok) return;
-      expect(result.field).toBe("phone");
-      expect(result.code).toBe("PHONE_REQUIRED");
+
+      // Assert
+      expect(result.ok && result.value.phone).toBeNull();
     });
 
     it("treats whitespace as absent rather than as three characters", () => {
+      // Act
       const result = parseSignupForm(form({ phone: "   " }));
-      expect(result.ok).toBe(false);
-      if (result.ok) return;
-      expect(result.code).toBe("PHONE_REQUIRED");
+
+      // Assert
+      expect(result.ok && result.value.phone).toBeNull();
     });
 
     it("refuses something too short to be a number", () => {

@@ -4,21 +4,12 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { startSignup, finishSignup, type SignupFormState } from "./actions";
 import { NICKNAME_MAX_LENGTH } from "@/lib/auth/nickname";
-import {
-  PASSWORD_MIN_LENGTH,
-  PHONE_MAX_LENGTH,
-  PHONE_MIN_LENGTH,
-  SKILL_LEVELS,
-} from "@/lib/auth/signupProfile";
+import { PASSWORD_MIN_LENGTH, SKILL_LEVELS } from "@/lib/auth/signupProfile";
 import type { CountryOption } from "@/lib/auth/countries";
 import { useStrings } from "@/components/LocaleProvider";
-import { LOCALE_LABELS, SERVED_LOCALES, type Locale } from "@/lib/i18n/locales";
+import type { Locale } from "@/lib/i18n/locales";
 import { LinkedText } from "@/components/form/LinkedText";
 import { TERMS_RULES_ANCHOR } from "@/lib/legal";
-import {
-  PhoneField,
-  type PhoneCountryChoice,
-} from "@/components/form/PhoneField";
 
 const initialState: SignupFormState = { status: "idle" };
 
@@ -49,17 +40,12 @@ function FieldError({ show, message }: { show: boolean; message?: string }) {
 export function SignupForm({
   next,
   countries,
-  phoneCountries,
-  defaultPhoneCountry,
   defaultEmailLocale,
   defaultReferral = "",
   mode = "create",
 }: {
   next: string;
   countries: CountryOption[];
-  /** Round 41 — the phone prefix's choices, each with its calling code. */
-  phoneCountries: PhoneCountryChoice[];
-  defaultPhoneCountry: string;
   /** Round 41 — the language the site is showing: the browser's, unless chosen. */
   defaultEmailLocale: Locale;
   /** PLAYCO: a friend's referral code from an invite link (`?ref=`), shown in the optional box. */
@@ -238,54 +224,42 @@ export function SignupForm({
         <FieldError show={state.field === "skill"} message={state.message} />
       </fieldset>
 
-      <div className="flex flex-col gap-2">
-        {/*
-          A DIV, NOT A LABEL, since round 41: a <label> wrapping two controls
-          names the FIRST one, which is now the country code. The number gets
-          its label by id; the select carries its own aria-label.
-        */}
-        <label htmlFor="signup-phone" className={LABEL_CLASS}>
-          {t.auth.phoneLabel}
-        </label>
-        {/*
-          `required` AND `minLength` MIRROR THE SERVER (round 7, item 7). The
-          browser check is a courtesy that saves a round trip; the rule that
-          counts is in `parseSignupForm`, which is what a curl request meets.
-          Both are stated so the two cannot silently disagree.
-        */}
-        <PhoneField
-          key={`phone-${valuesKey}`}
-          options={phoneCountries}
-          defaultCountry={v?.phoneCountry || defaultPhoneCountry}
-          defaultNumber={v?.phone ?? ""}
-          countryLabel={t.auth.phoneCountryLabel}
-          inputId="signup-phone"
-          required
-          minLength={PHONE_MIN_LENGTH}
-          maxLength={PHONE_MAX_LENGTH}
-          inputClassName={FIELD_CLASS}
-        />
-        <span className="text-xs opacity-50">{t.auth.phoneHint}</span>
-        <FieldError show={state.field === "phone"} message={state.message} />
-      </div>
+      {/*
+        NO PHONE AT SIGN-UP (Jachym, 24 Nov 2026). Asked on the profile instead, which has always taken an empty one;
+        see `parseSignupForm`. Sign-up was nine fields long on a phone.
+      */}
 
-      {/* PLAYCO (17 Nov 2026): a friend's referral code, optional; pre-filled from an invite link. */}
-      <label className="flex flex-col gap-2">
-        <span className={LABEL_CLASS}>{t.auth.referralLabel}</span>
-        <input
-          type="text"
-          name="referral"
-          defaultValue={v?.referral ?? defaultReferral}
-          maxLength={12}
-          autoComplete="off"
-          autoCapitalize="characters"
-          spellCheck={false}
-          data-testid="signup-referral"
-          className={`${FIELD_CLASS} uppercase tracking-[0.2em]`}
-        />
-        <span className="text-xs opacity-50">{t.auth.referralHint}</span>
-        <FieldError show={state.field === "referral"} message={state.message} />
-      </label>
+      {/*
+        PLAYCO (17 Nov 2026): a friend's referral code, optional; pre-filled from an invite link.
+        BEHIND A TOGGLE (24 Nov 2026) unless an invite link filled it or it came back with an error: an empty optional
+        box was one more thing to read on the way to "Create my account". `<details>` keeps it a real form field
+        either way, so a typed code is submitted whether or not the toggle is open.
+      */}
+      <details
+        key={`referral-${valuesKey}`}
+        open={Boolean(v?.referral || defaultReferral || state.field === "referral")}
+        className="group"
+      >
+        <summary className="cursor-pointer text-sm text-bone/70 underline-offset-4 hover:underline">
+          {t.auth.referralToggle}
+        </summary>
+        <label className="mt-3 flex flex-col gap-2">
+          <span className={LABEL_CLASS}>{t.auth.referralLabel}</span>
+          <input
+            type="text"
+            name="referral"
+            defaultValue={v?.referral ?? defaultReferral}
+            maxLength={12}
+            autoComplete="off"
+            autoCapitalize="characters"
+            spellCheck={false}
+            data-testid="signup-referral"
+            className={`${FIELD_CLASS} uppercase tracking-[0.2em]`}
+          />
+          <span className="text-xs opacity-50">{t.auth.referralHint}</span>
+          <FieldError show={state.field === "referral"} message={state.message} />
+        </label>
+      </details>
 
       {/*
         THE LEGAL ACT, APART FROM THE PREFERENCE (round 40, the lawyer's Texty
@@ -353,31 +327,11 @@ export function SignupForm({
         </label>
       </fieldset>
 
-      <div className="flex flex-col gap-2">
-        {/*
-          THE LANGUAGE EMAILS ARE WRITTEN IN (round 41). Pre-set to the
-          language this page is in — the browser's, unless the switcher said
-          otherwise — so most people never touch it; each option is named in
-          its own language, like the switcher's.
-        */}
-        <label className="flex flex-col gap-2">
-          <span className={LABEL_CLASS}>{t.auth.emailLocaleLabel}</span>
-          <select
-            key={`email-locale-${valuesKey}`}
-            name="email_locale"
-            data-testid="signup-email-locale"
-            defaultValue={v?.emailLocale || defaultEmailLocale}
-            className={FIELD_CLASS}
-          >
-            {SERVED_LOCALES.map((locale) => (
-              <option key={locale} value={locale}>
-                {LOCALE_LABELS[locale].full}
-              </option>
-            ))}
-          </select>
-          <span className="text-xs opacity-50">{t.auth.emailLocaleHint}</span>
-        </label>
-      </div>
+      {/*
+        ~~THE LANGUAGE EMAILS ARE WRITTEN IN (round 41)~~ is no longer asked here (24 Nov 2026): emails follow the language
+        this page is in (`chosenEmailLocale` falls back to it), and the profile still changes it.
+      */}
+      <input type="hidden" name="email_locale" value={defaultEmailLocale} />
 
       <button
         type="submit"

@@ -69,6 +69,8 @@ export const strings = {
     // copy already uses ("Sign in", "Sign out"), and the header was the one
     // place saying something different.
     logIn: "Sign in",
+    /** The signed-out header's main button (24 Nov 2026): the site asked nobody to join, only to sign in. */
+    joinFree: "Join free",
     profile: "My profile",
     /*
      * The bottom tab bar's four labels (v1.2 §7). Short because they sit under
@@ -215,6 +217,8 @@ export const strings = {
     heroLine2: "Anytime. Anywhere.",
     heroSub: "Book your spot in a minute and just show up. No team needed.",
     heroCta: "Find a game",
+    /** Under the hero button for a visitor who is not signed in (24 Nov 2026). */
+    heroJoin: "New here? Create a free account",
     vision:
       "One game that repeats itself. Find a game, claim your spot, show up.",
     scrollHint: "↓ SCROLL",
@@ -425,6 +429,8 @@ export const strings = {
     tosRulesLink: "Community and Game Rules",
     tosRequired: "Please accept the terms to continue.",
     // PLAYCO (17 Nov 2026): an optional referral code at sign-up.
+    /** The closed toggle over the referral box, when no invite link filled it (24 Nov 2026). */
+    referralToggle: "Have a referral code?",
     referralLabel: "Referral code (optional)",
     referralHint: "Got a code from a friend? Enter it here.",
     referralInvalid: "That isn't a referral code. Check it, or leave the box empty.",
