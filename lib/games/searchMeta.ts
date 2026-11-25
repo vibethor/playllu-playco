@@ -21,12 +21,17 @@ export type SearchMetaGame = Pick<
  * `twitter:` for that reason. A search result is read by someone who knows neither, so it names the sport, the
  * surface, the venue, the city and the time, and says nothing that changes with each booking.
  *
- * PURE: the game row, the language and the string table in, two strings out.
+ * A GAME THAT CAN NO LONGER BE BOOKED (Jachym, 25 Nov 2026) — started, finished or cancelled — keeps the same
+ * sentence about the game and ends "Booking has closed" instead of "Book a spot online": the page stays
+ * up and indexable, and stops inviting a booking that cannot be made.
+ *
+ * PURE: the game row, the language, the string table and whether booking is open in, two strings out.
  */
 export function gameSearchMeta(
   game: SearchMetaGame,
   locale: DateLocale,
   t: Strings,
+  { bookingOpen = true }: { bookingOpen?: boolean } = {},
 ): { title: string; description: string } {
   const surface = game.surface ? t.games.surface[game.surface] : "";
   const shared = { venue: game.venue, surface };
@@ -36,7 +41,7 @@ export function gameSearchMeta(
     when: `${formatGameDateShort(game.starts_at, locale)} ${formatTime(game.starts_at, locale)}`,
   });
 
-  const description = fillTemplate(t.meta.gameDescription, {
+  const description = fillTemplate(bookingOpen ? t.meta.gameDescription : t.meta.gameDescriptionClosed, {
     ...shared,
     // Mid-sentence in the description, so "Indoor" reads "indoor"; scripts without case are unchanged.
     surface: surface.toLocaleLowerCase(),

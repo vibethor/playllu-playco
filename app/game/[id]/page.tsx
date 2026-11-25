@@ -107,7 +107,8 @@ export async function generateMetadata({ params }: GamePageProps): Promise<Metad
   // Same ladder the page renders, so the WhatsApp preview and the page it
   // links to never disagree about how urgent the game is.
   const shareDescription = `${spotsLeftLabel(result.bookedCount, game.capacity, locale, t)} · ${formatThb(game.price_thb)}`;
-  const search = gameSearchMeta(game, locale, t);
+  // Started or cancelled: the description stops inviting a booking (Jachym, 25 Nov 2026).
+  const search = gameSearchMeta(game, locale, t, { bookingOpen: !result.hasStarted && !result.isCancelled });
 
   // Round 41: the short link, once the game has a number.
   const url = `${await siteUrl()}${gamePath(game)}`;
@@ -341,7 +342,7 @@ export default async function GameDetailPage({ params, searchParams }: GamePageP
     image: `${shareUrl}/opengraph-image`,
     venuePhoto: venuePhotoPath ? new URL(venuePhotoPath, baseUrl).toString() : null,
     // The sentence the search result shows, in English like the rest of the block.
-    description: gameSearchMeta(game, "en", strings).description,
+    description: gameSearchMeta(game, "en", strings, { bookingOpen: !hasStarted && !isCancelled }).description,
     venueAddress: venueRow?.address ?? null,
     // `map_query` is coordinates when the admin pasted a Maps link, and a place name otherwise.
     coordinates: venueRow?.map_query ? parseCoordinatePair(venueRow.map_query) : null,

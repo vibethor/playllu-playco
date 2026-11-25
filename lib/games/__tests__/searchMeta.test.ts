@@ -121,3 +121,46 @@ describe("the format of a game with a team waiting its turn", () => {
   });
 });
 
+
+/**
+ * A GAME THAT CAN NO LONGER BE BOOKED DOES NOT SAY "BOOK A SPOT" (Jachym, 25 Nov 2026). `/game/6` was played on
+ * 24 Nov and its search description still ended "Book a spot online and pay by card or PromptPay." Once a game has
+ * started, or was cancelled, the description says booking has closed and points to the upcoming games.
+ */
+describe("the description of a game that can no longer be booked", () => {
+  it("says booking has closed instead of inviting a booking", () => {
+    // Act
+    const { description } = gameSearchMeta(SUNDAY_GAME, "en", resolveStrings("en"), { bookingOpen: false });
+
+    // Assert
+    expect(description).toBe(
+      "6v6 indoor pickup volleyball at Swish Elite 50, Bangkok, Sunday 29 November at 17:00. 120 minutes, 300 THB. Booking has closed; see the upcoming games.",
+    );
+  });
+
+  it("never invites a booking, in Thai either", () => {
+    // Act
+    const en = gameSearchMeta(SUNDAY_GAME, "en", resolveStrings("en"), { bookingOpen: false });
+    const th = gameSearchMeta(SUNDAY_GAME, "th", resolveStrings("th"), { bookingOpen: false });
+
+    // Assert
+    expect(en.description).not.toContain("Book a spot");
+    expect(th.description).not.toBe(gameSearchMeta(SUNDAY_GAME, "th", resolveStrings("th")).description);
+  });
+
+  it("keeps the invitation while the game is still open", () => {
+    // Act
+    const { description } = gameSearchMeta(SUNDAY_GAME, "en", resolveStrings("en"), { bookingOpen: true });
+
+    // Assert
+    expect(description).toMatch(/Book a spot online and pay by card or PromptPay\.$/);
+  });
+
+  it("fits a search result when closed too", () => {
+    // Act
+    const { description } = gameSearchMeta(SUNDAY_GAME, "en", resolveStrings("en"), { bookingOpen: false });
+
+    // Assert
+    expect(description.length).toBeLessThanOrEqual(165);
+  });
+});
