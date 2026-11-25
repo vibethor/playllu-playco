@@ -2,6 +2,7 @@ import type { Database } from "@/lib/types/database";
 import { DEFAULT_CITY, DEFAULT_SPORT, SITE_NAME, cityNameOf } from "@/lib/city/default";
 import { formatIsoInCity } from "@/lib/format";
 import { gameEndsAt } from "@/lib/games/duration";
+import { courtFormat } from "@/lib/games/teams";
 import { strings } from "@/lib/strings";
 
 type GameRow = Database["public"]["Tables"]["games"]["Row"];
@@ -56,7 +57,8 @@ function endTime(game: GameRow): string {
  */
 function eventName(game: GameRow, venueName: string): string {
   const surface = game.surface ? strings.games.surface[game.surface].toLowerCase() : null;
-  const words = [game.format, surface, `pickup ${DEFAULT_SPORT.toLowerCase()} at ${venueName}`].filter(Boolean);
+  // `courtFormat`: a stored `5v5v5` is three teams taking turns, and the game is 5v5 on court.
+  const words = [courtFormat(game.format), surface, `pickup ${DEFAULT_SPORT.toLowerCase()} at ${venueName}`].filter(Boolean);
   const name = words.join(" ");
   return name.charAt(0).toUpperCase() + name.slice(1);
 }

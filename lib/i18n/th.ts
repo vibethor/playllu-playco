@@ -33,6 +33,8 @@ export const th: StringsOverlay = {
     gameTitleNoSurface: "วอลเลย์บอลที่ {venue} กรุงเทพฯ · {when}",
     gameDescription:
       "วอลเลย์บอลขาจร{surface} {format} ที่ {venue} กรุงเทพฯ {date} เวลา {time} น. เล่น {minutes} นาที ราคา {price} จองที่ออนไลน์ จ่ายด้วยบัตรหรือพร้อมเพย์",
+    gameDescriptionClosed:
+      "วอลเลย์บอลขาจร{surface} {format} ที่ {venue} กรุงเทพฯ {date} เวลา {time} น. เล่น {minutes} นาที ราคา {price} ปิดรับจองเกมนี้แล้ว ดูเกมถัดไปได้ที่ Playco",
     contactDescription:
       "ติดต่อ Playco เกมวอลเลย์บอลขาจรในกรุงเทพฯ มีอีเมลสำหรับการจอง การคืนเงิน และการช่วยเหลือ และอีเมลสำหรับคำถามเรื่องข้อมูลส่วนบุคคล",
   },

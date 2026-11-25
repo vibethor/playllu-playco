@@ -246,3 +246,17 @@ describe("gameEventSchema — what an event listing needs", () => {
     expect(schema.image).toEqual([image, venuePhoto]);
   });
 });
+
+// Jachym, 24 Nov 2026: "it should just say 5v5". A stored `5v5v5` is three teams taking turns, five a side on court.
+describe("the event's name for a game with a team waiting its turn", () => {
+  it("names the match-up on court, not three sides", () => {
+    // Arrange
+    const rotating = { ...base, game: { ...game, format: "5v5v5", surface: "sand" as const }, venueName: "Asoke Sports Club" };
+
+    // Act
+    const schema = gameEventSchema(rotating);
+
+    // Assert
+    expect(schema.name).toBe("5v5 beach pickup volleyball at Asoke Sports Club");
+  });
+});

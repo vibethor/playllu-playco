@@ -54,6 +54,9 @@ export const strings = {
     gameTitleNoSurface: "Volleyball at {venue}, Bangkok · {when}",
     gameDescription:
       "{format} {surface} pickup volleyball at {venue}, Bangkok, {date} at {time}. {minutes} minutes, {price}. Book a spot online and pay by card or PromptPay.",
+    // A game that has started or was cancelled (Jachym, 25 Nov 2026): the same sentence, without the invitation.
+    gameDescriptionClosed:
+      "{format} {surface} pickup volleyball at {venue}, Bangkok, {date} at {time}. {minutes} minutes, {price}. Booking has closed; see the upcoming games.",
     contactDescription:
       "Contact Playco, the pickup volleyball games in Bangkok: one address for bookings, refunds and support, and one for questions about your personal data.",
     loginDescription: "Sign in",
