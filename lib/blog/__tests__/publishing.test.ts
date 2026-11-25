@@ -5,7 +5,7 @@ import type { BlogPost } from "@/lib/blog/post";
 import { postMetadata } from "@/lib/blog/metadata";
 import { loadPosts, newestModified } from "@/lib/blog/posts";
 import { blogPostingSchema, postImageUrl } from "@/lib/blog/schema";
-import { isDraft } from "@/lib/blog/visibility";
+import { publishedPosts } from "@/lib/blog/visibility";
 
 const SITE = "https://playco.live";
 
@@ -166,8 +166,8 @@ describe("the newest change among some posts", () => {
 });
 
 /**
- * THE REAL FILES. Every post in `content/blog/` must parse, and the three launch posts are drafts until Jachym
- * says "publish" and their [TODO] lines are filled.
+ * THE REAL FILES. Every post in `content/blog/` must parse, a published post must be finished, and a link from
+ * one post to another must lead somewhere a reader can go.
  */
 describe("the posts in content/blog", () => {
   const LAUNCH_POSTS = [
@@ -175,6 +175,7 @@ describe("the posts in content/blog", () => {
     "indoor-sport-bangkok-smog-season",
     "where-to-play-volleyball-bangkok",
   ];
+  const INTERNAL_POST_LINK = /\]\(\/blog\/([a-z0-9-]+)\)/g;
 
   it("all parse, launch posts included", () => {
     // Act
@@ -184,15 +185,32 @@ describe("the posts in content/blog", () => {
     expect(slugs).toEqual(expect.arrayContaining(LAUNCH_POSTS));
   });
 
-  it.each(LAUNCH_POSTS)("%s is still a draft", (slug) => {
+  it("link only to posts that are published, so no reader follows a link into a 404", () => {
+    // Arrange
+    const published = publishedPosts(loadPosts());
+    const publishedSlugs = new Set(published.map((entry) => entry.slug));
+
     // Act
-    const entry = loadPosts().find((candidate) => candidate.slug === slug);
+    const broken = published.flatMap((entry) =>
+      [...entry.body.matchAll(INTERNAL_POST_LINK)]
+        .map((match) => match[1] ?? "")
+        .filter((slug) => !publishedSlugs.has(slug))
+        .map((slug) => `${entry.slug} -> ${slug}`),
+    );
 
     // Assert
-    expect(entry && isDraft(entry)).toBe(true);
+    expect(broken).toEqual([]);
   });
 
-  // A search result cuts a description by width, at about 155 to 165 characters. The launch posts are added as
+  it("have a title each of their own", () => {
+    // Act
+    const titles = loadPosts().map((entry) => entry.title);
+
+    // Assert
+    expect(new Set(titles).size).toBe(titles.length);
+  });
+
+  // A search result cuts a description by width, at about 155 to 165 characters. The launch posts were added as
   // written (one is 161), so the ceiling here is the far end of that range rather than the 160 used for pages.
   const SHORTEST_DESCRIPTION = 110;
   const LONGEST_DESCRIPTION = 165;

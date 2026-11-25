@@ -6,7 +6,6 @@ datePublished: 2026-11-24
 dateModified: 2026-11-24
 tags: ["bangkok", "indoor", "volleyball", "pickleball"]
 locale: "en"
-draft: true
 ---
 
 When PM2.5 climbs, the simplest fix is to move your exercise indoors. Bangkok has more air-conditioned places to play than most people expect, including a sand court eleven floors above Sukhumvit. This is a short list of the ones we can point to a source for, with what they cost and how to join.
@@ -24,12 +23,12 @@ Check the day's reading before you exercise outside. The Pollution Control Depar
 | Sport | Where | Indoor | What you pay | How to join |
 | --- | --- | --- | --- | --- |
 | Beach volleyball, 5v5 | Asoke Sports Club, Sukhumvit Soi 16 | Indoor sand court, air-conditioned | 300 THB for two hours with Playco | [Book a spot](/games) |
-| Volleyball, 6v6 | Swish Elite 50 | Indoor court | 300 THB for two hours with Playco | [Book a spot](/games) |
+| Volleyball, 6v6 | Swish Elite 50, Sukhumvit Soi 50 | Indoor court | 300 THB for two hours with Playco | [Book a spot](/games) |
 | Competitive volleyball | Virgin Active 101, Sukhumvit Road | Indoor hall | A share of the court fee | [BKK Volleyball on Meetup](https://www.meetup.com/bkk-volleyball/) |
 | Pickleball | Asoke Sports Club | Air-conditioned indoor courts, plus rooftop courts | Ask the venue | Contact the venue |
 | Social pickleball | Sterling on Sukhumvit 24, Suk Space | Indoor, air-conditioned | 400 THB at a social listed on its page, courts and balls included | [Bangkok Meetups Pickleball](https://www.meetup.com/bkkpickleball/) |
 
-[TODO Jachym: confirm whether the Swish Elite 50 hall is air-conditioned, and add its address.]
+Swish Elite 50 is at 605 Sukhumvit Soi 50 in Phra Khanong; On Nut is the nearest BTS station.
 
 ## What is indoor beach volleyball?
 
